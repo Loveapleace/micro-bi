@@ -22,7 +22,7 @@ function collectTargets(value, out = []) {
 const toLocalUrl = (rel) => new URL(`../${rel.replace(/^\.\//, '')}`, import.meta.url);
 
 test('package.json: 关键字段符合预期', () => {
-  assert.equal(pkg.name, '@hw/dynamic-data');
+  assert.equal(pkg.name, 'micro-bi');
   assert.match(pkg.version, /^\d+\.\d+\.\d+$/);
   assert.ok(typeof pkg.description === 'string' && pkg.description.length > 0, '描述不能为空');
   assert.equal(pkg.license, 'MIT');
@@ -54,28 +54,28 @@ test('package.json: exports 中每个目标都真实存在', () => {
 });
 
 test('包可被自引用解析：ESM 入口', async () => {
-  const mod = await import('@hw/dynamic-data');
+  const mod = await import('micro-bi');
 
   assert.equal(typeof mod.createRegistry, 'function');
   assert.equal(typeof mod.VERSION, 'string');
 });
 
 test('包可被自引用解析：CJS 入口', () => {
-  const mod = require('@hw/dynamic-data');
+  const mod = require('micro-bi');
 
   assert.equal(typeof mod.createRegistry, 'function');
   assert.equal(typeof mod.VERSION, 'string');
 });
 
 test('包可被自引用解析：/core 子路径', async () => {
-  const mod = await import('@hw/dynamic-data/core');
+  const mod = await import('micro-bi/core');
 
   assert.equal(typeof mod.createRegistry, 'function');
 });
 
 test('ESM 与 CJS 两套产物版本一致', async () => {
-  const esm = await import('@hw/dynamic-data');
+  const esm = await import('micro-bi');
 
   assert.equal(esm.VERSION, pkg.version);
-  assert.equal(require('@hw/dynamic-data').VERSION, pkg.version);
+  assert.equal(require('micro-bi').VERSION, pkg.version);
 });

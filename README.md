@@ -1,15 +1,17 @@
-# @hw/dynamic-data
+# micro-bi (MicroBI)
 
-通用动态数据核心库：提供动态数据的统一类型定义、数据源适配器契约，以及可复用的注册表原语。
+纯前端高性能轻量级嵌入式 BI 分析套件与 VisActor Canvas 看板引擎。提供多维数据聚合、动态公式计算列、百万级表格与图表展示、同源交叉切片联动以及交互式低代码设计器。
 
-- 零运行时依赖
+- 零后端数仓依赖，纯前端内存毫秒级聚合与重算
+- 纯 Canvas 高性能渲染底座（字节跳动 @visactor/vtable + @visactor/vchart）
+- 零运行时计算依赖（内置无 eval 安全 AST 公式解析器）
 - 同时产出 **ESM** 与 **CJS** 两套产物，并附带 `.d.ts` 类型声明
 - 严格 TypeScript 模式（`strict` + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes`）
 
 ## 安装
 
 ```bash
-npm install @hw/dynamic-data
+npm install micro-bi
 ```
 
 ## 核心功能
@@ -39,7 +41,7 @@ npm install @hw/dynamic-data
 ### 1. 纯计算引擎（Node.js / Web Worker / 浏览器）
 
 ```ts
-import { transformData, profileDataset } from '@hw/dynamic-data';
+import { transformData, profileDataset } from 'micro-bi';
 
 const rawData = [
   { date: '2026-09-01', category: '电子', sales: 1000, cost: 600 },
@@ -80,49 +82,35 @@ console.log(result.data);
 // 输出转换后的聚合表格数据
 ```
 
-### 2. 可视化配置面板（React 17 + Ant Design 5）
+### 2. 交互式多维分析展示组件（纯 Canvas 高性能渲染）
 
 ```tsx
-import React, { useState } from 'react';
-import { Button } from 'antd';
-import { DynamicDataConfigWrapper } from '@hw/dynamic-data/ui';
-import type { DynamicTransformConfig, TransformResult } from '@hw/dynamic-data';
+import React from 'react';
+import { DynamicDataView } from 'micro-bi/ui';
 
-export const MyReportPage = () => {
-  const [open, setOpen] = useState(false);
-  const [config, setConfig] = useState<DynamicTransformConfig>();
-  const [transformedResult, setTransformedResult] = useState<TransformResult>();
-
+export const SalesDashboardCard = ({ dataset, result, config }) => {
   return (
-    <div>
-      <Button type="primary" onClick={() => setOpen(true)}>
-        打开数据转换面板
-      </Button>
-
-      <DynamicDataConfigWrapper
-        variant="modal" // 支持 'modal' | 'drawer' | 'embedded'
-        open={open}
-        title="报表数据转换配置"
-        data={rawDataSource}
-        value={config}
-        onChange={setConfig}
-        onClose={() => setOpen(false)}
-        onApply={(newConfig, result) => {
-          setConfig(newConfig);
-          setTransformedResult(result);
-          setOpen(false);
-        }}
-      />
-    </div>
+    <DynamicDataView
+      datasetId="sales_orders"
+      result={result}
+      rawDataset={dataset}
+      transformConfig={config}
+      defaultViewType="bar"
+      allowDimensionSwitch={true}
+      allowMetricSwitch={true}
+      allowViewSwitch={true}
+      chartStyle={{ height: 360 }}
+    />
   );
 };
 ```
 
 ## 子路径导入
 
-- 仅使用计算引擎：`import { transformData } from '@hw/dynamic-data'` 或 `@hw/dynamic-data/engine`
-- 仅使用注册表原语：`import { createRegistry } from '@hw/dynamic-data/core'`
-- 使用 UI 面板：`import { DynamicDataConfigWrapper } from '@hw/dynamic-data/ui'`
+- 仅使用计算引擎：`import { transformData } from 'micro-bi'` 或 `micro-bi/engine`
+- 仅使用注册表原语：`import { createRegistry } from 'micro-bi/core'`
+- 使用 UI 组件与看板：`import { DynamicDataView, DynamicDataConfigPanel } from 'micro-bi/ui'`
+- 使用多语言国际化：`import { DynamicDataLocaleProvider, en_US, zh_CN } from 'micro-bi/locale'`
 
 
 ## 开发

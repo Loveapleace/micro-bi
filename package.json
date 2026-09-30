@@ -1,16 +1,28 @@
 {
-  "name": "@hw/dynamic-data",
+  "name": "micro-bi",
   "version": "0.1.0",
-  "description": "通用动态数据核心库：动态数据类型定义、数据源适配器契约与通用注册表原语。",
+  "description": "MicroBI: 纯前端高性能轻量级嵌入式 BI 分析套件与 VisActor Canvas 看板引擎",
   "keywords": [
-    "hw",
-    "dynamic-data",
-    "registry",
-    "data-source",
-    "typescript",
-    "esm",
-    "cjs"
+    "micro-bi",
+    "bi",
+    "embedded-bi",
+    "visactor",
+    "vtable",
+    "vchart",
+    "pivot",
+    "dashboard",
+    "analytics",
+    "cross-filtering",
+    "data-analysis"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Loveapleace/micro-bi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Loveapleace/micro-bi/issues"
+  },
+  "homepage": "https://github.com/Loveapleace/micro-bi#readme",
   "license": "MIT",
   "type": "module",
   "main": "./dist/cjs/index.js",
