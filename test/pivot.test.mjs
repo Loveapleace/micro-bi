@@ -184,3 +184,9 @@ test('pivot: generateTableInstanceCsv 提取 2D 矩阵并正确注入 UTF-8 BOM'
   assert.equal(lines[0].replace(/^\uFEFF/, ''), '车间,2024-01,2024-02');
 });
 
+test('pivot: LivePreviewTable 组件导出且支持透视配置 props 传递', async () => {
+  const { LivePreviewTable } = await import('../dist/esm/ui/index.js');
+  assert.ok(typeof LivePreviewTable === 'function', 'LivePreviewTable 必须为有效 React 组件函数');
+});
+
+

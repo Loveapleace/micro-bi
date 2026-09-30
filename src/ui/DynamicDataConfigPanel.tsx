@@ -528,7 +528,7 @@ export const DynamicDataConfigPanel = React.forwardRef<
             />
 
             {/* 实时预览表格 */}
-            <LivePreviewTable result={transformResult} />
+            <LivePreviewTable result={transformResult} config={activeConfig} />
           </Col>
         </Row>
 

@@ -302,4 +302,7 @@ export const en_US: DynamicDataLocale = {
   '列总计': 'Column Grand Total',
   '行小计': 'Row Subtotal',
   '列小计': 'Column Subtotal',
+  '2D 透视网格': '2D Pivot Grid',
+  '1D 扁平明细': '1D Flat Details',
+  '度量指标': 'Measure / Metric',
 };
