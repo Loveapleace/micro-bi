@@ -1,0 +1,152 @@
+{
+  "name": "@hw/dynamic-data",
+  "version": "0.1.0",
+  "description": "通用动态数据核心库：动态数据类型定义、数据源适配器契约与通用注册表原语。",
+  "keywords": [
+    "hw",
+    "dynamic-data",
+    "registry",
+    "data-source",
+    "typescript",
+    "esm",
+    "cjs"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "core": [
+        "./dist/esm/core/index.d.ts"
+      ],
+      "engine": [
+        "./dist/esm/engine/index.d.ts"
+      ],
+      "ui": [
+        "./dist/esm/ui/index.d.ts"
+      ],
+      "locale": [
+        "./dist/esm/locale/index.d.ts"
+      ]
+    }
+  },
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      }
+    },
+    "./core": {
+      "import": {
+        "types": "./dist/esm/core/index.d.ts",
+        "default": "./dist/esm/core/index.js"
+      },
+      "require": {
+        "types": "./dist/esm/core/index.d.ts",
+        "default": "./dist/cjs/core/index.js"
+      }
+    },
+    "./engine": {
+      "import": {
+        "types": "./dist/esm/engine/index.d.ts",
+        "default": "./dist/esm/engine/index.js"
+      },
+      "require": {
+        "types": "./dist/esm/engine/index.d.ts",
+        "default": "./dist/cjs/engine/index.js"
+      }
+    },
+    "./ui": {
+      "import": {
+        "types": "./dist/esm/ui/index.d.ts",
+        "default": "./dist/esm/ui/index.js"
+      },
+      "require": {
+        "types": "./dist/esm/ui/index.d.ts",
+        "default": "./dist/cjs/ui/index.js"
+      }
+    },
+    "./locale": {
+      "import": {
+        "types": "./dist/esm/locale/index.d.ts",
+        "default": "./dist/esm/locale/index.js"
+      },
+      "require": {
+        "types": "./dist/esm/locale/index.d.ts",
+        "default": "./dist/cjs/locale/index.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "peerDependencies": {
+    "@ant-design/icons": ">=5.0.0",
+    "@visactor/vchart": ">=0.1.0",
+    "@visactor/vtable": ">=0.1.0",
+    "antd": ">=5.0.0",
+    "react": ">=17.0.0",
+    "react-dom": ">=17.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@ant-design/icons": {
+      "optional": true
+    },
+    "@visactor/vchart": {
+      "optional": true
+    },
+    "@visactor/vtable": {
+      "optional": true
+    },
+    "antd": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "clean": "node scripts/clean.mjs",
+    "build": "npm run clean && npm run build:esm && npm run build:cjs && node scripts/postbuild.mjs",
+    "build:esm": "tsc -p tsconfig.json",
+    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && npm run test:only",
+    "test:only": "node --test \"test/**/*.test.mjs\"",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@ant-design/icons": "^5.6.0",
+    "@types/react": "^17.0.80",
+    "@types/react-dom": "^17.0.25",
+    "@visactor/vchart": "^2.1.7",
+    "@visactor/vtable": "^1.26.8",
+    "antd": "^5.24.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "dayjs": "^1.11.23"
+  }
+}

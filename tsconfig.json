@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "rootDir": "./src",
+    "outDir": "./dist/esm",
+
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "exactOptionalPropertyTypes": true,
+    "isolatedModules": true,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "removeComments": false,
+    "newLine": "lf",
+
+    "jsx": "react",
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
+}
