@@ -311,6 +311,78 @@ export function validateTransformConfig(
           });
         }
       }
+
+      // columnTimeBucket 列透视时间分桶校验
+      const columnTimeBucket = parsed.dimensions.columnTimeBucket;
+      if (columnTimeBucket !== undefined && columnTimeBucket !== null) {
+        if (typeof columnTimeBucket !== 'object' || Array.isArray(columnTimeBucket)) {
+          issues.push({
+            path: 'dimensions.columnTimeBucket',
+            message: '"columnTimeBucket" 必须为对象',
+            severity: 'error',
+          });
+        } else {
+          if (!columnTimeBucket.field || typeof columnTimeBucket.field !== 'string') {
+            issues.push({
+              path: 'dimensions.columnTimeBucket.field',
+              message: '列时间分桶必须指定目标时间字段 field',
+              severity: 'error',
+            });
+          } else if (availableFieldMap && !availableFieldMap.has(columnTimeBucket.field)) {
+            issues.push({
+              path: 'dimensions.columnTimeBucket.field',
+              message: `列时间分桶字段 "${columnTimeBucket.field}" 在当前数据集中不存在`,
+              severity: 'warning',
+            });
+          }
+
+          if (!columnTimeBucket.granularity || !VALID_GRANULARITIES.has(columnTimeBucket.granularity)) {
+            issues.push({
+              path: 'dimensions.columnTimeBucket.granularity',
+              message: `列时间粒度 "${columnTimeBucket.granularity}" 无效，支持的值为 hour, day, week, month, quarter, year, custom`,
+              severity: 'error',
+            });
+          }
+        }
+      }
+
+      // columnCategories 列透视分类维度校验
+      const columnCategories = parsed.dimensions.columnCategories;
+      if (columnCategories !== undefined && columnCategories !== null) {
+        if (!Array.isArray(columnCategories)) {
+          issues.push({
+            path: 'dimensions.columnCategories',
+            message: '"columnCategories" 必须为字符串数组',
+            severity: 'error',
+          });
+        } else {
+          columnCategories.forEach((cat: any, cIdx: number) => {
+            if (typeof cat !== 'string' || !cat.trim()) {
+              issues.push({
+                path: `dimensions.columnCategories[${cIdx}]`,
+                message: `列分类维度必须为非空字符串`,
+                severity: 'error',
+              });
+            } else if (availableFieldMap && !availableFieldMap.has(cat)) {
+              issues.push({
+                path: `dimensions.columnCategories[${cIdx}]`,
+                message: `列分类维度 "${cat}" 在当前数据集中不存在`,
+                severity: 'warning',
+              });
+            }
+          });
+        }
+      }
+
+      // indicatorsAsCol 校验
+      const indicatorsAsCol = parsed.dimensions.indicatorsAsCol;
+      if (indicatorsAsCol !== undefined && indicatorsAsCol !== null && typeof indicatorsAsCol !== 'boolean') {
+        issues.push({
+          path: 'dimensions.indicatorsAsCol',
+          message: '"indicatorsAsCol" 必须为布尔值',
+          severity: 'error',
+        });
+      }
     }
   }
 

@@ -83,9 +83,19 @@ export function transformData(
   // 1. 三态智能仲裁判定 (Three-state Disambiguation Decision)
   const timeBucketConfig = config.dimensions?.timeBucket;
   const categoryDims = config.dimensions?.categories ?? [];
+  const colTimeBucketConfig = config.dimensions?.columnTimeBucket;
+  const colCategoryDims = config.dimensions?.columnCategories ?? [];
+
   const hasTimeBucket = Boolean(timeBucketConfig && timeBucketConfig.field);
   const hasCategories = Boolean(categoryDims.length > 0);
-  const hasDimensions = hasTimeBucket || hasCategories;
+  const hasColTimeBucket = Boolean(colTimeBucketConfig && colTimeBucketConfig.field);
+  const hasColCategories = Boolean(colCategoryDims.length > 0);
+
+  const hasRowDimensions = hasTimeBucket || hasCategories;
+  const hasColDimensions = hasColTimeBucket || hasColCategories;
+  const hasDimensions = hasRowDimensions || hasColDimensions;
+  const isCrossTab = hasColDimensions;
+
   const hasFixed = config.columns.some((c) => c.type === 'fixed');
   const hasAggregations = config.columns.some((c) => c.type === 'aggregated');
 
@@ -265,6 +275,13 @@ export function transformData(
         }
         for (const cat of categoryDims) {
           dimValues[cat] = row[cat] ?? '(空)';
+        }
+        if (colTimeBucketConfig && colTimeBucketConfig.field) {
+          const colBucketVal = formatTimeBucket(row[colTimeBucketConfig.field], colTimeBucketConfig);
+          dimValues[colTimeBucketConfig.field] = colBucketVal;
+        }
+        for (const colCat of colCategoryDims) {
+          dimValues[colCat] = row[colCat] ?? '(空)';
         }
       }
 
@@ -489,6 +506,35 @@ export function transformData(
         }
       }
     }
+    if (config.dimensions.columnTimeBucket?.field) {
+      const f = config.dimensions.columnTimeBucket.field;
+      if (!addedKeys.has(f)) {
+        const label = config.headers?.[f] || f;
+        outputCols.push({
+          key: f,
+          title: label,
+          type: 'time',
+          kind: 'dimension',
+          field: f,
+        });
+        addedKeys.add(f);
+      }
+    }
+    if (config.dimensions.columnCategories) {
+      for (const cat of config.dimensions.columnCategories) {
+        if (!addedKeys.has(cat)) {
+          const label = config.headers?.[cat] || cat;
+          outputCols.push({
+            key: cat,
+            title: label,
+            type: 'text',
+            kind: 'dimension',
+            field: cat,
+          });
+          addedKeys.add(cat);
+        }
+      }
+    }
   }
 
   // 2. 根据 columns 配置生成
@@ -555,6 +601,7 @@ export function transformData(
     columns: outputCols,
     meta: {
       form: executionForm,
+      isCrossTab,
       inputRows: records.length,
       outputRows: outputRows.length,
       executionTimeMs,

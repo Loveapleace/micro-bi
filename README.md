@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![TypeScript: Strict](https://img.shields.io/badge/TypeScript-Strict-blue.svg)](https://www.typescriptlang.org/)
 [![Rendering: VisActor](https://img.shields.io/badge/Rendering-VisActor%20Canvas-cyan.svg)](https://www.visactor.io/)
-[![Tests: 94 Passed](https://img.shields.io/badge/Tests-94%20Passing-brightgreen.svg)]()
+[![Tests: 100 Passed](https://img.shields.io/badge/Tests-100%20Passing-brightgreen.svg)]()
 
 ---
 
@@ -75,15 +75,21 @@ npm install @visactor/vtable @visactor/vchart antd @ant-design/icons dayjs
   - 零 `eval`，零外部重量依赖，彻底规避代码注入漏洞；
   - 支持四则运算优先级、逻辑比较与条件分支（`IF(condition, trueVal, falseVal)`）；
   - 支持数学辅助函数（`ROUND`、`ABS`、`COALESCE`）与聚合引用（`[SUM(sales)]`）。
-- **聚合与固定列智能适配**：透视模式与明细模式自动流转，支持原值与度量双向幂等还原。
+- **聚合与固定列智能适配**：透视模式与明细模式自动流转，支持原值与度量双向幂等还原；
+- **双向多维交叉透视 (Cross-Tab Pivot Engine)**：
+  - 支持**行维度（纵向分级展开）**与**列维度（横向透视展开）**双向交织；
+  - 自动识别交叉单元格并在内存中完成行列交集的数据聚合与动态计算列评估；
+  - 原生无缝在扁平表（`ListTable`）与交叉透视表（`PivotTable`）间双模切换。
 
 ### 2. 纯 Canvas 高性能展示看板 (`micro-bi/ui` -> `DynamicDataView`)
 - **固定右上角形态切换器 (ViewTypeSwitcher)**：表格、柱状图、折线图、饼图切换按钮牢牢固定在卡片右上角，切换视图形态时**像素级绝对稳固、零抖动、零跳跃**；
 - **独立次级探索工具条**：维度切换与指标单选/多选对比在非表格状态下平滑呈现于画布上方，不挤压主卡片头部；
-- **VisActor Canvas 表格 (`VTable`)**：
-  - 轻松承载 100,000+ 明细行，支持区域框选、多格复制（Ctrl+C 粘贴至 Excel）、列宽自由拖拽；
-  - 原地无缝数据下钻（In-place Drilldown）穿透原始流水；
-  - 列排序隔离的总计行计算、列显隐气泡、冻结首列与右侧操作列；
+- **VisActor Canvas 表格 (`VTable` / `ListTable` & `PivotTable`)**：
+  - **双向多维交叉透视表 (Cross-Tab)**：当配置了透视列维度时，自动启用 `PivotTable` 纯 Canvas 渲染，指标支持横向排布或纵向排布，行总计/列总计原生计算；
+  - **真实 2D 矩阵导出与复制**：导出 CSV 或复制 TSV 时，完美导出包含多级列头、行头、指标及总计的真实 2D 透视矩阵，Excel 粘贴即用；
+  - **明细/扁平聚合表 (ListTable)**：轻松承载 100,000+ 明细行，支持区域框选、多格复制、列宽自由拖拽；
+  - **原地无缝下钻 (In-place Drilldown)**：透视单元格与聚合行均支持穿透原始流水；
+  - **列排序隔离的总计行计算、列显隐气泡、冻结首列与右侧操作列**；
 - **VisActor Canvas 图表 (`VChart`)**：
   - 柱/线/面积/饼图，自动识别比率型与绝对数值型指标，天然呈现**双 Y 轴复合图**；
   - 饼图智能单指标截断与占比归一化。
@@ -150,7 +156,39 @@ console.log(result.data);
 
 ---
 
-### 示例 2：展示态多维分析看板 (`DynamicDataView`)
+### 示例 2：双向多维交叉透视表 (Cross-Tab Pivot Table)
+
+只需在 `dimensions` 中同时声明**行维度**与**列维度**（`columnCategories` 或 `columnTimeBucket`），引擎自动激活二维交叉透视：
+
+```ts
+import { transformData, type DynamicTransformConfig } from 'micro-bi';
+
+const pivotConfig: DynamicTransformConfig = {
+  mode: 'aggregate',
+  dimensions: {
+    // 纵向行维度
+    categories: ['workshop'], // 承制车间
+    // 横向列维度 (支持时间分桶或离散分类)
+    columnTimeBucket: { field: 'plan_start_time', granularity: 'month' },
+    // 透视展现配置
+    indicatorsAsCol: true,    // 指标横向排布 (true: 列头下方; false: 行头下方)
+    rowTotals: { show: true, label: '行总计' },
+    columnTotals: { show: true, label: '列总计' },
+  },
+  columns: [
+    { type: 'aggregated', field: 'output_qty', agg: 'sum', label: '交付总件数' },
+    { type: 'aggregated', field: 'defect_qty', agg: 'sum', label: '缺陷数' },
+  ],
+};
+
+const result = transformData(rawRecords, pivotConfig);
+// result.meta.isCrossTab === true
+// 传给 DynamicDataView 时，自动无缝启用 @visactor/vtable 的 PivotTable 纯 Canvas 渲染！
+```
+
+---
+
+### 示例 3：展示态多维分析看板 (`DynamicDataView`)
 
 ```tsx
 import React from 'react';

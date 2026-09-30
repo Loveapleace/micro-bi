@@ -180,3 +180,77 @@ export async function copyToClipboardAsTsv(
     return false;
   }
 }
+
+/**
+ * 从 VTable 表格实例直接提取可视化的二维矩阵并生成 CSV 文本 (支持 ListTable 与 PivotTable)
+ */
+export function generateTableInstanceCsv(table: any): string {
+  if (!table || typeof table.getCellValue !== 'function') return '';
+  const rowCount = table.rowCount || 0;
+  const colCount = table.colCount || 0;
+  const rows: string[] = [];
+  for (let r = 0; r < rowCount; r++) {
+    const rowCells: string[] = [];
+    for (let c = 0; c < colCount; c++) {
+      const val = table.getCellValue(c, r);
+      rowCells.push(escapeCsvCell(val));
+    }
+    rows.push(rowCells.join(','));
+  }
+  return '\uFEFF' + rows.join('\r\n');
+}
+
+/**
+ * 导出 VTable 表格实例 (如多维交叉透视表) 为完整二维矩阵 CSV 文件
+ */
+export function exportTableInstanceToCsv(table: any, filename: string = 'export_pivot'): void {
+  const content = generateTableInstanceCsv(table);
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+  const finalName = filename.endsWith('.csv') ? filename : `${filename}.csv`;
+  triggerDownload(blob, finalName);
+}
+
+/**
+ * 从 VTable 表格实例直接提取可视化的二维矩阵并复制为 TSV 文本至剪贴板
+ */
+export async function copyTableInstanceAsTsv(table: any): Promise<boolean> {
+  if (!table || typeof table.getCellValue !== 'function') return false;
+  const rowCount = table.rowCount || 0;
+  const colCount = table.colCount || 0;
+  const lines: string[] = [];
+  for (let r = 0; r < rowCount; r++) {
+    const rowCells: string[] = [];
+    for (let c = 0; c < colCount; c++) {
+      const val = table.getCellValue(c, r);
+      const text =
+        val === null || val === undefined
+          ? ''
+          : String(val).replace(/\t/g, ' ').replace(/[\r\n]+/g, ' ');
+      rowCells.push(text);
+    }
+    lines.push(rowCells.join('\t'));
+  }
+  const tsv = lines.join('\r\n');
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    try {
+      await navigator.clipboard.writeText(tsv);
+      return true;
+    } catch {
+      // 降级兜底
+    }
+  }
+  try {
+    const textarea = document.createElement('textarea');
+    textarea.value = tsv;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(textarea);
+    return ok;
+  } catch {
+    return false;
+  }
+}
+

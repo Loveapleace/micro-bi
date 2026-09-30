@@ -40,7 +40,11 @@ export const LivePreviewTable: React.FC<LivePreviewTableProps> = ({
         meta && (
           <Space size={10}>
             {meta.form === 'detail' && <Tag color="green">{t('全量明细表')}</Tag>}
-            {meta.form === 'pivot' && <Tag color="blue">{t('分组透视表')}</Tag>}
+            {meta.form === 'pivot' && (
+              <Tag color={meta.isCrossTab ? 'purple' : 'blue'}>
+                {meta.isCrossTab ? t('双向交叉透视表') : t('分组透视表')}
+              </Tag>
+            )}
             {meta.form === 'summary' && <Tag color="purple">{t('全局汇总卡片')}</Tag>}
             <Text type="secondary" style={{ fontSize: 12 }}>
               {t('原数据: {input} 行 | 转换输出: {output} 行', {

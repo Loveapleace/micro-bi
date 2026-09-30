@@ -50,10 +50,17 @@ import {
   LockOutlined,
 } from '@ant-design/icons';
 import * as VTablePkg from '@visactor/vtable';
-import type { ListTableConstructorOptions, ColumnDefine, ListTable as ListTableType } from '@visactor/vtable';
+import type {
+  ListTableConstructorOptions,
+  ColumnDefine,
+  ListTable as ListTableType,
+  PivotTableConstructorOptions,
+  PivotTable as PivotTableType,
+} from '@visactor/vtable';
 const vtableMod: any = VTablePkg;
 const vtableActual = vtableMod.ListTable ? vtableMod : (vtableMod['def' + 'ault'] || vtableMod);
 const ListTable = vtableActual.ListTable;
+const PivotTable = vtableActual.PivotTable;
 const themes = vtableActual.themes;
 import type { TransformResult, DataRecord, OutputColumnMeta } from '../../../engine/types.js';
 import type { LinkageEvent, LinkageFilterSlice, TableFeatureConfig } from '../types.js';
@@ -61,7 +68,12 @@ import type { ResolvedThemeConfig } from '../theme.js';
 import { buildAntdTheme } from '../theme.js';
 import { getRowFieldValue, matchSliceValue } from '../DynamicDataLinkage.js';
 import { computeSummaryValues } from './summaryCalculator.js';
-import { copyToClipboardAsTsv, exportToCsv } from './tableExport.js';
+import {
+  copyToClipboardAsTsv,
+  exportToCsv,
+  exportTableInstanceToCsv,
+  copyTableInstanceAsTsv,
+} from './tableExport.js';
 import { applyVTableSummaryRowSortPatch } from './vtableSortPatch.js';
 import { useDynamicDataLocale, type TableLocale } from '../../../locale/index.js';
 import type { DynamicDataLocale, DeepPartial } from '../../../locale/types.js';
@@ -343,11 +355,20 @@ export const VTableView: React.FC<VTableViewProps> = ({
 
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const tableRef = useRef<ListTableType | null>(null);
+  const tableRef = useRef<any>(null);
   const resultRef = useRef(result);
   resultRef.current = result;
   const onRowSelectRef = useRef(onRowSelect);
   onRowSelectRef.current = onRowSelect;
+
+  // 判定是否为双向交叉多维透视表 (存在列维度，且非下钻明细穿透态)
+  const isCrossTab = useMemo(() => {
+    return Boolean(
+      result.meta?.isCrossTab ||
+      (result.meta?.dimensions?.columnCategories && result.meta.dimensions.columnCategories.length > 0) ||
+      result.meta?.dimensions?.columnTimeBucket?.field
+    );
+  }, [result.meta?.isCrossTab, result.meta?.dimensions]);
 
   // 合并有效的联动切片列表 (优先使用外部直传 activeSlices，兜底从 activeLinkage 提取)
   const effectiveSlices = useMemo(() => {
@@ -612,6 +633,113 @@ export const VTableView: React.FC<VTableViewProps> = ({
     drilldownState.active,
     t,
   ]);
+
+  // 5.1 构造透视表行维度 (Row Dimensions)
+  const pivotRowDimensions = useMemo(() => {
+    if (!isCrossTab) return [];
+    const dims: any[] = [];
+    const headers = (result.meta as any)?.rawHeaders || {};
+    if (result.meta?.dimensions?.timeBucket?.field) {
+      const f = result.meta.dimensions.timeBucket.field;
+      dims.push({
+        dimensionKey: f,
+        title: headers[f] || f,
+        width: 'auto',
+      });
+    }
+    if (result.meta?.dimensions?.categories) {
+      for (const cat of result.meta.dimensions.categories) {
+        dims.push({
+          dimensionKey: cat,
+          title: headers[cat] || cat,
+          width: 'auto',
+        });
+      }
+    }
+    return dims;
+  }, [isCrossTab, result.meta?.dimensions, result.meta]);
+
+  // 5.2 构造透视表列维度 (Column Dimensions)
+  const pivotColumnDimensions = useMemo(() => {
+    if (!isCrossTab) return [];
+    const dims: any[] = [];
+    const headers = (result.meta as any)?.rawHeaders || {};
+    if (result.meta?.dimensions?.columnTimeBucket?.field) {
+      const f = result.meta.dimensions.columnTimeBucket.field;
+      dims.push({
+        dimensionKey: f,
+        title: headers[f] || f,
+      });
+    }
+    if (result.meta?.dimensions?.columnCategories) {
+      for (const cat of result.meta.dimensions.columnCategories) {
+        dims.push({
+          dimensionKey: cat,
+          title: headers[cat] || cat,
+        });
+      }
+    }
+    return dims;
+  }, [isCrossTab, result.meta?.dimensions, result.meta]);
+
+  // 5.3 构造透视表度量指标与聚合规则
+  const { pivotIndicators, pivotAggregationRules } = useMemo(() => {
+    if (!isCrossTab) return { pivotIndicators: [], pivotAggregationRules: [] };
+
+    const rowDimKeys = new Set(pivotRowDimensions.map((d: any) => d.dimensionKey));
+    const colDimKeys = new Set(pivotColumnDimensions.map((d: any) => d.dimensionKey));
+
+    const metricCols = visibleColumnsMeta.filter(
+      (c) =>
+        !rowDimKeys.has(c.key) &&
+        !colDimKeys.has(c.key) &&
+        c.key !== '__action_drilldown' &&
+        (c.kind === 'aggregated' || c.kind === 'computed' || c.type === 'number')
+    );
+
+    const indicators: any[] = metricCols.map((col) => ({
+      indicatorKey: col.key,
+      title: col.title || col.key,
+      width: 'auto',
+      style: {
+        textAlign: 'right',
+      },
+      format: (val: any) => {
+        if (val === null || val === undefined || val === '') return '-';
+        if (typeof val === 'number') {
+          return Number.isInteger(val)
+            ? val.toLocaleString()
+            : val.toFixed(col.precision !== undefined ? col.precision : 2);
+        }
+        return String(val);
+      },
+    }));
+
+    const aggregationRules: any[] = metricCols.map((col) => {
+      let aggType = 'SUM';
+      if (col.agg) {
+        aggType = col.agg.toUpperCase();
+      }
+      return {
+        indicatorKey: col.key,
+        field: col.field || col.key,
+        aggregationType: aggType,
+      };
+    });
+
+    return { pivotIndicators: indicators, pivotAggregationRules: aggregationRules };
+  }, [isCrossTab, pivotRowDimensions, pivotColumnDimensions, visibleColumnsMeta]);
+
+  // 5.4 构造透视表事实记录 (保证每个记录拥有有效行维度)
+  const pivotRecords = useMemo(() => {
+    if (!isCrossTab) return [];
+    return filteredData.map((r) => {
+      if (pivotRowDimensions.length === 0) {
+        return { ...r, __summary_row_dim__: t('汇总') };
+      }
+      return r;
+    });
+  }, [isCrossTab, filteredData, pivotRowDimensions.length, t]);
 
   // 触发下钻处理
   const handleTriggerDrilldown = useCallback((originData: DataRecord) => {
@@ -885,7 +1013,7 @@ export const VTableView: React.FC<VTableViewProps> = ({
     return cols;
   }, [visibleColumnsMeta, isDark, features.drilldown, features.filterDropdown, features.mergeCells, drilldownState.active, result.meta?.form, result.meta, tableRecords, showDataBars, colMaxMap, columnFilters, effectiveSlices, autoMergeCells, t]);
 
-  // 7. 初始化 VTable Canvas 实例与事件监听
+  // 7. 初始化 VTable Canvas 实例与事件监听 (自适应 ListTable 明细表 / PivotTable 双向交叉透视表)
   useEffect(() => {
     const dom = containerRef.current;
     if (!dom) return;
@@ -909,6 +1037,103 @@ export const VTableView: React.FC<VTableViewProps> = ({
       },
     });
 
+    // 模式 A: 双向多维交叉透视表 (PivotTable)
+    if (isCrossTab) {
+      const showRowGrandTotals = showSummaryRow && (result.meta?.dimensions?.rowTotals?.showGrandTotals ?? true);
+      const showColGrandTotals = showSummaryRow && (result.meta?.dimensions?.columnTotals?.showGrandTotals ?? true);
+
+      const pivotOptions: any = {
+        container: dom,
+        records: pivotRecords as any[],
+        rows: pivotRowDimensions.length > 0 ? pivotRowDimensions : [{ dimensionKey: '__summary_row_dim__', title: t('汇总') }],
+        columns: pivotColumnDimensions,
+        indicators: pivotIndicators,
+        indicatorsAsCol: result.meta?.dimensions?.indicatorsAsCol !== false,
+        dataConfig: {
+          aggregationRules: pivotAggregationRules,
+          totals: {
+            row: {
+              showGrandTotals: showRowGrandTotals,
+              showSubTotals: result.meta?.dimensions?.rowTotals?.showSubTotals ?? false,
+              grandTotalLabel: result.meta?.dimensions?.rowTotals?.grandTotalLabel || t('总计'),
+              subTotalLabel: result.meta?.dimensions?.rowTotals?.subTotalLabel || t('小计'),
+            },
+            column: {
+              showGrandTotals: showColGrandTotals,
+              showSubTotals: result.meta?.dimensions?.columnTotals?.showSubTotals ?? false,
+              grandTotalLabel: result.meta?.dimensions?.columnTotals?.grandTotalLabel || t('总计'),
+              subTotalLabel: result.meta?.dimensions?.columnTotals?.subTotalLabel || t('小计'),
+            },
+          },
+        },
+        corner: {
+          titleOnDimension: 'row',
+        },
+        theme: extendedTheme as any,
+        select: {
+          highlightMode: 'cell',
+          disableSelect: false,
+        },
+        hover: {
+          highlightMode: 'cross',
+        },
+        keyboardOptions: {
+          copySelected: true,
+          pasteValueToCell: false,
+          selectAllOnCtrlA: true,
+        },
+        ...vtableOption,
+      };
+
+      const table = new PivotTable(pivotOptions);
+      tableRef.current = table;
+
+      // 监听单元格点击事件
+      table.on('click_cell', (args: any) => {
+        if (typeof table.isHeader === 'function' && table.isHeader(args.col, args.row)) return;
+
+        const originRecord = typeof table.getCellOriginRecord === 'function'
+          ? table.getCellOriginRecord(args.col, args.row)
+          : args.originData;
+        if (!originRecord) return;
+        if (originRecord.__isSummaryRow || args.originData?.__isSummaryRow) return;
+
+        // 触发下钻明细穿透
+        if (features.drilldown !== false && originRecord._rawRows && originRecord._rawRows.length > 0) {
+          handleTriggerDrilldown(originRecord);
+        }
+        onRowSelectRef.current?.(originRecord, args.row, undefined);
+      });
+
+      // 监听双击事件直接触发下钻
+      table.on('dblclick_cell', (args: any) => {
+        if (typeof table.isHeader === 'function' && table.isHeader(args.col, args.row)) return;
+        const originData = typeof table.getCellOriginRecord === 'function'
+          ? table.getCellOriginRecord(args.col, args.row)
+          : args.originData;
+        if (!originData || originData.__isSummaryRow) return;
+        handleTriggerDrilldown(originData);
+      });
+
+      // 容器 ResizeObserver 自适应
+      let rAfId: number;
+      const ro = new ResizeObserver(() => {
+        cancelAnimationFrame(rAfId);
+        rAfId = requestAnimationFrame(() => {
+          tableRef.current?.resize();
+        });
+      });
+      ro.observe(dom);
+
+      return () => {
+        cancelAnimationFrame(rAfId);
+        ro.disconnect();
+        table.release();
+        tableRef.current = null;
+      };
+    }
+
+    // 模式 B: 标准单维/明细表格 (ListTable)
     const options: ListTableConstructorOptions = {
       container: dom,
       records: tableRecords as any[],
@@ -1042,7 +1267,14 @@ export const VTableView: React.FC<VTableViewProps> = ({
     };
   }, [
     isDark,
+    isCrossTab,
+    pivotRecords,
+    pivotRowDimensions,
+    pivotColumnDimensions,
+    pivotIndicators,
+    pivotAggregationRules,
     hasSummaryRow,
+    showSummaryRow,
     frozenColumnKeys.join(','),
     rightFrozenColumnKeys.join(','),
     autoMergeCells,
@@ -1053,6 +1285,14 @@ export const VTableView: React.FC<VTableViewProps> = ({
   useEffect(() => {
     const table = tableRef.current;
     if (!table) return;
+
+    if (isCrossTab) {
+      if (typeof table.setRecords === 'function') {
+        table.setRecords(pivotRecords as any[]);
+        table.resize();
+      }
+      return;
+    }
 
     const targetRightFrozen =
       rightFrozenColumnKeys.length + (tableColumns.some((c) => c.field === '__action_drilldown') ? 1 : 0);
@@ -1067,7 +1307,7 @@ export const VTableView: React.FC<VTableViewProps> = ({
     table.setRecords(tableRecords as any[]);
     table.updateColumns(tableColumns);
     table.resize();
-  }, [tableRecords, tableColumns, rightFrozenColumnKeys.length]);
+  }, [isCrossTab, pivotRecords, tableRecords, tableColumns, rightFrozenColumnKeys.length]);
 
   // 9. 联动响应：通过 selectRows 行聚焦，与看板其他卡片同步高亮
   useEffect(() => {
@@ -1216,8 +1456,14 @@ export const VTableView: React.FC<VTableViewProps> = ({
     }
   }, [effectiveSlices, activeLinkage, filteredData, dimensionField, drilldownState.active, tableColumns, visibleColumnsMeta, result.meta]);
 
-  // 10. 导出 CSV 逻辑
+  // 10. 导出 CSV 逻辑 (自适应 2D 多维交叉透视矩阵或明细平面表)
   const handleExportCSV = useCallback(() => {
+    if (isCrossTab && !drilldownState.active && tableRef.current) {
+      exportTableInstanceToCsv(tableRef.current, `pivot_table_${Date.now()}.csv`);
+      message.success(t('已导出 CSV 表格文件'));
+      return;
+    }
+
     const dataToExport = filteredData || [];
     if (dataToExport.length === 0) {
       message.warning(t('当前无数据可导出'));
@@ -1228,10 +1474,20 @@ export const VTableView: React.FC<VTableViewProps> = ({
     const prefix = drilldownState.active ? `drilldown_${drilldownState.label}_` : 'dynamic_report_';
     exportToCsv(dataToExport, exportCols, `${prefix}${Date.now()}.csv`);
     message.success(t('已导出 CSV 表格文件'));
-  }, [filteredData, visibleColumnsMeta, drilldownState.active, drilldownState.label, t]);
+  }, [isCrossTab, filteredData, visibleColumnsMeta, drilldownState.active, drilldownState.label, t]);
 
-  // 11. 复制 TSV 格式数据到剪贴板 (Excel 互通)
+  // 11. 复制 TSV 格式数据到剪贴板 (Excel 互通，自适应 2D 交叉透视矩阵或明细)
   const handleCopyTSV = useCallback(async () => {
+    if (isCrossTab && !drilldownState.active && tableRef.current) {
+      const ok = await copyTableInstanceAsTsv(tableRef.current);
+      if (ok) {
+        message.success(t('已复制表格数据到剪贴板 (TSV 格式，在 Excel 中直接 Ctrl+V 粘贴)'));
+      } else {
+        message.error(t('复制到剪贴板失败，请检查浏览器权限'));
+      }
+      return;
+    }
+
     const dataToExport = filteredData || [];
     if (dataToExport.length === 0) {
       message.warning(t('当前无数据可复制'));
@@ -1246,7 +1502,7 @@ export const VTableView: React.FC<VTableViewProps> = ({
     } else {
       message.error(t('复制到剪贴板失败，请检查浏览器权限'));
     }
-  }, [filteredData, visibleColumnsMeta, t]);
+  }, [isCrossTab, filteredData, visibleColumnsMeta, drilldownState.active, t]);
 
   // 统计已生效的列筛选数量
   const activeFilterCount = useMemo(() => {
@@ -1727,8 +1983,8 @@ export const VTableView: React.FC<VTableViewProps> = ({
           }}
         >
           <Space size={8} align="center">
-            <Tag color="cyan" icon={<ThunderboltOutlined />} style={{ margin: 0, fontSize: 11 }}>
-              VTable Canvas
+            <Tag color={isCrossTab ? 'purple' : 'cyan'} icon={<ThunderboltOutlined />} style={{ margin: 0, fontSize: 11 }}>
+              {isCrossTab ? `VTable Pivot (${t('双向交叉透视')})` : 'VTable Canvas'}
             </Tag>
             <span style={{ fontSize: 12, color: theme.colorTextSecondary }}>
               {t('共 {count} 项', { count: filteredData.length.toLocaleString() })}

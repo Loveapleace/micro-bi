@@ -50,12 +50,34 @@ export interface TimeBucketConfig {
   readonly weekStartsOn?: 0 | 1 | undefined;
 }
 
-/** 维度切片配置 */
+/** 维度总计/小计展示配置 */
+export interface DimensionTotalsConfig {
+  /** 是否展示总计 (默认开启) */
+  readonly showGrandTotals?: boolean | undefined;
+  /** 是否展示层级小计 (多级维度时生效，默认关闭) */
+  readonly showSubTotals?: boolean | undefined;
+  /** 总计标签文本 (默认 "总计") */
+  readonly grandTotalLabel?: string | undefined;
+  /** 小计标签文本 (默认 "小计") */
+  readonly subTotalLabel?: string | undefined;
+}
+
+/** 维度切片配置（支持单向行分组及双向交叉多维透视） */
 export interface DimensionConfig {
-  /** 文本分组维度列表，如 ['category', 'region'] */
+  /** 行维度文本分组列表（向下展开），如 ['workshop', 'line'] */
   readonly categories?: readonly string[] | undefined;
-  /** 时间切片配置 */
+  /** 行维度时间切片配置（向下展开） */
   readonly timeBucket?: TimeBucketConfig | undefined;
+  /** 透视列维度文本分组列表（横向透视展开），如 ['status', 'quarter'] */
+  readonly columnCategories?: readonly string[] | undefined;
+  /** 透视列维度时间切片配置（横向透视展开） */
+  readonly columnTimeBucket?: TimeBucketConfig | undefined;
+  /** 指标排布方向：true 为指标平铺在列维度下方（横向展开，默认），false 为指标平铺在行维度下方（纵向展开） */
+  readonly indicatorsAsCol?: boolean | undefined;
+  /** 行总计/小计展示配置 */
+  readonly rowTotals?: DimensionTotalsConfig | undefined;
+  /** 列总计/小计展示配置 */
+  readonly columnTotals?: DimensionTotalsConfig | undefined;
 }
 
 /** 基础聚合函数 */
@@ -161,6 +183,8 @@ export interface TransformResult {
   /** 运行诊断元信息 */
   readonly meta: {
     readonly form?: 'detail' | 'pivot' | 'summary' | undefined;
+    /** 是否为双向交叉透视表（当存在列维度时为 true） */
+    readonly isCrossTab?: boolean | undefined;
     readonly inputRows: number;
     readonly outputRows: number;
     readonly executionTimeMs: number;

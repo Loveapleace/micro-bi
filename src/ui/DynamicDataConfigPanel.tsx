@@ -395,11 +395,15 @@ export const DynamicDataConfigPanel = React.forwardRef<
   const handleDimensionsChange = (dims: DynamicTransformConfig['dimensions']) => {
     const hadDimensions = Boolean(
       activeConfig.dimensions?.timeBucket?.field ||
-      (activeConfig.dimensions?.categories && activeConfig.dimensions.categories.length > 0)
+      (activeConfig.dimensions?.categories && activeConfig.dimensions.categories.length > 0) ||
+      (activeConfig.dimensions?.columnCategories && activeConfig.dimensions.columnCategories.length > 0) ||
+      activeConfig.dimensions?.columnTimeBucket?.field
     );
     const hasDimensions = Boolean(
       dims?.timeBucket?.field ||
-      (dims?.categories && dims.categories.length > 0)
+      (dims?.categories && dims.categories.length > 0) ||
+      (dims?.columnCategories && dims.columnCategories.length > 0) ||
+      dims?.columnTimeBucket?.field
     );
 
     // 智能模式自适应转换：
