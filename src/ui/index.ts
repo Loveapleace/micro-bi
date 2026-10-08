@@ -8,5 +8,7 @@ export * from './components/DimensionConfig.js';
 export * from './components/ColumnConfigList.js';
 export * from './components/FormulaEditorModal.js';
 export * from './components/LivePreviewTable.js';
+export * from './components/PivotSkeletonWireframe.js';
+export * from './components/SlotConfirmPopover.js';
 export * from './presentation/index.js';
 export * from '../locale/index.js';

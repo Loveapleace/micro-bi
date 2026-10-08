@@ -8,6 +8,8 @@ import {
   PieChartOutlined,
   TableOutlined,
   ThunderboltOutlined,
+  CalendarOutlined,
+  ProfileOutlined,
 } from '@ant-design/icons';
 import type { DataRecord } from '../types.js';
 import type { DynamicDataConfigPanelProps, DynamicDataConfigPanelRef } from './types.js';
@@ -24,12 +26,14 @@ import { profileDataset } from '../engine/profiler.js';
 import { transformData } from '../engine/pipeline.js';
 import { validateTransformConfig, type ConfigValidationResult } from '../engine/validator.js';
 import { convertColumnsToAggregated, convertColumnsToFixed, formatAggregatedLabel } from '../engine/modeAdapter.js';
+import { PIVOT_TEMPLATES } from '../engine/slotMatcher.js';
 import { FieldProfilerList } from './components/FieldProfilerList.js';
 import { DimensionConfigComponent } from './components/DimensionConfig.js';
 import { ColumnConfigList } from './components/ColumnConfigList.js';
 import { FormulaEditorModal } from './components/FormulaEditorModal.js';
 import { LivePreviewTable } from './components/LivePreviewTable.js';
 import { ImportConfigModal } from './components/ImportConfigModal.js';
+import { SlotConfirmPopover } from './components/SlotConfirmPopover.js';
 import { useDynamicDataLocale, DynamicDataLocaleContext } from '../locale/index.js';
 
 export const DynamicDataConfigPanel = React.forwardRef<
@@ -214,6 +218,12 @@ export const DynamicDataConfigPanel = React.forwardRef<
       columns: nextColumns,
     });
     message.success(t('已套用分析预设模板'));
+  };
+
+  // 一键应用语义槽位透视模板 (带置信度与槽位推断)
+  const handleApplySlotConfig = (newConfig: DynamicTransformConfig) => {
+    updateConfig(newConfig);
+    message.success(t('已套用透视分析预设模板'));
   };
 
   // 4. 实时试算与输出
@@ -445,6 +455,39 @@ export const DynamicDataConfigPanel = React.forwardRef<
                 <span style={{ fontSize: 13, fontWeight: 600, color: '#262626' }}>
                   {t('常用分析模板：')}
                 </span>
+                {/* 1. 双向交叉透视模板 (带语义槽位智能推断与确认气泡) */}
+                {PIVOT_TEMPLATES[0] && (
+                  <SlotConfirmPopover
+                    template={PIVOT_TEMPLATES[0]}
+                    fields={fields}
+                    onApplyConfig={handleApplySlotConfig}
+                  >
+                    <Button
+                      size="small"
+                      style={{ borderColor: '#d3adf7', color: '#722ed1', backgroundColor: '#f9f0ff' }}
+                      icon={<CalendarOutlined style={{ color: '#722ed1' }} />}
+                    >
+                      {t('月度趋势透视')}
+                    </Button>
+                  </SlotConfirmPopover>
+                )}
+                {PIVOT_TEMPLATES[1] && (
+                  <SlotConfirmPopover
+                    template={PIVOT_TEMPLATES[1]}
+                    fields={fields}
+                    onApplyConfig={handleApplySlotConfig}
+                  >
+                    <Button
+                      size="small"
+                      style={{ borderColor: '#d3adf7', color: '#722ed1', backgroundColor: '#f9f0ff' }}
+                      icon={<ProfileOutlined style={{ color: '#722ed1' }} />}
+                    >
+                      {t('多指标综合体检')}
+                    </Button>
+                  </SlotConfirmPopover>
+                )}
+
+                {/* 2. 基础单向分析模板 */}
                 <Button
                   size="small"
                   icon={<LineChartOutlined style={{ color: '#1677ff' }} />}
@@ -513,6 +556,7 @@ export const DynamicDataConfigPanel = React.forwardRef<
             <DimensionConfigComponent
               {...(activeConfig.dimensions !== undefined ? { dimensions: activeConfig.dimensions } : {})}
               availableFields={fields}
+              headers={effectiveHeaders}
               onChange={handleDimensionsChange}
             />
 

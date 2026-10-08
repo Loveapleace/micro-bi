@@ -305,4 +305,24 @@ export const en_US: DynamicDataLocale = {
   '2D 透视网格': '2D Pivot Grid',
   '1D 扁平明细': '1D Flat Details',
   '度量指标': 'Measure / Metric',
+
+  // 语义槽位模板与骨架图
+  '月度趋势透视': 'Monthly Trend Pivot',
+  '多指标综合体检': 'Multi-Metric Inspection',
+  '透视骨架示意': 'Pivot Layout Blueprint',
+  '双向 (列平铺)': 'Pivot (Cols)',
+  '双向 (行嵌套)': 'Pivot (Rows)',
+  '单向行列表': 'Flat Row Table',
+  '聚合度量指标列': 'Aggregated Measures',
+  '分析主体 (行维度)': 'Primary Entity (Rows)',
+  '时间周期 (列维度)': 'Time Period (Cols)',
+  '分析指标 (多选)': 'Measures / Metrics',
+  '建议分类字段': 'Categorical field recommended',
+  '横向矩阵展开': 'Horizontal matrix expansion',
+  '选择主体分类 (如车间)': 'Select entity category (e.g. workshop)',
+  '已选 {count} 项': 'Selected {count} items',
+  '确认应用': 'Apply Template',
+  '已套用透视分析预设模板': 'Applied pivot analysis template',
+  '置信度 {score}%': 'Confidence {score}%',
 };
+

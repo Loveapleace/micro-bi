@@ -9,6 +9,7 @@ import {
 } from '@ant-design/icons';
 import type { DimensionConfig, FieldMeta, TimeGranularity } from '../../engine/types.js';
 import { useDynamicDataLocale } from '../../locale/index.js';
+import { PivotSkeletonWireframe } from './PivotSkeletonWireframe.js';
 
 const { Text } = Typography;
 
@@ -16,6 +17,7 @@ export interface DimensionConfigProps {
   readonly dimensions?: DimensionConfig | undefined;
   readonly availableFields: readonly FieldMeta[];
   readonly disabled?: boolean | undefined;
+  readonly headers?: Record<string, string> | undefined;
   readonly onChange: (newDimensions: DimensionConfig) => void;
 }
 
@@ -23,6 +25,7 @@ export const DimensionConfigComponent: React.FC<DimensionConfigProps> = ({
   dimensions,
   availableFields,
   disabled = false,
+  headers,
   onChange,
 }) => {
   const { t } = useDynamicDataLocale();
@@ -175,8 +178,11 @@ export const DimensionConfigComponent: React.FC<DimensionConfigProps> = ({
       }
       style={{ marginBottom: 12 }}
     >
-      {/* 模块 1: 行维度 (纵向向下展开) */}
-      <div style={{ marginBottom: 12 }}>
+      <Row gutter={[16, 12]} align="top">
+        {/* 左侧：维度与透视配置表单 */}
+        <Col xs={24} xl={16}>
+          {/* 模块 1: 行维度 (纵向向下展开) */}
+          <div style={{ marginBottom: 12 }}>
         <div style={{ marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
           <Tag color="blue" style={{ margin: 0, fontSize: 11, fontWeight: 600 }}>
             {t('行维度 (纵向展开)')}
@@ -408,6 +414,16 @@ export const DimensionConfigComponent: React.FC<DimensionConfigProps> = ({
           </div>
         </>
       )}
+        </Col>
+
+        {/* 右侧：透视骨架示意线框图 */}
+        <Col xs={24} xl={8} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <PivotSkeletonWireframe
+            dimensions={dimensions}
+            headers={headers}
+          />
+        </Col>
+      </Row>
     </Card>
   );
 };

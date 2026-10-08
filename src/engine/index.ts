@@ -10,3 +10,4 @@ export * from './modeAdapter.js';
 export * from './formulaHelper.js';
 export * from './formula/index.js';
 export * from './validator.js';
+export * from './slotMatcher.js';
