@@ -10,6 +10,7 @@ import type {
 } from '../engine/types.js';
 import type { ConfigValidationResult } from '../engine/validator.js';
 import type { DynamicDataLocale, DeepPartial } from '../locale/types.js';
+import type { RegisteredDataset, DatasetDataLoader } from '../core/datasetRegistry.js';
 
 /**
  * 配置面板实例暴露的方法句柄 (Ref Handle)
@@ -39,14 +40,61 @@ export interface DynamicDataConfigPanelRef {
    * 重置配置到初始状态。
    */
   resetConfig: () => void;
+
+  /**
+   * 获取当前选中的数据集契约 ID（若使用了注册数据源或指定了 datasetId）。
+   */
+  getDatasetId: () => string | undefined;
+
+  /**
+   * 获取当前选中的完整注册数据集元信息与原始记录。
+   */
+  getDataset: () => RegisteredDataset | undefined;
+
+  /**
+   * 编程式切换选中的数据集。
+   */
+  setDatasetId: (id: string) => void;
+
+  /**
+   * 刷新当前选中的数据集数据（若数据源为异步获取方法函数）。
+   */
+  refreshDataset: () => Promise<void>;
+
+  /**
+   * 当前数据集是否处于加载状态。
+   */
+  isDatasetLoading: () => boolean;
 }
 
 /** 面板核心受控/非受控组件 Props */
 export interface DynamicDataConfigPanelProps {
-  /** 输入的原始数据集合 */
-  readonly data: readonly DataRecord[];
+  /**
+   * 输入的原始数据集合或数据获取方法（直接代码模式）。
+   * 支持传入 DataRecord[] 或 () => Promise<DataRecord[]> 异步获取函数。
+   * 当未提供 data 且配置了 datasetId 或注册了数据集时，自动从注册数据源获取。
+   */
+  readonly data?: readonly DataRecord[] | DatasetDataLoader | undefined;
   /** 表头与字段键名映射字典（如 { sales: '销售额', cost: '成本' }） */
   readonly headers?: HeaderMapping | undefined;
+  /**
+   * 当前激活展示的数据集契约 ID（注册制模式）。
+   * 若提供，将从注册表中自动选取对应数据集。
+   */
+  readonly datasetId?: string | undefined;
+  /**
+   * 显式传入的可选数据集列表（局部覆盖全局注册表）。
+   * 若缺省，自动从 globalDatasetRegistry 读取所有已注册数据集。
+   */
+  readonly datasets?: readonly RegisteredDataset[] | undefined;
+  /**
+   * 当用户在面板中切换数据集时的回调函数。
+   */
+  readonly onDatasetChange?: ((datasetId: string, dataset: RegisteredDataset) => void) | undefined;
+  /**
+   * 是否展示顶部数据源选择器切换栏，默认 true (当候选数据源 > 1 时生效)
+   */
+  readonly showDatasetSelector?: boolean | undefined;
   /** 当前受控的配置项 */
   readonly value?: DynamicTransformConfig | undefined;
   /** 初始非受控默认配置 */

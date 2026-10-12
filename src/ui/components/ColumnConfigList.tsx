@@ -39,6 +39,7 @@ export interface ColumnConfigListProps {
   readonly availableFields: readonly FieldMeta[];
   readonly onChange: (newCols: ColumnConfig[]) => void;
   readonly onOpenFormulaModal: (col?: ComputedColumnConfig | undefined) => void;
+  readonly hasDimensions?: boolean | undefined;
 }
 
 export const ColumnConfigList: React.FC<ColumnConfigListProps> = ({
@@ -46,6 +47,7 @@ export const ColumnConfigList: React.FC<ColumnConfigListProps> = ({
   availableFields,
   onChange,
   onOpenFormulaModal,
+  hasDimensions = false,
 }) => {
   const { t } = useDynamicDataLocale();
 
@@ -180,49 +182,82 @@ export const ColumnConfigList: React.FC<ColumnConfigListProps> = ({
     <Card
       size="small"
       title={
-        <Space size={6}>
-          <CalculatorOutlined />
-          <span>
-            {t('输出分析列配置')} ({columns.length})
-          </span>
+        <Space size={8}>
+          <CalculatorOutlined style={{ color: '#1677ff', fontSize: 15 }} />
+          <span style={{ fontWeight: 600 }}>{t('输出分析列配置')}</span>
+          <Tag color="blue" style={{ borderRadius: 10, fontSize: 11, margin: 0, padding: '0 8px' }}>
+            {columns.length} 列
+          </Tag>
         </Space>
       }
       extra={
-        <Space size={8}>
-          <Dropdown
-            menu={{
-              items: availableFields.map((f) => ({
-                key: f.key,
-                label: f.label !== f.key ? `${f.label} (${f.key})` : f.key,
-                onClick: () => handleAddFixed(f.key),
-              })),
-            }}
-          >
-            <Button size="small" icon={<PlusOutlined />}>
-              {t('添加固定列')}
-            </Button>
-          </Dropdown>
-
-          <Dropdown
-            menu={{
-              items: availableFields
-                .filter((f) => f.type === 'number')
-                .map((f) => ({
+        <Space size={8} wrap>
+          {!hasDimensions ? (
+            <Dropdown
+              menu={{
+                items: availableFields.map((f) => ({
                   key: f.key,
                   label: f.label !== f.key ? `${f.label} (${f.key})` : f.key,
-                  onClick: () => handleAddAggregated(f.key, 'sum'),
+                  onClick: () => handleAddFixed(f.key),
                 })),
-            }}
-          >
-            <Button size="small" icon={<PlusOutlined />}>
-              {t('添加聚合指标')}
-            </Button>
-          </Dropdown>
+              }}
+            >
+              <Button size="small" icon={<PlusOutlined />}>
+                {t('添加固定列')}
+              </Button>
+            </Dropdown>
+          ) : (
+            <Tooltip title={t('已开启维度透视，输出列仅支持聚合指标与计算列；如需按文本维度分组，请在上方“维度分组与交叉透视”中添加')}>
+              <Button size="small" icon={<PlusOutlined />} disabled style={{ opacity: 0.6 }}>
+                {t('添加固定列')}
+              </Button>
+            </Tooltip>
+          )}
+
+          {hasDimensions ? (
+            <Dropdown
+              menu={{
+                items: availableFields.map((f) => {
+                  const isNumber = f.type === 'number';
+                  const isRatio =
+                    f.key.includes('ratio') ||
+                    f.key.includes('rate') ||
+                    f.label.includes('%') ||
+                    f.label.includes('率');
+                  const agg: AggregationFunction = isNumber ? (isRatio ? 'avg' : 'sum') : 'count';
+                  return {
+                    key: f.key,
+                    label: f.label !== f.key ? `${f.label} (${f.key})` : f.key,
+                    onClick: () => handleAddAggregated(f.key, agg),
+                  };
+                }),
+              }}
+            >
+              <Button
+                size="small"
+                icon={<PlusOutlined />}
+                style={{ borderColor: '#87e8de', color: '#08979c', backgroundColor: '#f6ffed' }}
+              >
+                {t('添加聚合指标')}
+              </Button>
+            </Dropdown>
+          ) : (
+            <Tooltip title={t('明细表模式直接展示各行原始记录，如需聚合统计，请在上方“维度分组与交叉透视”中添加维度')}>
+              <Button
+                size="small"
+                icon={<PlusOutlined />}
+                disabled
+                style={{ opacity: 0.6 }}
+              >
+                {t('添加聚合指标')}
+              </Button>
+            </Tooltip>
+          )}
 
           <Button
             size="small"
-            type="primary"
             icon={<PlusOutlined />}
+            style={{ borderColor: '#d3adf7', color: '#722ed1', backgroundColor: '#f9f0ff' }}
             onClick={() => onOpenFormulaModal()}
           >
             {t('添加动态计算列')}
@@ -243,12 +278,12 @@ export const ColumnConfigList: React.FC<ColumnConfigListProps> = ({
           </Button>
         </Space>
       }
-      style={{ marginBottom: 12 }}
+      style={{ marginBottom: 10, borderRadius: 8, boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)' }}
       bodyStyle={{ padding: 0 }}
     >
       <div style={{ overflowX: 'auto', width: '100%' }}>
         {columns.length === 0 ? (
-          <div style={{ padding: '36px 0', textAlign: 'center', color: '#8c8c8c', fontSize: 13 }}>
+          <div style={{ padding: '36px 0', textAlign: 'center', color: '#94a3b8', fontSize: 13 }}>
             {t('暂未配置输出列，请从上方或左侧添加字段')}
           </div>
         ) : (
@@ -261,14 +296,14 @@ export const ColumnConfigList: React.FC<ColumnConfigListProps> = ({
             }}
           >
             <thead>
-              <tr style={{ borderBottom: '1px solid #f0f0f0', backgroundColor: '#fafafa' }}>
-                <th style={{ width: 36, textAlign: 'center', padding: '8px 4px' }}></th>
-                <th style={{ width: 95, padding: '8px 12px', fontWeight: 600 }}>{t('列类型')}</th>
-                <th style={{ padding: '8px 12px', fontWeight: 600 }}>{t('字段 / 表达式')}</th>
-                <th style={{ width: 180, padding: '8px 12px', fontWeight: 600 }}>
+              <tr style={{ borderBottom: '1px solid #e2e8f0', backgroundColor: '#f8fafc', color: '#475569' }}>
+                <th style={{ width: 36, textAlign: 'center', padding: '9px 4px' }}></th>
+                <th style={{ width: 95, padding: '9px 12px', fontWeight: 600 }}>{t('列类型')}</th>
+                <th style={{ padding: '9px 12px', fontWeight: 600 }}>{t('字段 / 表达式')}</th>
+                <th style={{ width: 180, padding: '9px 12px', fontWeight: 600 }}>
                   {t('表头显示名称')}
                 </th>
-                <th style={{ width: 110, textAlign: 'center', padding: '8px 12px', fontWeight: 600 }}>
+                <th style={{ width: 110, textAlign: 'center', padding: '9px 12px', fontWeight: 600 }}>
                   {t('操作')}
                 </th>
               </tr>

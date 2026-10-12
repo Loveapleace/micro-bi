@@ -15,8 +15,10 @@ import { useDynamicDataLocale } from '../../../locale/index.js';
 export interface ViewTypeSwitcherProps {
   value: DynamicDataViewType;
   onChange: (type: DynamicDataViewType) => void;
-  size?: 'small' | 'middle';
-  availableTypes?: readonly DynamicDataViewType[];
+  size?: 'small' | 'middle' | undefined;
+  availableTypes?: readonly DynamicDataViewType[] | undefined;
+  disabledTypes?: readonly DynamicDataViewType[] | undefined;
+  disabledTooltip?: string | undefined;
 }
 
 export const ViewTypeSwitcher: React.FC<ViewTypeSwitcherProps> = ({
@@ -24,8 +26,26 @@ export const ViewTypeSwitcher: React.FC<ViewTypeSwitcherProps> = ({
   onChange,
   size = 'small',
   availableTypes = ['table', 'bar', 'line', 'pie'],
+  disabledTypes = [],
+  disabledTooltip,
 }) => {
   const t = useDynamicDataLocale();
+
+  const renderItem = (type: DynamicDataViewType, icon: React.ReactNode, title: string) => {
+    if (!availableTypes.includes(type)) return null;
+    const isDisabled = disabledTypes.includes(type);
+    const tooltipText = isDisabled
+      ? (disabledTooltip || t('双向交叉透视仅支持表格视图，图表适用于单向分组模式'))
+      : title;
+
+    return (
+      <Tooltip key={type} title={tooltipText}>
+        <Radio.Button value={type} disabled={isDisabled}>
+          {icon}
+        </Radio.Button>
+      </Tooltip>
+    );
+  };
 
   return (
     <Radio.Group
@@ -34,34 +54,10 @@ export const ViewTypeSwitcher: React.FC<ViewTypeSwitcherProps> = ({
       onChange={(e) => onChange(e.target.value)}
       buttonStyle="solid"
     >
-      {availableTypes.includes('table') && (
-        <Tooltip title={t('表格')}>
-          <Radio.Button value="table">
-            <TableOutlined />
-          </Radio.Button>
-        </Tooltip>
-      )}
-      {availableTypes.includes('bar') && (
-        <Tooltip title={t('柱状图')}>
-          <Radio.Button value="bar">
-            <BarChartOutlined />
-          </Radio.Button>
-        </Tooltip>
-      )}
-      {availableTypes.includes('line') && (
-        <Tooltip title={t('折线图')}>
-          <Radio.Button value="line">
-            <LineChartOutlined />
-          </Radio.Button>
-        </Tooltip>
-      )}
-      {availableTypes.includes('pie') && (
-        <Tooltip title={t('饼图')}>
-          <Radio.Button value="pie">
-            <PieChartOutlined />
-          </Radio.Button>
-        </Tooltip>
-      )}
+      {renderItem('table', <TableOutlined />, t('表格'))}
+      {renderItem('bar', <BarChartOutlined />, t('柱状图'))}
+      {renderItem('line', <LineChartOutlined />, t('折线图'))}
+      {renderItem('pie', <PieChartOutlined />, t('饼图'))}
     </Radio.Group>
   );
 };

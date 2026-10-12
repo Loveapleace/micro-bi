@@ -213,6 +213,36 @@ export class LinkageBus {
   }
 
   /**
+   * 批量原子设置多维复合切片（例如交叉透视表的行维度+列维度）
+   * 若所有传入的切片均已按相同值激活，则全部清除（实现整体 Toggle Off）；
+   * 否则原子更新所有传入切片并单次广播。
+   */
+  public setCompositeSlices(datasetId: string, slices: LinkageFilterSlice[]): void {
+    if (!datasetId || slices.length === 0) return;
+    if (!this.activeSlices.has(datasetId)) {
+      this.activeSlices.set(datasetId, new Map());
+    }
+    const map = this.activeSlices.get(datasetId)!;
+
+    const isAllActive = slices.every((s) => {
+      const existing = map.get(s.field);
+      return existing && (String(existing.value) === String(s.value) || matchSliceValue(existing.value, s.value));
+    });
+
+    if (isAllActive) {
+      for (const s of slices) {
+        map.delete(s.field);
+      }
+    } else {
+      for (const s of slices) {
+        map.set(s.field, s);
+      }
+    }
+
+    this.broadcast(datasetId, slices[0]?.sourceViewId || '');
+  }
+
+  /**
    * 移除指定维度的切片过滤条件
    */
   public removeSlice(datasetId: string, field: string): void {
@@ -517,6 +547,22 @@ export function useDynamicDataLinkage(
     [effectiveDatasetId, viewId, enabled, toggleSlice, clearSlices]
   );
 
+  // 批量原子触发多维复合切片
+  const setCompositeSlices = useCallback(
+    (slices: Array<Omit<LinkageFilterSlice, 'datasetId' | 'sourceViewId'>>) => {
+      if (!enabled || !effectiveDatasetId) return;
+      globalLinkageBus.setCompositeSlices(
+        effectiveDatasetId,
+        slices.map((s) => ({
+          ...s,
+          datasetId: effectiveDatasetId,
+          sourceViewId: viewId,
+        }))
+      );
+    },
+    [effectiveDatasetId, viewId, enabled]
+  );
+
   const activeSlices = activeEvent?.activeSlices || [];
 
   return {
@@ -524,6 +570,7 @@ export function useDynamicDataLinkage(
     activeEvent,
     activeSlices,
     toggleSlice,
+    setCompositeSlices,
     removeSlice,
     clearSlices,
     emitLinkage,

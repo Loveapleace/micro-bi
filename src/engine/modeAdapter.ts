@@ -90,11 +90,19 @@ export function wrapAggregateFormulas(
 export function convertColumnsToAggregated(
   columns: readonly ColumnConfig[],
   fields?: readonly FieldMeta[] | undefined,
-  options?: {
-    readonly headers?: HeaderMapping | undefined;
-    readonly excludeFields?: readonly string[] | undefined;
-  } | undefined
+  optionsOrHeaders?:
+    | {
+        readonly headers?: HeaderMapping | undefined;
+        readonly excludeFields?: readonly string[] | undefined;
+      }
+    | HeaderMapping
+    | undefined
 ): ColumnConfig[] {
+  const options =
+    optionsOrHeaders && ('headers' in optionsOrHeaders || 'excludeFields' in optionsOrHeaders)
+      ? (optionsOrHeaders as { readonly headers?: HeaderMapping | undefined; readonly excludeFields?: readonly string[] | undefined })
+      : { headers: optionsOrHeaders as HeaderMapping | undefined };
+
   const numericFields = new Set<string>();
   const fieldTypeMap = new Map<string, FieldDataType>();
   const fieldLabelMap = new Map<string, string>();
@@ -110,25 +118,31 @@ export function convertColumnsToAggregated(
   }
 
   const excludeSet = new Set(options?.excludeFields ?? []);
+  const res: ColumnConfig[] = [];
 
-  return columns.map((col) => {
+  for (const col of columns) {
     if (col.type === 'computed') {
       const wrappedExpr = wrapAggregateFormulas(col.expression, numericFields);
-      return {
+      res.push({
         ...col,
         expression: wrappedExpr,
-      };
+      });
+      continue;
     }
 
     if (col.type === 'fixed') {
-      // 若该字段已被显式声明为维度（如时间分桶或分组文本），保留 fixed 避免被重复统计
+      // 若该字段已被显式声明为维度（如时间分桶或分组文本），从度量列中移除，避免与维度重复
       if (excludeSet.has(col.field)) {
-        return col;
+        continue;
       }
 
       const fType = fieldTypeMap.get(col.field);
       const isNumber = fType === 'number';
-      const agg: AggregationFunction = isNumber ? 'sum' : 'count';
+      const isRatio =
+        col.field.includes('rate') ||
+        col.field.includes('ratio') ||
+        (col.label && (col.label.includes('%') || col.label.includes('率')));
+      const agg: AggregationFunction = isNumber ? (isRatio ? 'avg' : 'sum') : 'count';
 
       const baseLabel =
         col.label ||
@@ -144,25 +158,38 @@ export function convertColumnsToAggregated(
         agg,
         label: newLabel,
       };
-      return aggCol;
+      res.push(aggCol);
+      continue;
     }
 
-    return col;
-  });
+    res.push(col);
+  }
+
+  return res;
 }
 
 /**
  * 将聚合度量列集合自动转换回固定原值列集合
  * - 聚合度量列：转换为 'fixed'，并自动还原表头标签（去除 '求和(...)' 等聚合前缀）
  * - 动态计算列：公式表达式自动解包（去除 [SUM(x)] 宏）
+ * - 可选 prependFormerDimensions: 将曾经作为维度的字段作为固定列置顶恢复
  */
 export function convertColumnsToFixed(
   columns: readonly ColumnConfig[],
   fields?: readonly FieldMeta[] | undefined,
-  options?: {
-    readonly headers?: HeaderMapping | undefined;
-  } | undefined
+  optionsOrHeaders?:
+    | {
+        readonly headers?: HeaderMapping | undefined;
+        readonly prependFormerDimensions?: readonly string[] | undefined;
+      }
+    | HeaderMapping
+    | undefined
 ): ColumnConfig[] {
+  const options =
+    optionsOrHeaders && ('headers' in optionsOrHeaders || 'prependFormerDimensions' in optionsOrHeaders)
+      ? (optionsOrHeaders as { readonly headers?: HeaderMapping | undefined; readonly prependFormerDimensions?: readonly string[] | undefined })
+      : { headers: optionsOrHeaders as HeaderMapping | undefined };
+
   const fieldLabelMap = new Map<string, string>();
   if (fields) {
     for (const f of fields) {
@@ -170,7 +197,7 @@ export function convertColumnsToFixed(
     }
   }
 
-  return columns.map((col) => {
+  const convertedCols: ColumnConfig[] = columns.map((col) => {
     if (col.type === 'computed') {
       const unwrappedExpr = unwrapAggregateFormulas(col.expression);
       return {
@@ -197,4 +224,25 @@ export function convertColumnsToFixed(
 
     return col;
   });
+
+  if (options?.prependFormerDimensions && options.prependFormerDimensions.length > 0) {
+    const existingFields = new Set(
+      convertedCols.filter((c): c is FixedColumnConfig => c.type === 'fixed').map((c) => c.field)
+    );
+    const prepended: FixedColumnConfig[] = [];
+    for (const f of options.prependFormerDimensions) {
+      if (!existingFields.has(f)) {
+        const label = options?.headers?.[f] || fieldLabelMap.get(f) || f;
+        prepended.push({
+          type: 'fixed',
+          field: f,
+          label,
+        });
+        existingFields.add(f);
+      }
+    }
+    return [...prepended, ...convertedCols];
+  }
+
+  return convertedCols;
 }

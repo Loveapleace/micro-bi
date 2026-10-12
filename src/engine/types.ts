@@ -145,6 +145,8 @@ export interface TransformOptions {
 
 /** 动态数据转换完整配置规范 (DSL Schema) */
 export interface DynamicTransformConfig {
+  /** 绑定的数据集契约 ID（可选，支持多数据源场景下的溯源与持久化） */
+  readonly datasetId?: string | undefined;
   /** 表头映射字典（可选，未传递时直接使用原始键名展示） */
   readonly headers?: HeaderMapping | undefined;
   /** 字段类型覆盖字典（键为字段名，值为指定的类型） */

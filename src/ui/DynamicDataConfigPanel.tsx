@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useImperativeHandle } from 'react';
-import { Row, Col, Space, Button, message, Tooltip } from 'antd';
+import { Row, Col, Space, Button, message, Tooltip, Tag, Divider, Select, Spin, Alert } from 'antd';
 import {
   CopyOutlined,
   ImportOutlined,
@@ -10,6 +10,11 @@ import {
   ThunderboltOutlined,
   CalendarOutlined,
   ProfileOutlined,
+  DatabaseOutlined,
+  CodeOutlined,
+  InfoCircleOutlined,
+  ReloadOutlined,
+  CloudDownloadOutlined,
 } from '@ant-design/icons';
 import type { DataRecord } from '../types.js';
 import type { DynamicDataConfigPanelProps, DynamicDataConfigPanelRef } from './types.js';
@@ -21,6 +26,7 @@ import type {
   ComputedColumnConfig,
   TransformResult,
   DimensionConfig,
+  AggregationFunction,
 } from '../engine/types.js';
 import { profileDataset } from '../engine/profiler.js';
 import { transformData } from '../engine/pipeline.js';
@@ -35,14 +41,24 @@ import { LivePreviewTable } from './components/LivePreviewTable.js';
 import { ImportConfigModal } from './components/ImportConfigModal.js';
 import { SlotConfirmPopover } from './components/SlotConfirmPopover.js';
 import { useDynamicDataLocale, DynamicDataLocaleContext } from '../locale/index.js';
+import {
+  useRegisteredDatasets,
+  resolveDatasetData,
+  type RegisteredDataset,
+  type DatasetDataLoader,
+} from '../core/datasetRegistry.js';
 
 export const DynamicDataConfigPanel = React.forwardRef<
   DynamicDataConfigPanelRef,
   DynamicDataConfigPanelProps
 >(function DynamicDataConfigPanel(
   {
-    data,
-    headers,
+    data: propData,
+    headers: propHeaders,
+    datasetId: propDatasetId,
+    datasets: propDatasets,
+    onDatasetChange,
+    showDatasetSelector = true,
     value,
     defaultValue,
     onChange,
@@ -58,23 +74,217 @@ export const DynamicDataConfigPanel = React.forwardRef<
 ) {
   const t = useDynamicDataLocale(propLocale);
 
-  // 1. 字段类型探测与用户覆盖
-  const effectiveHeaders = headers ?? value?.headers ?? defaultValue?.headers;
+  // 1. 多数据源与注册中心响应式接入 (支持直接代码传入 + 注册制多数据源自由切换)
+  const registeredDatasets = useRegisteredDatasets();
+  const candidateDatasets: readonly RegisteredDataset[] = useMemo(() => {
+    if (propDatasets && propDatasets.length > 0) {
+      return propDatasets;
+    }
+    return registeredDatasets;
+  }, [propDatasets, registeredDatasets]);
+
+  // 用户是否显式进行了手动数据源切换
+  const [userSelectedDatasetId, setUserSelectedDatasetId] = useState<string | undefined>(undefined);
+
+  const [internalDatasetId, setInternalDatasetId] = useState<string | undefined>(() => {
+    if (propDatasetId) return propDatasetId;
+    if (value?.datasetId) return value.datasetId;
+    if (defaultValue?.datasetId) return defaultValue.datasetId;
+    if (!propData && candidateDatasets.length > 0) return candidateDatasets[0]?.id;
+    return undefined;
+  });
+
+  useEffect(() => {
+    setUserSelectedDatasetId(undefined);
+    if (propDatasetId !== undefined) {
+      setInternalDatasetId(propDatasetId);
+    }
+  }, [propDatasetId]);
+
+  const effectiveDatasetId = userSelectedDatasetId ?? internalDatasetId ?? propDatasetId ?? value?.datasetId ?? defaultValue?.datasetId;
+
+  const selectedRegisteredDataset = useMemo(() => {
+    if (!effectiveDatasetId) {
+      return undefined;
+    }
+    return candidateDatasets.find((d) => d.id === effectiveDatasetId);
+  }, [effectiveDatasetId, candidateDatasets]);
+
+  // 异步数据集加载状态与缓存快照
+  const [resolvedAsyncData, setResolvedAsyncData] = useState<{
+    readonly datasetId: string;
+    readonly data: readonly DataRecord[];
+    readonly headers?: Record<string, string> | undefined;
+  } | null>(() => {
+    if (selectedRegisteredDataset && Array.isArray(selectedRegisteredDataset.data)) {
+      return {
+        datasetId: selectedRegisteredDataset.id,
+        data: selectedRegisteredDataset.data,
+        headers: selectedRegisteredDataset.headers as Record<string, string> | undefined,
+      };
+    }
+    if (Array.isArray(propData)) {
+      return {
+        datasetId: '__direct_data__',
+        data: propData,
+        headers: propHeaders,
+      };
+    }
+    return null;
+  });
+
+  const [isDatasetLoading, setIsDatasetLoading] = useState<boolean>(() => {
+    if (selectedRegisteredDataset && typeof selectedRegisteredDataset.data === 'function') {
+      return true;
+    }
+    if (typeof propData === 'function') {
+      return true;
+    }
+    return false;
+  });
+  const [datasetError, setDatasetError] = useState<Error | null>(null);
+
+  const loadActiveDataset = useCallback(
+    async (forceRefresh = false) => {
+      // 1. 优先使用选中的注册数据集 (Mode B)
+      if (selectedRegisteredDataset) {
+        const ds = selectedRegisteredDataset;
+        if (Array.isArray(ds.data)) {
+          setResolvedAsyncData({
+            datasetId: ds.id,
+            data: ds.data,
+            headers: ds.headers as Record<string, string> | undefined,
+          });
+          setIsDatasetLoading(false);
+          setDatasetError(null);
+          return;
+        }
+        if (typeof ds.data === 'function') {
+          setIsDatasetLoading(true);
+          setDatasetError(null);
+          try {
+            const res = await resolveDatasetData(ds, { forceRefresh });
+            setResolvedAsyncData({
+              datasetId: ds.id,
+              data: res.data,
+              headers: res.headers as Record<string, string> | undefined,
+            });
+            if (forceRefresh) {
+              message.success(t('数据源数据刷新成功'));
+            }
+          } catch (err) {
+            const errorObj = err instanceof Error ? err : new Error(String(err));
+            setDatasetError(errorObj);
+            message.error(t('数据源加载失败') + ': ' + errorObj.message);
+          } finally {
+            setIsDatasetLoading(false);
+          }
+          return;
+        }
+      }
+
+      // 2. 否则使用直接传入的 propData (Mode A)
+      if (propData) {
+        if (Array.isArray(propData)) {
+          setResolvedAsyncData({
+            datasetId: '__direct_data__',
+            data: propData,
+            headers: propHeaders,
+          });
+          setIsDatasetLoading(false);
+          setDatasetError(null);
+          return;
+        }
+        if (typeof propData === 'function') {
+          setIsDatasetLoading(true);
+          setDatasetError(null);
+          try {
+            const res = await (propData as DatasetDataLoader)();
+            let finalData: readonly DataRecord[] = [];
+            let finalHeaders: Record<string, string> | undefined = propHeaders;
+            if (Array.isArray(res)) {
+              finalData = res;
+            } else if (res && typeof res === 'object' && Array.isArray((res as any).data)) {
+              finalData = (res as any).data;
+              finalHeaders = (res as any).headers || propHeaders;
+            }
+            setResolvedAsyncData({
+              datasetId: '__direct_data__',
+              data: finalData,
+              headers: finalHeaders,
+            });
+            if (forceRefresh) {
+              message.success(t('数据源数据刷新成功'));
+            }
+          } catch (err) {
+            const errorObj = err instanceof Error ? err : new Error(String(err));
+            setDatasetError(errorObj);
+            message.error(t('数据源加载失败') + ': ' + errorObj.message);
+          } finally {
+            setIsDatasetLoading(false);
+          }
+          return;
+        }
+      }
+
+      setResolvedAsyncData(null);
+      setIsDatasetLoading(false);
+      setDatasetError(null);
+    },
+    [selectedRegisteredDataset, propData, propHeaders, t]
+  );
+
+  useEffect(() => {
+    loadActiveDataset(false);
+  }, [loadActiveDataset]);
+
+  // 数据集流转优先级：
+  // 1. 若异步加载已完成，优先使用解析后的真实事实数据
+  // 2. 若当前数据集为静态数组，使用静态数组
+  // 3. 兜底为空数组 []
+  const effectiveData: readonly DataRecord[] = useMemo(() => {
+    if (resolvedAsyncData) {
+      return resolvedAsyncData.data;
+    }
+    if (selectedRegisteredDataset && Array.isArray(selectedRegisteredDataset.data)) {
+      return selectedRegisteredDataset.data;
+    }
+    if (Array.isArray(propData)) {
+      return propData;
+    }
+    return [];
+  }, [resolvedAsyncData, selectedRegisteredDataset, propData]);
+
+  const effectiveHeaders: Record<string, string> | undefined = useMemo(() => {
+    if (resolvedAsyncData?.headers) {
+      return resolvedAsyncData.headers;
+    }
+    if (selectedRegisteredDataset?.headers) {
+      return selectedRegisteredDataset.headers as Record<string, string>;
+    }
+    if (propHeaders) return propHeaders;
+    if (value?.headers) return value.headers;
+    if (defaultValue?.headers) return defaultValue.headers;
+    return undefined;
+  }, [resolvedAsyncData, selectedRegisteredDataset, propHeaders, value?.headers, defaultValue?.headers]);
+
+  // 2. 字段类型探测与用户覆盖
   const [fieldOverrides, setFieldOverrides] = useState<Record<string, FieldDataType>>({});
 
   const fields: readonly FieldMeta[] = useMemo(() => {
-    return profileDataset(data, {
+    return profileDataset(effectiveData, {
       headers: effectiveHeaders,
       userOverrides: { ...value?.fields, ...fieldOverrides },
       sampleLimit,
     });
-  }, [data, effectiveHeaders, value?.fields, fieldOverrides, sampleLimit]);
+  }, [effectiveData, effectiveHeaders, value?.fields, fieldOverrides, sampleLimit]);
 
-  // 2. 核心受控与内部配置状态（统一为聚合透视与明细自适应模型）
+  // 3. 核心受控与内部配置状态（统一为聚合透视与明细自适应模型）
   const [internalConfig, setInternalConfig] = useState<DynamicTransformConfig>(() => {
     if (value) return value;
     if (defaultValue) return defaultValue;
     return {
+      ...(effectiveDatasetId ? { datasetId: effectiveDatasetId } : {}),
       columns: [],
       ...(effectiveHeaders ? { headers: effectiveHeaders } : {}),
     };
@@ -94,17 +304,23 @@ export const DynamicDataConfigPanel = React.forwardRef<
       }));
       updateConfig({
         ...activeConfig,
+        ...(effectiveDatasetId ? { datasetId: effectiveDatasetId } : {}),
         columns: initialCols,
       });
     }
-  }, [fields, activeConfig]);
+  }, [fields, activeConfig, effectiveDatasetId]);
 
   const updateConfig = (next: DynamicTransformConfig) => {
-    const nextWithHeaders = effectiveHeaders && !next.headers ? { ...next, headers: effectiveHeaders } : next;
+    const activeDatasetId = next.datasetId ?? effectiveDatasetId;
+    const nextWithMeta: DynamicTransformConfig = {
+      ...next,
+      ...(activeDatasetId ? { datasetId: activeDatasetId } : {}),
+      headers: effectiveHeaders && !next.headers ? effectiveHeaders : next.headers,
+    };
     if (!value) {
-      setInternalConfig(nextWithHeaders);
+      setInternalConfig(nextWithMeta);
     }
-    onChange?.(nextWithHeaders);
+    onChange?.(nextWithMeta);
   };
 
   // 3. 动态列公式弹窗状态与导入弹窗状态
@@ -233,19 +449,19 @@ export const DynamicDataConfigPanel = React.forwardRef<
         effectiveHeaders && !activeConfig.headers
           ? { ...activeConfig, headers: effectiveHeaders }
           : activeConfig;
-      return transformData(data, runConfig);
+      return transformData(effectiveData, runConfig);
     } catch {
       return {
         data: [],
         columns: [],
         meta: {
-          inputRows: data.length,
+          inputRows: effectiveData.length,
           outputRows: 0,
           executionTimeMs: 0,
         },
       };
     }
-  }, [data, activeConfig, effectiveHeaders]);
+  }, [effectiveData, activeConfig, effectiveHeaders]);
 
   const onTransformResultRef = React.useRef(onTransformResult);
   onTransformResultRef.current = onTransformResult;
@@ -254,12 +470,217 @@ export const DynamicDataConfigPanel = React.forwardRef<
     onTransformResultRef.current?.(transformResult);
   }, [transformResult]);
 
-  // 5. 暴露给外部宿主组件的 Ref 实例方法 (getConfig / validateAndGetConfig / getTransformResult / resetConfig)
+  // 切换数据源处理
+  const handleDatasetSelect = useCallback(
+    async (newId: string) => {
+      if (newId === '__direct_data__') {
+        setUserSelectedDatasetId(undefined);
+        setInternalDatasetId(undefined);
+        onDatasetChange?.(undefined as unknown as string, undefined as unknown as RegisteredDataset);
+        message.success(t('已切换至数据源: {name}', { name: t('代码直接传入数据源') }));
+        setFieldOverrides({});
+
+        let directRecords: readonly DataRecord[] = [];
+        let directHeaders = propHeaders;
+        if (Array.isArray(propData)) {
+          directRecords = propData;
+        } else if (typeof propData === 'function') {
+          setIsDatasetLoading(true);
+          setDatasetError(null);
+          try {
+            const res = await resolveDatasetData(propData);
+            directRecords = res.data;
+            if (res.headers) directHeaders = res.headers as Record<string, string>;
+            setResolvedAsyncData({
+              datasetId: '__direct_data__',
+              data: res.data,
+              headers: res.headers as Record<string, string> | undefined,
+            });
+          } catch (err) {
+            const errorObj = err instanceof Error ? err : new Error(String(err));
+            setDatasetError(errorObj);
+            message.error(`${t('数据源加载失败')}: ${errorObj.message}`);
+          } finally {
+            setIsDatasetLoading(false);
+          }
+        }
+
+        const newFields = profileDataset(directRecords, { headers: directHeaders, sampleLimit });
+        const newFieldKeys = new Set(newFields.map((f) => f.key));
+
+        let nextDims: DimensionConfig | undefined = undefined;
+        if (activeConfig.dimensions) {
+          const origDims = activeConfig.dimensions;
+          const timeBucket = origDims.timeBucket && newFieldKeys.has(origDims.timeBucket.field) ? origDims.timeBucket : undefined;
+          const categories = origDims.categories ? origDims.categories.filter((c) => newFieldKeys.has(c)) : undefined;
+          const finalCategories = categories && categories.length > 0 ? categories : undefined;
+          const columnTimeBucket = origDims.columnTimeBucket && newFieldKeys.has(origDims.columnTimeBucket.field) ? origDims.columnTimeBucket : undefined;
+          const columnCategories = origDims.columnCategories ? origDims.columnCategories.filter((c) => newFieldKeys.has(c)) : undefined;
+          const finalColumnCategories = columnCategories && columnCategories.length > 0 ? columnCategories : undefined;
+
+          if (timeBucket || finalCategories || columnTimeBucket || finalColumnCategories) {
+            nextDims = {
+              ...(timeBucket ? { timeBucket } : {}),
+              ...(finalCategories ? { categories: finalCategories } : {}),
+              ...(columnTimeBucket ? { columnTimeBucket } : {}),
+              ...(finalColumnCategories ? { columnCategories: finalColumnCategories } : {}),
+            };
+          }
+        }
+
+        let nextCols = activeConfig.columns.filter((c) => {
+          if (c.type === 'fixed' || c.type === 'aggregated') {
+            return newFieldKeys.has(c.field);
+          }
+          return true;
+        });
+
+        if (nextCols.length === 0 && newFields.length > 0) {
+          nextCols = newFields.slice(0, Math.min(5, newFields.length)).map((f) => ({
+            type: 'fixed' as const,
+            field: f.key,
+            label: f.label,
+          }));
+        }
+
+        updateConfig({
+          ...activeConfig,
+          datasetId: undefined,
+          dimensions: nextDims,
+          columns: nextCols,
+          headers: propHeaders,
+        });
+        return;
+      }
+
+      setUserSelectedDatasetId(newId);
+      setInternalDatasetId(newId);
+      const targetDs = candidateDatasets.find((d) => d.id === newId);
+      if (targetDs) {
+        onDatasetChange?.(newId, targetDs);
+        message.success(t('已切换至数据源: {name}', { name: targetDs.name }));
+      }
+      setFieldOverrides({});
+
+      // 切换数据源时进行配置自适应流转：
+      if (targetDs?.defaultConfig) {
+        updateConfig({
+          ...targetDs.defaultConfig,
+          datasetId: newId,
+          headers: targetDs.headers || targetDs.defaultConfig.headers,
+        });
+        return;
+      }
+
+      let targetData: readonly DataRecord[] = [];
+      let targetHeaders: Record<string, string> | undefined = targetDs?.headers as Record<string, string> | undefined;
+      if (targetDs) {
+        if (Array.isArray(targetDs.data)) {
+          targetData = targetDs.data;
+        } else if (typeof targetDs.data === 'function') {
+          setIsDatasetLoading(true);
+          setDatasetError(null);
+          try {
+            const res = await resolveDatasetData(targetDs);
+            targetData = res.data;
+            if (res.headers) targetHeaders = res.headers as Record<string, string>;
+            setResolvedAsyncData({
+              datasetId: newId,
+              data: res.data,
+              headers: res.headers as Record<string, string> | undefined,
+            });
+          } catch (err) {
+            const errorObj = err instanceof Error ? err : new Error(String(err));
+            setDatasetError(errorObj);
+            message.error(`${t('数据源加载失败')}: ${errorObj.message}`);
+          } finally {
+            setIsDatasetLoading(false);
+          }
+        }
+      }
+
+      const newFields = profileDataset(targetData, { headers: targetHeaders, sampleLimit });
+      const newFieldKeys = new Set(newFields.map((f) => f.key));
+
+      // 清理不属于新数据源的维度
+      let nextDims: DimensionConfig | undefined = undefined;
+      if (activeConfig.dimensions) {
+        const origDims = activeConfig.dimensions;
+        const timeBucket = origDims.timeBucket && newFieldKeys.has(origDims.timeBucket.field) ? origDims.timeBucket : undefined;
+        const categories = origDims.categories ? origDims.categories.filter((c) => newFieldKeys.has(c)) : undefined;
+        const finalCategories = categories && categories.length > 0 ? categories : undefined;
+        const columnTimeBucket = origDims.columnTimeBucket && newFieldKeys.has(origDims.columnTimeBucket.field) ? origDims.columnTimeBucket : undefined;
+        const columnCategories = origDims.columnCategories ? origDims.columnCategories.filter((c) => newFieldKeys.has(c)) : undefined;
+        const finalColumnCategories = columnCategories && columnCategories.length > 0 ? columnCategories : undefined;
+
+        if (timeBucket || finalCategories || columnTimeBucket || finalColumnCategories) {
+          nextDims = {
+            ...(timeBucket ? { timeBucket } : {}),
+            ...(finalCategories ? { categories: finalCategories } : {}),
+            ...(columnTimeBucket ? { columnTimeBucket } : {}),
+            ...(finalColumnCategories ? { columnCategories: finalColumnCategories } : {}),
+          };
+        }
+      }
+
+      // 过滤有效列
+      let nextCols = activeConfig.columns.filter((c) => {
+        if (c.type === 'fixed' || c.type === 'aggregated') {
+          return newFieldKeys.has(c.field);
+        }
+        return true;
+      });
+
+      // 若有效列为空，自动从新数据源提取前 5 个字段
+      if (nextCols.length === 0 && newFields.length > 0) {
+        const hasDimensions = Boolean(nextDims);
+        if (hasDimensions) {
+          const numFields = newFields.filter((f) => f.type === 'number');
+          if (numFields.length > 0) {
+            nextCols = numFields.slice(0, 4).map((f) => ({
+              type: 'aggregated',
+              field: f.key,
+              agg: 'sum',
+              label: f.label,
+            }));
+          } else {
+            nextCols = newFields.slice(0, 5).map((f) => ({
+              type: 'fixed',
+              field: f.key,
+              label: f.label,
+            }));
+          }
+        } else {
+          nextCols = newFields.slice(0, 5).map((f) => ({
+            type: 'fixed',
+            field: f.key,
+            label: f.label,
+          }));
+        }
+      }
+
+      updateConfig({
+        ...activeConfig,
+        datasetId: newId,
+        headers: targetHeaders || {},
+        dimensions: nextDims,
+        columns: nextCols,
+      });
+    },
+    [candidateDatasets, activeConfig, sampleLimit, onDatasetChange, t]
+  );
+
+  // 5. 暴露给外部宿主组件的 Ref 实例方法 (getConfig / validateAndGetConfig / getTransformResult / resetConfig / getDatasetId / getDataset / setDatasetId)
   const getEffectiveConfig = useCallback((): DynamicTransformConfig => {
-    return effectiveHeaders && !activeConfig.headers
-      ? { ...activeConfig, headers: effectiveHeaders }
-      : activeConfig;
-  }, [activeConfig, effectiveHeaders]);
+    const base =
+      effectiveHeaders && !activeConfig.headers
+        ? { ...activeConfig, headers: effectiveHeaders }
+        : activeConfig;
+    return {
+      ...base,
+      ...(effectiveDatasetId ? { datasetId: effectiveDatasetId } : {}),
+    };
+  }, [activeConfig, effectiveDatasetId, effectiveHeaders]);
 
   const handleValidateAndGetConfig = useCallback((): ConfigValidationResult => {
     const current = getEffectiveConfig();
@@ -289,8 +710,23 @@ export const DynamicDataConfigPanel = React.forwardRef<
       validateAndGetConfig: handleValidateAndGetConfig,
       getTransformResult: handleGetTransformResult,
       resetConfig: handleResetConfig,
+      getDatasetId: () => effectiveDatasetId,
+      getDataset: () => selectedRegisteredDataset,
+      setDatasetId: (id: string) => handleDatasetSelect(id),
+      refreshDataset: () => loadActiveDataset(true),
+      isDatasetLoading: () => isDatasetLoading,
     }),
-    [getEffectiveConfig, handleValidateAndGetConfig, handleGetTransformResult, handleResetConfig]
+    [
+      getEffectiveConfig,
+      handleValidateAndGetConfig,
+      handleGetTransformResult,
+      handleResetConfig,
+      effectiveDatasetId,
+      selectedRegisteredDataset,
+      handleDatasetSelect,
+      loadActiveDataset,
+      isDatasetLoading,
+    ]
   );
 
   // 处理字段类型手动覆盖
@@ -310,20 +746,42 @@ export const DynamicDataConfigPanel = React.forwardRef<
   const handleQuickAddColumn = (f: FieldMeta) => {
     const hasDimensions = Boolean(
       activeConfig.dimensions?.timeBucket?.field ||
-      (activeConfig.dimensions?.categories && activeConfig.dimensions.categories.length > 0)
+      (activeConfig.dimensions?.categories && activeConfig.dimensions.categories.length > 0) ||
+      activeConfig.dimensions?.columnTimeBucket?.field ||
+      (activeConfig.dimensions?.columnCategories && activeConfig.dimensions.columnCategories.length > 0)
     );
 
-    if (hasDimensions && f.type === 'number') {
-      const newAggCol: ColumnConfig = {
-        type: 'aggregated',
-        field: f.key,
-        agg: 'sum',
-        label: `${t('求和')}(${f.label || f.key})`,
-      };
-      updateConfig({
-        ...activeConfig,
-        columns: [...activeConfig.columns, newAggCol],
-      });
+    if (hasDimensions) {
+      if (f.type === 'number') {
+        const isRatio =
+          f.key.includes('ratio') ||
+          f.key.includes('rate') ||
+          f.label.includes('%') ||
+          f.label.includes('率');
+        const agg: AggregationFunction = isRatio ? 'avg' : 'sum';
+        const newAggCol: ColumnConfig = {
+          type: 'aggregated',
+          field: f.key,
+          agg,
+          label: formatAggregatedLabel(f.label || f.key, agg),
+        };
+        updateConfig({
+          ...activeConfig,
+          columns: [...activeConfig.columns, newAggCol],
+        });
+      } else {
+        // 策略 A: 透视模式下快捷添加文本列，自动升格为计数 (COUNT) 指标
+        const newAggCol: ColumnConfig = {
+          type: 'aggregated',
+          field: f.key,
+          agg: 'count',
+          label: formatAggregatedLabel(f.label || f.key, 'count'),
+        };
+        updateConfig({
+          ...activeConfig,
+          columns: [...activeConfig.columns, newAggCol],
+        });
+      }
     } else {
       const newFixedCol: ColumnConfig = {
         type: 'fixed',
@@ -360,12 +818,12 @@ export const DynamicDataConfigPanel = React.forwardRef<
 
   // 构建用于公式试算的 sampleRow，注入表头中文标签别名与宏度量键名
   const modalSampleRow: DataRecord | undefined = useMemo(() => {
-    if (!data || data.length === 0) return undefined;
-    const firstRow = data[0];
+    if (!effectiveData || effectiveData.length === 0) return undefined;
+    const firstRow = effectiveData[0];
     if (!firstRow) return undefined;
     const base: DataRecord = { ...firstRow };
     if (effectiveHeaders) {
-      for (const [k, lbl] of Object.entries(effectiveHeaders)) {
+      for (const [k, lbl] of Object.entries(effectiveHeaders) as Array<[string, string]>) {
         if (k in base && !(lbl in base)) {
           base[lbl] = base[k];
         }
@@ -399,29 +857,39 @@ export const DynamicDataConfigPanel = React.forwardRef<
       }
     }
     return base;
-  }, [data, effectiveHeaders, transformResult.data]);
+  }, [effectiveData, effectiveHeaders, transformResult.data]);
 
-  // 维度变更处理
+  // 维度变更处理与智能模式自适应流转 (Morphing State Machine)
   const handleDimensionsChange = (dims: DynamicTransformConfig['dimensions']) => {
-    const hadDimensions = Boolean(
-      activeConfig.dimensions?.timeBucket?.field ||
-      (activeConfig.dimensions?.categories && activeConfig.dimensions.categories.length > 0) ||
-      (activeConfig.dimensions?.columnCategories && activeConfig.dimensions.columnCategories.length > 0) ||
-      activeConfig.dimensions?.columnTimeBucket?.field
-    );
-    const hasDimensions = Boolean(
-      dims?.timeBucket?.field ||
-      (dims?.categories && dims.categories.length > 0) ||
-      (dims?.columnCategories && dims.columnCategories.length > 0) ||
-      dims?.columnTimeBucket?.field
-    );
+    const formerDims = [
+      activeConfig.dimensions?.timeBucket?.field,
+      ...(activeConfig.dimensions?.categories || []),
+      activeConfig.dimensions?.columnTimeBucket?.field,
+      ...(activeConfig.dimensions?.columnCategories || []),
+    ].filter(Boolean) as string[];
+
+    const currentDims = [
+      dims?.timeBucket?.field,
+      ...(dims?.categories || []),
+      dims?.columnTimeBucket?.field,
+      ...(dims?.columnCategories || []),
+    ].filter(Boolean) as string[];
+
+    const hadDimensions = formerDims.length > 0;
+    const hasDimensions = currentDims.length > 0;
 
     // 智能模式自适应转换：
     let nextColumns = activeConfig.columns;
     if (!hadDimensions && hasDimensions) {
-      nextColumns = convertColumnsToAggregated(activeConfig.columns, fields, effectiveHeaders);
+      nextColumns = convertColumnsToAggregated(activeConfig.columns, fields, {
+        headers: effectiveHeaders,
+        excludeFields: currentDims,
+      });
     } else if (hadDimensions && !hasDimensions) {
-      nextColumns = convertColumnsToFixed(activeConfig.columns, fields);
+      nextColumns = convertColumnsToFixed(activeConfig.columns, fields, {
+        headers: effectiveHeaders,
+        prependFormerDimensions: formerDims,
+      });
     }
 
     updateConfig({
@@ -434,147 +902,383 @@ export const DynamicDataConfigPanel = React.forwardRef<
   return (
     <DynamicDataLocaleContext.Provider value={t.locale}>
       <div className={className} style={{ position: 'relative', ...style }}>
-        {/* 顶部工具栏：常用分析模板与可选的高级工具 */}
-        {(showQuickPresets || showDslTools) && (
+        {/* 数据源选择与模式栏 (支持直接代码传入 + 注册制多数据源动态切换) */}
+        {showDatasetSelector !== false && (
           <div
             style={{
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
               flexWrap: 'wrap',
-              gap: 8,
+              gap: 12,
               marginBottom: 12,
-              padding: '8px 12px',
-              backgroundColor: '#fafafa',
-              borderRadius: 6,
-              border: '1px solid #f0f0f0',
+              padding: '10px 14px',
+              backgroundColor: '#f1f5f9',
+              borderRadius: 8,
+              border: '1px solid #cbd5e1',
             }}
           >
-            {showQuickPresets && (
-              <Space size={6} wrap align="center">
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#262626' }}>
-                  {t('常用分析模板：')}
+            <Space size={10} align="center" wrap>
+              <Space size={6} align="center">
+                <DatabaseOutlined style={{ color: '#1677ff', fontSize: 16 }} />
+                <span style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>
+                  {t('数据源')}:
                 </span>
-                {/* 1. 双向交叉透视模板 (带语义槽位智能推断与确认气泡) */}
-                {PIVOT_TEMPLATES[0] && (
-                  <SlotConfirmPopover
-                    template={PIVOT_TEMPLATES[0]}
-                    fields={fields}
-                    onApplyConfig={handleApplySlotConfig}
+              </Space>
+
+              {candidateDatasets.length > 0 ? (
+                <Space size={8} align="center" wrap>
+                  <Select
+                    value={effectiveDatasetId ?? (propData ? '__direct_data__' : null)}
+                    onChange={handleDatasetSelect}
+                    style={{ minWidth: 280 }}
+                    placeholder={t('请选择分析数据源')}
+                    optionLabelProp="label"
                   >
+                    {propData && (
+                      <Select.Option key="__direct_data__" value="__direct_data__" label={t('代码直接传入数据源')}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                          <Space size={6}>
+                            <CodeOutlined style={{ color: '#52c41a' }} />
+                            <span style={{ fontWeight: 500 }}>{t('代码直接传入数据源')}</span>
+                          </Space>
+                          {typeof propData === 'function' ? (
+                            <Tag color="orange" style={{ margin: 0, fontSize: 11 }}>{t('动态拉取')}</Tag>
+                          ) : (
+                            <Tag color="green" style={{ margin: 0, fontSize: 11 }}>Direct Code</Tag>
+                          )}
+                        </div>
+                      </Select.Option>
+                    )}
+                    {candidateDatasets.map((ds) => {
+                      const isAsync = typeof ds.data === 'function';
+                      return (
+                        <Select.Option key={ds.id} value={ds.id} label={ds.name}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                            <Space size={4}>
+                              {isAsync && <CloudDownloadOutlined style={{ color: '#1677ff' }} />}
+                              <span style={{ fontWeight: 500 }}>{ds.name}</span>
+                            </Space>
+                            <Space size={4}>
+                              {ds.tag && (
+                                <Tag color="blue" style={{ margin: 0, fontSize: 11 }}>
+                                  {ds.tag}
+                                </Tag>
+                              )}
+                              {isAsync ? (
+                                <Tag color="orange" style={{ margin: 0, fontSize: 11 }}>
+                                  {t('动态拉取')}
+                                </Tag>
+                              ) : (
+                                <span style={{ fontSize: 11, color: '#64748b' }}>({ds.data.length} 条)</span>
+                              )}
+                            </Space>
+                          </div>
+                        </Select.Option>
+                      );
+                    })}
+                  </Select>
+
+                  {selectedRegisteredDataset ? (
+                    <Space size={6} wrap align="center">
+                      <Tag color="cyan" style={{ margin: 0, fontSize: 11 }}>
+                        {selectedRegisteredDataset.id}
+                      </Tag>
+                      {typeof selectedRegisteredDataset.data === 'function' && (
+                        <Tag color="processing" icon={<CloudDownloadOutlined />} style={{ margin: 0, fontSize: 11 }}>
+                          {t('动态拉取')}
+                        </Tag>
+                      )}
+                      <Tag color="default" style={{ margin: 0, fontSize: 11 }}>
+                        {t('共 {count} 条事实记录', { count: effectiveData.length })}
+                      </Tag>
+                      {typeof selectedRegisteredDataset.data === 'function' && (
+                        <Button
+                          size="small"
+                          type="text"
+                          icon={<ReloadOutlined spin={isDatasetLoading} />}
+                          loading={isDatasetLoading}
+                          onClick={() => {
+                            void loadActiveDataset(true);
+                          }}
+                          title={t('刷新数据')}
+                          style={{ padding: '0 6px', height: 22, fontSize: 12, color: '#1677ff' }}
+                        >
+                          {t('刷新数据')}
+                        </Button>
+                      )}
+                      {selectedRegisteredDataset.description && (
+                        <Tooltip title={selectedRegisteredDataset.description}>
+                          <InfoCircleOutlined style={{ color: '#94a3b8', fontSize: 13, cursor: 'pointer' }} />
+                        </Tooltip>
+                      )}
+                    </Space>
+                  ) : propData ? (
+                    <Space size={6} wrap align="center">
+                      <Tag color="green" style={{ margin: 0, fontSize: 11 }}>
+                        {t('代码直接传入数据源')}
+                      </Tag>
+                      {typeof propData === 'function' && (
+                        <Tag color="processing" icon={<CloudDownloadOutlined />} style={{ margin: 0, fontSize: 11 }}>
+                          {t('动态拉取')}
+                        </Tag>
+                      )}
+                      <Tag color="default" style={{ margin: 0, fontSize: 11 }}>
+                        {t('共 {count} 条事实记录', { count: effectiveData.length })}
+                      </Tag>
+                      {typeof propData === 'function' && (
+                        <Button
+                          size="small"
+                          type="text"
+                          icon={<ReloadOutlined spin={isDatasetLoading} />}
+                          loading={isDatasetLoading}
+                          onClick={() => {
+                            void loadActiveDataset(true);
+                          }}
+                          title={t('刷新数据')}
+                          style={{ padding: '0 6px', height: 22, fontSize: 12, color: '#1677ff' }}
+                        >
+                          {t('刷新数据')}
+                        </Button>
+                      )}
+                    </Space>
+                  ) : null}
+                </Space>
+              ) : (
+                <Space size={8} align="center">
+                  <Tag color="geekblue" style={{ margin: 0, fontSize: 12, padding: '2px 8px' }}>
+                    <CodeOutlined style={{ marginRight: 4 }} />
+                    {t('代码直接传入数据源')}
+                  </Tag>
+                  {typeof propData === 'function' && (
+                    <Tag color="processing" icon={<CloudDownloadOutlined />} style={{ margin: 0, fontSize: 11 }}>
+                      {t('动态拉取')}
+                    </Tag>
+                  )}
+                  <Tag color="default" style={{ margin: 0, fontSize: 11 }}>
+                    {t('共 {count} 条事实记录', { count: effectiveData.length })}
+                  </Tag>
+                  {typeof propData === 'function' && (
                     <Button
                       size="small"
-                      style={{ borderColor: '#d3adf7', color: '#722ed1', backgroundColor: '#f9f0ff' }}
-                      icon={<CalendarOutlined style={{ color: '#722ed1' }} />}
+                      type="text"
+                      icon={<ReloadOutlined spin={isDatasetLoading} />}
+                      loading={isDatasetLoading}
+                      onClick={() => {
+                        void loadActiveDataset(true);
+                      }}
+                      title={t('刷新数据')}
+                      style={{ padding: '0 6px', height: 22, fontSize: 12, color: '#1677ff' }}
                     >
-                      {t('月度趋势透视')}
+                      {t('刷新数据')}
                     </Button>
-                  </SlotConfirmPopover>
-                )}
-                {PIVOT_TEMPLATES[1] && (
-                  <SlotConfirmPopover
-                    template={PIVOT_TEMPLATES[1]}
-                    fields={fields}
-                    onApplyConfig={handleApplySlotConfig}
-                  >
-                    <Button
-                      size="small"
-                      style={{ borderColor: '#d3adf7', color: '#722ed1', backgroundColor: '#f9f0ff' }}
-                      icon={<ProfileOutlined style={{ color: '#722ed1' }} />}
-                    >
-                      {t('多指标综合体检')}
-                    </Button>
-                  </SlotConfirmPopover>
-                )}
+                  )}
+                </Space>
+              )}
+            </Space>
 
-                {/* 2. 基础单向分析模板 */}
-                <Button
-                  size="small"
-                  icon={<LineChartOutlined style={{ color: '#1677ff' }} />}
-                  onClick={() => handleApplyQuickPreset('trend')}
-                >
-                  {t('趋势分析 (按时间)')}
-                </Button>
-                <Button
-                  size="small"
-                  icon={<BarChartOutlined style={{ color: '#52c41a' }} />}
-                  onClick={() => handleApplyQuickPreset('ranking')}
-                >
-                  {t('对比排行 (按类别)')}
-                </Button>
-                <Button
-                  size="small"
-                  icon={<PieChartOutlined style={{ color: '#fa8c16' }} />}
-                  onClick={() => handleApplyQuickPreset('share')}
-                >
-                  {t('占比分析 (单指标)')}
-                </Button>
-                <Button
-                  size="small"
-                  icon={<TableOutlined style={{ color: '#722ed1' }} />}
-                  onClick={() => handleApplyQuickPreset('detail')}
-                >
-                  {t('明细清单 (原始行)')}
-                </Button>
-              </Space>
-            )}
-
-            {showDslTools && (
-              <Space size={8}>
-                <Button
-                  size="small"
-                  icon={<CopyOutlined />}
-                  onClick={handleCopyConfig}
-                >
-                  {t('复制配置 (JSON)')}
-                </Button>
-                <Button
-                  size="small"
-                  icon={<ImportOutlined />}
-                  onClick={() => setImportModalOpen(true)}
-                >
-                  {t('导入配置')}
-                </Button>
-              </Space>
-            )}
+            <Space size={6}>
+              <Tag color="purple" style={{ margin: 0, fontSize: 11 }}>
+                {t('已探查 {count} 个字段', { count: fields.length })}
+              </Tag>
+            </Space>
           </div>
         )}
 
-        <Row gutter={[12, 12]}>
-          {/* 左侧：字段探查区 */}
-          <Col xs={24} sm={8} md={6} lg={5}>
-            <FieldProfilerList
-              fields={fields}
-              onFieldTypeChange={handleFieldTypeChange}
-              onQuickAddColumn={handleQuickAddColumn}
-            />
-          </Col>
+        {/* 数据源异步拉取异常提示与重试 */}
+        {datasetError && (
+          <Alert
+            type="error"
+            showIcon
+            message={t('数据源加载失败')}
+            description={datasetError.message}
+            action={
+              <Button size="small" danger onClick={() => { void loadActiveDataset(true); }}>
+                {t('重试')}
+              </Button>
+            }
+            style={{ marginBottom: 12 }}
+          />
+        )}
 
-          {/* 右侧：转换配置与实时预览区 */}
-          <Col xs={24} sm={16} md={18} lg={19}>
-            {/* 维度与时间分桶（未设置时展示全量明细，设置后自动开启分组透视） */}
-            <DimensionConfigComponent
-              {...(activeConfig.dimensions !== undefined ? { dimensions: activeConfig.dimensions } : {})}
-              availableFields={fields}
-              headers={effectiveHeaders}
-              onChange={handleDimensionsChange}
-            />
-
-            {/* 列与度量配置 */}
-            <ColumnConfigList
-              columns={activeConfig.columns}
-              availableFields={fields}
-              onChange={(columns) => updateConfig({ ...activeConfig, columns })}
-              onOpenFormulaModal={(col) => {
-                setEditingComputedCol(col);
-                setFormulaModalOpen(true);
+        <Spin spinning={isDatasetLoading} tip={t('正在获取数据源数据...')}>
+          {/* 顶部工具栏：常用分析模板与可选的高级工具 */}
+          {(showQuickPresets || showDslTools) && (
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: 10,
+                marginBottom: 12,
+                padding: '10px 14px',
+                background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+                borderRadius: 8,
+                border: '1px solid #e2e8f0',
+                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.02)',
               }}
-            />
+            >
+              {showQuickPresets && (
+                <Space size={10} wrap align="center">
+                  {/* 1. 双向交叉透视模板组 */}
+                  <Space size={6} align="center">
+                    <Tag
+                      color="purple"
+                      style={{
+                        margin: 0,
+                        fontWeight: 600,
+                        fontSize: 11,
+                        borderRadius: 4,
+                        padding: '1px 8px',
+                      }}
+                    >
+                      {t('智能透视推荐')}
+                    </Tag>
+                    {PIVOT_TEMPLATES[0] && (
+                      <SlotConfirmPopover
+                        template={PIVOT_TEMPLATES[0]}
+                        fields={fields}
+                        onApplyConfig={handleApplySlotConfig}
+                      >
+                        <Button
+                          size="small"
+                          style={{
+                            borderColor: '#d3adf7',
+                            color: '#722ed1',
+                            backgroundColor: '#ffffff',
+                            fontWeight: 500,
+                          }}
+                          icon={<CalendarOutlined style={{ color: '#722ed1' }} />}
+                        >
+                          {t('月度趋势透视')}
+                        </Button>
+                      </SlotConfirmPopover>
+                    )}
+                    {PIVOT_TEMPLATES[1] && (
+                      <SlotConfirmPopover
+                        template={PIVOT_TEMPLATES[1]}
+                        fields={fields}
+                        onApplyConfig={handleApplySlotConfig}
+                      >
+                        <Button
+                          size="small"
+                          style={{
+                            borderColor: '#d3adf7',
+                            color: '#722ed1',
+                            backgroundColor: '#ffffff',
+                            fontWeight: 500,
+                          }}
+                          icon={<ProfileOutlined style={{ color: '#722ed1' }} />}
+                        >
+                          {t('多指标综合体检')}
+                        </Button>
+                      </SlotConfirmPopover>
+                    )}
+                  </Space>
 
-            {/* 实时预览表格 */}
-            <LivePreviewTable result={transformResult} config={activeConfig} />
-          </Col>
-        </Row>
+                  <Divider type="vertical" style={{ height: 18, borderColor: '#cbd5e1', margin: '0 4px' }} />
+
+                  {/* 2. 基础单向分析模板组 */}
+                  <Space size={6} align="center">
+                    <span style={{ fontSize: 12, color: '#64748b', fontWeight: 500 }}>
+                      {t('经典单向模板')}:
+                    </span>
+                    <Button
+                      size="small"
+                      icon={<LineChartOutlined style={{ color: '#1677ff' }} />}
+                      onClick={() => handleApplyQuickPreset('trend')}
+                    >
+                      {t('趋势分析 (按时间)')}
+                    </Button>
+                    <Button
+                      size="small"
+                      icon={<BarChartOutlined style={{ color: '#52c41a' }} />}
+                      onClick={() => handleApplyQuickPreset('ranking')}
+                    >
+                      {t('对比排行 (按类别)')}
+                    </Button>
+                    <Button
+                      size="small"
+                      icon={<PieChartOutlined style={{ color: '#fa8c16' }} />}
+                      onClick={() => handleApplyQuickPreset('share')}
+                    >
+                      {t('占比分析 (单指标)')}
+                    </Button>
+                    <Button
+                      size="small"
+                      icon={<TableOutlined style={{ color: '#722ed1' }} />}
+                      onClick={() => handleApplyQuickPreset('detail')}
+                    >
+                      {t('明细清单 (原始行)')}
+                    </Button>
+                  </Space>
+                </Space>
+              )}
+
+              {showDslTools && (
+                <Space size={8}>
+                  <Button
+                    size="small"
+                    icon={<CopyOutlined />}
+                    onClick={handleCopyConfig}
+                  >
+                    {t('复制配置 (JSON)')}
+                  </Button>
+                  <Button
+                    size="small"
+                    icon={<ImportOutlined />}
+                    onClick={() => setImportModalOpen(true)}
+                  >
+                    {t('导入配置')}
+                  </Button>
+                </Space>
+              )}
+            </div>
+          )}
+
+          <Row gutter={[12, 12]}>
+            {/* 左侧：字段探查区 */}
+            <Col xs={24} sm={8} md={7} lg={6}>
+              <FieldProfilerList
+                fields={fields}
+                onFieldTypeChange={handleFieldTypeChange}
+                onQuickAddColumn={handleQuickAddColumn}
+              />
+            </Col>
+
+            {/* 右侧：转换配置与实时预览区 */}
+            <Col xs={24} sm={16} md={17} lg={18}>
+              {/* 维度与时间分桶（未设置时展示全量明细，设置后自动开启分组透视） */}
+              <DimensionConfigComponent
+                {...(activeConfig.dimensions !== undefined ? { dimensions: activeConfig.dimensions } : {})}
+                availableFields={fields}
+                headers={effectiveHeaders}
+                onChange={handleDimensionsChange}
+              />
+
+              {/* 列与度量配置 */}
+              <ColumnConfigList
+                columns={activeConfig.columns}
+                availableFields={fields}
+                hasDimensions={Boolean(
+                  activeConfig.dimensions?.timeBucket?.field ||
+                  (activeConfig.dimensions?.categories && activeConfig.dimensions.categories.length > 0) ||
+                  activeConfig.dimensions?.columnTimeBucket?.field ||
+                  (activeConfig.dimensions?.columnCategories && activeConfig.dimensions.columnCategories.length > 0)
+                )}
+                onChange={(columns) => updateConfig({ ...activeConfig, columns })}
+                onOpenFormulaModal={(col) => {
+                  setEditingComputedCol(col);
+                  setFormulaModalOpen(true);
+                }}
+              />
+
+              {/* 实时预览表格 */}
+              <LivePreviewTable result={transformResult} config={activeConfig} />
+            </Col>
+          </Row>
+        </Spin>
 
         {/* 公式编辑器 Modal */}
         <FormulaEditorModal

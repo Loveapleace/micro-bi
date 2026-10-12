@@ -94,7 +94,8 @@ export function exportToHtmlExcel(
           const text = escapeHtml(val);
           const isNum = typeof val === 'number';
           const align = isNum ? 'right' : 'left';
-          return `<td style="border: 1px solid #e8e8e8; padding: 6px 10px; text-align: ${align}; mso-number-format:'\\@';">${text}</td>`;
+          const numFormat = isNum ? '' : "mso-number-format:'\\@';";
+          return `<td style="border: 1px solid #e8e8e8; padding: 6px 10px; text-align: ${align}; ${numFormat}">${text}</td>`;
         })
         .join('');
       return `<tr>${cells}</tr>`;
@@ -132,6 +133,37 @@ export function exportToHtmlExcel(
   triggerDownload(blob, finalName);
 }
 
+/** 生成标准 HTML 表格（内嵌 mso-number-format: '\@' 防止 Excel 粘贴时自动将日期分桶或长文本转换为 Date/科学计数法） */
+export function generateHtmlTable(
+  data: readonly DataRecord[],
+  columns: readonly ExportColumnDef[]
+): string {
+  const headerHtml = columns
+    .map(
+      (col) =>
+        `<th style="background-color: #f2f4f8; font-weight: bold; border: 1px solid #d9d9d9; padding: 6px 10px;">${escapeHtml(col.title)}</th>`
+    )
+    .join('');
+
+  const rowsHtml = data
+    .map((row) => {
+      const cells = columns
+        .map((col) => {
+          const val = row[col.key];
+          const text = escapeHtml(val);
+          const isNum = typeof val === 'number';
+          const align = isNum ? 'right' : 'left';
+          const numFormat = isNum ? '' : "mso-number-format:'\\@';";
+          return `<td style="border: 1px solid #e8e8e8; padding: 6px 10px; text-align: ${align}; ${numFormat}">${text}</td>`;
+        })
+        .join('');
+      return `<tr>${cells}</tr>`;
+    })
+    .join('');
+
+  return `<table style="border-collapse: collapse;"><thead><tr>${headerHtml}</tr></thead><tbody>${rowsHtml}</tbody></table>`;
+}
+
 /** 格式化为 TSV 文本（适用于复制进本地 Excel） */
 export function generateTsvContent(
   data: readonly DataRecord[],
@@ -150,13 +182,32 @@ export function generateTsvContent(
   return [headerRow, ...dataRows].join('\n');
 }
 
-/** 复制表格内容到系统剪贴板（TSV 格式，粘贴到 Excel 自动对齐分列） */
-export async function copyToClipboardAsTsv(
-  data: readonly DataRecord[],
-  columns: readonly ExportColumnDef[]
-): Promise<boolean> {
-  const tsv = generateTsvContent(data, columns);
-  if (navigator.clipboard && navigator.clipboard.writeText) {
+/** 写入剪贴板辅助函数：优先写入包含 mso-number-format 的 text/html + text/plain，粘贴到 Excel 即可杜绝日期转换 */
+async function writeToClipboardWithHtml(tsv: string, html?: string): Promise<boolean> {
+  if (
+    html &&
+    typeof ClipboardItem !== 'undefined' &&
+    typeof navigator !== 'undefined' &&
+    navigator.clipboard &&
+    typeof navigator.clipboard.write === 'function'
+  ) {
+    try {
+      const item = new ClipboardItem({
+        'text/plain': new Blob([tsv], { type: 'text/plain' }),
+        'text/html': new Blob([html], { type: 'text/html' }),
+      });
+      await navigator.clipboard.write([item]);
+      return true;
+    } catch {
+      // 写入 ClipboardItem 异常时降级至 writeText
+    }
+  }
+
+  if (
+    typeof navigator !== 'undefined' &&
+    navigator.clipboard &&
+    typeof navigator.clipboard.writeText === 'function'
+  ) {
     try {
       await navigator.clipboard.writeText(tsv);
       return true;
@@ -166,19 +217,32 @@ export async function copyToClipboardAsTsv(
   }
 
   // 降级 textarea 复制
-  try {
-    const textarea = document.createElement('textarea');
-    textarea.value = tsv;
-    textarea.style.position = 'fixed';
-    textarea.style.opacity = '0';
-    document.body.appendChild(textarea);
-    textarea.select();
-    const ok = document.execCommand('copy');
-    document.body.removeChild(textarea);
-    return ok;
-  } catch {
-    return false;
+  if (typeof document !== 'undefined' && typeof document.createElement === 'function') {
+    try {
+      const textarea = document.createElement('textarea');
+      textarea.value = tsv;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(textarea);
+      return ok;
+    } catch {
+      return false;
+    }
   }
+  return false;
+}
+
+/** 复制表格内容到系统剪贴板（同时提供 HTML 与 TSV，在 Excel 中直接 Ctrl+V 粘贴不会被强制篡改日期格式） */
+export async function copyToClipboardAsTsv(
+  data: readonly DataRecord[],
+  columns: readonly ExportColumnDef[]
+): Promise<boolean> {
+  const tsv = generateTsvContent(data, columns);
+  const html = generateHtmlTable(data, columns);
+  return writeToClipboardWithHtml(tsv, html);
 }
 
 /**
@@ -201,6 +265,34 @@ export function generateTableInstanceCsv(table: any): string {
 }
 
 /**
+ * 从 VTable 表格实例直接提取可视化的二维矩阵并生成 HTML 文本 (支持 ListTable 与 PivotTable)
+ */
+export function generateTableInstanceHtml(table: any): string {
+  if (!table || typeof table.getCellValue !== 'function') return '';
+  const rowCount = table.rowCount || 0;
+  const colCount = table.colCount || 0;
+  const rows: string[] = [];
+  for (let r = 0; r < rowCount; r++) {
+    const cells: string[] = [];
+    for (let c = 0; c < colCount; c++) {
+      const isHeader = typeof table.isHeader === 'function' ? table.isHeader(c, r) : r === 0;
+      const val = table.getCellValue(c, r);
+      const text = escapeHtml(val);
+      if (isHeader) {
+        cells.push(`<th style="background-color: #f2f4f8; font-weight: bold; border: 1px solid #d9d9d9; padding: 6px 10px;">${text}</th>`);
+      } else {
+        const isNum = typeof val === 'number';
+        const align = isNum ? 'right' : 'left';
+        const numFormat = isNum ? '' : "mso-number-format:'\\@';";
+        cells.push(`<td style="border: 1px solid #e8e8e8; padding: 6px 10px; text-align: ${align}; ${numFormat}">${text}</td>`);
+      }
+    }
+    rows.push(`<tr>${cells.join('')}</tr>`);
+  }
+  return `<table style="border-collapse: collapse;"><tbody>${rows.join('')}</tbody></table>`;
+}
+
+/**
  * 导出 VTable 表格实例 (如多维交叉透视表) 为完整二维矩阵 CSV 文件
  */
 export function exportTableInstanceToCsv(table: any, filename: string = 'export_pivot'): void {
@@ -211,7 +303,39 @@ export function exportTableInstanceToCsv(table: any, filename: string = 'export_
 }
 
 /**
- * 从 VTable 表格实例直接提取可视化的二维矩阵并复制为 TSV 文本至剪贴板
+ * 导出 VTable 表格实例 (如多维交叉透视表) 为原生 XML/HTML Excel (.xls) 文件
+ */
+export function exportTableInstanceToExcel(table: any, filename: string = 'export_pivot'): void {
+  const tableHtml = generateTableInstanceHtml(table);
+  const template = `
+    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+      <head>
+        <meta http-equiv="content-type" content="application/vnd.ms-excel; charset=UTF-8">
+        <!--[if gte mso 9]>
+        <xml>
+          <x:ExcelWorkbook>
+            <x:ExcelWorksheets>
+              <x:ExcelWorksheet>
+                <x:Name>Sheet1</x:Name>
+                <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
+              </x:ExcelWorksheet>
+            </x:ExcelWorksheets>
+          </x:ExcelWorkbook>
+        </xml>
+        <![endif]-->
+      </head>
+      <body>
+        ${tableHtml}
+      </body>
+    </html>
+  `;
+  const blob = new Blob([template], { type: 'application/vnd.ms-excel;charset=utf-8' });
+  const finalName = filename.endsWith('.xls') || filename.endsWith('.xlsx') ? filename : `${filename}.xls`;
+  triggerDownload(blob, finalName);
+}
+
+/**
+ * 从 VTable 表格实例直接提取可视化的二维矩阵并复制为双 MIME 格式 (HTML + TSV) 文本至剪贴板
  */
 export async function copyTableInstanceAsTsv(table: any): Promise<boolean> {
   if (!table || typeof table.getCellValue !== 'function') return false;
@@ -231,26 +355,8 @@ export async function copyTableInstanceAsTsv(table: any): Promise<boolean> {
     lines.push(rowCells.join('\t'));
   }
   const tsv = lines.join('\r\n');
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    try {
-      await navigator.clipboard.writeText(tsv);
-      return true;
-    } catch {
-      // 降级兜底
-    }
-  }
-  try {
-    const textarea = document.createElement('textarea');
-    textarea.value = tsv;
-    textarea.style.position = 'fixed';
-    textarea.style.opacity = '0';
-    document.body.appendChild(textarea);
-    textarea.select();
-    const ok = document.execCommand('copy');
-    document.body.removeChild(textarea);
-    return ok;
-  } catch {
-    return false;
-  }
+  const html = generateTableInstanceHtml(table);
+  return writeToClipboardWithHtml(tsv, html);
 }
+
 

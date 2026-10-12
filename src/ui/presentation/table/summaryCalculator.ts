@@ -24,7 +24,18 @@ export function inferColumnAggType(key: string, title: string): AggregationFunct
   const upperKey = key.toUpperCase();
   const lowerTitle = title.toLowerCase();
 
-  if (upperKey.startsWith('AVG(') || lowerTitle.includes('平均') || lowerTitle.includes('均值')) {
+  if (
+    upperKey.startsWith('AVG(') ||
+    lowerTitle.includes('平均') ||
+    lowerTitle.includes('均值') ||
+    lowerTitle.includes('率') ||
+    lowerTitle.includes('%') ||
+    lowerTitle.includes('‰') ||
+    lowerTitle.includes('占比') ||
+    lowerTitle.includes('比率') ||
+    lowerTitle.includes('rate') ||
+    lowerTitle.includes('ratio')
+  ) {
     return 'avg';
   }
   if (upperKey.startsWith('MIN(') || lowerTitle.includes('最小')) {

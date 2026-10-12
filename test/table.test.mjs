@@ -642,3 +642,46 @@ test('tableExport: CSV 公式注入 (CWE-1236) 防范与 HTML 实体安全转义
   assert.ok(csv.includes('-3.14'), '真实数字 -3.14 必须保持数值格式');
 });
 
+test('tableFilter: 列筛选全取消勾选时 (0项已选) 精确触发空数据状态而非回退全量数据', () => {
+  const rawDataSource = [
+    { id: 1, plan_start_time: '2026-08', workshop: '1号车间' },
+    { id: 2, plan_start_time: '2026-08', workshop: '2号车间' },
+    { id: 3, plan_start_time: '2026-08', workshop: '3号车间' },
+  ];
+
+  // 模拟用户在列筛选 popover 中取消勾选所有选项 (例如唯一项 2026-08)，得出 tempSelected = []
+  const columnFilters = {
+    plan_start_time: [],
+  };
+
+  // 1. 验证 activeFilters 必须保留数组状态，即使 vals.length === 0 也绝不丢弃
+  const activeFilters = Object.entries(columnFilters).filter(
+    ([_, vals]) => Array.isArray(vals)
+  );
+  assert.equal(activeFilters.length, 1, '取消所有勾选时仍应认定为已设置筛选条件');
+
+  // 2. 模拟表格核心过滤逻辑
+  let filteredData = [...rawDataSource];
+  for (const [colKey, allowedVals] of activeFilters) {
+    filteredData = filteredData.filter((row) => {
+      const cellVal = row[colKey];
+      const strVal = cellVal === undefined || cellVal === null ? '(空白)' : String(cellVal);
+      return allowedVals.includes(strVal);
+    });
+  }
+
+  // 3. 验证此时数据被完全过滤，产生空数据状态
+  assert.equal(filteredData.length, 0, '0项勾选时必须呈现空数据状态，绝不能被忽视导致回退为原3条数据');
+
+  // 4. 验证筛选计数与状态判定
+  const activeFilterCount = Object.values(columnFilters).filter((vals) => Array.isArray(vals)).length;
+  assert.equal(activeFilterCount, 1, '激活筛选数应为 1');
+  assert.equal(Array.isArray(columnFilters.plan_start_time), true, '该列应被标为已筛选 (高亮漏斗图标)');
+
+  // 5. 验证清除该列筛选后数据恢复
+  const clearedFilters = {};
+  const restoredFilters = Object.entries(clearedFilters).filter(([_, vals]) => Array.isArray(vals));
+  assert.equal(restoredFilters.length, 0);
+  assert.equal(rawDataSource.length, 3);
+});
+

@@ -40,6 +40,8 @@ export interface LinkageFilterSlice {
   value: string | number;
   /** 选中的完整数据记录 (供从属明细视图使用) */
   record?: DataRecord | undefined;
+  /** 目标受众视图 ID 列表（可选，未指定时广播给所有同源卡片；指定时仅作用于名单内的卡片） */
+  targetViewIds?: readonly string[] | undefined;
 }
 
 /** 跨组件同源数据联动事件 */
@@ -75,6 +77,11 @@ export interface DynamicDataViewProps {
    * - 若未提供，组件作为独立视图运行，不向外广播也不响应外部联动（杜绝误联动）。
    */
   datasetId?: string | undefined;
+
+  /**
+   * 当前组件视图唯一 ID (用于防自环广播与精准定向切片路由)
+   */
+  viewId?: string | undefined;
 
   /** 当前视图形态：'table' | 'line' | 'bar' | 'pie'，默认 'table' */
   viewType?: DynamicDataViewType | undefined;
@@ -137,6 +144,12 @@ export interface DynamicDataViewProps {
    */
   vtableOption?: Record<string, any> | undefined;
 
+  /** 是否由外部强制控制总计行显示 */
+  showSummaryRow?: boolean | undefined;
+  /** 是否由外部强制控制相邻同类单元格合并显示 */
+  mergeCells?: boolean | undefined;
+  /** 是否由外部强制控制微型数据条显示 */
+  showDataBars?: boolean | undefined;
   /** 外部控制靠左冻结的列 key 列表 */
   frozenColumnKeys?: string[] | undefined;
   /** 外部控制靠右冻结的列 key 列表 */
@@ -178,6 +191,9 @@ export interface DynamicDataViewProps {
 
   /** 是否允许接收外部切片（接收外部切片时动态重算过滤自身数据），默认 true */
   allowReceiveLinkage?: boolean | undefined;
+
+  /** 联动影响目标受众视图 ID 列表（可选，未指定时广播给所有同源卡片；指定时仅作用于名单内的卡片） */
+  targetViewIds?: readonly string[] | undefined;
 
   /**
    * 表格高阶交互增强特性开关

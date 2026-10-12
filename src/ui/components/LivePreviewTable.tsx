@@ -1,7 +1,9 @@
 import React from 'react';
-import { Card, Tag, Space, Typography, Badge, Radio } from 'antd';
+import { Card, Tag, Space, Typography, Badge } from 'antd';
 import { TableOutlined, ThunderboltOutlined } from '@ant-design/icons';
-import type { TransformResult, DynamicTransformConfig, DataRecord, OutputColumnMeta } from '../../engine/types.js';
+import type { TransformResult, DynamicTransformConfig, DataRecord, OutputColumnMeta, AggregationFunction } from '../../engine/types.js';
+import { evaluateFormula } from '../../engine/formula/evaluator.js';
+import { computeSummaryValues, inferColumnAggType } from '../presentation/table/summaryCalculator.js';
 import { useDynamicDataLocale } from '../../locale/index.js';
 
 const { Text } = Typography;
@@ -18,17 +20,77 @@ interface DimTuple {
   values: Record<string, unknown>;
 }
 
+function roundTo(num: number, precision?: number): number {
+  if (precision === undefined) return num;
+  const factor = 10 ** precision;
+  return Math.round(num * factor) / factor;
+}
+
+function getColumnAggType(col: OutputColumnMeta, config?: DynamicTransformConfig): AggregationFunction {
+  if (col.agg) {
+    return col.agg.toLowerCase() as AggregationFunction;
+  }
+  if (config?.columns) {
+    const matched = config.columns.find((c: any) =>
+      c.label === col.title || c.field === col.field || c.field === col.key || c.name === col.key
+    );
+    if (matched && (matched as any).agg) {
+      return (matched as any).agg.toLowerCase() as AggregationFunction;
+    }
+  }
+  return inferColumnAggType(col.key, col.title || col.key);
+}
+
+function aggregateValues(
+  values: number[],
+  aggType: AggregationFunction,
+  precision?: number
+): number {
+  if (values.length === 0) return 0;
+  let res = 0;
+  if (aggType === 'sum') {
+    res = values.reduce((acc, v) => acc + v, 0);
+  } else if (aggType === 'avg') {
+    res = values.reduce((acc, v) => acc + v, 0) / values.length;
+  } else if (aggType === 'min') {
+    res = Math.min(...values);
+  } else if (aggType === 'max') {
+    res = Math.max(...values);
+  } else if (aggType === 'count') {
+    res = values.length;
+  } else {
+    res = values.reduce((acc, v) => acc + v, 0);
+  }
+  return roundTo(res, precision !== undefined ? precision : 2);
+}
+
 /**
  * 格式化单元格数值
  */
-function formatValue(val: unknown): React.ReactNode {
+function formatValue(val: unknown, precision?: number): React.ReactNode {
   if (val === null || val === undefined) {
     return <Text type="secondary">-</Text>;
   }
   if (typeof val === 'number') {
-    return Number.isInteger(val)
-      ? val.toLocaleString()
-      : val.toLocaleString(undefined, { maximumFractionDigits: 2 });
+    let formatted: string;
+    if (precision !== undefined) {
+      if (precision === 0) {
+        formatted = Math.round(val).toLocaleString();
+      } else {
+        formatted = val.toLocaleString(undefined, {
+          minimumFractionDigits: precision,
+          maximumFractionDigits: precision,
+        });
+      }
+    } else if (Number.isInteger(val)) {
+      formatted = val.toLocaleString();
+    } else {
+      formatted = val.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+    }
+    return <span style={{ fontVariantNumeric: 'tabular-nums', fontFamily: 'Consolas, monospace' }}>{formatted}</span>;
   }
   return String(val);
 }
@@ -50,17 +112,6 @@ export const LivePreviewTable: React.FC<LivePreviewTableProps> = ({
   const columnsMeta = result?.columns ?? [];
   const meta = result?.meta;
   const isCrossTab = Boolean(meta?.isCrossTab);
-
-  const [viewMode, setViewMode] = React.useState<'grid' | 'flat'>('grid');
-
-  // 当非透视表时，自动同步为 flat 视图
-  React.useEffect(() => {
-    if (!isCrossTab) {
-      setViewMode('flat');
-    } else {
-      setViewMode('grid');
-    }
-  }, [isCrossTab]);
 
   // =========================================================================
   // 提取 2D 交叉透视矩阵结构
@@ -126,28 +177,189 @@ export const LivePreviewTable: React.FC<LivePreviewTableProps> = ({
     const showColTotals = config?.dimensions?.columnTotals?.showGrandTotals !== false;
     const colTotalsLabel = config?.dimensions?.columnTotals?.grandTotalLabel || t('列总计');
 
-    // 计算汇总
+    // 智能计算汇总：遵循统计口径 (SUM求和、AVG求均值、MIN最小值、MAX最大值、COUNT计数、以及 COMPUTED 动态公式重算)
     const rowMetricSums = new Map<string, number>();
     const colMetricSums = new Map<string, number>();
     const grandMetricSums = new Map<string, number>();
 
-    for (const m of metrics) {
-      let gSum = 0;
-      for (const r of rowTuples) {
-        let rSum = 0;
-        for (const c of colTuples) {
+    const baseMetrics = metrics.filter((m) => m.kind !== 'computed' && !m.expression);
+    const computedMetrics = metrics.filter((m) => m.kind === 'computed' || m.expression);
+
+    // 1. 各列维度按行汇总（列总计，即底部的“车间总计”行）
+    for (const c of colTuples) {
+      const colContext: Record<string, unknown> = {};
+
+      for (const m of baseMetrics) {
+        const vals: number[] = [];
+        for (const r of rowTuples) {
           const rec = cellMap.get(`${r.key}____${c.key}`);
-          const val = rec ? (rec[m.key] ?? rec[m.title]) : undefined;
-          if (typeof val === 'number' && Number.isFinite(val)) {
-            rSum += val;
-            const cSum = (colMetricSums.get(`${c.key}___${m.key}`) ?? 0) + val;
-            colMetricSums.set(`${c.key}___${m.key}`, cSum);
-            gSum += val;
+          if (!rec) continue;
+          const rawVal = rec[m.key] ?? rec[m.title] ?? (m.field ? rec[m.field] : undefined);
+          if (typeof rawVal === 'number' && Number.isFinite(rawVal)) {
+            vals.push(rawVal);
           }
         }
-        rowMetricSums.set(`${r.key}___${m.key}`, rSum);
+        const aggType = getColumnAggType(m, config);
+        const colVal = aggregateValues(vals, aggType, m.precision);
+        colMetricSums.set(`${c.key}___${m.key}`, colVal);
+        colContext[m.key] = colVal;
+        colContext[m.title] = colVal;
+        if (m.field) {
+          colContext[m.field] = colVal;
+          colContext[`SUM(${m.field})`] = colVal;
+          colContext[`sum(${m.field})`] = colVal;
+          colContext[`AVG(${m.field})`] = colVal;
+          colContext[`avg(${m.field})`] = colVal;
+        }
       }
-      grandMetricSums.set(m.key, gSum);
+
+      for (const m of computedMetrics) {
+        let computedVal: number | undefined;
+        if (m.expression) {
+          try {
+            const evalRes = evaluateFormula(m.expression, colContext, { nullAsZero: true });
+            if (typeof evalRes === 'number' && Number.isFinite(evalRes)) {
+              computedVal = roundTo(evalRes, m.precision !== undefined ? m.precision : 2);
+            }
+          } catch {
+            // formula evaluation failed
+          }
+        }
+        if (computedVal === undefined) {
+          const vals: number[] = [];
+          for (const r of rowTuples) {
+            const rec = cellMap.get(`${r.key}____${c.key}`);
+            if (!rec) continue;
+            const rawVal = rec[m.key] ?? rec[m.title] ?? (m.field ? rec[m.field] : undefined);
+            if (typeof rawVal === 'number' && Number.isFinite(rawVal)) {
+              vals.push(rawVal);
+            }
+          }
+          const isRatio = m.key.includes('ratio') || m.key.includes('rate') || m.title.includes('%') || m.title.includes('率');
+          computedVal = aggregateValues(vals, isRatio ? 'avg' : 'sum', m.precision);
+        }
+        colMetricSums.set(`${c.key}___${m.key}`, computedVal);
+        colContext[m.key] = computedVal;
+        colContext[m.title] = computedVal;
+      }
+    }
+
+    // 2. 各行维度跨列汇总（行总计，即右侧的“全期总计”列）
+    for (const r of rowTuples) {
+      const rowContext: Record<string, unknown> = {};
+
+      for (const m of baseMetrics) {
+        const vals: number[] = [];
+        for (const c of colTuples) {
+          const rec = cellMap.get(`${r.key}____${c.key}`);
+          if (!rec) continue;
+          const rawVal = rec[m.key] ?? rec[m.title] ?? (m.field ? rec[m.field] : undefined);
+          if (typeof rawVal === 'number' && Number.isFinite(rawVal)) {
+            vals.push(rawVal);
+          }
+        }
+        const aggType = getColumnAggType(m, config);
+        const rowVal = aggregateValues(vals, aggType, m.precision);
+        rowMetricSums.set(`${r.key}___${m.key}`, rowVal);
+        rowContext[m.key] = rowVal;
+        rowContext[m.title] = rowVal;
+        if (m.field) {
+          rowContext[m.field] = rowVal;
+          rowContext[`SUM(${m.field})`] = rowVal;
+          rowContext[`sum(${m.field})`] = rowVal;
+          rowContext[`AVG(${m.field})`] = rowVal;
+          rowContext[`avg(${m.field})`] = rowVal;
+        }
+      }
+
+      for (const m of computedMetrics) {
+        let computedVal: number | undefined;
+        if (m.expression) {
+          try {
+            const evalRes = evaluateFormula(m.expression, rowContext, { nullAsZero: true });
+            if (typeof evalRes === 'number' && Number.isFinite(evalRes)) {
+              computedVal = roundTo(evalRes, m.precision !== undefined ? m.precision : 2);
+            }
+          } catch {
+            // fallback
+          }
+        }
+        if (computedVal === undefined) {
+          const vals: number[] = [];
+          for (const c of colTuples) {
+            const rec = cellMap.get(`${r.key}____${c.key}`);
+            if (!rec) continue;
+            const rawVal = rec[m.key] ?? rec[m.title] ?? (m.field ? rec[m.field] : undefined);
+            if (typeof rawVal === 'number' && Number.isFinite(rawVal)) {
+              vals.push(rawVal);
+            }
+          }
+          const isRatio = m.key.includes('ratio') || m.key.includes('rate') || m.title.includes('%') || m.title.includes('率');
+          computedVal = aggregateValues(vals, isRatio ? 'avg' : 'sum', m.precision);
+        }
+        rowMetricSums.set(`${r.key}___${m.key}`, computedVal);
+        rowContext[m.key] = computedVal;
+        rowContext[m.title] = computedVal;
+      }
+    }
+
+    // 3. 全局总计（右下角交叉汇总单元格）
+    const grandContext: Record<string, unknown> = {};
+
+    for (const m of baseMetrics) {
+      const vals: number[] = [];
+      for (const r of rowTuples) {
+        for (const c of colTuples) {
+          const rec = cellMap.get(`${r.key}____${c.key}`);
+          if (!rec) continue;
+          const rawVal = rec[m.key] ?? rec[m.title] ?? (m.field ? rec[m.field] : undefined);
+          if (typeof rawVal === 'number' && Number.isFinite(rawVal)) {
+            vals.push(rawVal);
+          }
+        }
+      }
+      const aggType = getColumnAggType(m, config);
+      const grandVal = aggregateValues(vals, aggType, m.precision);
+      grandMetricSums.set(m.key, grandVal);
+      grandContext[m.key] = grandVal;
+      grandContext[m.title] = grandVal;
+      if (m.field) {
+        grandContext[m.field] = grandVal;
+        grandContext[`SUM(${m.field})`] = grandVal;
+        grandContext[`sum(${m.field})`] = grandVal;
+        grandContext[`AVG(${m.field})`] = grandVal;
+        grandContext[`avg(${m.field})`] = grandVal;
+      }
+    }
+
+    for (const m of computedMetrics) {
+      let computedVal: number | undefined;
+      if (m.expression) {
+        try {
+          const evalRes = evaluateFormula(m.expression, grandContext, { nullAsZero: true });
+          if (typeof evalRes === 'number' && Number.isFinite(evalRes)) {
+            computedVal = roundTo(evalRes, m.precision !== undefined ? m.precision : 2);
+          }
+        } catch {
+          // fallback
+        }
+      }
+      if (computedVal === undefined) {
+        const vals: number[] = [];
+        for (const r of rowTuples) {
+          for (const c of colTuples) {
+            const rec = cellMap.get(`${r.key}____${c.key}`);
+            if (!rec) continue;
+            const rawVal = rec[m.key] ?? rec[m.title] ?? (m.field ? rec[m.field] : undefined);
+            if (typeof rawVal === 'number' && Number.isFinite(rawVal)) {
+              vals.push(rawVal);
+            }
+          }
+        }
+        const isRatio = m.key.includes('ratio') || m.key.includes('rate') || m.title.includes('%') || m.title.includes('率');
+        computedVal = aggregateValues(vals, isRatio ? 'avg' : 'sum', m.precision);
+      }
+      grandMetricSums.set(m.key, computedVal);
     }
 
     return {
@@ -168,30 +380,29 @@ export const LivePreviewTable: React.FC<LivePreviewTableProps> = ({
     };
   }, [isCrossTab, data, config, columnsMeta, t]);
 
+  // =========================================================================
+  // 1D 扁平明细或常规聚合表视图 总计行计算 (同 VTableView 一致采用 computeSummaryValues)
+  // =========================================================================
+  const summary1D = React.useMemo(() => {
+    if (isCrossTab || data.length === 0) return null;
+    const showRowTotals = config?.dimensions?.rowTotals?.showGrandTotals !== false;
+    if (!showRowTotals) return null;
+    return computeSummaryValues(data, columnsMeta, meta?.rawHeaders);
+  }, [isCrossTab, data, columnsMeta, meta?.rawHeaders, config?.dimensions?.rowTotals?.showGrandTotals]);
+
   return (
     <Card
       size="small"
       title={
-        <Space size={6}>
-          <TableOutlined />
-          <span>{t('转换结果实时预览 (前 10 行)')}</span>
-          <Badge status="processing" text={t('实时响应')} />
+        <Space size={8}>
+          <TableOutlined style={{ color: '#1677ff', fontSize: 15 }} />
+          <span style={{ fontWeight: 600 }}>{t('转换结果实时预览 (前 10 行)')}</span>
+          <Badge status="processing" text={<span style={{ fontSize: 12, color: '#52c41a' }}>{t('实时响应')}</span>} />
         </Space>
       }
       extra={
         meta && (
           <Space size={10} wrap>
-            {isCrossTab && (
-              <Radio.Group
-                size="small"
-                value={viewMode}
-                onChange={(e) => setViewMode(e.target.value)}
-                buttonStyle="solid"
-              >
-                <Radio.Button value="grid">{t('2D 透视网格')}</Radio.Button>
-                <Radio.Button value="flat">{t('1D 扁平明细')}</Radio.Button>
-              </Radio.Group>
-            )}
             {meta.form === 'detail' && <Tag color="green">{t('全量明细表')}</Tag>}
             {meta.form === 'pivot' && (
               <Tag color={meta.isCrossTab ? 'purple' : 'blue'}>
@@ -211,6 +422,7 @@ export const LivePreviewTable: React.FC<LivePreviewTableProps> = ({
           </Space>
         )
       }
+      style={{ marginBottom: 10, borderRadius: 8, boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)' }}
       bodyStyle={{ padding: 0 }}
     >
       <div style={{ overflowX: 'auto', width: '100%', minHeight: 120 }}>
@@ -222,7 +434,7 @@ export const LivePreviewTable: React.FC<LivePreviewTableProps> = ({
           <div style={{ padding: '36px 0', textAlign: 'center', color: '#8c8c8c', fontSize: 13 }}>
             {t('配置完成后将在此实时预览转换效果')}
           </div>
-        ) : isCrossTab && viewMode === 'grid' && pivotData ? (
+        ) : isCrossTab && pivotData ? (
           /* ===============================================================
              2D 交叉透视网格视图 (Cross-Tab Pivot Grid)
              =============================================================== */
@@ -378,7 +590,7 @@ export const LivePreviewTable: React.FC<LivePreviewTableProps> = ({
                                 color: val === undefined ? '#bfbfbf' : 'rgba(0, 0, 0, 0.85)',
                               }}
                             >
-                              {formatValue(val)}
+                              {formatValue(val, m.precision)}
                             </td>
                           );
                         })
@@ -399,7 +611,7 @@ export const LivePreviewTable: React.FC<LivePreviewTableProps> = ({
                                 whiteSpace: 'nowrap',
                               }}
                             >
-                              {formatValue(rowSum)}
+                              {formatValue(rowSum, m.precision)}
                             </td>
                           );
                         })}
@@ -437,7 +649,7 @@ export const LivePreviewTable: React.FC<LivePreviewTableProps> = ({
                                 color: '#262626',
                               }}
                             >
-                              {formatValue(colSum)}
+                              {formatValue(colSum, m.precision)}
                             </td>
                           );
                         })
@@ -457,7 +669,7 @@ export const LivePreviewTable: React.FC<LivePreviewTableProps> = ({
                                 fontWeight: 'bold',
                               }}
                             >
-                              {formatValue(grandSum)}
+                              {formatValue(grandSum, m.precision)}
                             </td>
                           );
                         })}
@@ -582,7 +794,7 @@ export const LivePreviewTable: React.FC<LivePreviewTableProps> = ({
                                 color: val === undefined ? '#bfbfbf' : 'rgba(0, 0, 0, 0.85)',
                               }}
                             >
-                              {formatValue(val)}
+                              {formatValue(val, m.precision)}
                             </td>
                           );
                         })}
@@ -598,7 +810,7 @@ export const LivePreviewTable: React.FC<LivePreviewTableProps> = ({
                               whiteSpace: 'nowrap',
                             }}
                           >
-                            {formatValue(pivotData.rowMetricSums.get(`${r.key}___${m.key}`))}
+                            {formatValue(pivotData.rowMetricSums.get(`${r.key}___${m.key}`), m.precision)}
                           </td>
                         )}
                       </tr>
@@ -653,7 +865,7 @@ export const LivePreviewTable: React.FC<LivePreviewTableProps> = ({
                               color: '#262626',
                             }}
                           >
-                            {formatValue(pivotData.colMetricSums.get(`${c.key}___${m.key}`))}
+                            {formatValue(pivotData.colMetricSums.get(`${c.key}___${m.key}`), m.precision)}
                           </td>
                         ))}
                         {pivotData.showColTotals && (
@@ -667,7 +879,7 @@ export const LivePreviewTable: React.FC<LivePreviewTableProps> = ({
                               fontWeight: 'bold',
                             }}
                           >
-                            {formatValue(pivotData.grandMetricSums.get(m.key))}
+                            {formatValue(pivotData.grandMetricSums.get(m.key), m.precision)}
                           </td>
                         )}
                       </tr>
@@ -691,9 +903,9 @@ export const LivePreviewTable: React.FC<LivePreviewTableProps> = ({
             <thead>
               <tr
                 style={{
-                  borderBottom: '1px solid #f0f0f0',
-                  backgroundColor: '#fafafa',
-                  color: 'rgba(0, 0, 0, 0.88)',
+                  borderBottom: '1px solid #e2e8f0',
+                  backgroundColor: '#f8fafc',
+                  color: '#475569',
                 }}
               >
                 {columnsMeta.map((col) => (
@@ -745,13 +957,62 @@ export const LivePreviewTable: React.FC<LivePreviewTableProps> = ({
                           color: 'rgba(0, 0, 0, 0.85)',
                         }}
                       >
-                        {formatValue(val)}
+                        {formatValue(val, col.precision)}
                       </td>
                     );
                   })}
                 </tr>
               ))}
             </tbody>
+            {summary1D && (
+              <tfoot>
+                <tr
+                  style={{
+                    backgroundColor: '#fafafa',
+                    borderTop: '2px solid #d9d9d9',
+                    fontWeight: 600,
+                  }}
+                >
+                  {columnsMeta.map((col, idx) => {
+                    const isFirst = idx === 0;
+                    if (isFirst) {
+                      const totalLabel =
+                        config?.dimensions?.rowTotals?.grandTotalLabel ||
+                        t('总计 (共 {count} 项)', { count: data.length });
+                      return (
+                        <td
+                          key={col.key}
+                          style={{
+                            padding: '7px 12px',
+                            textAlign: 'left',
+                            whiteSpace: 'nowrap',
+                            color: 'rgba(0, 0, 0, 0.88)',
+                            borderRight: '1px solid #f0f0f0',
+                          }}
+                        >
+                          {totalLabel}
+                        </td>
+                      );
+                    }
+                    const val = summary1D[col.key];
+                    return (
+                      <td
+                        key={col.key}
+                        style={{
+                          padding: '7px 12px',
+                          textAlign: col.type === 'number' ? 'right' : 'left',
+                          whiteSpace: 'nowrap',
+                          color: '#0958d9',
+                          borderRight: '1px solid #f0f0f0',
+                        }}
+                      >
+                        {formatValue(val, col.precision)}
+                      </td>
+                    );
+                  })}
+                </tr>
+              </tfoot>
+            )}
           </table>
         )}
       </div>
