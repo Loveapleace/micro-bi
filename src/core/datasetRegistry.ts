@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { DataRecord, Identifiable } from '../types.js';
 import type { HeaderMapping, DynamicTransformConfig } from '../engine/types.js';
 import { createRegistry, type Registry } from './registry.js';
@@ -73,27 +73,20 @@ export class DatasetRegistry {
   private readonly listeners = new Set<DatasetRegistryListener>();
   private readonly dataCache = new Map<string, { data: readonly DataRecord[]; headers?: HeaderMapping | undefined }>();
   private readonly pendingLoads = new Map<string, Promise<{ data: readonly DataRecord[]; headers?: HeaderMapping | undefined }>>();
+  private readonly loadTokens = new Map<string, object>();
 
   constructor(initial: readonly RegisteredDataset[] = []) {
-    this.baseRegistry = createRegistry<RegisteredDataset>(initial);
-    for (const ds of initial) {
-      if (Array.isArray(ds.data)) {
-        this.dataCache.set(ds.id, { data: ds.data, headers: ds.headers });
-      }
-    }
+    this.baseRegistry = createRegistry<RegisteredDataset>();
+    this.registerMany(initial);
   }
 
   /**
    * 注册单个数据集，若同 ID 已存在则覆盖。返回自身以便链式调用。
    */
   public register(dataset: RegisteredDataset): this {
-    if (!dataset.id || !dataset.id.trim()) {
-      throw new TypeError('注册项必须包含非空的 id');
-    }
-    if (!dataset.data || (!Array.isArray(dataset.data) && typeof dataset.data !== 'function')) {
-      throw new TypeError(`[DatasetRegistry] 数据集 "${dataset.id}" 的 data 必须为数组或获取数据的方法函数`);
-    }
+    this.validateDataset(dataset);
     this.baseRegistry.register(dataset);
+    this.invalidateLoad(dataset.id);
     if (Array.isArray(dataset.data)) {
       this.dataCache.set(dataset.id, { data: dataset.data, headers: dataset.headers });
     } else {
@@ -107,20 +100,16 @@ export class DatasetRegistry {
    * 批量注册数据集。
    */
   public registerMany(datasets: readonly RegisteredDataset[]): this {
+    for (const dataset of datasets) this.validateDataset(dataset);
     for (const ds of datasets) {
-      if (!ds.id || !ds.id.trim()) {
-        throw new TypeError('注册项必须包含非空的 id');
-      }
-      if (!ds.data || (!Array.isArray(ds.data) && typeof ds.data !== 'function')) {
-        throw new TypeError(`[DatasetRegistry] 数据集 "${ds.id}" 的 data 必须为数组或获取数据的方法函数`);
-      }
+      this.baseRegistry.register(ds);
+      this.invalidateLoad(ds.id);
       if (Array.isArray(ds.data)) {
         this.dataCache.set(ds.id, { data: ds.data, headers: ds.headers });
       } else {
         this.dataCache.delete(ds.id);
       }
     }
-    this.baseRegistry.registerMany(datasets);
     this.notify({ action: 'register', datasets });
     return this;
   }
@@ -131,8 +120,7 @@ export class DatasetRegistry {
   public unregister(id: string): boolean {
     const existing = this.baseRegistry.get(id);
     const success = this.baseRegistry.unregister(id);
-    this.dataCache.delete(id);
-    this.pendingLoads.delete(id);
+    this.invalidateLoad(id);
     if (success) {
       this.notify({ action: 'unregister', dataset: existing });
     }
@@ -192,6 +180,7 @@ export class DatasetRegistry {
     this.baseRegistry.clear();
     this.dataCache.clear();
     this.pendingLoads.clear();
+    this.loadTokens.clear();
     this.notify({ action: 'clear' });
   }
 
@@ -209,7 +198,7 @@ export class DatasetRegistry {
    * 异步解析并获取指定数据集的事实记录与表头字典。
    * - 若 `data` 为静态数组，直接返回。
    * - 若 `data` 为方法函数，自动调用并缓存结果（除非 forceRefresh: true 或 cache: false）。
-   * - 具备并发请求去重能力，相同 ID 的并发请求共享同一个 Promise。
+   * - 普通并发读取共享同一个 Promise；forceRefresh 启动新请求，旧响应不会覆盖当前缓存。
    */
   public async resolveData(
     id: string,
@@ -226,14 +215,19 @@ export class DatasetRegistry {
       return this.dataCache.get(id)!;
     }
 
-    if (this.pendingLoads.has(id)) {
+    if (!options?.forceRefresh && this.pendingLoads.has(id)) {
       return this.pendingLoads.get(id)!;
     }
+
+    if (options?.forceRefresh) this.dataCache.delete(id);
+    const token = {};
+    this.loadTokens.set(id, token);
 
     const loader = dataset.data as DatasetDataLoader;
     const promise = (async () => {
       try {
-        const result = await loader();
+        // Defer synchronous loaders as well, so pending state exists before failure cleanup.
+        const result = await Promise.resolve().then(loader);
         let resolved: { data: readonly DataRecord[]; headers?: HeaderMapping | undefined };
         if (Array.isArray(result)) {
           resolved = { data: result, headers: dataset.headers };
@@ -245,12 +239,15 @@ export class DatasetRegistry {
         } else {
           throw new Error(`[DatasetRegistry] 数据集 "${id}" 的获取方法必须返回数据记录数组`);
         }
-        if (dataset.cache !== false) {
+        if (dataset.cache !== false && this.loadTokens.get(id) === token && this.get(id) === dataset) {
           this.dataCache.set(id, resolved);
         }
         return resolved;
       } finally {
-        this.pendingLoads.delete(id);
+        if (this.loadTokens.get(id) === token) {
+          this.pendingLoads.delete(id);
+          this.loadTokens.delete(id);
+        }
       }
     })();
 
@@ -284,10 +281,25 @@ export class DatasetRegistry {
    */
   public clearCache(id?: string): void {
     if (id) {
-      this.dataCache.delete(id);
+      this.invalidateLoad(id);
     } else {
       this.dataCache.clear();
+      this.pendingLoads.clear();
+      this.loadTokens.clear();
     }
+  }
+
+  private validateDataset(dataset: RegisteredDataset): void {
+    if (!dataset.id || !dataset.id.trim()) throw new TypeError('注册项必须包含非空的 id');
+    if (!Array.isArray(dataset.data) && typeof dataset.data !== 'function') {
+      throw new TypeError(`[DatasetRegistry] 数据集 "${dataset.id}" 的 data 必须为数组或获取数据的方法函数`);
+    }
+  }
+
+  private invalidateLoad(id: string): void {
+    this.dataCache.delete(id);
+    this.pendingLoads.delete(id);
+    this.loadTokens.delete(id);
   }
 
   private notify(event?: DatasetRegistryEvent): void {
@@ -401,7 +413,7 @@ export async function resolveDatasetData(
     return { data: datasetOrIdOrLoader.data, headers: datasetOrIdOrLoader.headers };
   }
   if (typeof datasetOrIdOrLoader.data === 'function') {
-    if (registry.has(datasetOrIdOrLoader.id)) {
+    if (registry.get(datasetOrIdOrLoader.id) === datasetOrIdOrLoader) {
       return registry.resolveData(datasetOrIdOrLoader.id, options);
     }
     const res = await datasetOrIdOrLoader.data();
@@ -479,7 +491,10 @@ export function useDatasetData(
   options?: UseDatasetDataOptions
 ): UseDatasetDataResult {
   const registry = options?.registry || globalDatasetRegistry;
-  const target = typeof datasetOrId === 'string' ? registry.get(datasetOrId) : datasetOrId;
+  const registeredDatasets = useRegisteredDatasets(registry);
+  const target = typeof datasetOrId === 'string'
+    ? registeredDatasets.find((dataset) => dataset.id === datasetOrId)
+    : datasetOrId;
   const isAsync = typeof target?.data === 'function';
 
   const cached = target
@@ -492,11 +507,15 @@ export function useDatasetData(
   const [headers, setHeaders] = useState<HeaderMapping | undefined>(() => cached?.headers || target?.headers);
   const [loading, setLoading] = useState<boolean>(() => Boolean(isAsync && !cached && options?.enabled !== false));
   const [error, setError] = useState<Error | null>(null);
+  const requestRef = useRef(0);
 
   const load = useCallback(
     async (forceRefresh = false) => {
+      const request = ++requestRef.current;
       if (!target || options?.enabled === false) {
         setData([]);
+        setHeaders(undefined);
+        setError(null);
         setLoading(false);
         return;
       }
@@ -510,22 +529,27 @@ export function useDatasetData(
 
       setLoading(true);
       setError(null);
+      setData([]);
+      setHeaders(target.headers);
       try {
         const res = await resolveDatasetData(target, { forceRefresh, registry });
+        if (request !== requestRef.current) return;
         setData(res.data);
         setHeaders(res.headers);
       } catch (err) {
+        if (request !== requestRef.current) return;
         setError(err instanceof Error ? err : new Error(String(err)));
       } finally {
-        setLoading(false);
+        if (request === requestRef.current) setLoading(false);
       }
     },
     [target, registry, options?.enabled]
   );
 
   useEffect(() => {
-    load();
-  }, [load]);
+    void load(options?.forceRefresh ?? false);
+    return () => { requestRef.current += 1; };
+  }, [load, options?.forceRefresh]);
 
   const refresh = useCallback(async () => {
     await load(true);

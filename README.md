@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![TypeScript: Strict](https://img.shields.io/badge/TypeScript-Strict-blue.svg)](https://www.typescriptlang.org/)
 [![Rendering: VisActor](https://img.shields.io/badge/Rendering-VisActor%20Canvas-cyan.svg)](https://www.visactor.io/)
-[![Tests: 100 Passed](https://img.shields.io/badge/Tests-100%20Passing-brightgreen.svg)]()
+[![Tests: Passing](https://img.shields.io/badge/Tests-Passing-brightgreen.svg)]()
 
 ---
 
@@ -110,7 +110,7 @@ npm install @visactor/vtable @visactor/vchart antd @ant-design/icons dayjs
 ### 示例 1：纯计算引擎（Node.js / Web Worker / 前端逻辑）
 
 ```ts
-import { transformData, profileDataset, type DynamicTransformConfig } from 'micro-bi';
+import { transformData, profileDataset, type DynamicTransformConfig } from 'micro-bi/engine';
 
 // 1. 原始流水数据
 const rawData = [
@@ -124,7 +124,6 @@ const fields = profileDataset(rawData);
 
 // 3. 配置多维透视与动态公式
 const config: DynamicTransformConfig = {
-  mode: 'aggregate',
   dimensions: {
     timeBucket: { field: 'date', granularity: 'month' },
     categories: ['category'],
@@ -161,10 +160,9 @@ console.log(result.data);
 只需在 `dimensions` 中同时声明**行维度**与**列维度**（`columnCategories` 或 `columnTimeBucket`），引擎自动激活二维交叉透视：
 
 ```ts
-import { transformData, type DynamicTransformConfig } from 'micro-bi';
+import { transformData, type DynamicTransformConfig } from 'micro-bi/engine';
 
 const pivotConfig: DynamicTransformConfig = {
-  mode: 'aggregate',
   dimensions: {
     // 纵向行维度
     categories: ['workshop'], // 承制车间
@@ -172,8 +170,8 @@ const pivotConfig: DynamicTransformConfig = {
     columnTimeBucket: { field: 'plan_start_time', granularity: 'month' },
     // 透视展现配置
     indicatorsAsCol: true,    // 指标横向排布 (true: 列头下方; false: 行头下方)
-    rowTotals: { show: true, label: '行总计' },
-    columnTotals: { show: true, label: '列总计' },
+    rowTotals: { showGrandTotals: true, grandTotalLabel: '行总计' },
+    columnTotals: { showGrandTotals: true, grandTotalLabel: '列总计' },
   },
   columns: [
     { type: 'aggregated', field: 'output_qty', agg: 'sum', label: '交付总件数' },
@@ -234,13 +232,13 @@ export const SalesDashboardCard: React.FC<Props> = ({ dataset, result, config, o
 
 ---
 
-### 示例 3：自主掌控容器的配置面板 (`DynamicDataConfigPanel`)
+### 示例 4：自主掌控容器的配置面板 (`DynamicDataConfigPanel`)
 
 配置组件与外层容器完全解耦，宿主可按需放入 Ant Design 的 `Modal` 或 `Drawer` 中：
 
 ```tsx
 import React, { useRef, useState } from 'react';
-import { Modal, Button } from 'antd';
+import { Modal, message } from 'antd';
 import { DynamicDataConfigPanel, type DynamicDataConfigPanelRef } from 'micro-bi/ui';
 import type { DynamicTransformConfig } from 'micro-bi';
 
@@ -254,19 +252,25 @@ export const ConfigModal: React.FC<{
   const panelRef = useRef<DynamicDataConfigPanelRef>(null);
 
   const handleOk = () => {
-    // 通过 ref 统一校验并获取当前最新的合法 DSL 配置
-    if (panelRef.current) {
-      const finalConfig = panelRef.current.getConfig();
-      onSave(finalConfig);
+    const validation = panelRef.current?.validateAndGetConfig();
+    if (!validation) return;
+    if (!validation.valid || !validation.parsedConfig) {
+      message.error(validation.issues.map((issue) => issue.message).join('；'));
+      return;
     }
+    onSave(validation.parsedConfig);
   };
 
   return (
     <Modal open={open} width={960} onOk={handleOk} onCancel={onCancel} title="配置分析规则">
       <DynamicDataConfigPanel
         ref={panelRef}
-        initialConfig={initialConfig}
-        data={rawDataset}
+        defaultValue={initialConfig}
+        datasets={[{
+          id: initialConfig.datasetId || 'local_records',
+          name: '当前数据',
+          data: rawDataset,
+        }]}
         showDslTools={true} // 支持快捷导入/导出 DSL JSON 配置
       />
     </Modal>
@@ -276,7 +280,7 @@ export const ConfigModal: React.FC<{
 
 ---
 
-### 示例 4：双语国际化支持 (i18n)
+### 示例 5：双语国际化支持 (i18n)
 
 MicroBI 内置中英双语，开箱即用：
 
@@ -302,14 +306,28 @@ export const App = () => {
 
 ## 📚 子路径导入规范
 
+`DynamicDataConfigPanel` 通过 `datasets` 或全局数据集注册表读取数据，通过 `value/onChange` 或 `defaultValue` 接收配置。`DynamicTransformConfig` 根据维度和列配置自动判断明细、分组透视或全局汇总，不需要 `mode` 属性。
+
 为保持最优的 Tree-shaking 体验，MicroBI 提供了清晰的模块拆分：
 
 | 导入路径 | 包含模块与用途 | 适合场景 |
 | :--- | :--- | :--- |
-| **`micro-bi`** | `transformData`, `profileDataset`, 核心 TypeScript 类型 | 纯数据计算、轻量后端、Web Worker |
+| **`micro-bi`** | 统一入口：数据计算、数据集注册与国际化 | 已安装 React 的宿主项目 |
+| **`micro-bi/engine`** | 数据转换、公式、字段探查与类型 | 独立计算环境，不需要 React |
 | **`micro-bi/ui`** | `DynamicDataView`, `DynamicDataConfigPanel`, 主题工具 | 前端 React 看板集成、可视化配置 |
 | **`micro-bi/core`**| 通用注册表原语（`createRegistry`） | 高级插件扩展与行业指标注册 |
 | **`micro-bi/locale`**| `DynamicDataLocaleProvider`, `zh_CN`, `en_US` | 国际化语言注入 |
+
+---
+
+## 表格计算与现有预览能力
+
+- 正式展示使用 `@visactor/vtable` 的 `ListTable` / `PivotTable`。透视交叉格直接读取引擎结果；行、列总计根据原始聚合统计合并，COUNT 统计字段的非空值，AVG 按有效数值数量加权，计算列在总计上下文重新求值。显式 `scope: 'row'` 的数值计算列则累计各明细行的计算结果。
+- 配置预览使用 DOM 表格，展示前 10 行。现有编辑和粘贴仅允许修改可溯源的明细原始字段，聚合结果与计算列只读；补丁保存在 `dataOverrides` 中，不写回数据源。建议原始记录提供稳定、唯一的 `id` 或 `key`；缺省时使用原始行索引，支持同一数据快照内的排序和切片过滤。
+- 静态样式、条件格式和值映射以输出列 `key` 为准，例如 `SUM(sales)`；原始字段名配置继续作为兼容回退。正式 VTable 的编辑器与完整格式能力留待后续扩展。
+- `transformData([], config)` 保留列结构、透视模式和配置元信息。自然周以同一个周起始日期生成分桶键，支持跨月、跨年及周日/周一起始。
+- 数据源替换、注销、清空缓存或强制刷新时，旧请求仍可返回给原调用者，但不会覆盖当前缓存或删除新请求。普通并发读取继续共享一个请求。
+- 现有 `.xls` 导出内容为 HTML 表格，不是二进制 Excel 工作簿；尚未提供真实 `.xlsx` 导出或完整自定义格式导出。
 
 ---
 
@@ -322,7 +340,7 @@ npm install
 # 2. 构建产物 (ESM + CJS + .d.ts)
 npm run build
 
-# 3. 运行全量冒烟测试 (Node.js 内置 test runner，94 tests)
+# 3. 构建并运行回归测试 (Node.js 内置 test runner)
 npm test
 
 # 4. 纯类型检查

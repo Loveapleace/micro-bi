@@ -174,6 +174,8 @@ export interface OutputColumnMeta {
   readonly expression?: string | undefined;
   /** 计算列精度 */
   readonly precision?: number | undefined;
+  /** Explicit row computations are summed when displaying totals. */
+  readonly scope?: 'row' | 'summary' | 'auto' | undefined;
 }
 
 /** 最终转换执行结果 */
@@ -192,5 +194,6 @@ export interface TransformResult {
     readonly executionTimeMs: number;
     readonly dimensions?: DimensionConfig | undefined;
     readonly rawHeaders?: Record<string, string> | undefined;
+    readonly transformConfig?: DynamicTransformConfig | undefined;
   };
 }

@@ -1,6 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
+function deferred() {
+  let resolve;
+  let reject;
+  const promise = new Promise((done, fail) => { resolve = done; reject = fail; });
+  return { promise, resolve, reject };
+}
+
 import {
   createDatasetRegistry,
   globalDatasetRegistry,
@@ -222,5 +229,96 @@ test('createDatasetRegistry: 加载异常时抛出错误且清理 pending 状态
   // 第二次请求应能正常重新尝试并成功
   const res = await registry.resolveData('retry_ds');
   assert.deepEqual(res.data, [{ success: true }]);
+});
+
+test('dataset race: replacing an in-flight loader preserves the new request and cache', async () => {
+  const registry = createDatasetRegistry();
+  const old = deferred();
+  const current = deferred();
+  let newCalls = 0;
+  registry.register({ id: 'same', name: 'old', data: () => old.promise });
+  const oldRequest = registry.resolveData('same');
+  registry.register({ id: 'same', name: 'new', data: () => { newCalls++; return current.promise; } });
+  const newRequest = registry.resolveData('same');
+  old.resolve([{ value: 'old' }]);
+  await oldRequest;
+  assert.equal(registry.getCachedData('same'), undefined);
+  const joinedRequest = registry.resolveData('same');
+  current.resolve([{ value: 'new' }]);
+  assert.deepEqual((await newRequest).data, [{ value: 'new' }]);
+  assert.deepEqual((await joinedRequest).data, [{ value: 'new' }]);
+  assert.equal(newCalls, 1);
+  assert.deepEqual((await registry.resolveData('same')).data, [{ value: 'new' }]);
+});
+
+test('dataset race: force refresh supersedes an older request even when the older one finishes last', async () => {
+  const registry = createDatasetRegistry();
+  const old = deferred();
+  const current = deferred();
+  let calls = 0;
+  registry.register({ id: 'same', name: 'data', data: () => ++calls === 1 ? old.promise : current.promise });
+  const oldRequest = registry.resolveData('same');
+  const newRequest = registry.resolveData('same', { forceRefresh: true });
+  current.resolve([{ value: 'current' }]);
+  await newRequest;
+  old.resolve([{ value: 'old' }]);
+  await oldRequest;
+  assert.deepEqual(registry.getCachedData('same').data, [{ value: 'current' }]);
+  assert.equal(calls, 2);
+});
+
+test('dataset race: unregister, clear and clearCache prevent old responses from restoring cache', async () => {
+  for (const action of ['unregister', 'clear', 'clearCache']) {
+    const registry = createDatasetRegistry();
+    const pending = deferred();
+    registry.register({ id: 'same', name: 'data', data: () => pending.promise });
+    const request = registry.resolveData('same');
+    if (action === 'clear') registry.clear();
+    else registry[action]('same');
+    pending.resolve([{ value: 'late' }]);
+    await request;
+    assert.equal(registry.getCachedData('same'), undefined, action);
+  }
+});
+
+test('dataset race: replacing an async source with static data keeps the static cache', async () => {
+  const registry = createDatasetRegistry();
+  const pending = deferred();
+  registry.register({ id: 'same', name: 'old', data: () => pending.promise });
+  const request = registry.resolveData('same');
+  registry.registerMany([{ id: 'same', name: 'static', data: [{ value: 'static' }] }]);
+  pending.resolve([{ value: 'late' }]);
+  await request;
+  assert.deepEqual(registry.getCachedData('same').data, [{ value: 'static' }]);
+});
+
+test('dataset race: synchronous loader exceptions can be retried without stale pending promises', async () => {
+  const registry = createDatasetRegistry();
+  let calls = 0;
+  registry.register({ id: 'same', name: 'data', data: () => {
+    if (++calls === 1) throw new Error('sync failure');
+    return [{ value: 'retried' }];
+  } });
+  await assert.rejects(registry.resolveData('same'), /sync failure/);
+  assert.deepEqual((await registry.resolveData('same')).data, [{ value: 'retried' }]);
+  assert.equal(calls, 2);
+});
+
+test('dataset registration: invalid batches leave both registry and caches untouched', () => {
+  const registry = createDatasetRegistry([{ id: 'existing', name: 'data', data: [{ value: 'original' }] }]);
+  assert.throws(() => registry.registerMany([
+    { id: 'existing', name: 'replacement', data: [{ value: 'changed' }] },
+    { id: 'invalid', name: 'bad' },
+  ]), /data 必须为数组/);
+  assert.equal(registry.get('existing').name, 'data');
+  assert.deepEqual(registry.getCachedData('existing').data, [{ value: 'original' }]);
+  assert.equal(registry.has('invalid'), false);
+});
+
+test('dataset resolution: explicit local loaders override a global source with the same ID', async () => {
+  const registry = createDatasetRegistry([{ id: 'same', name: 'global', data: () => [{ value: 'global' }] }]);
+  const local = { id: 'same', name: 'local', data: () => [{ value: 'local' }] };
+  assert.deepEqual((await resolveDatasetData(local, { registry })).data, [{ value: 'local' }]);
+  assert.deepEqual((await resolveDatasetData('same', { registry })).data, [{ value: 'global' }]);
 });
 

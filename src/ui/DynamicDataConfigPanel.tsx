@@ -11,7 +11,6 @@ import {
   CalendarOutlined,
   ProfileOutlined,
   DatabaseOutlined,
-  CodeOutlined,
   InfoCircleOutlined,
   ReloadOutlined,
   CloudDownloadOutlined,
@@ -45,7 +44,6 @@ import {
   useRegisteredDatasets,
   resolveDatasetData,
   type RegisteredDataset,
-  type DatasetDataLoader,
 } from '../core/datasetRegistry.js';
 
 export const DynamicDataConfigPanel = React.forwardRef<
@@ -53,8 +51,6 @@ export const DynamicDataConfigPanel = React.forwardRef<
   DynamicDataConfigPanelProps
 >(function DynamicDataConfigPanel(
   {
-    data: propData,
-    headers: propHeaders,
     datasetId: propDatasetId,
     datasets: propDatasets,
     onDatasetChange,
@@ -69,12 +65,13 @@ export const DynamicDataConfigPanel = React.forwardRef<
     locale: propLocale,
     showQuickPresets = true,
     showDslTools = false,
+    showFieldKeys = false,
   },
   ref
 ) {
   const t = useDynamicDataLocale(propLocale);
 
-  // 1. 多数据源与注册中心响应式接入 (支持直接代码传入 + 注册制多数据源自由切换)
+  // 1. 数据集列表与响应式接入 (优先使用显式传入的 datasets，缺省则从全局注册表读取)
   const registeredDatasets = useRegisteredDatasets();
   const candidateDatasets: readonly RegisteredDataset[] = useMemo(() => {
     if (propDatasets && propDatasets.length > 0) {
@@ -85,29 +82,49 @@ export const DynamicDataConfigPanel = React.forwardRef<
 
   // 用户是否显式进行了手动数据源切换
   const [userSelectedDatasetId, setUserSelectedDatasetId] = useState<string | undefined>(undefined);
+  const datasetLoadRequestRef = React.useRef(0);
+  const datasetSelectionRef = React.useRef(0);
+  const requestedDatasetIdRef = React.useRef(propDatasetId);
+
+  useEffect(() => () => { datasetSelectionRef.current += 1; }, []);
 
   const [internalDatasetId, setInternalDatasetId] = useState<string | undefined>(() => {
     if (propDatasetId) return propDatasetId;
     if (value?.datasetId) return value.datasetId;
     if (defaultValue?.datasetId) return defaultValue.datasetId;
-    if (!propData && candidateDatasets.length > 0) return candidateDatasets[0]?.id;
-    return undefined;
+    return candidateDatasets[0]?.id;
   });
 
   useEffect(() => {
+    if (requestedDatasetIdRef.current !== propDatasetId) {
+      datasetSelectionRef.current += 1;
+      requestedDatasetIdRef.current = propDatasetId;
+    }
     setUserSelectedDatasetId(undefined);
     if (propDatasetId !== undefined) {
       setInternalDatasetId(propDatasetId);
     }
   }, [propDatasetId]);
 
-  const effectiveDatasetId = userSelectedDatasetId ?? internalDatasetId ?? propDatasetId ?? value?.datasetId ?? defaultValue?.datasetId;
+  useEffect(() => {
+    if (!internalDatasetId && candidateDatasets.length > 0) {
+      setInternalDatasetId(candidateDatasets[0]?.id);
+    }
+  }, [internalDatasetId, candidateDatasets]);
+
+  const effectiveDatasetId =
+    userSelectedDatasetId ??
+    internalDatasetId ??
+    propDatasetId ??
+    value?.datasetId ??
+    defaultValue?.datasetId ??
+    candidateDatasets[0]?.id;
 
   const selectedRegisteredDataset = useMemo(() => {
     if (!effectiveDatasetId) {
-      return undefined;
+      return candidateDatasets[0];
     }
-    return candidateDatasets.find((d) => d.id === effectiveDatasetId);
+    return candidateDatasets.find((d) => d.id === effectiveDatasetId) ?? candidateDatasets[0];
   }, [effectiveDatasetId, candidateDatasets]);
 
   // 异步数据集加载状态与缓存快照
@@ -123,21 +140,11 @@ export const DynamicDataConfigPanel = React.forwardRef<
         headers: selectedRegisteredDataset.headers as Record<string, string> | undefined,
       };
     }
-    if (Array.isArray(propData)) {
-      return {
-        datasetId: '__direct_data__',
-        data: propData,
-        headers: propHeaders,
-      };
-    }
     return null;
   });
 
   const [isDatasetLoading, setIsDatasetLoading] = useState<boolean>(() => {
     if (selectedRegisteredDataset && typeof selectedRegisteredDataset.data === 'function') {
-      return true;
-    }
-    if (typeof propData === 'function') {
       return true;
     }
     return false;
@@ -146,7 +153,7 @@ export const DynamicDataConfigPanel = React.forwardRef<
 
   const loadActiveDataset = useCallback(
     async (forceRefresh = false) => {
-      // 1. 优先使用选中的注册数据集 (Mode B)
+      const request = ++datasetLoadRequestRef.current;
       if (selectedRegisteredDataset) {
         const ds = selectedRegisteredDataset;
         if (Array.isArray(ds.data)) {
@@ -164,6 +171,7 @@ export const DynamicDataConfigPanel = React.forwardRef<
           setDatasetError(null);
           try {
             const res = await resolveDatasetData(ds, { forceRefresh });
+            if (request !== datasetLoadRequestRef.current) return;
             setResolvedAsyncData({
               datasetId: ds.id,
               data: res.data,
@@ -173,55 +181,12 @@ export const DynamicDataConfigPanel = React.forwardRef<
               message.success(t('数据源数据刷新成功'));
             }
           } catch (err) {
+            if (request !== datasetLoadRequestRef.current) return;
             const errorObj = err instanceof Error ? err : new Error(String(err));
             setDatasetError(errorObj);
             message.error(t('数据源加载失败') + ': ' + errorObj.message);
           } finally {
-            setIsDatasetLoading(false);
-          }
-          return;
-        }
-      }
-
-      // 2. 否则使用直接传入的 propData (Mode A)
-      if (propData) {
-        if (Array.isArray(propData)) {
-          setResolvedAsyncData({
-            datasetId: '__direct_data__',
-            data: propData,
-            headers: propHeaders,
-          });
-          setIsDatasetLoading(false);
-          setDatasetError(null);
-          return;
-        }
-        if (typeof propData === 'function') {
-          setIsDatasetLoading(true);
-          setDatasetError(null);
-          try {
-            const res = await (propData as DatasetDataLoader)();
-            let finalData: readonly DataRecord[] = [];
-            let finalHeaders: Record<string, string> | undefined = propHeaders;
-            if (Array.isArray(res)) {
-              finalData = res;
-            } else if (res && typeof res === 'object' && Array.isArray((res as any).data)) {
-              finalData = (res as any).data;
-              finalHeaders = (res as any).headers || propHeaders;
-            }
-            setResolvedAsyncData({
-              datasetId: '__direct_data__',
-              data: finalData,
-              headers: finalHeaders,
-            });
-            if (forceRefresh) {
-              message.success(t('数据源数据刷新成功'));
-            }
-          } catch (err) {
-            const errorObj = err instanceof Error ? err : new Error(String(err));
-            setDatasetError(errorObj);
-            message.error(t('数据源加载失败') + ': ' + errorObj.message);
-          } finally {
-            setIsDatasetLoading(false);
+            if (request === datasetLoadRequestRef.current) setIsDatasetLoading(false);
           }
           return;
         }
@@ -231,42 +196,39 @@ export const DynamicDataConfigPanel = React.forwardRef<
       setIsDatasetLoading(false);
       setDatasetError(null);
     },
-    [selectedRegisteredDataset, propData, propHeaders, t]
+    [selectedRegisteredDataset, t]
   );
 
   useEffect(() => {
-    loadActiveDataset(false);
+    void loadActiveDataset(false);
+    return () => { datasetLoadRequestRef.current += 1; };
   }, [loadActiveDataset]);
 
   // 数据集流转优先级：
-  // 1. 若异步加载已完成，优先使用解析后的真实事实数据
+  // 1. 若异步加载已完成且属于当前数据集，使用解析后的真实事实数据
   // 2. 若当前数据集为静态数组，使用静态数组
   // 3. 兜底为空数组 []
   const effectiveData: readonly DataRecord[] = useMemo(() => {
-    if (resolvedAsyncData) {
+    if (resolvedAsyncData && resolvedAsyncData.datasetId === selectedRegisteredDataset?.id) {
       return resolvedAsyncData.data;
     }
     if (selectedRegisteredDataset && Array.isArray(selectedRegisteredDataset.data)) {
       return selectedRegisteredDataset.data;
     }
-    if (Array.isArray(propData)) {
-      return propData;
-    }
     return [];
-  }, [resolvedAsyncData, selectedRegisteredDataset, propData]);
+  }, [resolvedAsyncData, selectedRegisteredDataset]);
 
   const effectiveHeaders: Record<string, string> | undefined = useMemo(() => {
-    if (resolvedAsyncData?.headers) {
+    if (resolvedAsyncData && resolvedAsyncData.datasetId === selectedRegisteredDataset?.id && resolvedAsyncData.headers) {
       return resolvedAsyncData.headers;
     }
     if (selectedRegisteredDataset?.headers) {
       return selectedRegisteredDataset.headers as Record<string, string>;
     }
-    if (propHeaders) return propHeaders;
     if (value?.headers) return value.headers;
     if (defaultValue?.headers) return defaultValue.headers;
     return undefined;
-  }, [resolvedAsyncData, selectedRegisteredDataset, propHeaders, value?.headers, defaultValue?.headers]);
+  }, [resolvedAsyncData, selectedRegisteredDataset, value?.headers, defaultValue?.headers]);
 
   // 2. 字段类型探测与用户覆盖
   const [fieldOverrides, setFieldOverrides] = useState<Record<string, FieldDataType>>({});
@@ -473,86 +435,9 @@ export const DynamicDataConfigPanel = React.forwardRef<
   // 切换数据源处理
   const handleDatasetSelect = useCallback(
     async (newId: string) => {
-      if (newId === '__direct_data__') {
-        setUserSelectedDatasetId(undefined);
-        setInternalDatasetId(undefined);
-        onDatasetChange?.(undefined as unknown as string, undefined as unknown as RegisteredDataset);
-        message.success(t('已切换至数据源: {name}', { name: t('代码直接传入数据源') }));
-        setFieldOverrides({});
-
-        let directRecords: readonly DataRecord[] = [];
-        let directHeaders = propHeaders;
-        if (Array.isArray(propData)) {
-          directRecords = propData;
-        } else if (typeof propData === 'function') {
-          setIsDatasetLoading(true);
-          setDatasetError(null);
-          try {
-            const res = await resolveDatasetData(propData);
-            directRecords = res.data;
-            if (res.headers) directHeaders = res.headers as Record<string, string>;
-            setResolvedAsyncData({
-              datasetId: '__direct_data__',
-              data: res.data,
-              headers: res.headers as Record<string, string> | undefined,
-            });
-          } catch (err) {
-            const errorObj = err instanceof Error ? err : new Error(String(err));
-            setDatasetError(errorObj);
-            message.error(`${t('数据源加载失败')}: ${errorObj.message}`);
-          } finally {
-            setIsDatasetLoading(false);
-          }
-        }
-
-        const newFields = profileDataset(directRecords, { headers: directHeaders, sampleLimit });
-        const newFieldKeys = new Set(newFields.map((f) => f.key));
-
-        let nextDims: DimensionConfig | undefined = undefined;
-        if (activeConfig.dimensions) {
-          const origDims = activeConfig.dimensions;
-          const timeBucket = origDims.timeBucket && newFieldKeys.has(origDims.timeBucket.field) ? origDims.timeBucket : undefined;
-          const categories = origDims.categories ? origDims.categories.filter((c) => newFieldKeys.has(c)) : undefined;
-          const finalCategories = categories && categories.length > 0 ? categories : undefined;
-          const columnTimeBucket = origDims.columnTimeBucket && newFieldKeys.has(origDims.columnTimeBucket.field) ? origDims.columnTimeBucket : undefined;
-          const columnCategories = origDims.columnCategories ? origDims.columnCategories.filter((c) => newFieldKeys.has(c)) : undefined;
-          const finalColumnCategories = columnCategories && columnCategories.length > 0 ? columnCategories : undefined;
-
-          if (timeBucket || finalCategories || columnTimeBucket || finalColumnCategories) {
-            nextDims = {
-              ...(timeBucket ? { timeBucket } : {}),
-              ...(finalCategories ? { categories: finalCategories } : {}),
-              ...(columnTimeBucket ? { columnTimeBucket } : {}),
-              ...(finalColumnCategories ? { columnCategories: finalColumnCategories } : {}),
-            };
-          }
-        }
-
-        let nextCols = activeConfig.columns.filter((c) => {
-          if (c.type === 'fixed' || c.type === 'aggregated') {
-            return newFieldKeys.has(c.field);
-          }
-          return true;
-        });
-
-        if (nextCols.length === 0 && newFields.length > 0) {
-          nextCols = newFields.slice(0, Math.min(5, newFields.length)).map((f) => ({
-            type: 'fixed' as const,
-            field: f.key,
-            label: f.label,
-          }));
-        }
-
-        updateConfig({
-          ...activeConfig,
-          datasetId: undefined,
-          dimensions: nextDims,
-          columns: nextCols,
-          headers: propHeaders,
-        });
-        return;
-      }
-
+      const selection = ++datasetSelectionRef.current;
+      requestedDatasetIdRef.current = newId;
+      datasetLoadRequestRef.current += 1;
       setUserSelectedDatasetId(newId);
       setInternalDatasetId(newId);
       const targetDs = candidateDatasets.find((d) => d.id === newId);
@@ -582,6 +467,7 @@ export const DynamicDataConfigPanel = React.forwardRef<
           setDatasetError(null);
           try {
             const res = await resolveDatasetData(targetDs);
+            if (selection !== datasetSelectionRef.current) return;
             targetData = res.data;
             if (res.headers) targetHeaders = res.headers as Record<string, string>;
             setResolvedAsyncData({
@@ -590,15 +476,17 @@ export const DynamicDataConfigPanel = React.forwardRef<
               headers: res.headers as Record<string, string> | undefined,
             });
           } catch (err) {
+            if (selection !== datasetSelectionRef.current) return;
             const errorObj = err instanceof Error ? err : new Error(String(err));
             setDatasetError(errorObj);
             message.error(`${t('数据源加载失败')}: ${errorObj.message}`);
           } finally {
-            setIsDatasetLoading(false);
+            if (selection === datasetSelectionRef.current) setIsDatasetLoading(false);
           }
         }
       }
 
+      if (selection !== datasetSelectionRef.current) return;
       const newFields = profileDataset(targetData, { headers: targetHeaders, sampleLimit });
       const newFieldKeys = new Set(newFields.map((f) => f.key));
 
@@ -926,30 +814,15 @@ export const DynamicDataConfigPanel = React.forwardRef<
                 </span>
               </Space>
 
-              {candidateDatasets.length > 0 ? (
+              {candidateDatasets.length > 1 ? (
                 <Space size={8} align="center" wrap>
                   <Select
-                    value={effectiveDatasetId ?? (propData ? '__direct_data__' : null)}
+                    value={selectedRegisteredDataset?.id ?? null}
                     onChange={handleDatasetSelect}
-                    style={{ minWidth: 280 }}
+                    style={{ minWidth: 260 }}
                     placeholder={t('请选择分析数据源')}
                     optionLabelProp="label"
                   >
-                    {propData && (
-                      <Select.Option key="__direct_data__" value="__direct_data__" label={t('代码直接传入数据源')}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-                          <Space size={6}>
-                            <CodeOutlined style={{ color: '#52c41a' }} />
-                            <span style={{ fontWeight: 500 }}>{t('代码直接传入数据源')}</span>
-                          </Space>
-                          {typeof propData === 'function' ? (
-                            <Tag color="orange" style={{ margin: 0, fontSize: 11 }}>{t('动态拉取')}</Tag>
-                          ) : (
-                            <Tag color="green" style={{ margin: 0, fontSize: 11 }}>Direct Code</Tag>
-                          )}
-                        </div>
-                      </Select.Option>
-                    )}
                     {candidateDatasets.map((ds) => {
                       const isAsync = typeof ds.data === 'function';
                       return (
@@ -979,7 +852,7 @@ export const DynamicDataConfigPanel = React.forwardRef<
                     })}
                   </Select>
 
-                  {selectedRegisteredDataset ? (
+                  {selectedRegisteredDataset && (
                     <Space size={6} wrap align="center">
                       <Tag color="cyan" style={{ margin: 0, fontSize: 11 }}>
                         {selectedRegisteredDataset.id}
@@ -1013,44 +886,18 @@ export const DynamicDataConfigPanel = React.forwardRef<
                         </Tooltip>
                       )}
                     </Space>
-                  ) : propData ? (
-                    <Space size={6} wrap align="center">
-                      <Tag color="green" style={{ margin: 0, fontSize: 11 }}>
-                        {t('代码直接传入数据源')}
-                      </Tag>
-                      {typeof propData === 'function' && (
-                        <Tag color="processing" icon={<CloudDownloadOutlined />} style={{ margin: 0, fontSize: 11 }}>
-                          {t('动态拉取')}
-                        </Tag>
-                      )}
-                      <Tag color="default" style={{ margin: 0, fontSize: 11 }}>
-                        {t('共 {count} 条事实记录', { count: effectiveData.length })}
-                      </Tag>
-                      {typeof propData === 'function' && (
-                        <Button
-                          size="small"
-                          type="text"
-                          icon={<ReloadOutlined spin={isDatasetLoading} />}
-                          loading={isDatasetLoading}
-                          onClick={() => {
-                            void loadActiveDataset(true);
-                          }}
-                          title={t('刷新数据')}
-                          style={{ padding: '0 6px', height: 22, fontSize: 12, color: '#1677ff' }}
-                        >
-                          {t('刷新数据')}
-                        </Button>
-                      )}
-                    </Space>
-                  ) : null}
+                  )}
                 </Space>
-              ) : (
-                <Space size={8} align="center">
+              ) : candidateDatasets.length === 1 && selectedRegisteredDataset ? (
+                <Space size={8} align="center" wrap>
                   <Tag color="geekblue" style={{ margin: 0, fontSize: 12, padding: '2px 8px' }}>
-                    <CodeOutlined style={{ marginRight: 4 }} />
-                    {t('代码直接传入数据源')}
+                    <DatabaseOutlined style={{ marginRight: 4 }} />
+                    {selectedRegisteredDataset.name}
                   </Tag>
-                  {typeof propData === 'function' && (
+                  <Tag color="cyan" style={{ margin: 0, fontSize: 11 }}>
+                    {selectedRegisteredDataset.id}
+                  </Tag>
+                  {typeof selectedRegisteredDataset.data === 'function' && (
                     <Tag color="processing" icon={<CloudDownloadOutlined />} style={{ margin: 0, fontSize: 11 }}>
                       {t('动态拉取')}
                     </Tag>
@@ -1058,7 +905,7 @@ export const DynamicDataConfigPanel = React.forwardRef<
                   <Tag color="default" style={{ margin: 0, fontSize: 11 }}>
                     {t('共 {count} 条事实记录', { count: effectiveData.length })}
                   </Tag>
-                  {typeof propData === 'function' && (
+                  {typeof selectedRegisteredDataset.data === 'function' && (
                     <Button
                       size="small"
                       type="text"
@@ -1073,7 +920,16 @@ export const DynamicDataConfigPanel = React.forwardRef<
                       {t('刷新数据')}
                     </Button>
                   )}
+                  {selectedRegisteredDataset.description && (
+                    <Tooltip title={selectedRegisteredDataset.description}>
+                      <InfoCircleOutlined style={{ color: '#94a3b8', fontSize: 13, cursor: 'pointer' }} />
+                    </Tooltip>
+                  )}
                 </Space>
+              ) : (
+                <span style={{ fontSize: 12, color: '#94a3b8' }}>
+                  {t('未检测到可用数据集')}
+                </span>
               )}
             </Space>
 
@@ -1242,6 +1098,7 @@ export const DynamicDataConfigPanel = React.forwardRef<
             <Col xs={24} sm={8} md={7} lg={6}>
               <FieldProfilerList
                 fields={fields}
+                showFieldKeys={showFieldKeys}
                 onFieldTypeChange={handleFieldTypeChange}
                 onQuickAddColumn={handleQuickAddColumn}
               />
@@ -1254,6 +1111,7 @@ export const DynamicDataConfigPanel = React.forwardRef<
                 {...(activeConfig.dimensions !== undefined ? { dimensions: activeConfig.dimensions } : {})}
                 availableFields={fields}
                 headers={effectiveHeaders}
+                showFieldKeys={showFieldKeys}
                 onChange={handleDimensionsChange}
               />
 
@@ -1261,6 +1119,7 @@ export const DynamicDataConfigPanel = React.forwardRef<
               <ColumnConfigList
                 columns={activeConfig.columns}
                 availableFields={fields}
+                showFieldKeys={showFieldKeys}
                 hasDimensions={Boolean(
                   activeConfig.dimensions?.timeBucket?.field ||
                   (activeConfig.dimensions?.categories && activeConfig.dimensions.categories.length > 0) ||

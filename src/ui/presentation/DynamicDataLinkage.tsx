@@ -109,14 +109,11 @@ export function matchSliceValue(rawVal: unknown, sliceVal: unknown): boolean {
   }
 
   // 4. 时间分桶与跨粒度时间深度对齐
-  let dRaw = dayjs(rawVal as any);
-  if (!dRaw.isValid()) {
-    if (typeof rawVal === 'string' && /^\d{10}$/.test(rawVal)) {
-      dRaw = dayjs(Number(rawVal) * 1000);
-    } else if (typeof rawVal === 'number' && rawVal < 10000000000) {
-      dRaw = dayjs(rawVal * 1000);
-    }
-  }
+  const normalizedRaw = typeof rawVal === 'string' && /^\d{10}$/.test(rawVal)
+    ? Number(rawVal) * 1000
+    : typeof rawVal === 'number' && Math.abs(rawVal) >= 1000000000 && Math.abs(rawVal) < 10000000000
+    ? rawVal * 1000 : rawVal;
+  const dRaw = dayjs(normalizedRaw as any);
 
   if (dRaw.isValid()) {
     // 4.1 天级别 YYYY-MM-DD
@@ -132,11 +129,13 @@ export function matchSliceValue(rawVal: unknown, sliceVal: unknown): boolean {
     if (`${dRaw.year()}-Q${q}` === strSlice) return true;
     // 4.6 周级别
     if (strSlice.includes('(第') && strSlice.includes('周)')) {
-      const currentDay = dRaw.day();
-      const diffDays = currentDay === 0 ? -6 : 1 - currentDay;
-      const startOfWeek = dRaw.add(diffDays, 'day');
-      const weekPattern = `${startOfWeek.format('YYYY-MM-DD')} (第${Math.ceil(dRaw.date() / 7)}周)`;
-      if (strSlice === weekPattern || strSlice.startsWith(startOfWeek.format('YYYY-MM-DD'))) return true;
+      const match = /^(\d{4}-\d{2}-\d{2})\s*\(第\d+周\)$/.exec(strSlice);
+      if (match?.[1]) {
+        const startOfWeek = dayjs(match[1]).startOf('day');
+        if (startOfWeek.isValid() && dRaw.valueOf() >= startOfWeek.valueOf() && dRaw.valueOf() < startOfWeek.add(7, 'day').valueOf()) {
+          return true;
+        }
+      }
     }
     // 4.7 范围区间 'YYYY-MM-DD ~ YYYY-MM-DD'
     if (strSlice.includes(' ~ ')) {

@@ -123,10 +123,13 @@ export const SlotConfirmPopover: React.FC<SlotConfirmPopoverProps> = ({
             value={rowEntityKey}
             onChange={setRowEntityKey}
             placeholder={t('选择主体分类 (如车间)')}
-            options={textFields.map((f) => ({
-              value: f.key,
-              label: f.label !== f.key ? `${f.label} (${f.key})` : f.key,
-            }))}
+            options={textFields.map((f) => {
+              const isDuplicate = textFields.filter((other) => other.label === f.label).length > 1;
+              return {
+                value: f.key,
+                label: isDuplicate ? `${f.label} (${f.key})` : f.label,
+              };
+            })}
           />
         </div>
 
@@ -146,10 +149,13 @@ export const SlotConfirmPopover: React.FC<SlotConfirmPopoverProps> = ({
               value={colTimeKey}
               onChange={setColTimeKey}
               placeholder={t('选择时间字段')}
-              options={timeFields.map((f) => ({
-                value: f.key,
-                label: f.label !== f.key ? `${f.label} (${f.key})` : f.key,
-              }))}
+              options={timeFields.map((f) => {
+                const isDuplicate = timeFields.filter((other) => other.label === f.label).length > 1;
+                return {
+                  value: f.key,
+                  label: isDuplicate ? `${f.label} (${f.key})` : f.label,
+                };
+              })}
             />
             <Select
               style={{ width: '32%' }}
@@ -182,10 +188,13 @@ export const SlotConfirmPopover: React.FC<SlotConfirmPopoverProps> = ({
             onChange={setMetricKeys}
             placeholder={t('选择度量指标')}
             maxTagCount="responsive"
-            options={numberFields.map((f) => ({
-              value: f.key,
-              label: f.label !== f.key ? `${f.label} (${f.key})` : f.key,
-            }))}
+            options={numberFields.map((f) => {
+              const isDuplicate = numberFields.filter((other) => other.label === f.label).length > 1;
+              return {
+                value: f.key,
+                label: isDuplicate ? `${f.label} (${f.key})` : f.label,
+              };
+            })}
           />
         </div>
 

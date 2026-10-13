@@ -19,15 +19,16 @@ import type {
   FieldDataType,
 } from './types.js';
 import { formatTimeBucket } from './bucketing.js';
-import { evaluateFormula, evaluateAST } from './formula/evaluator.js';
-import { parseFormula } from './formula/parser.js';
+import { evaluateAST } from './formula/evaluator.js';
+import { parseFormula, extractReferencedFields } from './formula/parser.js';
 import { isLikelyDateValue, isLikelyNumericValue } from './profiler.js';
 
-interface MetricAccumulator {
-  sum: number;
-  count: number;
-  min: number;
-  max: number;
+import { accumulateMetric, createMetricAccumulator, getAggregatedValue, type MetricAccumulator } from './aggregation.js';
+import { getRecordKey, getSourceRowKey, setRecordMetadata } from './recordMetadata.js';
+
+export interface TransformExecutionOptions {
+  /** Original dataset keys when transforming a filtered subset. */
+  readonly sourceRowKeys?: readonly string[];
 }
 
 function roundTo(num: number, precision?: number): number {
@@ -62,23 +63,22 @@ function isRowLevelComputed(col: ComputedColumnConfig, shouldAggregate: boolean)
  */
 export function transformData(
   records: readonly DataRecord[],
-  config: DynamicTransformConfig
+  config: DynamicTransformConfig,
+  executionOptions?: TransformExecutionOptions
 ): TransformResult {
   const startTime = Date.now();
   const nullAsZero = config.options?.nullAsZero ?? true;
 
-  if (!records || records.length === 0) {
-    return {
-      data: [],
-      columns: [],
-      meta: {
-        form: 'detail',
-        inputRows: 0,
-        outputRows: 0,
-        executionTimeMs: 0,
-      },
-    };
+  records = records ?? [];
+
+  if (executionOptions?.sourceRowKeys && executionOptions.sourceRowKeys.length !== records.length) {
+    throw new RangeError('sourceRowKeys 必须与输入记录数量一致');
   }
+  const sourceRowKeys = records.map((row, index) =>
+    executionOptions?.sourceRowKeys?.[index] ?? getSourceRowKey(row) ?? getRecordKey(row, index)!
+  );
+
+  const effectiveRecords: readonly DataRecord[] = records;
 
   // 1. 三态智能仲裁判定 (Three-state Disambiguation Decision)
   const timeBucketConfig = config.dimensions?.timeBucket;
@@ -147,7 +147,7 @@ export function transformData(
     (c): c is AggregatedColumnConfig => c.type === 'aggregated'
   );
 
-  const enhancedRows: DataRecord[] = records.map((rawRow) => {
+  const enhancedRows: DataRecord[] = effectiveRecords.map((rawRow) => {
     const row: DataRecord = { ...rawRow };
 
     // 挂载表头标签别名，确保公式引用 [销售额] 或 [sales] 都能取到值
@@ -231,21 +231,36 @@ export function transformData(
     }
     for (let i = 0; i < enhancedRows.length; i++) {
       const row = enhancedRows[i]!;
-      const rawRecord = records[i] || row;
+      const rawRecord = effectiveRecords[i] || row;
       Object.defineProperty(row, '_rawRows', {
         value: [rawRecord],
         enumerable: false,
         writable: true,
         configurable: true,
       });
+      setRecordMetadata(row, { rowKey: sourceRowKeys[i]!, sourceRowKey: sourceRowKeys[i]! });
     }
     outputRows = enhancedRows;
   } else {
     // 场景 B & C: 分组折叠透视汇总 (Pivot) 或 全局单行汇总 (Summary)
-    const sampleRecord = enhancedRows[0] || {};
+    const sampleRecord = effectiveRecords[0] || {};
     const metricFieldsToTrack = new Set<string>();
     for (const aggCol of aggCols) {
       metricFieldsToTrack.add(aggCol.field);
+    }
+    for (const computed of rowComputedCols) {
+      metricFieldsToTrack.add(computed.name);
+    }
+    for (const { ast } of compiledSummaryCols) {
+      if (!ast) continue;
+      for (const referenced of extractReferencedFields(ast)) {
+        const macro = /^(SUM|AVG|MIN|MAX|COUNT)\((.+)\)$/i.exec(referenced);
+        const field = macro?.[2] ?? referenced;
+        const physicalField = Object.entries(config.headers ?? {}).find(([, label]) => label === field)?.[0] ?? field;
+        if (!allComputedCols.some((column) => column.name === physicalField)) {
+          metricFieldsToTrack.add(physicalField);
+        }
+      }
     }
     for (const [k, v] of Object.entries(sampleRecord)) {
       if (typeof v === 'number' || (typeof v === 'string' && !Number.isNaN(Number(v)) && v.trim() !== '')) {
@@ -265,7 +280,7 @@ export function transformData(
 
     for (let i = 0; i < enhancedRows.length; i++) {
       const row = enhancedRows[i]!;
-      const rawRecord = records[i] || row;
+      const rawRecord = effectiveRecords[i] || row;
       const dimValues: Record<string, unknown> = {};
 
       if (hasDimensions) {
@@ -286,9 +301,7 @@ export function transformData(
       }
 
       const groupKey = hasDimensions
-        ? Object.entries(dimValues)
-            .map(([k, v]) => `${k}:${String(v)}`)
-            .join('###')
+        ? JSON.stringify(Object.entries(dimValues).map(([key, value]) => [key, String(value)]))
         : '__GLOBAL_SUMMARY__';
 
       let group = groupMap.get(groupKey);
@@ -306,34 +319,18 @@ export function transformData(
       for (const metricField of metricFieldsToTrack) {
         let acc = group.metrics.get(metricField);
         if (!acc) {
-          acc = { sum: 0, count: 0, min: Infinity, max: -Infinity };
+          acc = createMetricAccumulator();
           group.metrics.set(metricField, acc);
         }
 
-        const rawVal = row[metricField];
-        // 在分组聚合累加阶段，null/undefined/空字符串表示数据缺失，在 BI/SQL 聚合规则中必须跳过，绝不能当成数值 0 去污染 min/count/avg
-        if (rawVal === null || rawVal === undefined || rawVal === '') {
-          continue;
-        }
-
-        const numVal = typeof rawVal === 'number' ? rawVal : Number(rawVal);
-
-        if (Number.isFinite(numVal)) {
-          acc.sum += numVal;
-          acc.count += 1;
-          if (numVal < acc.min) acc.min = numVal;
-          if (numVal > acc.max) acc.max = numVal;
-        } else {
-          // 非数字类型（如文本 ID 字段）进行计数统计
-          acc.count += 1;
-        }
+        accumulateMetric(acc, row[metricField]);
       }
     }
 
     // 生成汇总行 (Summary Rows)
     const summaryRows: DataRecord[] = [];
 
-    for (const group of groupMap.values()) {
+    for (const [groupKey, group] of groupMap) {
       const summaryRow: DataRecord = { ...group.dimValues };
 
       // 1. 如果配置了固定原值列，但未在维度中声明，采用类似 SQL FIRST_VALUE 语义兜底取该组首条样本记录的值，防止出现 '-' 空值
@@ -350,7 +347,7 @@ export function transformData(
       // 2. 填充指标计算值：同时提供 SUM/AVG/MIN/MAX/COUNT 及原字段名
       for (const [metricField, acc] of group.metrics.entries()) {
         const finalSum = acc.sum;
-        const finalAvg = acc.count > 0 ? acc.sum / acc.count : 0;
+        const finalAvg = getAggregatedValue(acc, 'avg');
         const finalMin = acc.min === Infinity ? 0 : acc.min;
         const finalMax = acc.max === -Infinity ? 0 : acc.max;
         const finalCount = acc.count;
@@ -399,14 +396,7 @@ export function transformData(
       for (const aggCol of aggCols) {
         const acc = group.metrics.get(aggCol.field);
         if (acc) {
-          let customVal: unknown = 0;
-          switch (aggCol.agg) {
-            case 'sum': customVal = acc.sum; break;
-            case 'avg': customVal = acc.count > 0 ? acc.sum / acc.count : 0; break;
-            case 'min': customVal = acc.min === Infinity ? 0 : acc.min; break;
-            case 'max': customVal = acc.max === -Infinity ? 0 : acc.max; break;
-            case 'count': customVal = acc.count; break;
-          }
+          const customVal = getAggregatedValue(acc, aggCol.agg);
           const key = `${aggCol.agg.toUpperCase()}(${aggCol.field})`;
           summaryRow[key] = customVal;
           summaryRow[`${aggCol.agg.toLowerCase()}(${aggCol.field})`] = customVal;
@@ -414,7 +404,7 @@ export function transformData(
             summaryRow[aggCol.label] = customVal;
           }
           // 挂载原字段名，确保直接以 [field] 引用的公式与下游消费均能取到选定的聚合值
-          summaryRow[aggCol.field] = customVal;
+          if (!(aggCol.field in group.dimValues)) summaryRow[aggCol.field] = customVal;
         }
       }
 
@@ -445,6 +435,7 @@ export function transformData(
         writable: true,
         configurable: true,
       });
+      setRecordMetadata(summaryRow, { rowKey: `pivot:${groupKey}`, aggregates: group.metrics });
 
       summaryRows.push(summaryRow);
     }
@@ -544,7 +535,7 @@ export function transformData(
       if (!addedKeys.has(fixCol.field)) {
         let fieldType: FieldDataType = config.fields?.[fixCol.field] || 'text';
         if (!config.fields?.[fixCol.field]) {
-          const sampleVal = records.find(
+          const sampleVal = effectiveRecords.find(
             (r) => r[fixCol.field] !== null && r[fixCol.field] !== undefined
           )?.[fixCol.field];
           if (isLikelyNumericValue(sampleVal)) {
@@ -588,6 +579,7 @@ export function transformData(
           kind: 'computed',
           expression: compCol.expression,
           precision: compCol.precision,
+          scope: compCol.scope,
         });
         addedKeys.add(compCol.name);
       }
@@ -602,11 +594,12 @@ export function transformData(
     meta: {
       form: executionForm,
       isCrossTab,
-      inputRows: records.length,
+      inputRows: effectiveRecords.length,
       outputRows: outputRows.length,
       executionTimeMs,
       ...(config.dimensions ? { dimensions: config.dimensions } : {}),
       rawHeaders: config.headers,
+      transformConfig: config,
     },
   };
 }

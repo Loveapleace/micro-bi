@@ -67,7 +67,8 @@ import type { LinkageEvent, LinkageFilterSlice, TableFeatureConfig } from '../ty
 import type { ResolvedThemeConfig } from '../theme.js';
 import { buildAntdTheme } from '../theme.js';
 import { getRowFieldValue, matchSliceValue } from '../DynamicDataLinkage.js';
-import { computeSummaryValues, inferColumnAggType } from './summaryCalculator.js';
+import { computeSummaryValues, createPivotAggregationRules } from './summaryCalculator.js';
+import { cloneTransformRecord } from '../../../engine/recordMetadata.js';
 import {
   copyToClipboardAsTsv,
   exportToCsv,
@@ -832,15 +833,7 @@ export const VTableView: React.FC<VTableViewProps> = ({
       return indicatorDef;
     });
 
-    const aggregationRules: any[] = metricCols.map((col) => {
-      const agg = col.agg || inferColumnAggType(col.key, col.title || col.key);
-      const aggType = agg.toUpperCase();
-      return {
-        indicatorKey: col.key,
-        field: col.field || col.key,
-        aggregationType: aggType,
-      };
-    });
+    const aggregationRules = createPivotAggregationRules(metricCols, result.meta?.rawHeaders, result.columns);
 
     return { pivotIndicators: indicators, pivotAggregationRules: aggregationRules };
   }, [
@@ -851,6 +844,8 @@ export const VTableView: React.FC<VTableViewProps> = ({
     isDataBarsActive,
     colMaxMap,
     isDark,
+    result.columns,
+    result.meta?.rawHeaders,
   ]);
 
   // 5.5 构造透视表事实记录 (保证每个记录拥有有效行维度)
@@ -858,7 +853,7 @@ export const VTableView: React.FC<VTableViewProps> = ({
     if (!isCrossTab) return [];
     return filteredData.map((r) => {
       if (pivotRowDimensions.length === 0) {
-        return { ...r, __summary_row_dim__: t('汇总') };
+        return cloneTransformRecord(r, { __summary_row_dim__: t('汇总') });
       }
       return r;
     });

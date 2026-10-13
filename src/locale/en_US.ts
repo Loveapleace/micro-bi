@@ -357,5 +357,11 @@ export const en_US: DynamicDataLocale = {
   '数据源加载失败': 'Failed to load dataset',
   '刷新数据': 'Refresh Data',
   '数据源数据刷新成功': 'Dataset records refreshed successfully',
+  '业务名称': 'Business Name',
+  '物理键名': 'Physical Key',
+  '表头显示': 'Header Display',
+  '字段键名': 'Field Key',
+  '探测类型': 'Detected Type',
+  '样本数据': 'Sample Data',
 };
 

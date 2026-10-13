@@ -14,15 +14,13 @@ export function formatTimeBucket(value: unknown, config: TimeBucketConfig): stri
     return '(无时间)';
   }
 
-  let d = dayjs(value as string | number | Date);
-  if (!d.isValid()) {
-    // 尝试转数字时间戳（如 10 位秒时间戳）
-    if (typeof value === 'string' && /^\d{10}$/.test(value)) {
-      d = dayjs(Number(value) * 1000);
-    } else if (typeof value === 'number' && value < 10000000000) {
-      d = dayjs(value * 1000);
-    }
-  }
+  const normalizedValue =
+    typeof value === 'string' && /^\d{10}$/.test(value)
+      ? Number(value) * 1000
+      : typeof value === 'number' && Math.abs(value) >= 1000000000 && Math.abs(value) < 10000000000
+      ? value * 1000
+      : value as string | number | Date;
+  const d = dayjs(normalizedValue);
 
   if (!d.isValid()) {
     return '(无效时间)';
@@ -49,7 +47,7 @@ export function formatTimeBucket(value: unknown, config: TimeBucketConfig): stri
         diffDays = -currentDay;
       }
       const startOfWeek = d.add(diffDays, 'day');
-      return format ? startOfWeek.format(format) : `${startOfWeek.format('YYYY-MM-DD')} (第${Math.ceil(d.date() / 7)}周)`;
+      return format ? startOfWeek.format(format) : `${startOfWeek.format('YYYY-MM-DD')} (第${Math.ceil(startOfWeek.date() / 7)}周)`;
     }
 
     case 'month':

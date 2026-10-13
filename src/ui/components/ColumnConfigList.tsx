@@ -40,6 +40,7 @@ export interface ColumnConfigListProps {
   readonly onChange: (newCols: ColumnConfig[]) => void;
   readonly onOpenFormulaModal: (col?: ComputedColumnConfig | undefined) => void;
   readonly hasDimensions?: boolean | undefined;
+  readonly showFieldKeys?: boolean | undefined;
 }
 
 export const ColumnConfigList: React.FC<ColumnConfigListProps> = ({
@@ -48,6 +49,7 @@ export const ColumnConfigList: React.FC<ColumnConfigListProps> = ({
   onChange,
   onOpenFormulaModal,
   hasDimensions = false,
+  showFieldKeys = false,
 }) => {
   const { t } = useDynamicDataLocale();
 
@@ -195,11 +197,15 @@ export const ColumnConfigList: React.FC<ColumnConfigListProps> = ({
           {!hasDimensions ? (
             <Dropdown
               menu={{
-                items: availableFields.map((f) => ({
-                  key: f.key,
-                  label: f.label !== f.key ? `${f.label} (${f.key})` : f.key,
-                  onClick: () => handleAddFixed(f.key),
-                })),
+                items: availableFields.map((f) => {
+                  const isDuplicate = availableFields.filter((other) => other.label === f.label).length > 1;
+                  const itemLabel = showFieldKeys || isDuplicate ? `${f.label} (${f.key})` : f.label;
+                  return {
+                    key: f.key,
+                    label: itemLabel,
+                    onClick: () => handleAddFixed(f.key),
+                  };
+                }),
               }}
             >
               <Button size="small" icon={<PlusOutlined />}>
@@ -225,9 +231,11 @@ export const ColumnConfigList: React.FC<ColumnConfigListProps> = ({
                     f.label.includes('%') ||
                     f.label.includes('率');
                   const agg: AggregationFunction = isNumber ? (isRatio ? 'avg' : 'sum') : 'count';
+                  const isDuplicate = availableFields.filter((other) => other.label === f.label).length > 1;
+                  const itemLabel = showFieldKeys || isDuplicate ? `${f.label} (${f.key})` : f.label;
                   return {
                     key: f.key,
-                    label: f.label !== f.key ? `${f.label} (${f.key})` : f.key,
+                    label: itemLabel,
                     onClick: () => handleAddAggregated(f.key, agg),
                   };
                 }),
@@ -316,6 +324,13 @@ export const ColumnConfigList: React.FC<ColumnConfigListProps> = ({
                 const displayLabel =
                   record.label ||
                   (record.type === 'fixed' ? record.field : (record as any).name);
+                const matchedField =
+                  record.type === 'fixed' || record.type === 'aggregated'
+                    ? availableFields.find((f) => f.key === record.field)
+                    : undefined;
+                const sourceFieldLabel =
+                  matchedField?.label ||
+                  (record.type === 'fixed' || record.type === 'aggregated' ? record.field : '');
 
                 return (
                   <tr
@@ -386,7 +401,18 @@ export const ColumnConfigList: React.FC<ColumnConfigListProps> = ({
                       {record.type === 'computed' && <Tag color="purple">{t('动态计算')}</Tag>}
                     </td>
                     <td style={{ padding: '6px 12px' }}>
-                      {record.type === 'fixed' && <Text code>{record.field}</Text>}
+                      {record.type === 'fixed' && (
+                        showFieldKeys ? (
+                          <Space size={6}>
+                            <span style={{ fontWeight: 500, color: '#1e293b' }}>{sourceFieldLabel}</span>
+                            <Text code style={{ fontSize: 11 }}>{record.field}</Text>
+                          </Space>
+                        ) : (
+                          <Tooltip title={matchedField && matchedField.label !== record.field ? `${t('物理键名')}: ${record.field}` : undefined}>
+                            <span style={{ fontWeight: 500, color: '#1e293b' }}>{sourceFieldLabel}</span>
+                          </Tooltip>
+                        )
+                      )}
                       {record.type === 'aggregated' && (
                         <div
                           onMouseDown={(e) => e.stopPropagation()}
@@ -406,7 +432,16 @@ export const ColumnConfigList: React.FC<ColumnConfigListProps> = ({
                               { value: 'count', label: `${t('计数')} (COUNT)` },
                             ]}
                           />
-                          <Text code>{record.field}</Text>
+                          {showFieldKeys ? (
+                            <Space size={6}>
+                              <span style={{ fontWeight: 500, color: '#1e293b' }}>{sourceFieldLabel}</span>
+                              <Text code style={{ fontSize: 11 }}>{record.field}</Text>
+                            </Space>
+                          ) : (
+                            <Tooltip title={matchedField && matchedField.label !== record.field ? `${t('物理键名')}: ${record.field}` : undefined}>
+                              <span style={{ fontWeight: 500, color: '#1e293b' }}>{sourceFieldLabel}</span>
+                            </Tooltip>
+                          )}
                         </div>
                       )}
                       {record.type === 'computed' && (
@@ -551,10 +586,14 @@ export const ColumnConfigList: React.FC<ColumnConfigListProps> = ({
                     }}
                     options={availableFields
                       .filter((f) => f.type === req.type || req.type === 'text')
-                      .map((f) => ({
-                        value: f.key,
-                        label: f.label !== f.key ? `${f.label} (${f.key})` : f.key,
-                      }))}
+                      .map((f) => {
+                        const isDuplicate = availableFields.filter((other) => other.label === f.label).length > 1;
+                        const itemLabel = showFieldKeys || isDuplicate ? `${f.label} (${f.key})` : f.label;
+                        return {
+                          value: f.key,
+                          label: itemLabel,
+                        };
+                      })}
                   />
                 </div>
               ))}

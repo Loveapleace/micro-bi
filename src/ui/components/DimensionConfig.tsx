@@ -17,6 +17,7 @@ export interface DimensionConfigProps {
   readonly availableFields: readonly FieldMeta[];
   readonly disabled?: boolean | undefined;
   readonly headers?: Record<string, string> | undefined;
+  readonly showFieldKeys?: boolean | undefined;
   readonly onChange: (newDimensions: DimensionConfig) => void;
 }
 
@@ -25,6 +26,7 @@ export const DimensionConfigComponent: React.FC<DimensionConfigProps> = ({
   availableFields,
   disabled = false,
   headers,
+  showFieldKeys = false,
   onChange,
 }) => {
   const { t } = useDynamicDataLocale();
@@ -64,16 +66,20 @@ export const DimensionConfigComponent: React.FC<DimensionConfigProps> = ({
         }
       );
     }
-    return list.map((f) => ({
-      value: f.key,
-      label: (
-        <span>
-          {f.label !== f.key ? `${f.label} (${f.key})` : f.key}{' '}
-          <Tag color="blue" style={{ fontSize: 10 }}>{t('时间')}</Tag>
-        </span>
-      ),
-    }));
-  }, [timeFields, currentBucket?.field, availableFields, headers, t]);
+    return list.map((f) => {
+      const isDuplicate = list.filter((other) => other.label === f.label).length > 1;
+      const displayText = showFieldKeys || isDuplicate ? `${f.label} (${f.key})` : f.label;
+      return {
+        value: f.key,
+        label: (
+          <span>
+            {displayText}{' '}
+            <Tag color="blue" style={{ fontSize: 10 }}>{t('时间')}</Tag>
+          </span>
+        ),
+      };
+    });
+  }, [timeFields, currentBucket?.field, availableFields, headers, showFieldKeys, t]);
 
   // 列时间周期下拉选项：仅时间字段；若已配置字段因边界情况不在列表中则兜底追加
   const colTimeOptions = React.useMemo(() => {
@@ -89,16 +95,20 @@ export const DimensionConfigComponent: React.FC<DimensionConfigProps> = ({
         }
       );
     }
-    return list.map((f) => ({
-      value: f.key,
-      label: (
-        <span>
-          {f.label !== f.key ? `${f.label} (${f.key})` : f.key}{' '}
-          <Tag color="purple" style={{ fontSize: 10 }}>{t('时间')}</Tag>
-        </span>
-      ),
-    }));
-  }, [timeFields, currentColumnBucket?.field, availableFields, headers, t]);
+    return list.map((f) => {
+      const isDuplicate = list.filter((other) => other.label === f.label).length > 1;
+      const displayText = showFieldKeys || isDuplicate ? `${f.label} (${f.key})` : f.label;
+      return {
+        value: f.key,
+        label: (
+          <span>
+            {displayText}{' '}
+            <Tag color="purple" style={{ fontSize: 10 }}>{t('时间')}</Tag>
+          </span>
+        ),
+      };
+    });
+  }, [timeFields, currentColumnBucket?.field, availableFields, headers, showFieldKeys, t]);
 
   // --- 行维度处理函数 ---
   const handleTimeFieldChange = (field: string | undefined) => {
@@ -343,14 +353,18 @@ export const DimensionConfigComponent: React.FC<DimensionConfigProps> = ({
                     style={{ width: '100%' }}
                     value={[...currentCategories]}
                     onChange={handleCategoriesChange}
-                    options={availableFields.map((f) => ({
-                      value: f.key,
-                      label: (
-                        <span>
-                          {f.label !== f.key ? `${f.label} (${f.key})` : f.key} {f.type === 'text' && <Tag color="orange" style={{ fontSize: 10 }}>{t('文本')}</Tag>}
-                        </span>
-                      ),
-                    }))}
+                    options={availableFields.map((f) => {
+                      const isDuplicate = availableFields.filter((other) => other.label === f.label).length > 1;
+                      const displayText = showFieldKeys || isDuplicate ? `${f.label} (${f.key})` : f.label;
+                      return {
+                        value: f.key,
+                        label: (
+                          <span>
+                            {displayText} {f.type === 'text' && <Tag color="orange" style={{ fontSize: 10 }}>{t('文本')}</Tag>}
+                          </span>
+                        ),
+                      };
+                    })}
                   />
                   <Text type="secondary" style={{ fontSize: 11 }}>
                     {t('(支持多选，按所选顺序逐层向下嵌套分组)')}
@@ -444,14 +458,18 @@ export const DimensionConfigComponent: React.FC<DimensionConfigProps> = ({
                     style={{ width: '100%' }}
                     value={[...currentColumnCategories]}
                     onChange={handleColumnCategoriesChange}
-                    options={availableFields.map((f) => ({
-                      value: f.key,
-                      label: (
-                        <span>
-                          {f.label !== f.key ? `${f.label} (${f.key})` : f.key} {f.type === 'text' && <Tag color="orange" style={{ fontSize: 10 }}>{t('文本')}</Tag>}
-                        </span>
-                      ),
-                    }))}
+                    options={availableFields.map((f) => {
+                      const isDuplicate = availableFields.filter((other) => other.label === f.label).length > 1;
+                      const displayText = showFieldKeys || isDuplicate ? `${f.label} (${f.key})` : f.label;
+                      return {
+                        value: f.key,
+                        label: (
+                          <span>
+                            {displayText} {f.type === 'text' && <Tag color="orange" style={{ fontSize: 10 }}>{t('文本')}</Tag>}
+                          </span>
+                        ),
+                      };
+                    })}
                   />
                   {(currentColumnBucket?.field ? 1 : 0) + currentColumnCategories.length > 2 ? (
                     <Text type="warning" style={{ fontSize: 11 }}>

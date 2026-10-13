@@ -2,15 +2,13 @@
  * 可视化配置面板 UI 组件类型定义 (React 17+)
  */
 import type { CSSProperties } from 'react';
-import type { DataRecord } from '../types.js';
 import type {
   DynamicTransformConfig,
   TransformResult,
-  HeaderMapping,
 } from '../engine/types.js';
 import type { ConfigValidationResult } from '../engine/validator.js';
 import type { DynamicDataLocale, DeepPartial } from '../locale/types.js';
-import type { RegisteredDataset, DatasetDataLoader } from '../core/datasetRegistry.js';
+import type { RegisteredDataset } from '../core/datasetRegistry.js';
 
 /**
  * 配置面板实例暴露的方法句柄 (Ref Handle)
@@ -70,21 +68,15 @@ export interface DynamicDataConfigPanelRef {
 /** 面板核心受控/非受控组件 Props */
 export interface DynamicDataConfigPanelProps {
   /**
-   * 输入的原始数据集合或数据获取方法（直接代码模式）。
-   * 支持传入 DataRecord[] 或 () => Promise<DataRecord[]> 异步获取函数。
-   * 当未提供 data 且配置了 datasetId 或注册了数据集时，自动从注册数据源获取。
-   */
-  readonly data?: readonly DataRecord[] | DatasetDataLoader | undefined;
-  /** 表头与字段键名映射字典（如 { sales: '销售额', cost: '成本' }） */
-  readonly headers?: HeaderMapping | undefined;
-  /**
-   * 当前激活展示的数据集契约 ID（注册制模式）。
-   * 若提供，将从注册表中自动选取对应数据集。
+   * 当前激活展示的数据集契约 ID。
+   * 若提供，将从候选数据集（显式传入的 datasets 或全局注册表）中选取对应数据集。
    */
   readonly datasetId?: string | undefined;
   /**
    * 显式传入的可选数据集列表（局部覆盖全局注册表）。
-   * 若缺省，自动从 globalDatasetRegistry 读取所有已注册数据集。
+   * - 缺省时：自动从全局注册表 (globalDatasetRegistry) 读取所有已注册数据集。
+   * - 传入单项 (length === 1)：作为唯一绑定数据集（顶部锁定展示该数据集信息）。
+   * - 传入多项 (length > 1)：作为候选数据集列表（顶部提供下拉选择器供切换）。
    */
   readonly datasets?: readonly RegisteredDataset[] | undefined;
   /**
@@ -115,4 +107,10 @@ export interface DynamicDataConfigPanelProps {
   readonly showQuickPresets?: boolean | undefined;
   /** 是否展示底层开发级 DSL (JSON) 复制与导入工具，默认 false (防用户认知过载) */
   readonly showDslTools?: boolean | undefined;
+  /**
+   * 是否在配置面板中直接显式展示底层字段物理键名 (Key)。
+   * 默认为 false（推荐业务视角：主要视觉层仅展示人类可读的业务名称 Label，键名收纳于悬停 Tooltip 中）。
+   * 设为 true 时开启开发者模式，界面同时显式展示 Label 与 Key。
+   */
+  readonly showFieldKeys?: boolean | undefined;
 }

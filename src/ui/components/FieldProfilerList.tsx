@@ -17,12 +17,14 @@ export interface FieldProfilerListProps {
   readonly fields: readonly FieldMeta[];
   readonly onFieldTypeChange: (fieldKey: string, newType: FieldDataType) => void;
   readonly onQuickAddColumn: (fieldMeta: FieldMeta) => void;
+  readonly showFieldKeys?: boolean | undefined;
 }
 
 export const FieldProfilerList: React.FC<FieldProfilerListProps> = ({
   fields,
   onFieldTypeChange,
   onQuickAddColumn,
+  showFieldKeys = false,
 }) => {
   const { t } = useDynamicDataLocale();
   const [search, setSearch] = useState('');
@@ -218,12 +220,14 @@ export const FieldProfilerList: React.FC<FieldProfilerListProps> = ({
             <Tooltip
               title={
                 <div>
-                  <div>{t('表头显示')}: <b>{item.label}</b></div>
-                  <div>{t('字段键名')}: <code>{item.key}</code></div>
+                  <div>{t('业务名称')}: <b>{item.label}</b></div>
+                  {item.label !== item.key && (
+                    <div>{t('物理键名')}: <code>{item.key}</code></div>
+                  )}
                   <div style={{ color: '#8c8c8c' }}>{t('探测类型')}: {item.detectedType}</div>
                   {item.sampleValues && item.sampleValues.length > 0 && (
                     <div style={{ marginTop: 4, color: '#faad14' }}>
-                      样本: {item.sampleValues.map((v) => String(v)).join(', ')}
+                      {t('样本数据')}: {item.sampleValues.map((v) => String(v)).join(', ')}
                     </div>
                   )}
                 </div>
@@ -248,25 +252,28 @@ export const FieldProfilerList: React.FC<FieldProfilerListProps> = ({
                     style={{
                       fontSize: 12,
                       fontWeight: 500,
-                      color: '#262626',
+                      color: '#1e293b',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
                     }}
+                    title={item.label}
                   >
                     {item.label}
                   </div>
-                  <div
-                    style={{
-                      fontSize: 10,
-                      color: '#8c8c8c',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {item.key}
-                  </div>
+                  {showFieldKeys && (
+                    <div
+                      style={{
+                        fontSize: 10,
+                        color: '#8c8c8c',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {item.key}
+                    </div>
+                  )}
                 </div>
               </div>
             </Tooltip>

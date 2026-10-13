@@ -27,6 +27,7 @@ import { ViewTypeSwitcher } from './toolbar/ViewTypeSwitcher.js';
 import { VTableView } from './table/VTableView.js';
 import { VChartView } from './charts/VChartView.js';
 import { useDynamicDataLocale, type ViewLocale } from '../../locale/index.js';
+import { getRegisteredDataset, getCachedDatasetData } from '../../core/datasetRegistry.js';
 
 interface ViewErrorBoundaryProps {
   children: React.ReactNode;
@@ -565,13 +566,24 @@ export const DynamicDataView: React.FC<DynamicDataViewProps> = ({
     }
 
     // 方案 1: 内存级底层明细事实记录动态重聚合 (首选高保真方案)
-    // 若宿主传入了 rawDataset 与 transformConfig，则在 raw 数据层做多维切片过滤，
-    // 并完整重新走一遍 transformData 引擎管线。这样聚合度量（如 AVG 加权平均）、
-    // 计算列（如不良率%、达成率%）、总计行等全部依据切片后数据重新精确计算，100% 严谨。
-    if (rawDataset && rawDataset.length > 0 && transformConfig) {
+    // 若宿主传入了 rawDataset 或配置了 datasetId，则优先在原始数据层做多维切片过滤并重新聚合。
+    let effectiveRawData = rawDataset;
+    if ((!effectiveRawData || effectiveRawData.length === 0) && datasetId) {
+      const cached = getCachedDatasetData(datasetId);
+      if (cached && cached.data.length > 0) {
+        effectiveRawData = cached.data;
+      } else {
+        const reg = getRegisteredDataset(datasetId);
+        if (reg && Array.isArray(reg.data)) {
+          effectiveRawData = reg.data;
+        }
+      }
+    }
+
+    if (effectiveRawData && effectiveRawData.length > 0 && transformConfig) {
       try {
         const headers = transformConfig.headers || (result.meta as any)?.rawHeaders;
-        const filteredRaw = rawDataset.filter((row) =>
+        const filteredRaw = effectiveRawData.filter((row) =>
           externalSlices.every((slice) => {
             const val = getRowFieldValue(row, slice.field, headers);
             return matchSliceValue(val, slice.value);
@@ -591,7 +603,7 @@ export const DynamicDataView: React.FC<DynamicDataViewProps> = ({
       }
     }
 
-    // 方案 2: 降级方案 - 若未提供 rawDataset，直接在 result.data 上进行切片过滤
+    // 方案 2: 降级方案 - 若未提供 rawDataset 且未命中注册数据，直接在 result.data 上进行切片过滤
     if (result && result.data) {
       const headers = transformConfig?.headers || (result.meta as any)?.rawHeaders;
       const filteredRows = result.data.filter((row) =>
@@ -610,7 +622,7 @@ export const DynamicDataView: React.FC<DynamicDataViewProps> = ({
     }
 
     return result;
-  }, [result, rawDataset, transformConfig, externalSlices]);
+  }, [result, rawDataset, datasetId, transformConfig, externalSlices]);
 
   // 6. 容器基础样式与外部覆盖合并 (外部 style / className 最高优先级)
   const containerStyle: React.CSSProperties = {

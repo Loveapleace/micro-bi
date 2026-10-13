@@ -5,11 +5,65 @@
  *   - AVG: 平均值（若行挂载了 _rawRows，优先基于全量底层事实流水做真实加权平均；否则对当前行的有效数值求算术平均）
  *   - MIN: 最小值
  *   - MAX: 最大值
- *   - COUNT: 计数（事实记录总数）
+ *   - COUNT: 指定字段的非空值计数
  *   - COMPUTED: 基于总计行中已汇总的基础指标，代入原公式重新求值（避免百分比/比率指标简单相加得出 >1000% 的错误数据）
  */
 import type { DataRecord, OutputColumnMeta, AggregationFunction } from '../../../engine/types.js';
 import { evaluateFormula } from '../../../engine/formula/evaluator.js';
+import { accumulateMetric, createMetricAccumulator, getAggregatedValue, mergeMetricAccumulator, type MetricAccumulator } from '../../../engine/aggregation.js';
+import { getRecordAggregates } from '../../../engine/recordMetadata.js';
+
+function collectAggregates(rows: readonly DataRecord[]): Map<string, MetricAccumulator> {
+  const totals = new Map<string, MetricAccumulator>();
+  for (const row of rows) {
+    const stored = getRecordAggregates(row);
+    if (stored) {
+      for (const [field, acc] of stored) {
+        let total = totals.get(field);
+        if (!total) {
+          total = createMetricAccumulator();
+          totals.set(field, total);
+        }
+        mergeMetricAccumulator(total, acc);
+      }
+    } else if (Array.isArray(row._rawRows)) {
+      for (const raw of row._rawRows as DataRecord[]) {
+        for (const [field, value] of Object.entries(raw)) {
+          let total = totals.get(field);
+          if (!total) {
+            total = createMetricAccumulator();
+            totals.set(field, total);
+          }
+          accumulateMetric(total, value);
+        }
+      }
+    }
+  }
+  return totals;
+}
+
+/** VTable receives already aggregated intersections, so each bucket uses BI totals. */
+export function createPivotAggregationRules(
+  columns: readonly OutputColumnMeta[],
+  rawHeaders?: Record<string, string>,
+  contextColumns: readonly OutputColumnMeta[] = columns
+) {
+  const cache = new WeakMap<readonly DataRecord[], Record<string, unknown>>();
+  return columns.map((column) => ({
+    indicatorKey: column.key,
+    field: column.key,
+    aggregationType: 'CUSTOM' as const,
+    aggregationFun: (_values: unknown[], records: DataRecord[]): unknown => {
+      if (records.length === 1) return records[0]?.[column.key];
+      let summary = cache.get(records);
+      if (!summary) {
+        summary = computeSummaryValues(records, contextColumns, rawHeaders);
+        cache.set(records, summary);
+      }
+      return summary[column.key];
+    },
+  }));
+}
 
 function roundTo(num: number, precision?: number): number {
   if (precision === undefined) return num;
@@ -61,11 +115,30 @@ export function computeSummaryValues(
   const summary: Record<string, unknown> = {};
   if (!rows || rows.length === 0) return summary;
 
+  const aggregates = collectAggregates(rows);
+  for (const [field, acc] of aggregates) {
+    summary[field] = acc.sum;
+    for (const agg of ['sum', 'avg', 'min', 'max', 'count'] as const) {
+      const value = getAggregatedValue(acc, agg);
+      summary[`${agg.toUpperCase()}(${field})`] = value;
+      summary[`${agg}(${field})`] = value;
+      const label = rawHeaders?.[field];
+      if (label) {
+        summary[`${agg.toUpperCase()}(${label})`] = value;
+        summary[`${agg}(${label})`] = value;
+      }
+    }
+    if (rawHeaders?.[field]) summary[rawHeaders[field]!] = acc.sum;
+  }
+
   // 1. 搜集底层真实原始流水记录（如果由管道分组挂载）
   const allRawRows: DataRecord[] = [];
   for (const r of rows) {
     if (Array.isArray((r as any)._rawRows)) {
-      allRawRows.push(...(r as any)._rawRows);
+      // Pipeline accumulator metadata avoids flattening large groups again.
+      if (!getRecordAggregates(r)) {
+        for (const raw of r._rawRows as DataRecord[]) allRawRows.push(raw);
+      }
     }
   }
   const hasRawRows = allRawRows.length > 0;
@@ -79,6 +152,15 @@ export function computeSummaryValues(
     if (col.type === 'number') {
       const aggType: AggregationFunction =
         col.agg || inferColumnAggType(col.key, col.title);
+
+      const acc = col.field ? aggregates.get(col.field) : undefined;
+      if (acc) {
+        const value = getAggregatedValue(acc, aggType);
+        summary[col.key] = value;
+        summary[col.title] = value;
+        if (col.field) summary[col.field] = value;
+        continue;
+      }
 
       if (aggType === 'sum') {
         const sum = rows.reduce((acc, r) => acc + (Number(r[col.key]) || 0), 0);
@@ -173,9 +255,14 @@ export function computeSummaryValues(
         }
         summary[col.title] = maxVal;
       } else if (aggType === 'count') {
-        const count = hasRawRows
-          ? allRawRows.length
-          : rows.reduce((acc, r) => acc + (Number(r[col.key]) || 1), 0);
+        const count = hasRawRows && col.field
+          ? allRawRows.filter((row) => row[col.field!] !== null && row[col.field!] !== undefined && row[col.field!] !== '').length
+          : rows.reduce((total, row) => {
+              const value = row[col.key];
+              if (value === null || value === undefined || value === '') return total;
+              const number = Number(value);
+              return total + (Number.isFinite(number) ? number : 1);
+            }, 0);
         summary[col.key] = count;
         if (col.field) {
           summary[col.field] = count;
@@ -189,6 +276,13 @@ export function computeSummaryValues(
   // 3. 第二阶段：计算所有 computed 动态计算列（在汇总基础指标上求值）
   for (const col of columns) {
     if (col.kind === 'computed' || col.expression) {
+      if (col.scope === 'row') {
+        const acc = aggregates.get(col.key);
+        const value = acc ? acc.sum : rows.reduce((total, row) => total + (Number(row[col.key]) || 0), 0);
+        summary[col.key] = roundTo(value, col.precision);
+        summary[col.title] = summary[col.key];
+        continue;
+      }
       if (col.expression) {
         try {
           const val = evaluateFormula(col.expression, summary, { nullAsZero: true });
