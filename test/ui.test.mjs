@@ -9,19 +9,16 @@ import {
   FormulaEditorModal,
   LivePreviewTable,
   DynamicDataView,
-  DynamicDataLinkageProvider,
   VChartView,
   VTableView,
   DimensionSwitcher,
   MetricSwitcher,
   ViewTypeSwitcher,
-  globalLinkageBus,
+  PivotDrillthroughModal,
   resolveThemeConfig,
   deepMerge,
   isRateOrRatioMetric,
   isPerMilleMetric,
-  getRowFieldValue,
-  matchSliceValue,
 } from '../dist/esm/ui/index.js';
 
 test('ui: 配置层与展示层组件正常暴露与加载', () => {
@@ -36,62 +33,14 @@ test('ui: 配置层与展示层组件正常暴露与加载', () => {
   assert.equal(typeof FormulaEditorModal, 'function');
   assert.equal(typeof LivePreviewTable, 'function');
   assert.equal(typeof DynamicDataView, 'function');
-  assert.equal(typeof DynamicDataLinkageProvider, 'function');
   assert.equal(typeof VChartView, 'function');
   assert.equal(typeof VTableView, 'function');
   assert.equal(typeof DimensionSwitcher, 'function');
   assert.equal(typeof MetricSwitcher, 'function');
   assert.equal(typeof ViewTypeSwitcher, 'function');
+  assert.equal(typeof PivotDrillthroughModal, 'function');
 });
 
-test('linkageBus: 显式契约 datasetId 隔离与精确广播', () => {
-  const eventsA = [];
-  const eventsB = [];
-
-  const unsubA = globalLinkageBus.subscribe('dataset_order', (e) => {
-    eventsA.push(e);
-  });
-  const unsubB = globalLinkageBus.subscribe('dataset_user', (e) => {
-    eventsB.push(e);
-  });
-
-  // 1. 向 dataset_order 发送事件，dataset_user 不应收到
-  globalLinkageBus.emit('dataset_order', {
-    datasetId: 'dataset_order',
-    sourceViewId: 'v1',
-    dimensionValue: '2024-03',
-  });
-
-  assert.equal(eventsA.length, 1);
-  assert.equal(eventsA[0].dimensionValue, '2024-03');
-  assert.equal(eventsB.length, 0);
-
-  // 2. 向 dataset_user 发送事件，dataset_order 不应重复收到
-  globalLinkageBus.emit('dataset_user', {
-    datasetId: 'dataset_user',
-    sourceViewId: 'v2',
-    dimensionValue: 'region_east',
-  });
-
-  assert.equal(eventsA.length, 1);
-  assert.equal(eventsB.length, 1);
-  assert.equal(eventsB[0].dimensionValue, 'region_east');
-
-  // 3. 空 datasetId 不应触发任何广播
-  globalLinkageBus.emit('', {
-    datasetId: '',
-    sourceViewId: 'v3',
-    dimensionValue: 'none',
-  });
-  assert.equal(eventsA.length, 1);
-  assert.equal(eventsB.length, 1);
-
-  // 4. 取消订阅后不再收到
-  unsubA();
-  unsubB();
-  globalLinkageBus.emit('dataset_order', null);
-  assert.equal(eventsA.length, 1);
-});
 
 test('theme: resolveThemeConfig 与 deepMerge 深度覆盖机制', () => {
   // 1. 默认 light 主题
@@ -195,8 +144,8 @@ test('ui: VisActor 图表与联动数据结构索引安全映射', () => {
     },
   };
 
-  // 模拟联动事件 (从表格点击某行)
-  const linkageFromTable = {
+  // 模拟行选择事件 (从表格点击某行)
+  const selectedRowFromTable = {
     dimensionValue: '2024-01',
     dataIndex: 0,
     record: mockResult.data[0],
@@ -204,7 +153,7 @@ test('ui: VisActor 图表与联动数据结构索引安全映射', () => {
 
   // 检验 X 轴去重与定位
   const xAxisData = Array.from(new Set(mockResult.data.map((r) => r.plan_start_time)));
-  const targetIndex = xAxisData.findIndex((x) => String(x) === String(linkageFromTable.dimensionValue));
+  const targetIndex = xAxisData.findIndex((x) => String(x) === String(selectedRowFromTable.dimensionValue));
   assert.equal(targetIndex, 0);
 
   // 检验越界索引保护机制
@@ -301,124 +250,6 @@ test('charts: 单分组维度且无时间维度时，双 Y 轴左右轴与柱线
   assert.equal(series[3].yAxisIndex, 1);
 });
 
-test('linkageBus: 工业级交叉切片过滤 (toggleSlice, removeSlice, clearAll, 反选与多切片叠加)', () => {
-  const datasetId = 'test_cross_filter_ds';
-  const receivedEvents = [];
-
-  const unsub = globalLinkageBus.subscribe(datasetId, (e) => {
-    receivedEvents.push(e);
-  });
-
-  // 1. 触发第一个维度的切片：承制车间 = 一车间
-  globalLinkageBus.toggleSlice(datasetId, {
-    datasetId,
-    sourceViewId: 'view_bar_chart',
-    field: 'workshop',
-    fieldTitle: '承制车间',
-    value: '一车间',
-  });
-
-  let slices = globalLinkageBus.getSlices(datasetId);
-  assert.equal(slices.length, 1);
-  assert.equal(slices[0].field, 'workshop');
-  assert.equal(slices[0].value, '一车间');
-  assert.equal(receivedEvents.length, 1);
-  assert.equal(receivedEvents[0].activeSlices.length, 1);
-
-  // 2. 叠加第二个维度的切片：产品类别 = 结构件
-  globalLinkageBus.toggleSlice(datasetId, {
-    datasetId,
-    sourceViewId: 'view_table',
-    field: 'product_category',
-    fieldTitle: '产品类别',
-    value: '结构件',
-  });
-
-  slices = globalLinkageBus.getSlices(datasetId);
-  assert.equal(slices.length, 2, '切片池应成功叠加为 2 个多维切片');
-  assert.equal(slices[0].field, 'workshop');
-  assert.equal(slices[1].field, 'product_category');
-  assert.equal(receivedEvents[receivedEvents.length - 1].activeSlices.length, 2);
-
-  // 3. 替换同维度的切片：承制车间从「一车间」切换为「二车间」
-  globalLinkageBus.toggleSlice(datasetId, {
-    datasetId,
-    sourceViewId: 'view_bar_chart',
-    field: 'workshop',
-    fieldTitle: '承制车间',
-    value: '二车间',
-  });
-
-  slices = globalLinkageBus.getSlices(datasetId);
-  assert.equal(slices.length, 2, '同维度切片数量保持为 2');
-  const workshopSlice = slices.find((s) => s.field === 'workshop');
-  assert.equal(workshopSlice?.value, '二车间', '同维度切片值更新为二车间');
-
-  // 4. 反选（再次点击同一项，解除该切片）
-  globalLinkageBus.toggleSlice(datasetId, {
-    datasetId,
-    sourceViewId: 'view_bar_chart',
-    field: 'workshop',
-    fieldTitle: '承制车间',
-    value: '二车间',
-  });
-
-  slices = globalLinkageBus.getSlices(datasetId);
-  assert.equal(slices.length, 1, '反选后 workshop 切片被成功移除');
-  assert.equal(slices[0].field, 'product_category');
-
-  // 5. 单独移除切片 removeSlice
-  globalLinkageBus.removeSlice(datasetId, 'product_category');
-  slices = globalLinkageBus.getSlices(datasetId);
-  assert.equal(slices.length, 0, 'removeSlice 成功清空切片');
-
-  // 6. 一键清空 clearAll
-  globalLinkageBus.toggleSlice(datasetId, {
-    datasetId,
-    sourceViewId: 'v1',
-    field: 'f1',
-    value: 'v1',
-  });
-  globalLinkageBus.toggleSlice(datasetId, {
-    datasetId,
-    sourceViewId: 'v2',
-    field: 'f2',
-    value: 'v2',
-  });
-  assert.equal(globalLinkageBus.getSlices(datasetId).length, 2);
-  globalLinkageBus.clearAll(datasetId);
-  assert.equal(globalLinkageBus.getSlices(datasetId).length, 0);
-
-  unsub();
-});
-
-test('linkageBus: 防自环 (Self-loop) 拓扑过滤与底层明细重算精确性验证', () => {
-  const datasetId = 'test_self_loop_ds';
-  globalLinkageBus.clearAll(datasetId);
-
-  // 模拟 viewA (柱状图) 点击了 '一车间'
-  globalLinkageBus.toggleSlice(datasetId, {
-    datasetId,
-    sourceViewId: 'viewA',
-    field: 'workshop',
-    fieldTitle: '承制车间',
-    value: '一车间',
-  });
-
-  const allSlices = globalLinkageBus.getSlices(datasetId);
-
-  // 对于 viewA 自身：外部切片应为空（防止自环导致柱状图其他车间被滤空）
-  const externalSlicesForViewA = allSlices.filter((s) => s.sourceViewId !== 'viewA');
-  assert.equal(externalSlicesForViewA.length, 0, '触发源自身不执行破坏性切片过滤，保持完整图元');
-
-  // 对于 viewB (表格) 或 viewC (折线图)：接收到外部切片
-  const externalSlicesForViewB = allSlices.filter((s) => s.sourceViewId !== 'viewB');
-  assert.equal(externalSlicesForViewB.length, 1, '接收方成功获取到外部切片');
-  assert.equal(externalSlicesForViewB[0].field, 'workshop');
-  assert.equal(externalSlicesForViewB[0].value, '一车间');
-
-  globalLinkageBus.clearAll(datasetId);
-});
 
 test('vchart: 双 Y 轴 Pareto 复合图与分组柱状图 Long/Tidy 数据投影精确性', () => {
   const mockRows = [
@@ -533,117 +364,7 @@ test('vtable: 聚合行原始流水挂载、下钻明细穿透与列显隐过滤
   assert.deepEqual(visibleColumns.map(c => c.key), ['workshop', 'total_qty']);
 });
 
-test('linkage: getRowFieldValue 支持物理字段与表头中文别名的双向映射', () => {
-  const row = {
-    plan_start_time: '2026-08-01 08:30:00',
-    workshop: '1号车间',
-  };
-  const headers = {
-    plan_start_time: '计划投产时间',
-    workshop: '承制车间',
-  };
 
-  // 1. 物理字段直接命中
-  assert.equal(getRowFieldValue(row, 'plan_start_time', headers), '2026-08-01 08:30:00');
-  assert.equal(getRowFieldValue(row, 'workshop', headers), '1号车间');
-
-  // 2. 表头中文别名反向查找底层物理字段
-  assert.equal(getRowFieldValue(row, '计划投产时间', headers), '2026-08-01 08:30:00');
-  assert.equal(getRowFieldValue(row, '承制车间', headers), '1号车间');
-
-  // 3. 不存在字段安全返回 undefined
-  assert.equal(getRowFieldValue(row, 'non_exist', headers), undefined);
-});
-
-test('linkage: matchSliceValue 跨粒度时间分桶与全类型切片高保真智能匹配', () => {
-  const rawDateTime = '2026-08-01 08:30:00';
-
-  // 1. 天级别分桶匹配 (用户反馈的计划投产时间 2026-08-01)
-  assert.equal(matchSliceValue(rawDateTime, '2026-08-01'), true);
-  assert.equal(matchSliceValue(rawDateTime, '2026-08-02'), false);
-
-  // 2. 月级别分桶匹配
-  assert.equal(matchSliceValue(rawDateTime, '2026-08'), true);
-  assert.equal(matchSliceValue(rawDateTime, '2026-09'), false);
-
-  // 3. 年级别分桶匹配
-  assert.equal(matchSliceValue(rawDateTime, '2026'), true);
-  assert.equal(matchSliceValue(rawDateTime, '2025'), false);
-
-  // 4. 小时级别分桶匹配
-  assert.equal(matchSliceValue(rawDateTime, '2026-08-01 08:00'), true);
-  assert.equal(matchSliceValue(rawDateTime, '2026-08-01 09:00'), false);
-
-  // 5. 季度级别分桶匹配
-  assert.equal(matchSliceValue(rawDateTime, '2026-Q3'), true);
-  assert.equal(matchSliceValue(rawDateTime, '2026-Q1'), false);
-
-  // 6. 区间范围匹配
-  assert.equal(matchSliceValue(rawDateTime, '2026-08-01 ~ 2026-08-03'), true);
-  assert.equal(matchSliceValue(rawDateTime, '2026-08-02 ~ 2026-08-05'), false);
-
-  // 7. 时间戳数字匹配 (ms)
-  const tsMs = new Date('2026-08-01T08:30:00Z').getTime();
-  assert.equal(matchSliceValue(tsMs, '2026-08-01'), true);
-
-  // 8. 离散分类文本匹配 (承制车间)
-  assert.equal(matchSliceValue('1号五轴切削车间', '1号五轴切削车间'), true);
-  assert.equal(matchSliceValue('1号五轴切削车间', '2号立式加工车间'), false);
-
-  // 9. 数值与字符串等价匹配
-  assert.equal(matchSliceValue(100, '100'), true);
-  assert.equal(matchSliceValue('100', 100), true);
-  assert.equal(matchSliceValue(100, 200), false);
-
-  // 10. 空值防护
-  assert.equal(matchSliceValue(null, '2026-08-01'), false);
-  assert.equal(matchSliceValue(undefined, '2026-08-01'), false);
-  assert.equal(matchSliceValue(null, null), true);
-});
-
-test('linkage: 真实用户场景实测 - 计划投产时间+承制车间切片跨看板过滤与重聚合', () => {
-  const rawOrders = [
-    { order_id: 'WO-01', plan_start_time: '2026-08-01 08:30:00', workshop: '1号车间', qty: 100 },
-    { order_id: 'WO-02', plan_start_time: '2026-08-01 10:00:00', workshop: '1号车间', qty: 150 },
-    { order_id: 'WO-03', plan_start_time: '2026-08-01 14:00:00', workshop: '2号车间', qty: 200 },
-    { order_id: 'WO-04', plan_start_time: '2026-08-02 09:00:00', workshop: '1号车间', qty: 300 },
-    { order_id: 'WO-05', plan_start_time: '2026-08-03 11:00:00', workshop: '2号车间', qty: 250 },
-  ];
-  const headers = {
-    plan_start_time: '计划投产时间',
-    workshop: '承制车间',
-  };
-
-  // 模拟从看板1点击「计划投产时间」= '2026-08-01'
-  const timeSlice = { field: 'plan_start_time', fieldTitle: '计划投产时间', value: '2026-08-01' };
-  const filteredByTime = rawOrders.filter(row => {
-    const val = getRowFieldValue(row, timeSlice.field, headers);
-    return matchSliceValue(val, timeSlice.value);
-  });
-  // 3条记录准确筛选出 (WO-01, WO-02, WO-03)，彻底解决原版等于 0 行的问题！
-  assert.equal(filteredByTime.length, 3);
-  assert.deepEqual(filteredByTime.map(r => r.order_id), ['WO-01', 'WO-02', 'WO-03']);
-
-  // 模拟从看板1点击「承制车间」= '1号车间'
-  const workshopSlice = { field: 'workshop', fieldTitle: '承制车间', value: '1号车间' };
-  const filteredByWorkshop = rawOrders.filter(row => {
-    const val = getRowFieldValue(row, workshopSlice.field, headers);
-    return matchSliceValue(val, workshopSlice.value);
-  });
-  assert.equal(filteredByWorkshop.length, 3);
-  assert.deepEqual(filteredByWorkshop.map(r => r.order_id), ['WO-01', 'WO-02', 'WO-04']);
-
-  // 模拟多维交集切片: 计划投产时间 2026-08-01 + 1号车间
-  const multiSlices = [timeSlice, workshopSlice];
-  const filteredMulti = rawOrders.filter(row =>
-    multiSlices.every(slice => {
-      const val = getRowFieldValue(row, slice.field, headers);
-      return matchSliceValue(val, slice.value);
-    })
-  );
-  assert.equal(filteredMulti.length, 2);
-  assert.deepEqual(filteredMulti.map(r => r.order_id), ['WO-01', 'WO-02']);
-});
 
 test('charts: 饼图不分 XY 轴，按分类维度进行唯一分组汇总 (SUM/比率)，避免多维数据产生重复扇区且占比达 100%', () => {
   // 模拟复合维度数据集：2个时间批次 × 3个车间 = 6条记录
@@ -789,6 +510,152 @@ test('ui: DynamicDataView 维度切换在非受控模式下稳定保持用户选
     internalDimensionField = autoDimensionField;
   }
   assert.equal(internalDimensionField, 'plan_start_time', '当旧维度在候选池中消失时，智能回退至 autoDimensionField');
+});
+
+test('pivot: 单元格穿透下钻控制反转 (onCellDrillthrough) 回调与 CellDrillthroughInfo 契约验证', () => {
+  const rawOrders = [
+    { order_id: 'WO-001', plan_month: '2026-08', workshop: '1号车间', qty: 100 },
+    { order_id: 'WO-002', plan_month: '2026-08', workshop: '1号车间', qty: 150 },
+    { order_id: 'WO-003', plan_month: '2026-08', workshop: '2号车间', qty: 200 },
+    { order_id: 'WO-004', plan_month: '2026-09', workshop: '1号车间', qty: 300 },
+  ];
+
+  const rawHeaders = {
+    order_id: '工单号',
+    plan_month: '计划月份',
+    workshop: '承制车间',
+    qty: '产量',
+  };
+
+  // 模拟透视单元格提取逻辑
+  function simulateDrillthroughTrigger({
+    onCellDrillthrough,
+    selectedRowPaths,
+    selectedColPaths,
+    cellCol = 2,
+    cellRow = 3,
+    cellValue = 250,
+  }) {
+    let internalModalOpened = false;
+    let internalModalPayload = null;
+
+    // 1. 根据路径匹配原始记录
+    const matchedRecords = rawOrders.filter((row) => {
+      const matchRow = selectedRowPaths.every((p) => row[p.dimensionKey] === p.value);
+      const matchCol = selectedColPaths.every((p) => !p.dimensionKey || row[p.dimensionKey] === p.value);
+      return matchRow && matchCol;
+    });
+
+    // 2. 提取维度条件与指标信息
+    const labels = [];
+    const rowDimMap = {};
+    const colDimMap = {};
+    let indicatorKey;
+    let indicatorTitle;
+
+    for (const p of selectedRowPaths) {
+      if (p.dimensionKey && p.value !== undefined) {
+        labels.push(String(p.value));
+        rowDimMap[p.dimensionKey] = p.value;
+      }
+    }
+    for (const p of selectedColPaths) {
+      if (p.dimensionKey && p.value !== undefined) {
+        labels.push(String(p.value));
+        colDimMap[p.dimensionKey] = p.value;
+      }
+      if (p.indicatorKey) {
+        indicatorKey = p.indicatorKey;
+        indicatorTitle = p.value;
+      }
+    }
+
+    const titleStr = labels.length > 0 ? labels.join(' · ') : '选定单元格';
+
+    const drillInfo = {
+      records: matchedRecords,
+      title: titleStr,
+      rawHeaders,
+      conditions: {
+        rowDimensions: rowDimMap,
+        colDimensions: colDimMap,
+        indicatorKey,
+        indicatorTitle,
+        cellValue,
+      },
+      cell: {
+        col: cellCol,
+        row: cellRow,
+      },
+    };
+
+    // 3. 模拟控制反转判定
+    if (typeof onCellDrillthrough === 'function') {
+      onCellDrillthrough(drillInfo);
+      return { internalModalOpened, internalModalPayload };
+    }
+
+    internalModalOpened = true;
+    internalModalPayload = {
+      open: true,
+      title: titleStr,
+      records: matchedRecords,
+      rawHeaders,
+    };
+
+    return { internalModalOpened, internalModalPayload };
+  }
+
+  // 场景 A: 外部传入自定义 onCellDrillthrough 回调 (控制反转模式)
+  let interceptedInfo = null;
+  const customCallback = (info) => {
+    interceptedInfo = info;
+  };
+
+  const resA = simulateDrillthroughTrigger({
+    onCellDrillthrough: customCallback,
+    selectedRowPaths: [{ dimensionKey: 'workshop', value: '1号车间' }],
+    selectedColPaths: [
+      { dimensionKey: 'plan_month', value: '2026-08' },
+      { indicatorKey: 'qty', value: '交付总件数' },
+    ],
+    cellCol: 2,
+    cellRow: 1,
+    cellValue: 250,
+  });
+
+  // 验证: 内部模态框绝不打开，外部回调被精准触发并捕获完整上下文
+  assert.equal(resA.internalModalOpened, false, '外部注入回调时，内部 Modal 不应打开');
+  assert.equal(resA.internalModalPayload, null);
+  assert.ok(interceptedInfo, '外部回调应接收到 drillInfo');
+  assert.equal(interceptedInfo.title, '1号车间 · 2026-08');
+  assert.equal(interceptedInfo.records.length, 2);
+  assert.deepEqual(interceptedInfo.records.map((r) => r.order_id), ['WO-001', 'WO-002']);
+  assert.deepEqual(interceptedInfo.conditions.rowDimensions, { workshop: '1号车间' });
+  assert.deepEqual(interceptedInfo.conditions.colDimensions, { plan_month: '2026-08' });
+  assert.equal(interceptedInfo.conditions.indicatorKey, 'qty');
+  assert.equal(interceptedInfo.conditions.indicatorTitle, '交付总件数');
+  assert.equal(interceptedInfo.conditions.cellValue, 250);
+  assert.deepEqual(interceptedInfo.cell, { col: 2, row: 1 });
+
+  // 场景 B: 外部未传入回调 (开箱即用保底模式)
+  const resB = simulateDrillthroughTrigger({
+    onCellDrillthrough: undefined,
+    selectedRowPaths: [{ dimensionKey: 'workshop', value: '2号车间' }],
+    selectedColPaths: [
+      { dimensionKey: 'plan_month', value: '2026-08' },
+      { indicatorKey: 'qty', value: '交付总件数' },
+    ],
+    cellCol: 2,
+    cellRow: 2,
+    cellValue: 200,
+  });
+
+  // 验证: 自动唤起内置弹窗状态
+  assert.equal(resB.internalModalOpened, true, '外部未传回调时，内置 Modal 自动唤起保底');
+  assert.equal(resB.internalModalPayload.title, '2号车间 · 2026-08');
+  assert.equal(resB.internalModalPayload.records.length, 1);
+  assert.equal(resB.internalModalPayload.records[0].order_id, 'WO-003');
 });
 
 

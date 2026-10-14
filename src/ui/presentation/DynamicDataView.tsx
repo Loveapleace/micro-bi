@@ -2,32 +2,25 @@
  * 展示层统一可视化门面组件 (DynamicDataView)
  * - 接收底层标准 TransformResult
  * - 提供 Table / Line / Bar / Pie 多视图无缝切换
- * - 严格显式契约 datasetId 的同源跨组件数据联动
  * - 展示态二次指标切换（轻量级零拷贝投影）
  * - 第三方宿主样式隔离与全覆盖能力 (className / style / vchartSpec / vtableOption)
  */
-import React, { useState, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Card, Space, Typography, ConfigProvider, Spin, Button, Tooltip, Tag, Result, message } from 'antd';
-import { ClearOutlined, LinkOutlined } from '@ant-design/icons';
 import type { TransformResult, DataRecord, OutputColumnMeta } from '../../engine/types.js';
-import { transformData } from '../../engine/pipeline.js';
 import type {
   DynamicDataViewProps,
   DynamicDataViewType,
   MetricOption,
   DimensionOption,
-  LinkageEvent,
-  LinkageFilterSlice,
 } from './types.js';
 import { resolveThemeConfig, buildAntdTheme } from './theme.js';
-import { useDynamicDataLinkage, getRowFieldValue, matchSliceValue } from './DynamicDataLinkage.js';
 import { MetricSwitcher } from './toolbar/MetricSwitcher.js';
 import { DimensionSwitcher } from './toolbar/DimensionSwitcher.js';
 import { ViewTypeSwitcher } from './toolbar/ViewTypeSwitcher.js';
 import { VTableView } from './table/VTableView.js';
 import { VChartView } from './charts/VChartView.js';
 import { useDynamicDataLocale, type ViewLocale } from '../../locale/index.js';
-import { getRegisteredDataset, getCachedDatasetData } from '../../core/datasetRegistry.js';
 
 interface ViewErrorBoundaryProps {
   children: React.ReactNode;
@@ -79,9 +72,6 @@ const { Text } = Typography;
 
 export const DynamicDataView: React.FC<DynamicDataViewProps> = ({
   result,
-  rawDataset,
-  transformConfig,
-  datasetId,
   viewType: controlledViewType,
   defaultViewType = 'table',
   onViewTypeChange,
@@ -113,22 +103,13 @@ export const DynamicDataView: React.FC<DynamicDataViewProps> = ({
   frozenColumnKeys,
   rightFrozenColumnKeys,
 
-  linkage = true,
-  linkageMode = 'filter',
-  allowEmitLinkage = true,
-  allowReceiveLinkage = true,
-  targetViewIds,
-  onLinkageChange,
-
   loading = false,
   title,
   extra,
   tableFeatures = true,
-  viewId: propViewId,
+  onRowSelect,
+  onCellDrillthrough,
 }) => {
-  // 生成组件稳定内部唯一 ID（若外部传入则优先使用显式 ID，用于定向广播与精准路由匹配）
-  const internalViewIdRef = useRef<string>(`view_${Math.random().toString(36).substring(2, 9)}`);
-  const viewId = propViewId || internalViewIdRef.current;
 
   // 1. 主题、国际化与样式解析
   const t = useDynamicDataLocale(propLocale);
@@ -372,259 +353,8 @@ export const DynamicDataView: React.FC<DynamicDataViewProps> = ({
     [controlledActiveMetrics, onMetricChange]
   );
 
-  // 5. 显式同源数据联动逻辑 (严格依赖 datasetId 显式契约)
-  const {
-    activeEvent,
-    activeSlices,
-    toggleSlice,
-    setCompositeSlices,
-    removeSlice,
-    clearSlices,
-    emitLinkage,
-    isLinked,
-  } = useDynamicDataLinkage(
-    datasetId,
-    viewId,
-    linkage !== false
-  );
 
-  // 当外部需要感知联动事件时触发回调
-  React.useEffect(() => {
-    onLinkageChange?.(activeEvent);
-  }, [activeEvent, onLinkageChange]);
-
-  // 处理图表点击触发切片联动
-  const handleChartDataSelect = useCallback(
-    (payload: {
-      dimensionValue: string | number;
-      dimensionField?: string | undefined;
-      dimensionTitle?: string | undefined;
-      secondaryField?: string | undefined;
-      secondaryValue?: string | number | undefined;
-      secondaryTitle?: string | undefined;
-      metricKey?: string | undefined;
-      dataIndex: number;
-      record?: DataRecord | undefined;
-    }) => {
-      if (!isLinked || !allowEmitLinkage) return;
-
-      // 智能识别点击的切片字段：
-      // 如果柱子或点来自次级分组维度（例如按承制车间分组的柱子），点击即切片该承制车间！
-      // 否则切片主维度（如月份时间）
-      const hasSecondary = Boolean(payload.secondaryField && payload.secondaryValue !== undefined && payload.secondaryValue !== null && payload.secondaryValue !== '');
-      const field = hasSecondary
-        ? payload.secondaryField!
-        : payload.dimensionField || effectiveDimensionField;
-      const val = hasSecondary
-        ? payload.secondaryValue!
-        : payload.dimensionValue;
-
-      if (!field || val === undefined || val === null || val === '') return;
-
-      const title =
-        (hasSecondary ? payload.secondaryTitle : payload.dimensionTitle) ||
-        dimensionOptions.find((d) => d.key === field)?.title ||
-        result.columns?.find((c) => c.key === field)?.title ||
-        field;
-
-      toggleSlice({
-        field,
-        fieldTitle: title,
-        value: val,
-        record: payload.record,
-      });
-
-      const isAlreadyActive = activeSlices.some((s) => s.field === field && String(s.value) === String(val));
-      if (isAlreadyActive) {
-        message.info(t('已取消按 {title} 联动过滤', { title }));
-      } else {
-        message.success(t('已按 {title} = {val} 触发全图表联动', { title, val }));
-      }
-    },
-    [isLinked, allowEmitLinkage, effectiveDimensionField, dimensionOptions, result.columns, toggleSlice, activeSlices, t]
-  );
-
-  // 处理表格行或单元格点击触发切片联动
-  const handleTableRowSelect = useCallback(
-    (record: DataRecord, index: number, colField?: string) => {
-      if (!isLinked || !allowEmitLinkage) return;
-
-      // 1. 若单元格携带了 2D 透视复合多维切片（例如承制车间 + 计划投产时间），批量原子发射联合切片
-      const compositeSlices = (record as any)?._compositeSlices as Array<{ field: string; value: any; fieldTitle?: string }> | undefined;
-      if (Array.isArray(compositeSlices) && compositeSlices.length > 0) {
-        setCompositeSlices(
-          compositeSlices.map((s) => ({
-            field: s.field,
-            fieldTitle: s.fieldTitle || s.field,
-            value: s.value,
-            record,
-            ...(targetViewIds ? { targetViewIds } : {}),
-          }))
-        );
-        const summary = compositeSlices.map((s) => `${s.fieldTitle || s.field}: ${s.value}`).join(' & ');
-        message.success(t('已触发多维交叉联动: {summary}', { summary }));
-        return;
-      }
-
-      // 2. 常规单维度切片发射
-      const colMeta = colField
-        ? result.columns?.find((c) => c.key === colField || c.field === colField)
-        : undefined;
-      const isDimensionCol = colMeta ? colMeta.type !== 'number' : false;
-      const field = (isDimensionCol && colField)
-        ? colField
-        : effectiveDimensionField || (result.columns && result.columns[0]?.key);
-      if (!field) return;
-
-      const rawVal = getRowFieldValue(
-        record,
-        field,
-        transformConfig?.headers || (result.meta as any)?.rawHeaders
-      );
-      const val =
-        typeof rawVal === 'string' || typeof rawVal === 'number'
-          ? rawVal
-          : rawVal === null
-          ? null
-          : undefined;
-
-      if (val === undefined || val === null || val === '') return;
-
-      const title =
-        colMeta?.title ||
-        dimensionOptions.find((d) => d.key === field)?.title ||
-        result.columns?.find((c) => c.key === field)?.title ||
-        (transformConfig?.headers && transformConfig.headers[field]) ||
-        field;
-
-      toggleSlice({
-        field,
-        fieldTitle: title,
-        value: val,
-        record,
-        ...(targetViewIds ? { targetViewIds } : {}),
-      });
-
-      const isAlreadyActive = activeSlices.some(
-        (s) => s.field === field && (String(s.value) === String(val) || matchSliceValue(s.value, val))
-      );
-      if (isAlreadyActive) {
-        message.info(t('已取消按 {title} 联动过滤', { title }));
-      } else {
-        message.success(t('已按 {title} = {val} 触发全图表联动', { title, val }));
-      }
-    },
-    [isLinked, allowEmitLinkage, effectiveDimensionField, result.columns, result.meta, dimensionOptions, toggleSlice, activeSlices, transformConfig, targetViewIds, t]
-  );
-
-  // 计算外部生效切片以及动态切片重算结果 (Cross-Filtering)
-  const externalSlices = useMemo(() => {
-    if (!isLinked || !allowReceiveLinkage || linkageMode !== 'filter') {
-      return [];
-    }
-    // 过滤出由其他视图发射的切片，防止自环过滤，并按 targetViewIds 路由过滤
-    return activeSlices.filter((s) => {
-      if (s.sourceViewId === viewId) return false;
-      if (Array.isArray(s.targetViewIds) && s.targetViewIds.length > 0) {
-        return viewId ? s.targetViewIds.includes(viewId) : false;
-      }
-      return true;
-    });
-  }, [isLinked, allowReceiveLinkage, linkageMode, activeSlices, viewId]);
-
-  // 当前视图相关的有效切片列表 (包含自身发射的切片 + 定向至当前视图的外部切片)
-  const effectiveViewSlices = useMemo(() => {
-    if (!isLinked) return [];
-    return activeSlices.filter((s) => {
-      if (s.sourceViewId === viewId) return true;
-      if (!allowReceiveLinkage) return false;
-      if (Array.isArray(s.targetViewIds) && s.targetViewIds.length > 0) {
-        return viewId ? s.targetViewIds.includes(viewId) : false;
-      }
-      return true;
-    });
-  }, [isLinked, activeSlices, viewId, allowReceiveLinkage]);
-
-  // 当前视图接收到的有效联动事件 (若外部事件定向了且当前视图不在其中，则静默不接收)
-  const effectiveActiveEvent = useMemo(() => {
-    if (!activeEvent || !isLinked || !allowReceiveLinkage) return null;
-    if (activeEvent.sourceViewId === viewId) return activeEvent;
-    const matchingSlice = activeSlices.find(
-      (s) => s.field === activeEvent.dimensionField && String(s.value) === String(activeEvent.dimensionValue)
-    );
-    if (matchingSlice && Array.isArray(matchingSlice.targetViewIds) && matchingSlice.targetViewIds.length > 0) {
-      if (!viewId || !matchingSlice.targetViewIds.includes(viewId)) {
-        return null;
-      }
-    }
-    return activeEvent;
-  }, [activeEvent, isLinked, allowReceiveLinkage, viewId, activeSlices]);
-
-  const effectiveResult = useMemo(() => {
-    if (externalSlices.length === 0) {
-      return result;
-    }
-
-    // 方案 1: 内存级底层明细事实记录动态重聚合 (首选高保真方案)
-    // 若宿主传入了 rawDataset 或配置了 datasetId，则优先在原始数据层做多维切片过滤并重新聚合。
-    let effectiveRawData = rawDataset;
-    if ((!effectiveRawData || effectiveRawData.length === 0) && datasetId) {
-      const cached = getCachedDatasetData(datasetId);
-      if (cached && cached.data.length > 0) {
-        effectiveRawData = cached.data;
-      } else {
-        const reg = getRegisteredDataset(datasetId);
-        if (reg && Array.isArray(reg.data)) {
-          effectiveRawData = reg.data;
-        }
-      }
-    }
-
-    if (effectiveRawData && effectiveRawData.length > 0 && transformConfig) {
-      try {
-        const headers = transformConfig.headers || (result.meta as any)?.rawHeaders;
-        const filteredRaw = effectiveRawData.filter((row) =>
-          externalSlices.every((slice) => {
-            const val = getRowFieldValue(row, slice.field, headers);
-            return matchSliceValue(val, slice.value);
-          })
-        );
-        const res = transformData(filteredRaw, transformConfig);
-        // 如果切片后为 0 行，保留原 result 的 columns 定义，防止表格表头结构坍塌丢失
-        if (res.columns.length === 0 && result.columns && result.columns.length > 0) {
-          return {
-            ...res,
-            columns: result.columns,
-          };
-        }
-        return res;
-      } catch (err) {
-        console.warn('[DynamicDataView] Raw transform recalculation failed, fallback to result data filter:', err);
-      }
-    }
-
-    // 方案 2: 降级方案 - 若未提供 rawDataset 且未命中注册数据，直接在 result.data 上进行切片过滤
-    if (result && result.data) {
-      const headers = transformConfig?.headers || (result.meta as any)?.rawHeaders;
-      const filteredRows = result.data.filter((row) =>
-        externalSlices.every((slice) => {
-          const val = getRowFieldValue(row, slice.field, headers);
-          if (val === undefined) {
-            return true;
-          }
-          return matchSliceValue(val, slice.value);
-        })
-      );
-      return {
-        ...result,
-        data: filteredRows,
-      };
-    }
-
-    return result;
-  }, [result, rawDataset, datasetId, transformConfig, externalSlices]);
-
-  // 6. 容器基础样式与外部覆盖合并 (外部 style / className 最高优先级)
+  // 3. 容器基础样式与外部覆盖合并 (外部 style / className 最高优先级)
   const containerStyle: React.CSSProperties = {
     backgroundColor: themeConfig.colorBgContainer,
     borderRadius: 8,
@@ -637,7 +367,6 @@ export const DynamicDataView: React.FC<DynamicDataViewProps> = ({
   const containerClassName = [
     'hw-dynamic-view',
     isDark ? 'hw-dynamic-view-dark' : 'hw-dynamic-view-light',
-    isLinked ? 'hw-dynamic-view-linked-ready' : '',
     className || '',
   ]
     .filter(Boolean)
@@ -690,58 +419,6 @@ export const DynamicDataView: React.FC<DynamicDataViewProps> = ({
                 >
                   {title}
                 </div>
-              )}
-              {isLinked && (
-                <Tooltip title={t('所属工业数据集: {id}（点击右侧切片可进行联动过滤）', { id: datasetId || '' })}>
-                  <Tag
-                    color="processing"
-                    icon={<LinkOutlined />}
-                    style={{
-                      margin: 0,
-                      fontSize: 11,
-                      flexShrink: 0,
-                      maxWidth: 160,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      verticalAlign: 'bottom',
-                    }}
-                  >
-                    {datasetId}
-                  </Tag>
-                </Tooltip>
-              )}
-              {isLinked && effectiveViewSlices.length > 0 && (
-                <Space size={4} wrap={false} style={{ flexShrink: 1, overflow: 'hidden' }}>
-                  {effectiveViewSlices.map((slice) => {
-                    const isSelf = slice.sourceViewId === viewId;
-                    return (
-                      <Tag
-                        key={slice.field}
-                        color={isSelf ? 'blue' : 'orange'}
-                        closable
-                        onClose={(e) => {
-                          e.preventDefault();
-                          removeSlice(slice.field);
-                        }}
-                        style={{ margin: 0, fontSize: 11, display: 'inline-flex', alignItems: 'center' }}
-                      >
-                        <span>
-                          {slice.fieldTitle || slice.field}: <b>{String(slice.value)}</b>
-                        </span>
-                        {isSelf && <span style={{ opacity: 0.7, marginLeft: 3, fontSize: 10 }}>{t('(当前视图)')}</span>}
-                      </Tag>
-                    );
-                  })}
-                  <Tooltip title={t('重置当前看板专属维度切片')}>
-                    <Button
-                      type="text"
-                      size="small"
-                      icon={<ClearOutlined />}
-                      onClick={clearSlices}
-                      style={{ padding: '0 4px', height: 22, color: themeConfig.colorTextSecondary }}
-                    />
-                  </Tooltip>
-                </Space>
               )}
             </div>
 
@@ -825,13 +502,10 @@ export const DynamicDataView: React.FC<DynamicDataViewProps> = ({
             <ViewErrorBoundary key={effectiveViewType} t={t}>
               {effectiveViewType === 'table' ? (
                 <VTableView
-                  result={effectiveResult}
+                  result={result}
                   dimensionField={effectiveDimensionField}
                   activeMetrics={controlledActiveMetrics !== undefined ? effectiveActiveMetrics : undefined}
                   theme={themeConfig}
-                  activeLinkage={effectiveActiveEvent}
-                  activeSlices={effectiveViewSlices}
-                  onRowSelect={handleTableRowSelect}
                   tableFeatures={tableFeatures}
                   vtableOption={vtableOption}
                   showSummaryRow={showSummaryRow}
@@ -841,20 +515,18 @@ export const DynamicDataView: React.FC<DynamicDataViewProps> = ({
                   rightFrozenColumnKeys={rightFrozenColumnKeys}
                   style={tableStyle}
                   locale={t.locale}
-                  viewId={viewId}
-                  targetViewIds={targetViewIds}
+                  onRowSelect={onRowSelect}
+                  onCellDrillthrough={onCellDrillthrough}
                 />
               ) : (
                 <VChartView
                   viewType={effectiveViewType}
-                  result={effectiveResult}
+                  result={result}
                   dimensionField={effectiveDimensionField}
                   activeMetrics={effectiveActiveMetrics}
                   theme={themeConfig}
                   vchartSpec={vchartSpec}
                   chartStyle={chartStyle}
-                  activeLinkage={effectiveActiveEvent}
-                  onSelectData={handleChartDataSelect}
                   locale={t.locale}
                 />
               )}

@@ -8,7 +8,7 @@ import {
   formatTimeBucket,
 } from '../dist/esm/engine/index.js';
 import {
-  createPivotAggregationRules, computeSummaryValues, LivePreviewTable, matchSliceValue,
+  createPivotAggregationRules, computeSummaryValues, LivePreviewTable,
 } from '../dist/esm/ui/index.js';
 
 const require = createRequire(import.meta.url);
@@ -146,13 +146,10 @@ test('time buckets: natural weeks share keys across month/year boundaries and ma
     const config = { field: 'date', granularity: 'week', weekStartsOn };
     const bucket = formatTimeBucket(start, config);
     assert.equal(formatTimeBucket(end, config), bucket);
-    assert.equal(matchSliceValue(end, bucket), true);
   }
   const bucket = formatTimeBucket('2026-10-04', { field: 'date', granularity: 'week', weekStartsOn: 0 });
-  assert.equal(matchSliceValue('2026-10-11', bucket), false);
   const milliseconds = new Date('2026-10-05T12:00:00').getTime();
   const expected = formatTimeBucket(milliseconds, { field: 'date', granularity: 'day' });
   assert.equal(formatTimeBucket(milliseconds / 1000, { field: 'date', granularity: 'day' }), expected);
   assert.equal(formatTimeBucket(String(milliseconds / 1000), { field: 'date', granularity: 'day' }), expected);
-  assert.equal(matchSliceValue(milliseconds / 1000, expected), true);
 });

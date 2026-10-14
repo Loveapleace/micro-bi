@@ -26,62 +26,15 @@ export interface ViewThemeConfig {
   chartPalette?: string[] | undefined;
 }
 
-/** 跨组件交互切片过滤规则 */
-export interface LinkageFilterSlice {
-  /** 触发切片的视图源 ID (防自环) */
-  sourceViewId: string;
-  /** 所属数据集契约 ID */
-  datasetId: string;
-  /** 切片过滤维度字段名 (如 'workshop' 或 'plan_start_time') */
-  field: string;
-  /** 维度字段可读标题 (如 '承制车间') */
-  fieldTitle?: string | undefined;
-  /** 切片值 (如 '一车间') */
-  value: string | number;
-  /** 选中的完整数据记录 (供从属明细视图使用) */
-  record?: DataRecord | undefined;
-  /** 目标受众视图 ID 列表（可选，未指定时广播给所有同源卡片；指定时仅作用于名单内的卡片） */
-  targetViewIds?: readonly string[] | undefined;
-}
 
-/** 跨组件同源数据联动事件 */
-export interface LinkageEvent {
-  /** 显式数据集契约 ID */
-  datasetId: string;
-  /** 触发源组件唯一 ID（防止自环广播） */
-  sourceViewId: string;
-  /** 当前触发切片的维度字段名 */
-  dimensionField?: string | undefined;
-  /** 当前触发切片的维度标题 */
-  dimensionTitle?: string | undefined;
-  /** 当前选中的维度取值（如 '2024-03' 或 '华东'） */
-  dimensionValue?: string | number | null | undefined;
-  /** 当前聚焦或悬停的度量指标列名 */
-  metricKey?: string | undefined;
-  /** 选中的数据行索引 */
-  dataIndex?: number | undefined;
-  /** 选中的原始数据记录行 */
-  record?: DataRecord | undefined;
-  /** 当前全局/同源契约下所有激活的切片条件池 */
-  activeSlices?: readonly LinkageFilterSlice[] | undefined;
-}
 
 /** 展示层核心组件 Props */
 export interface DynamicDataViewProps {
   /** 管道引擎计算输出的标准结果 (TransformResult) */
   result: TransformResult;
 
-  /**
-   * 同种原数据识别的显式契约 ID
-   * - 规则：只有传入相同非空 datasetId 的组件之间才会产生数据联动效果；
-   * - 若未提供，组件作为独立视图运行，不向外广播也不响应外部联动（杜绝误联动）。
-   */
-  datasetId?: string | undefined;
-
-  /**
-   * 当前组件视图唯一 ID (用于防自环广播与精准定向切片路由)
-   */
-  viewId?: string | undefined;
+  /** 点击表格行或单元格回调 */
+  onRowSelect?: ((record: DataRecord, index: number, colField?: string | undefined) => void) | undefined;
 
   /** 当前视图形态：'table' | 'line' | 'bar' | 'pie'，默认 'table' */
   viewType?: DynamicDataViewType | undefined;
@@ -155,45 +108,12 @@ export interface DynamicDataViewProps {
   /** 外部控制靠右冻结的列 key 列表 */
   rightFrozenColumnKeys?: string[] | undefined;
 
-  /** 是否启用同源联动，默认 true（仅在配置了有效 datasetId 时生效） */
-  linkage?: boolean | undefined;
-  /** 联动状态发生变化时的回调 */
-  onLinkageChange?: ((event: LinkageEvent | null) => void) | undefined;
-
   /** 是否处于加载中状态 */
   loading?: boolean | undefined;
   /** 自定义卡片标题 */
   title?: ReactNode | undefined;
   /** 自定义卡片右上角附加操作区 */
   extra?: ReactNode | undefined;
-
-  /**
-   * 原始底层明细事实记录集（可选）
-   * 若提供，在外部切片过滤触发时，将自动基于此原始流水重新过滤并重新调用 transformData 聚合计算
-   */
-  rawDataset?: readonly DataRecord[] | undefined;
-
-  /**
-   * 管道转换 DSL 配置（可选，与 rawDataset 配合使用）
-   * 当接收到外部切片过滤时，自动以此配置重算聚合结果与总计行
-   */
-  transformConfig?: DynamicTransformConfig | undefined;
-
-  /**
-   * 联动模式：
-   * - 'filter': 工业标准交叉切片过滤 (Cross-Filtering, 默认)
-   * - 'highlight': 仅视觉高亮/悬停对齐
-   */
-  linkageMode?: ('filter' | 'highlight') | undefined;
-
-  /** 是否允许作为切片发射源（点击自身图元时向外广播切片过滤条件），默认 true */
-  allowEmitLinkage?: boolean | undefined;
-
-  /** 是否允许接收外部切片（接收外部切片时动态重算过滤自身数据），默认 true */
-  allowReceiveLinkage?: boolean | undefined;
-
-  /** 联动影响目标受众视图 ID 列表（可选，未指定时广播给所有同源卡片；指定时仅作用于名单内的卡片） */
-  targetViewIds?: readonly string[] | undefined;
 
   /**
    * 表格高阶交互增强特性开关
@@ -203,6 +123,40 @@ export interface DynamicDataViewProps {
    * 默认全部特性开启
    */
   tableFeatures?: boolean | TableFeatureConfig | undefined;
+
+  /**
+   * 双向交叉透视表单元格穿透下钻回调 (外部扩展入口)
+   * - 若外部提供此回调：内部不再弹出默认 Modal，全权交由外部组件自行处理（例如呼出自定义业务抽屉、页面跳转、弹窗增强等）
+   * - 若外部未提供此回调：回退到内置的开箱即用 Excel 穿透弹窗
+   */
+  onCellDrillthrough?: ((info: CellDrillthroughInfo) => void) | undefined;
+}
+
+/** 透视表单元格穿透事件上下文信息 */
+export interface CellDrillthroughInfo {
+  /** 构成该单元格的所有底层原始流水数据 */
+  records: readonly DataRecord[];
+
+  /** 面包屑标题 (如: "2026-08 · 1号五轴切削车间 · 航空钛合金压气机叶片 · WO-202608-01") */
+  title: string;
+
+  /** 原始字段中英文名称字典 (如: { order_code: '工单流水号', finish_time: '完工质检时间' }) */
+  rawHeaders: Record<string, string>;
+
+  /** 当前穿透的交叉维度条件集合 */
+  conditions: {
+    rowDimensions: Record<string, any>;
+    colDimensions: Record<string, any>;
+    indicatorKey?: string | undefined;
+    indicatorTitle?: string | undefined;
+    cellValue?: any;
+  };
+
+  /** 单元格行列坐标 */
+  cell: {
+    col: number;
+    row: number;
+  };
 }
 
 /** 表格高阶交互功能增强配置 */
@@ -223,14 +177,18 @@ export interface TableFeatureConfig {
   columnVisibility?: boolean | undefined;
   /** 是否支持同类相邻维度单元格自动合并 (如时间分桶、分类维度)，默认 true */
   mergeCells?: boolean | undefined;
+  /** 是否支持鼠标直接在 Canvas 上拖拽调整列宽，默认 true */
+  columnResize?: boolean | undefined;
+  /** 是否支持直接在 Canvas 表头上拖拽列排序调序，默认 true */
+  dragOrder?: boolean | undefined;
   /**
-   * 是否支持点击聚合行下钻底层原始明细：
-   * - 'inplace': 原地切换为明细流水表 (默认/推荐)
-   * - 'drawer': 弹出右侧抽屉展示
+   * 是否支持数据下钻（主从表树形展开与透视树）：
+   * - true: 启用下钻（ListTable 采用主从树形展开，PivotTable 采用多维透视与维度折叠）
    * - false: 禁用下钻
-   * - true: 启用下钻 (默认以 'inplace' 形态呈现)
+   * - 'tree': 显式启用树形主从展开
+   * - 'inplace': 兼容旧配置项，自动转为树形主从展开
    */
-  drilldown?: boolean | 'drawer' | 'inplace' | undefined;
+  drilldown?: boolean | 'tree' | 'inplace' | undefined;
 }
 
 /** 指标元信息简化结构 */

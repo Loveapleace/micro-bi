@@ -9,7 +9,6 @@
  *   - 表头与列显隐管理面板 (Column Visibility Popover)
  *   - 表格内全局实时快速检索 (Table Filter)
  *   - 动态首列维度冻结 (Column Freezing)
- *   - 深度集成同源多维交叉切片过滤联动 (LinkageBus)
  */
 import React, { useRef, useEffect, useMemo, useState, useCallback } from 'react';
 import {
@@ -24,8 +23,9 @@ import {
   Checkbox,
   ConfigProvider,
   Dropdown,
+  Modal,
+  Table,
 } from 'antd';
-import { SimpleDrawer } from '../../components/common/SimpleDrawer.js';
 import {
   FullscreenOutlined,
   FullscreenExitOutlined,
@@ -48,6 +48,7 @@ import {
   LockOutlined,
   DownOutlined,
   FileExcelOutlined,
+  TableOutlined,
 } from '@ant-design/icons';
 import * as VTablePkg from '@visactor/vtable';
 import type {
@@ -63,10 +64,9 @@ const ListTable = vtableActual.ListTable;
 const PivotTable = vtableActual.PivotTable;
 const themes = vtableActual.themes;
 import type { TransformResult, DataRecord, OutputColumnMeta } from '../../../engine/types.js';
-import type { LinkageEvent, LinkageFilterSlice, TableFeatureConfig } from '../types.js';
+import type { TableFeatureConfig, CellDrillthroughInfo } from '../types.js';
 import type { ResolvedThemeConfig } from '../theme.js';
 import { buildAntdTheme } from '../theme.js';
-import { getRowFieldValue, matchSliceValue } from '../DynamicDataLinkage.js';
 import { computeSummaryValues, createPivotAggregationRules } from './summaryCalculator.js';
 import { cloneTransformRecord } from '../../../engine/recordMetadata.js';
 import {
@@ -305,6 +305,191 @@ const ExcelColumnFilterContent: React.FC<ExcelColumnFilterContentProps> = ({
   );
 };
 
+export interface PivotDrillthroughModalProps {
+  open: boolean;
+  title: string;
+  records: DataRecord[];
+  rawHeaders?: Record<string, string> | undefined;
+  onClose: () => void;
+  isDark: boolean;
+  theme: ResolvedThemeConfig;
+  locale?: TableLocale | undefined;
+}
+
+export const PivotDrillthroughModal: React.FC<PivotDrillthroughModalProps> = ({
+  open,
+  title,
+  records,
+  rawHeaders = {},
+  onClose,
+  isDark,
+  theme,
+  locale: propTableLocale,
+}) => {
+  const t = useDynamicDataLocale(propTableLocale);
+  const [keyword, setKeyword] = useState('');
+
+  // 过滤后的明细记录
+  const filteredRecords = useMemo(() => {
+    if (!keyword.trim()) return records;
+    const lower = keyword.trim().toLowerCase();
+    return records.filter((r) =>
+      Object.entries(r).some(([k, v]) => {
+        if (k.startsWith('_') || k.startsWith('__')) return false;
+        return v !== null && v !== undefined && String(v).toLowerCase().includes(lower);
+      })
+    );
+  }, [records, keyword]);
+
+  // 动态提取列定义 (依据底层原始流水字段与 rawHeaders 映射)
+  const columns = useMemo(() => {
+    if (!records || records.length === 0) return [];
+    const keySet = new Set<string>();
+    for (const r of records.slice(0, 50)) {
+      for (const k of Object.keys(r)) {
+        if (!k.startsWith('_') && !k.startsWith('__') && k !== 'children' && k !== 'hierarchyState') {
+          keySet.add(k);
+        }
+      }
+    }
+
+    return Array.from(keySet).map((key) => {
+      const headerTitle = rawHeaders[key] || key;
+      const sampleVal = records.find((r) => r[key] !== null && r[key] !== undefined)?.[key];
+      const isNumber = typeof sampleVal === 'number';
+
+      return {
+        title: headerTitle,
+        dataIndex: key,
+        key: key,
+        ellipsis: true,
+        align: isNumber ? ('right' as const) : ('left' as const),
+        sorter: (a: any, b: any) => {
+          const va = a[key];
+          const vb = b[key];
+          if (typeof va === 'number' && typeof vb === 'number') return va - vb;
+          return String(va ?? '').localeCompare(String(vb ?? ''));
+        },
+        render: (val: any) => {
+          if (val === null || val === undefined || val === '') return '-';
+          if (typeof val === 'number') {
+            return Number.isFinite(val) ? val.toLocaleString() : '-';
+          }
+          if (typeof val === 'object') {
+            try {
+              return JSON.stringify(val);
+            } catch {
+              return '-';
+            }
+          }
+          return String(val);
+        },
+      };
+    });
+  }, [records, rawHeaders]);
+
+  // 复制当前明细为 TSV (带 Excel 文本格式保护)
+  const handleCopy = useCallback(async () => {
+    if (filteredRecords.length === 0) return;
+    const exportCols = columns.map((c) => ({ key: c.key as string, title: String(c.title || c.key) }));
+    const ok = await copyToClipboardAsTsv(filteredRecords, exportCols);
+    if (ok) {
+      message.success(t('已复制表格数据到剪贴板(已注记 Excel 文本格式保护，粘贴不会改变日期格式)'));
+    } else {
+      message.error(t('复制到剪贴板失败，请检查浏览器权限'));
+    }
+  }, [filteredRecords, columns, t]);
+
+  // 导出当前明细为 Excel (.xls)
+  const handleExport = useCallback(() => {
+    if (filteredRecords.length === 0) return;
+    const exportCols = columns.map((c) => ({ key: c.key as string, title: String(c.title || c.key) }));
+    exportToHtmlExcel(filteredRecords, exportCols, `drillthrough_${Date.now()}.xls`);
+    message.success(t('已导出 Excel 工作簿文件 (.xls)'));
+  }, [filteredRecords, columns, t]);
+
+  return (
+    <Modal
+      open={open}
+      onCancel={onClose}
+      width={1000}
+      centered
+      destroyOnClose
+      title={
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingRight: 24, flexWrap: 'wrap' }}>
+          <TableOutlined style={{ color: '#1677ff', fontSize: 16 }} />
+          <span style={{ fontSize: 14, fontWeight: 600 }}>{t('底层流水穿透')}</span>
+          <span style={{ fontSize: 12, color: theme.colorTextSecondary, fontWeight: 400 }}>
+            {title}
+          </span>
+          <Tag color="blue" style={{ margin: 0, fontSize: 11, marginLeft: 4 }}>
+            {t('共 {count} 项', { count: filteredRecords.length.toLocaleString() })}
+          </Tag>
+        </div>
+      }
+      footer={[
+        <Button key="close" type="primary" onClick={onClose}>
+          {t('关闭')}
+        </Button>,
+      ]}
+      styles={{
+        body: { padding: '16px 20px', maxHeight: '72vh', overflowY: 'auto' },
+      }}
+    >
+      {/* 弹窗顶部操作栏 */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: 12,
+          gap: 12,
+          flexWrap: 'wrap',
+        }}
+      >
+        <Input
+          size="small"
+          prefix={<SearchOutlined style={{ color: theme.colorTextSecondary }} />}
+          placeholder={t('搜索筛选值...')}
+          allowClear
+          value={keyword}
+          onChange={(e) => setKeyword(e.target.value)}
+          style={{ width: 220, fontSize: 12 }}
+        />
+        <Space size={8}>
+          <Tooltip title={t('复制数据 (多格式：HTML + TSV，粘贴到 Excel 原汁原味保留日期与文本格式)')}>
+            <Button size="small" icon={<CopyOutlined />} onClick={handleCopy} style={{ fontSize: 12 }}>
+              {t('复制数据')}
+            </Button>
+          </Tooltip>
+          <Tooltip title={t('已导出 Excel 工作簿文件 (.xls)')}>
+            <Button size="small" icon={<DownloadOutlined />} onClick={handleExport} style={{ fontSize: 12 }}>
+              {t('导出 Excel')}
+            </Button>
+          </Tooltip>
+        </Space>
+      </div>
+
+      {/* 明细平铺表格 */}
+      <Table
+        dataSource={filteredRecords}
+        columns={columns}
+        rowKey={(record, idx) => String(record.id ?? record.device_code ?? record.order_code ?? record.code ?? idx)}
+        size="small"
+        bordered
+        pagination={{
+          pageSize: 10,
+          showSizeChanger: true,
+          pageSizeOptions: ['10', '20', '50'],
+          showTotal: (total) => t('共 {count} 项', { count: total.toLocaleString() }),
+          size: 'small',
+        }}
+        scroll={{ x: 'max-content', y: 360 }}
+      />
+    </Modal>
+  );
+};
+
 export interface VTableViewProps {
   /** 数据管道转换结果 */
   result: TransformResult;
@@ -314,11 +499,7 @@ export interface VTableViewProps {
   activeMetrics?: readonly string[] | undefined;
   /** 主题配置 */
   theme: ResolvedThemeConfig;
-  /** 外部传入的当前联动事件 (接收其他同源组件的广播) */
-  activeLinkage?: LinkageEvent | null | undefined;
-  /** 当前已激活的全部切片列表 (更直接的切片高亮源) */
-  activeSlices?: readonly LinkageFilterSlice[] | undefined;
-  /** 点击表格行或单元格时触发联动回调 (支持携带点击列字段以实现精准切片) */
+  /** 点击表格行或单元格回调 */
   onRowSelect?: ((record: DataRecord, index: number, colField?: string | undefined) => void) | undefined;
   /** 表格特性开关配置 */
   tableFeatures?: boolean | TableFeatureConfig | undefined;
@@ -338,12 +519,14 @@ export interface VTableViewProps {
   frozenColumnKeys?: string[] | undefined;
   /** 外部控制靠右冻结的列 key 列表 */
   rightFrozenColumnKeys?: string[] | undefined;
-  /** 当前组件视图唯一 ID (用于防自环广播) */
-  viewId?: string | undefined;
-  /** 定向联动受众卡片 ID 列表 (仅向列表中的视图定向广播，未指定则广播全看板) */
-  targetViewIds?: readonly string[] | undefined;
   /** 自定义国际化语言包或局部文案覆盖 */
   locale?: DeepPartial<DynamicDataLocale> | undefined;
+  /**
+   * 双向交叉透视表单元格穿透下钻回调 (外部扩展入口)
+   * - 若外部提供此回调：内部不再弹出默认 Modal，全权交由外部组件自行处理（例如呼出自定义业务抽屉、页面跳转、弹窗增强等）
+   * - 若外部未提供此回调：回退到内置的开箱即用 Excel 穿透弹窗
+   */
+  onCellDrillthrough?: ((info: CellDrillthroughInfo) => void) | undefined;
 }
 
 export const VTableView: React.FC<VTableViewProps> = ({
@@ -351,9 +534,8 @@ export const VTableView: React.FC<VTableViewProps> = ({
   dimensionField,
   activeMetrics,
   theme,
-  activeLinkage,
-  activeSlices: propActiveSlices,
   onRowSelect,
+  onCellDrillthrough,
   tableFeatures = true,
   vtableOption,
   style,
@@ -364,8 +546,6 @@ export const VTableView: React.FC<VTableViewProps> = ({
   frozenColumnKeys: propFrozenColumnKeys,
   rightFrozenColumnKeys: propRightFrozenColumnKeys,
   locale: propLocale,
-  viewId,
-  targetViewIds,
 }) => {
   const t = useDynamicDataLocale(propLocale);
 
@@ -376,46 +556,21 @@ export const VTableView: React.FC<VTableViewProps> = ({
   resultRef.current = result;
   const onRowSelectRef = useRef(onRowSelect);
   onRowSelectRef.current = onRowSelect;
-  const viewIdRef = useRef(viewId);
-  viewIdRef.current = viewId;
-  const targetViewIdsRef = useRef(targetViewIds);
-  targetViewIdsRef.current = targetViewIds;
+  const onCellDrillthroughRef = useRef(onCellDrillthrough);
+  onCellDrillthroughRef.current = onCellDrillthrough;
 
-  // 单元格双击逻辑兜底计时器 (配合 VTable 原生 dblclick_cell 双重保险，消除环境微秒延迟或布局位移导致丢失原生双击)
+  // 单元格双击逻辑兜底计时器
   const lastClickPivotRef = useRef<{ time: number; col: number; row: number }>({ time: 0, col: -1, row: -1 });
   const lastClickListRef = useRef<{ time: number; col: number; row: number }>({ time: 0, col: -1, row: -1 });
-  // 单击联动防抖计时器 (在支持下钻时，消除双击误触发单击联动，确保双击下钻纯净触发)
-  const clickTimerPivotRef = useRef<any>(null);
-  const clickTimerListRef = useRef<any>(null);
 
-  // 下钻状态 (Inplace 与 Drawer) - 提前声明以便 isCrossTab 识别
-  const [drilldownState, setDrilldownState] = useState<{
-    active: boolean;
-    rowRecord: DataRecord | null;
-    rawRows: DataRecord[];
-    label: string;
-  }>({
-    active: false,
-    rowRecord: null,
-    rawRows: [],
-    label: '',
-  });
-
-  // 判定是否为双向交叉多维透视表 (存在列维度，且非下钻明细穿透态)
+  // 判定是否为双向交叉多维透视表 (存在列维度)
   const isCrossTab = useMemo(() => {
-    if (drilldownState.active) return false;
     return Boolean(
       result.meta?.isCrossTab ||
       (result.meta?.dimensions?.columnCategories && result.meta.dimensions.columnCategories.length > 0) ||
       result.meta?.dimensions?.columnTimeBucket?.field
     );
-  }, [drilldownState.active, result.meta?.isCrossTab, result.meta?.dimensions]);
-
-  // 合并有效的联动切片列表 (优先使用外部直传 activeSlices，兜底从 activeLinkage 提取)
-  const effectiveSlices = useMemo(() => {
-    if (propActiveSlices && propActiveSlices.length > 0) return propActiveSlices;
-    return activeLinkage?.activeSlices || [];
-  }, [propActiveSlices, activeLinkage?.activeSlices]);
+  }, [result.meta?.isCrossTab, result.meta?.dimensions]);
 
   const antdThemeConfig = useMemo(() => buildAntdTheme(theme), [theme]);
 
@@ -463,10 +618,6 @@ export const VTableView: React.FC<VTableViewProps> = ({
   // 表头筛选 Popover 虚拟定位坐标 (相对 wrapperRef)
   const [filterAnchorPos, setFilterAnchorPos] = useState<{ x: number; y: number } | null>(null);
 
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [drawerRows, setDrawerRows] = useState<DataRecord[]>([]);
-  const [drawerTitle, setDrawerTitle] = useState('');
-
   const isDark = theme.mode === 'dark';
 
   // 2. 解析特性开关
@@ -477,11 +628,13 @@ export const VTableView: React.FC<VTableViewProps> = ({
         export: tableFeatures,
         fullscreen: tableFeatures,
         columnVisibility: tableFeatures,
-        drilldown: tableFeatures ? 'inplace' : false,
+        drilldown: tableFeatures,
         headerMenu: tableFeatures,
         filterDropdown: tableFeatures,
         mergeCells: tableFeatures,
         dataBars: tableFeatures,
+        columnResize: tableFeatures,
+        dragOrder: tableFeatures,
       };
     }
     return {
@@ -489,50 +642,21 @@ export const VTableView: React.FC<VTableViewProps> = ({
       export: true,
       fullscreen: true,
       columnVisibility: true,
-      drilldown: 'inplace',
+      drilldown: true,
       headerMenu: true,
       filterDropdown: true,
       mergeCells: true,
       dataBars: true,
+      columnResize: true,
+      dragOrder: true,
       ...tableFeatures,
     };
   }, [tableFeatures]);
 
   const isDataBarsActive = features.dataBars !== false && showDataBars;
 
-
-  // 3. 构建候选列元信息 (若处于下钻态，严格切换至全量底层事实列；否则为聚合结果列)
+  // 3. 构建候选列元信息 (基于结果列与二次激活度量过滤)
   const candidateColumnsMeta = useMemo<OutputColumnMeta[]>(() => {
-    if (drilldownState.active) {
-      const rows = drilldownState.rawRows;
-      if (rows.length === 0) return [];
-      const headers = result.meta?.rawHeaders || {};
-      const keySet = new Set<string>();
-      for (const r of rows.slice(0, 50)) {
-        for (const k of Object.keys(r)) {
-          if (!k.startsWith('_')) keySet.add(k);
-        }
-      }
-      const cols: OutputColumnMeta[] = [];
-      for (const key of keySet) {
-        let isNum = false;
-        for (const r of rows) {
-          if (r[key] !== undefined && r[key] !== null) {
-            isNum = typeof r[key] === 'number';
-            break;
-          }
-        }
-        cols.push({
-          key,
-          title: headers[key] || key,
-          type: isNum ? 'number' : 'text',
-          field: key,
-          kind: isNum ? 'aggregated' : 'dimension',
-        });
-      }
-      return cols;
-    }
-
     if (!result || !result.columns) return [];
     if (!activeMetrics || activeMetrics.length === 0) {
       return result.columns as OutputColumnMeta[];
@@ -540,14 +664,10 @@ export const VTableView: React.FC<VTableViewProps> = ({
     return (result.columns as OutputColumnMeta[]).filter(
       (c) => c.type !== 'number' || activeMetrics.includes(c.key)
     );
-  }, [drilldownState.active, drilldownState.rawRows, result, activeMetrics]);
+  }, [result, activeMetrics]);
 
   // 按用户自定义列序排列，过滤用户在「列设置」中主动隐藏的列，并严格按「左冻结列 -> 中间流动列 -> 右冻结列」组织
   const visibleColumnsMeta = useMemo(() => {
-    if (drilldownState.active) {
-      // 下钻态严格遵循决策 2：展示全量原始物理事实列，不受聚合态显隐与排序影响
-      return candidateColumnsMeta;
-    }
     let ordered = candidateColumnsMeta;
     if (columnOrder && columnOrder.length > 0) {
       const orderMap = new Map(columnOrder.map((key, idx) => [key, idx]));
@@ -582,7 +702,7 @@ export const VTableView: React.FC<VTableViewProps> = ({
   }, [candidateColumnsMeta, hiddenColumnKeys, columnOrder, frozenColumnKeys, rightFrozenColumnKeys]);
 
   // 4. 组装数据源与快速检索及列筛选过滤
-  const rawDataSource = drilldownState.active ? drilldownState.rawRows : (result.data || []);
+  const rawDataSource: DataRecord[] = (result.data as DataRecord[]) || [];
 
   // 提取某一列的所有去重枚举值与频次统计 (用于 Excel 风格筛选面板)
   const getColumnDistinctValues = useCallback((colKey: string) => {
@@ -615,7 +735,7 @@ export const VTableView: React.FC<VTableViewProps> = ({
     // 4.1 全局快速检索过滤
     if (searchText.trim()) {
       const lower = searchText.trim().toLowerCase();
-      data = data.filter((row) =>
+      data = data.filter((row: DataRecord) =>
         visibleColumnsMeta.some((col) => {
           const val = row[col.key];
           return val !== null && val !== undefined && String(val).toLowerCase().includes(lower);
@@ -627,7 +747,7 @@ export const VTableView: React.FC<VTableViewProps> = ({
       ([_, vals]) => Array.isArray(vals)
     );
     if (activeFilters.length > 0) {
-      data = data.filter((row) =>
+      data = data.filter((row: DataRecord) =>
         activeFilters.every(([colKey, allowedValues]) => {
           const rawVal = row[colKey];
           const strVal = rawVal === null || rawVal === undefined || rawVal === '' ? t('(空)') : String(rawVal);
@@ -638,14 +758,191 @@ export const VTableView: React.FC<VTableViewProps> = ({
     return data;
   }, [rawDataSource, searchText, visibleColumnsMeta, columnFilters, t]);
 
-  // 5. 组装行数据与科学总计行计算
-  const { tableRecords, hasSummaryRow } = useMemo(() => {
+  // 透视表穿透明细弹窗状态 (Excel 风格单元格穿透)
+  const [drillModalState, setDrillModalState] = useState<{
+    open: boolean;
+    title: string;
+    records: DataRecord[];
+    rawHeaders: Record<string, string>;
+  }>({
+    open: false,
+    title: '',
+    records: [],
+    rawHeaders: {},
+  });
+
+  const triggerPivotDrillthrough = useCallback(
+    (args: any) => {
+      if (features.drilldown === false) return;
+      const table = tableRef.current;
+      if (!table) return;
+
+      if (typeof table.isHeader === 'function' && table.isHeader(args.col, args.row)) return;
+
+      const headerPaths = typeof table.getCellHeaderPaths === 'function'
+        ? table.getCellHeaderPaths(args.col, args.row)
+        : null;
+
+      // 忽略角头、总计行与小计行
+      if (
+        (headerPaths as any)?.role === 'grand-total' ||
+        (headerPaths as any)?.role === 'sub-total' ||
+        (headerPaths as any)?.cellLocation !== 'body'
+      ) {
+        return;
+      }
+
+      const originRecord = typeof table.getCellOriginRecord === 'function'
+        ? table.getCellOriginRecord(args.col, args.row)
+        : args.originData;
+      const firstRecord = Array.isArray(originRecord) ? originRecord[0] : originRecord;
+
+      if (firstRecord?.__isSummaryRow) return;
+
+      // 优先从预聚合记录中提取 _rawRows
+      let matchedRawRows: DataRecord[] = [];
+      if (Array.isArray(firstRecord?._rawRows) && firstRecord._rawRows.length > 0) {
+        matchedRawRows = firstRecord._rawRows;
+      } else {
+        // 兜底回退：根据多维维度路径从 rawDataSource 过滤匹配
+        const rowPaths = (headerPaths as any)?.rowHeaderPaths || [];
+        const colPaths = (headerPaths as any)?.colHeaderPaths || [];
+        const conditions: { field: string; value: any }[] = [];
+
+        for (const p of rowPaths) {
+          if (p.dimensionKey && p.value !== undefined) {
+            conditions.push({ field: p.dimensionKey, value: p.value });
+          }
+        }
+        for (const p of colPaths) {
+          if (p.dimensionKey && p.value !== undefined) {
+            conditions.push({ field: p.dimensionKey, value: p.value });
+          }
+        }
+
+        if (conditions.length > 0) {
+          matchedRawRows = rawDataSource.filter((row: any) =>
+            conditions.every((c) => {
+              const val = row[c.field];
+              return String(val ?? '').startsWith(String(c.value ?? '')) || String(val ?? '') === String(c.value ?? '');
+            })
+          );
+        }
+      }
+
+      if (matchedRawRows.length === 0) {
+        message.info(t('当前单元格暂无底层流水明细'));
+        return;
+      }
+
+      // 提取行与列多维标签构造面包屑标题与结构化条件
+      const rowPaths = (headerPaths as any)?.rowHeaderPaths || [];
+      const colPaths = (headerPaths as any)?.colHeaderPaths || [];
+      const labels: string[] = [];
+      const rowDimMap: Record<string, any> = {};
+      const colDimMap: Record<string, any> = {};
+      let indicatorKey: string | undefined;
+      let indicatorTitle: string | undefined;
+
+      for (const p of rowPaths) {
+        if (p.dimensionKey && p.value !== undefined) {
+          labels.push(String(p.value));
+          rowDimMap[p.dimensionKey] = p.value;
+        }
+      }
+      for (const p of colPaths) {
+        if (p.dimensionKey && p.value !== undefined) {
+          labels.push(String(p.value));
+          colDimMap[p.dimensionKey] = p.value;
+        }
+        if (p.indicatorKey) {
+          indicatorKey = p.indicatorKey;
+          indicatorTitle = p.value;
+        }
+      }
+      const titleStr = labels.length > 0 ? labels.join(' · ') : t('选定单元格');
+
+      const drillInfo: CellDrillthroughInfo = {
+        records: matchedRawRows,
+        title: titleStr,
+        rawHeaders: (result.meta as any)?.rawHeaders || {},
+        conditions: {
+          rowDimensions: rowDimMap,
+          colDimensions: colDimMap,
+          indicatorKey,
+          indicatorTitle,
+          cellValue: typeof table.getCellValue === 'function' ? table.getCellValue(args.col, args.row) : undefined,
+        },
+        cell: {
+          col: args.col,
+          row: args.row,
+        },
+      };
+
+      // 外部扩展优先：若外部注入了 onCellDrillthrough 回调，则全权移交外部处理
+      if (typeof onCellDrillthroughRef.current === 'function') {
+        onCellDrillthroughRef.current(drillInfo);
+        return;
+      }
+
+      // 否则保底唤起内部默认的 Excel 风格穿透弹窗
+      setDrillModalState({
+        open: true,
+        title: titleStr,
+        records: matchedRawRows,
+        rawHeaders: (result.meta as any)?.rawHeaders || {},
+      });
+    },
+    [features.drilldown, rawDataSource, result.meta, t]
+  );
+
+  const triggerPivotDrillthroughRef = useRef(triggerPivotDrillthrough);
+  triggerPivotDrillthroughRef.current = triggerPivotDrillthrough;
+
+  // 5. 组装主从树形行数据与科学总计行计算
+  const { tableRecords, hasSummaryRow, hasTreeHierarchy } = useMemo(() => {
+    const isTreeDrilldown = features.drilldown !== false;
+    let foundTree = false;
+
+    // 构建主从树形结构 (当某行拥有底层原始流水 _rawRows 且启用了 drilldown 时，将其实例化为 children 树节点)
+    const recordsWithTree = filteredData.map((row: DataRecord) => {
+      if (row.__isSummaryRow) return row;
+
+      // 若数据自身已有 children 树形定义
+      if (Array.isArray(row.children) && row.children.length > 0) {
+        foundTree = true;
+        return {
+          ...row,
+          hierarchyState: row.hierarchyState || 'collapse',
+        };
+      }
+
+      // 若为分组汇总行，且挂载了底层原始流水记录 _rawRows
+      if (isTreeDrilldown && Array.isArray(row._rawRows) && row._rawRows.length > 0) {
+        foundTree = true;
+        const children = row._rawRows.map((child: any, idx: number) => ({
+          ...child,
+          __isChildRow: true,
+          __childIndex: idx,
+          __parentRecord: row,
+        }));
+        return {
+          ...row,
+          children,
+          hierarchyState: 'collapse',
+        };
+      }
+
+      return row;
+    });
+
     const shouldShowSummary = features.summaryRow !== false && showSummaryRow && filteredData.length > 0;
 
     if (!shouldShowSummary) {
       return {
-        tableRecords: filteredData,
+        tableRecords: recordsWithTree,
         hasSummaryRow: false,
+        hasTreeHierarchy: !isCrossTab && foundTree,
       };
     }
 
@@ -668,18 +965,27 @@ export const VTableView: React.FC<VTableViewProps> = ({
     }
 
     return {
-      tableRecords: [...filteredData, summaryRow],
+      tableRecords: [...recordsWithTree, summaryRow],
       hasSummaryRow: true,
+      hasTreeHierarchy: !isCrossTab && foundTree,
     };
   }, [
+    isCrossTab,
     filteredData,
     visibleColumnsMeta,
     result.meta?.rawHeaders,
     features.summaryRow,
+    features.drilldown,
     showSummaryRow,
-    drilldownState.active,
     t,
   ]);
+
+  // 5.0.1 识别树形展开的主排序列键名 (优先取首个非数值维度列)
+  const primaryTreeColKey = useMemo(() => {
+    if (!hasTreeHierarchy) return null;
+    const dimCol = visibleColumnsMeta.find((c) => c.type !== 'number');
+    return dimCol ? dimCol.key : visibleColumnsMeta[0]?.key;
+  }, [hasTreeHierarchy, visibleColumnsMeta]);
 
   // 5.1 构造透视表行维度 (Row Dimensions)
   const pivotRowDimensions = useMemo(() => {
@@ -692,6 +998,8 @@ export const VTableView: React.FC<VTableViewProps> = ({
         dimensionKey: f,
         title: headers[f] || f,
         width: 'auto',
+        drillDown: features.drilldown !== false,
+        drillUp: features.drilldown !== false,
       });
     }
     if (result.meta?.dimensions?.categories) {
@@ -700,6 +1008,8 @@ export const VTableView: React.FC<VTableViewProps> = ({
           dimensionKey: cat,
           title: headers[cat] || cat,
           width: 'auto',
+          drillDown: features.drilldown !== false,
+          drillUp: features.drilldown !== false,
         });
       }
     }
@@ -851,7 +1161,7 @@ export const VTableView: React.FC<VTableViewProps> = ({
   // 5.5 构造透视表事实记录 (保证每个记录拥有有效行维度)
   const pivotRecords = useMemo(() => {
     if (!isCrossTab) return [];
-    return filteredData.map((r) => {
+    return filteredData.map((r: DataRecord) => {
       if (pivotRowDimensions.length === 0) {
         return cloneTransformRecord(r, { __summary_row_dim__: t('汇总') });
       }
@@ -859,72 +1169,16 @@ export const VTableView: React.FC<VTableViewProps> = ({
     });
   }, [isCrossTab, filteredData, pivotRowDimensions.length, t]);
 
-  // 触发下钻处理 (支持传入自定义 rawRows 与复合切片 label)
-  const handleTriggerDrilldown = useCallback(
-    (originData: DataRecord, customContext?: { rawRows?: DataRecord[]; label?: string }) => {
-      if (originData.__isSummaryRow) return;
-      const rawRows = customContext?.rawRows || (originData._rawRows as DataRecord[]) || [];
-      if (!rawRows || rawRows.length === 0) {
-        message.info(t('当前分组无底层原始明细数据可供下钻'));
-        return;
-      }
-
-      const groupLabel =
-        customContext?.label ||
-        String(
-          (dimensionField && originData[dimensionField]) ||
-          (visibleColumnsMeta[0] && originData[visibleColumnsMeta[0].key]) ||
-          t('下钻明细')
-        );
-
-      if (features.drilldown === 'drawer') {
-        setDrawerRows(rawRows);
-        setDrawerTitle(t('【{label}】底层明细穿透 ({count} 行)', { label: groupLabel, count: rawRows.length }));
-        setDrawerOpen(true);
-      } else {
-        setDrilldownState({
-          active: true,
-          rowRecord: originData,
-          rawRows,
-          label: groupLabel,
-        });
-        message.success(t('已成功下钻至【{label}】({count} 条明细)，点击右上角可退出', { label: groupLabel, count: rawRows.length }));
-      }
-    },
-    [dimensionField, visibleColumnsMeta, features.drilldown, t]
-  );
-
-
   // 6. 构建 VTable 列定义 (ColumnDefine)
   const tableColumns = useMemo<ColumnDefine[]>(() => {
-    // 判定特定单元格是否命中任意已激活的联动切片 (用于精确单元格级高亮)
-    const checkIsSliceCell = (colKey: string, colTitle: string, rowData: any): boolean => {
-      if (!rowData || rowData.__isSummaryRow || effectiveSlices.length === 0) return false;
-      const headers = (result.meta as any)?.rawHeaders;
-      const rowVal = rowData[colKey];
-      if (rowVal === undefined || rowVal === null || rowVal === '') return false;
-
-      return effectiveSlices.some((s) => {
-        const fieldMatches =
-          s.field === colKey ||
-          (headers && headers[colKey] === s.field) ||
-          (headers && headers[s.field] === colKey) ||
-          colTitle === s.field ||
-          colTitle === s.fieldTitle;
-
-        if (!fieldMatches) return false;
-        return matchSliceValue(rowVal, s.value);
-      });
-    };
-
     const cols: ColumnDefine[] = visibleColumnsMeta.map((col: OutputColumnMeta, colIndex: number) => {
       const isNumber = col.type === 'number';
 
       // 提取当前列前面的所有维度列 (用于多维层次化保护)
       const precedingDimensionCols = visibleColumnsMeta.slice(0, colIndex).filter((c) => c.type !== 'number');
 
-      // 相邻同类单元格纵向合并 (支持时间分桶、离散维度、并严密隔离总计行与前置维度层次)
-      const shouldEnableMerge = features.mergeCells !== false && autoMergeCells && !isNumber && !drilldownState.active;
+      // 相邻同类单元格纵向合并 (仅在非树形表格下生效，树形主从表由层级缩进承载)
+      const shouldEnableMerge = features.mergeCells !== false && autoMergeCells && !isNumber && !hasTreeHierarchy;
 
       const mergeCellFn = shouldEnableMerge
         ? ((v1: any, v2: any, extraArgs: any) => {
@@ -966,11 +1220,39 @@ export const VTableView: React.FC<VTableViewProps> = ({
         minWidth: isNumber
           ? Math.max(115, (col.title?.length || 4) * 14 + 36)
           : Math.max(100, (col.title?.length || 4) * 14 + 36),
+        ...(hasTreeHierarchy && col.key === primaryTreeColKey ? { tree: true } : {}),
         ...(shouldEnableMerge && mergeCellFn ? { mergeCell: mergeCellFn } : {}),
         fieldFormat: (record: any) => {
-          const val = (record && typeof record === 'object')
-            ? record[col.key]
+          if (record?.__isChildRow) {
+            if (col.key === primaryTreeColKey) {
+              // 提取子明细行的唯一业务标识 (device_code, device_id, order_code, id, name 等)
+              const idCandidates = ['device_code', 'device_id', 'order_code', 'order_id', 'batch_no', 'item_code', 'task_id', 'id', 'code', 'name', 'title', 'part_name'];
+              for (const f of idCandidates) {
+                if (record[f] !== undefined && record[f] !== null && String(record[f]).trim() !== '') {
+                  return String(record[f]);
+                }
+              }
+              if (record[col.key] !== undefined && record[col.key] !== null && String(record[col.key]) !== String(record.__parentRecord?.[col.key])) {
+                return String(record[col.key]);
+              }
+              return `#${(record.__childIndex ?? 0) + 1}`;
+            }
+          }
+
+          let val = (record && typeof record === 'object')
+            ? (record[col.key] !== undefined ? record[col.key] : (col.field ? record[col.field] : undefined))
             : record;
+
+          // 若子行仍未匹配到值，尝试去除聚合包装的字段名或从标题匹配
+          if (val === undefined && record?.__isChildRow && typeof record === 'object') {
+            const rawFieldName = col.key.replace(/^[A-Z_]+\((.*)\)$/, '$1');
+            if (record[rawFieldName] !== undefined) {
+              val = record[rawFieldName];
+            } else if (col.title && record[col.title] !== undefined) {
+              val = record[col.title];
+            }
+          }
+
           if (val === null || val === undefined || val === '') return '-';
           if (typeof val === 'number') {
             return Number.isFinite(val) ? val.toLocaleString() : '-';
@@ -994,20 +1276,21 @@ export const VTableView: React.FC<VTableViewProps> = ({
               args.table?.getCellOriginRecord?.(args.col, args.row) ||
               args.table?.records?.[args.row - (args.table?.columnHeaderLevelCount || 1)];
             if (rowData?.__isSummaryRow) return 700;
-            if (checkIsSliceCell(col.key, col.title || col.key, rowData)) return 600;
+            if (rowData?.__isChildRow) return 400;
+            if (hasTreeHierarchy && !rowData?.__isChildRow) return 600;
             return 400;
           },
           color: (args: any) => {
             const rowData =
               args.table?.getCellOriginRecord?.(args.col, args.row) ||
               args.table?.records?.[args.row - (args.table?.columnHeaderLevelCount || 1)];
-            if (checkIsSliceCell(col.key, col.title || col.key, rowData)) {
-              return isDark ? '#69b1ff' : '#0958d9';
-            }
             const val = Number(rowData?.[col.key]);
             // 负数红字预警 (AntD Table 经典高阶能力)
             if (isNumber && Number.isFinite(val) && val < 0) {
               return '#cf1322';
+            }
+            if (rowData?.__isChildRow && !isNumber) {
+              return isDark ? 'rgba(255,255,255,0.72)' : 'rgba(0,0,0,0.72)';
             }
             return isDark ? 'rgba(255,255,255,0.88)' : 'rgba(0,0,0,0.88)';
           },
@@ -1018,8 +1301,8 @@ export const VTableView: React.FC<VTableViewProps> = ({
             if (rowData?.__isSummaryRow) {
               return isDark ? '#1f242d' : '#f6f8fb';
             }
-            if (checkIsSliceCell(col.key, col.title || col.key, rowData)) {
-              return isDark ? 'rgba(22, 119, 255, 0.28)' : 'rgba(22, 119, 255, 0.14)';
+            if (rowData?.__isChildRow) {
+              return isDark ? 'rgba(255, 255, 255, 0.025)' : 'rgba(0, 0, 0, 0.015)';
             }
             return '';
           },
@@ -1034,7 +1317,7 @@ export const VTableView: React.FC<VTableViewProps> = ({
             args.table?.getCellOriginRecord?.(args.col, args.row) ||
             args.table?.records?.[args.row - (args.table?.columnHeaderLevelCount || 1)];
           const rect = args.rect || { width: 120, height: 32 };
-          if (rowData?.__isSummaryRow) {
+          if (rowData?.__isSummaryRow || rowData?.__isChildRow) {
             return { expectedWidth: rect.width, expectedHeight: rect.height, renderDefault: true };
           }
           const rawNum = Math.abs(Number(args.dataValue ?? rowData?.[col.key]) || 0);
@@ -1100,28 +1383,8 @@ export const VTableView: React.FC<VTableViewProps> = ({
       return colDef;
     });
 
-    // 如果启用了下钻且处于汇总态，且存在透视事实记录，追加操作列
-    const canDrill = features.drilldown !== false && !drilldownState.active && (result.meta?.form === 'pivot' || tableRecords.some(r => r._rawRows));
-    if (canDrill) {
-      cols.push({
-        field: '__action_drilldown',
-        title: t('操作'),
-        width: 90,
-        sort: false,
-        fieldFormat: (record: any) => {
-          if (record?.__isSummaryRow) return '-';
-          return `🔍 ${t('下钻明细')}`;
-        },
-        style: {
-          textAlign: 'center',
-          color: '#1677ff',
-          cursor: 'pointer',
-        },
-      });
-    }
-
     return cols;
-  }, [visibleColumnsMeta, isDark, features.drilldown, features.filterDropdown, features.mergeCells, drilldownState.active, result.meta?.form, result.meta, tableRecords, isDataBarsActive, colMaxMap, columnFilters, effectiveSlices, autoMergeCells, t]);
+  }, [visibleColumnsMeta, isDark, features.filterDropdown, features.mergeCells, hasTreeHierarchy, primaryTreeColKey, isDataBarsActive, colMaxMap, columnFilters, autoMergeCells, t]);
 
   // 7. 初始化 VTable Canvas 实例与事件监听 (自适应 ListTable 明细表 / PivotTable 双向交叉透视表)
   useEffect(() => {
@@ -1192,6 +1455,8 @@ export const VTableView: React.FC<VTableViewProps> = ({
         corner: {
           titleOnDimension: 'row',
         },
+        columnHierarchyType: 'grid',
+        rowHierarchyType: 'grid',
         theme: extendedTheme as any,
         select: {
           highlightMode: 'cell',
@@ -1205,6 +1470,7 @@ export const VTableView: React.FC<VTableViewProps> = ({
           pasteValueToCell: false,
           selectAllOnCtrlA: true,
         },
+        columnResizeMode: features.columnResize !== false ? 'all' : 'none',
         ...vtableOption,
       };
 
@@ -1212,9 +1478,8 @@ export const VTableView: React.FC<VTableViewProps> = ({
       tableRef.current = table;
       (dom as any).__vtable__ = table;
 
-      // 监听单元格点击事件 (单选联动切片 + 激活浮动穿透明细操作条，杜绝单选误下钻)
+      // 监听单元格点击事件 (行选择与逻辑双击穿透)
       table.on('click_cell', (args: any) => {
-        console.log('[VTable Pivot] click_cell fired:', args.col, args.row, 'isHeader:', typeof table.isHeader === 'function' ? table.isHeader(args.col, args.row) : false);
         if (typeof table.isHeader === 'function' && table.isHeader(args.col, args.row)) return;
 
         const headerPaths = typeof table.getCellHeaderPaths === 'function'
@@ -1233,179 +1498,28 @@ export const VTableView: React.FC<VTableViewProps> = ({
         const originRecord = typeof table.getCellOriginRecord === 'function'
           ? table.getCellOriginRecord(args.col, args.row)
           : args.originData;
-        if (originRecord?.__isSummaryRow) return;
+        const firstRecord = Array.isArray(originRecord) ? originRecord[0] : originRecord;
+        if (firstRecord?.__isSummaryRow) return;
 
-        // 提取行与列多维复合切片 (Row Header Paths + Col Header Paths)
-        const compositeSlices: LinkageFilterSlice[] = [];
-        const headers = (result.meta as any)?.rawHeaders || {};
-
-        if (headerPaths?.rowHeaderPaths) {
-          for (const p of headerPaths.rowHeaderPaths as any[]) {
-            if (p.dimensionKey && p.value !== undefined && p.value !== null && p.dimensionKey !== '__summary_row_dim__') {
-              compositeSlices.push({
-                datasetId: (result.meta as any)?.datasetId || '',
-                sourceViewId: viewIdRef.current || '',
-                field: p.dimensionKey,
-                value: p.value,
-                fieldTitle: headers[p.dimensionKey] || p.dimensionKey,
-                targetViewIds: targetViewIdsRef.current,
-              });
-            }
-          }
-        }
-        if (headerPaths?.colHeaderPaths) {
-          for (const p of headerPaths.colHeaderPaths as any[]) {
-            if (p.dimensionKey && p.value !== undefined && p.value !== null) {
-              compositeSlices.push({
-                datasetId: (result.meta as any)?.datasetId || '',
-                sourceViewId: viewIdRef.current || '',
-                field: p.dimensionKey,
-                value: p.value,
-                fieldTitle: headers[p.dimensionKey] || p.dimensionKey,
-                targetViewIds: targetViewIdsRef.current,
-              });
-            }
-          }
-        }
-
-        // 提取底层原始明细记录 (Raw Rows)
-        let matchedRawRows: DataRecord[] = [];
-        if (originRecord?._rawRows && Array.isArray(originRecord._rawRows)) {
-          matchedRawRows = originRecord._rawRows;
-        } else if (Array.isArray(originRecord)) {
-          matchedRawRows = originRecord.flatMap((r: any) => (Array.isArray(r?._rawRows) ? r._rawRows : [r]));
-        }
-        if (matchedRawRows.length === 0 && compositeSlices.length > 0) {
-          matchedRawRows = rawDataSource.filter((row: any) =>
-            compositeSlices.every((s) => matchSliceValue(row[s.field], s.value))
-          );
-        }
-
-        const sliceLabel = compositeSlices.length > 0
-          ? compositeSlices.map((s) => `${s.fieldTitle || s.field}: ${s.value}`).join(' | ')
-          : (originRecord ? String(Object.values(originRecord)[0] ?? '') : t('选中单元格'));
-
-        const compositeRecord: DataRecord = {
-          ...(typeof originRecord === 'object' && originRecord ? originRecord : {}),
-          _compositeSlices: compositeSlices,
-          _rawRows: matchedRawRows,
-        };
-
-        // 快速双击判定 (450ms 内连续点击同一单元格，直接原地穿透下钻，取消单选联动定时器)
+        // 快速双击判定 (400ms 内连续双击同一单元格触发穿透)
         const now = Date.now();
         const timeDiff = now - lastClickPivotRef.current.time;
         const sameCell = lastClickPivotRef.current.col === args.col && lastClickPivotRef.current.row === args.row;
         lastClickPivotRef.current = { time: now, col: args.col, row: args.row };
 
-        if (timeDiff < 450 && sameCell && features.drilldown !== false) {
-          if (clickTimerPivotRef.current) {
-            clearTimeout(clickTimerPivotRef.current);
-            clickTimerPivotRef.current = null;
-          }
-          console.log('[VTable Pivot] Logical double click triggered drilldown at:', args.col, args.row);
-          handleTriggerDrilldown(
-            compositeRecord,
-            { rawRows: matchedRawRows, label: sliceLabel }
-          );
+        if (timeDiff < 400 && sameCell && features.drilldown !== false) {
+          triggerPivotDrillthroughRef.current?.(args);
           return;
         }
 
-        // 仅在明确为单击时才激活看板切片联动 (延迟 280ms 区分单击与双击，彻底消除双击误触发联动广播)
-        if (features.drilldown !== false) {
-          if (clickTimerPivotRef.current) {
-            clearTimeout(clickTimerPivotRef.current);
-          }
-          clickTimerPivotRef.current = setTimeout(() => {
-            onRowSelectRef.current?.(compositeRecord, args.row, undefined);
-            clickTimerPivotRef.current = null;
-          }, 280);
-        } else {
-          onRowSelectRef.current?.(compositeRecord, args.row, undefined);
-        }
+        onRowSelectRef.current?.(firstRecord || {}, args.row, undefined);
       });
 
-      // 监听双击事件直接触发原地穿透明细下钻 (决策 1)
+      // 监听单元格原生双击事件 (穿透底层明细流水)
       table.on('dblclick_cell', (args: any) => {
-        if (clickTimerPivotRef.current) {
-          clearTimeout(clickTimerPivotRef.current);
-          clickTimerPivotRef.current = null;
+        if (features.drilldown !== false) {
+          triggerPivotDrillthroughRef.current?.(args);
         }
-        console.log('[VTable Pivot] dblclick_cell fired:', args.col, args.row, 'isHeader:', typeof table.isHeader === 'function' ? table.isHeader(args.col, args.row) : false);
-        if (typeof table.isHeader === 'function' && table.isHeader(args.col, args.row)) return;
-
-        const headerPaths = typeof table.getCellHeaderPaths === 'function'
-          ? table.getCellHeaderPaths(args.col, args.row)
-          : null;
-
-        if (
-          (headerPaths as any)?.role === 'grand-total' ||
-          (headerPaths as any)?.role === 'sub-total' ||
-          args.originData?.__isSummaryRow
-        ) {
-          return;
-        }
-
-        const originRecord = typeof table.getCellOriginRecord === 'function'
-          ? table.getCellOriginRecord(args.col, args.row)
-          : args.originData;
-        if (originRecord?.__isSummaryRow) return;
-
-        const compositeSlices: LinkageFilterSlice[] = [];
-        const headers = (result.meta as any)?.rawHeaders || {};
-
-        if (headerPaths?.rowHeaderPaths) {
-          for (const p of headerPaths.rowHeaderPaths as any[]) {
-            if (p.dimensionKey && p.value !== undefined && p.value !== null && p.dimensionKey !== '__summary_row_dim__') {
-              compositeSlices.push({
-                datasetId: (result.meta as any)?.datasetId || '',
-                sourceViewId: viewIdRef.current || '',
-                field: p.dimensionKey,
-                value: p.value,
-                fieldTitle: headers[p.dimensionKey] || p.dimensionKey,
-                targetViewIds: targetViewIdsRef.current,
-              });
-            }
-          }
-        }
-        if (headerPaths?.colHeaderPaths) {
-          for (const p of headerPaths.colHeaderPaths as any[]) {
-            if (p.dimensionKey && p.value !== undefined && p.value !== null) {
-              compositeSlices.push({
-                datasetId: (result.meta as any)?.datasetId || '',
-                sourceViewId: viewIdRef.current || '',
-                field: p.dimensionKey,
-                value: p.value,
-                fieldTitle: headers[p.dimensionKey] || p.dimensionKey,
-                targetViewIds: targetViewIdsRef.current,
-              });
-            }
-          }
-        }
-
-        let matchedRawRows: DataRecord[] = [];
-        if (originRecord?._rawRows && Array.isArray(originRecord._rawRows)) {
-          matchedRawRows = originRecord._rawRows;
-        } else if (Array.isArray(originRecord)) {
-          matchedRawRows = originRecord.flatMap((r: any) => (Array.isArray(r?._rawRows) ? r._rawRows : [r]));
-        }
-        if (matchedRawRows.length === 0 && compositeSlices.length > 0) {
-          matchedRawRows = rawDataSource.filter((row: any) =>
-            compositeSlices.every((s) => matchSliceValue(row[s.field], s.value))
-          );
-        }
-
-        const sliceLabel = compositeSlices.length > 0
-          ? compositeSlices.map((s) => `${s.fieldTitle || s.field}: ${s.value}`).join(' | ')
-          : String((originRecord && originRecord[dimensionField]) || t('下钻明细'));
-
-        handleTriggerDrilldown(
-          {
-            ...(typeof originRecord === 'object' && originRecord ? originRecord : {}),
-            _compositeSlices: compositeSlices,
-            _rawRows: matchedRawRows,
-          },
-          { rawRows: matchedRawRows, label: sliceLabel }
-        );
       });
 
       // 容器 ResizeObserver 自适应
@@ -1419,10 +1533,6 @@ export const VTableView: React.FC<VTableViewProps> = ({
       ro.observe(dom);
 
       return () => {
-        if (clickTimerPivotRef.current) {
-          clearTimeout(clickTimerPivotRef.current);
-          clickTimerPivotRef.current = null;
-        }
         cancelAnimationFrame(rAfId);
         ro.disconnect();
         table.release();
@@ -1439,10 +1549,28 @@ export const VTableView: React.FC<VTableViewProps> = ({
       autoFillWidth: true,
       autoWrapText: true,
       theme: extendedTheme as any,
+      hierarchyIndent: 20,
+      hierarchyExpandLevel: 1,
       bottomFrozenRowCount: hasSummaryRow ? 1 : 0,
       frozenColCount: frozenColumnKeys.length,
-      rightFrozenColCount:
-        rightFrozenColumnKeys.length + (tableColumns.some((c) => c.field === '__action_drilldown') ? 1 : 0),
+      rightFrozenColCount: rightFrozenColumnKeys.length,
+      columnResizeMode: features.columnResize !== false ? 'all' : 'none',
+      dragHeaderMode: features.dragOrder !== false ? 'column' : 'none',
+      ...(features.dragOrder !== false
+        ? {
+            dragOrder: {
+              dragHeaderMode: 'column' as const,
+              validateDragOrderOnEnd: (source: any, target: any) => {
+                const sourceCol = tableColumns[source?.col];
+                const targetCol = tableColumns[target?.col];
+                if (sourceCol?.field === '__action_drilldown' || targetCol?.field === '__action_drilldown') {
+                  return false;
+                }
+                return true;
+              },
+            },
+          }
+        : {}),
       select: {
         highlightMode: 'cell',
         disableSelect: false,
@@ -1466,7 +1594,7 @@ export const VTableView: React.FC<VTableViewProps> = ({
     table.on('icon_click', (args: any) => {
       if (args.name?.startsWith('filter_') || args.funcType === 'filter') {
         const colField = tableColumns[args.col]?.field;
-        if (!colField || colField === '__action_drilldown') return;
+        if (!colField) return;
         const colMeta = visibleColumnsMeta.find((c) => c.key === colField);
         if (!colMeta) return;
 
@@ -1497,7 +1625,7 @@ export const VTableView: React.FC<VTableViewProps> = ({
       if (args.row < headerOffset) {
         if (args.targetIcon?.funcType === 'filter' || args.targetIcon?.name?.startsWith('filter_')) {
           const colField = tableColumns[args.col]?.field;
-          if (!colField || colField === '__action_drilldown') return;
+          if (!colField) return;
           const colMeta = visibleColumnsMeta.find((c) => c.key === colField);
           if (!colMeta) return;
 
@@ -1528,54 +1656,48 @@ export const VTableView: React.FC<VTableViewProps> = ({
         (args.field as string) ||
         (typeof table.getBodyField === 'function' ? table.getBodyField(args.col, args.row) : undefined) ||
         tableColumns[args.col]?.field;
-      if (colField === '__action_drilldown') {
-        handleTriggerDrilldown(originData);
-        return;
-      }
 
       const realDataIndex = filteredData.indexOf(originData);
       const dataIndex = realDataIndex >= 0 ? realDataIndex : (args.row - headerOffset);
 
       if (dataIndex >= 0 && dataIndex < (filteredData.length || resultRef.current.data.length)) {
-        // 快速双击判定 (450ms 内连续点击同一单元格/行，直接触发下钻，取消单选联动定时器)
-        const now = Date.now();
-        const timeDiff = now - lastClickListRef.current.time;
-        const sameCell = lastClickListRef.current.col === args.col && lastClickListRef.current.row === args.row;
-        lastClickListRef.current = { time: now, col: args.col, row: args.row };
+        onRowSelectRef.current?.(originData, dataIndex, colField ? String(colField) : undefined);
+      }
+    });
 
-        if (timeDiff < 450 && sameCell && features.drilldown !== false && originData._rawRows && originData._rawRows.length > 0) {
-          if (clickTimerListRef.current) {
-            clearTimeout(clickTimerListRef.current);
-            clickTimerListRef.current = null;
-          }
-          handleTriggerDrilldown(originData);
-          return;
-        }
-
-        // 仅在明确为单击时才激活看板切片联动 (延迟 280ms 区分单击与双击，彻底消除双击误触发联动广播)
-        if (features.drilldown !== false && originData._rawRows && originData._rawRows.length > 0) {
-          if (clickTimerListRef.current) {
-            clearTimeout(clickTimerListRef.current);
-          }
-          clickTimerListRef.current = setTimeout(() => {
-            onRowSelectRef.current?.(originData, dataIndex, colField ? String(colField) : undefined);
-            clickTimerListRef.current = null;
-          }, 280);
-        } else {
-          onRowSelectRef.current?.(originData, dataIndex, colField ? String(colField) : undefined);
+    // 监听双击事件：若双击具有子层级的行，快捷展开/折叠该行树节点
+    table.on('dblclick_cell', (args: any) => {
+      const originData = args.originData;
+      if (!originData || originData.__isSummaryRow) return;
+      if (hasTreeHierarchy && originData.children && originData.children.length > 0) {
+        if (typeof table.toggleHierarchyState === 'function') {
+          table.toggleHierarchyState(args.col, args.row);
         }
       }
     });
 
-    // 监听双击事件直接触发下钻
-    table.on('dblclick_cell', (args: any) => {
-      if (clickTimerListRef.current) {
-        clearTimeout(clickTimerListRef.current);
-        clickTimerListRef.current = null;
+    // 监听 Canvas 表头直接拖拽排序列换位事件，实时与 React 状态及「列设置」面板同步
+    table.on('change_header_position', (args: any) => {
+      if (args.movingColumnOrRow === 'column' || (args.source && args.target && args.source.col !== args.target.col)) {
+        try {
+          const currentCols = (table as any).columns;
+          if (Array.isArray(currentCols)) {
+            const newKeys = currentCols
+              .map((c: any) => c.field || c.key)
+              .filter((k: any) => k && k !== '__action_drilldown');
+            if (newKeys.length > 0) {
+              setColumnOrder((prev) => {
+                if (prev && prev.length === newKeys.length && prev.every((v, i) => v === newKeys[i])) {
+                  return prev;
+                }
+                return newKeys;
+              });
+            }
+          }
+        } catch {
+          // 静默保护
+        }
       }
-      const originData = args.originData;
-      if (!originData || originData.__isSummaryRow) return;
-      handleTriggerDrilldown(originData);
     });
 
     // 容器 ResizeObserver 自适应
@@ -1589,10 +1711,6 @@ export const VTableView: React.FC<VTableViewProps> = ({
     ro.observe(dom);
 
     return () => {
-      if (clickTimerListRef.current) {
-        clearTimeout(clickTimerListRef.current);
-        clickTimerListRef.current = null;
-      }
       cancelAnimationFrame(rAfId);
       ro.disconnect();
       table.release();
@@ -1611,7 +1729,7 @@ export const VTableView: React.FC<VTableViewProps> = ({
     frozenColumnKeys.join(','),
     rightFrozenColumnKeys.join(','),
     autoMergeCells,
-    tableColumns.some((c) => c.field === '__action_drilldown'),
+    hasTreeHierarchy,
   ]); // 重建：明暗模式 / 总计行切换 / 冻结列变化 (左/右) / 单元格合并切换 / 下钻操作列增减
 
   // 8. 当数据或列更新时，复用既有实例增量刷新
@@ -1642,156 +1760,11 @@ export const VTableView: React.FC<VTableViewProps> = ({
     table.resize();
   }, [isCrossTab, pivotRecords, tableRecords, tableColumns, rightFrozenColumnKeys.length]);
 
-  // 9. 联动响应：通过 selectRows 行聚焦，与看板其他卡片同步高亮
-  useEffect(() => {
-    const table = tableRef.current;
-    if (!table || drilldownState.active) return;
 
-    if (effectiveSlices.length === 0 && !activeLinkage) {
-      try {
-        table.clearSelected();
-      } catch {
-        // 静默捕获
-      }
-      return;
-    }
-
-    const rawData = filteredData || [];
-    const headerOffset = table.columnHeaderLevelCount || 1;
-    const ranges: { start: { col: number; row: number }; end: { col: number; row: number } }[] = [];
-    const headers = (result.meta as any)?.rawHeaders;
-
-    if (effectiveSlices.length > 0) {
-      for (let rIdx = 0; rIdx < rawData.length; rIdx++) {
-        const row = rawData[rIdx];
-        if (!row || row.__isSummaryRow) continue;
-        const bodyRowIdx = typeof (table as any).getBodyRowIndexByRecordIndex === 'function'
-          ? (table as any).getBodyRowIndexByRecordIndex(rIdx)
-          : rIdx;
-        const tableRow = bodyRowIdx + headerOffset;
-
-        for (let cIdx = 0; cIdx < tableColumns.length; cIdx++) {
-          const colDef = tableColumns[cIdx];
-          if (!colDef) continue;
-          const colField = String(colDef.field || '');
-          const colMeta = visibleColumnsMeta.find((c) => c.key === colField);
-
-          for (const s of effectiveSlices) {
-            const fieldMatches =
-              s.field === colField ||
-              (headers && headers[colField] === s.field) ||
-              (headers && headers[s.field] === colField) ||
-              (colMeta && (colMeta.title === s.field || colMeta.title === s.fieldTitle));
-
-            if (fieldMatches) {
-              const rowVal = row[colField];
-              if (matchSliceValue(rowVal, s.value)) {
-                const range = typeof table.getCellRange === 'function'
-                  ? table.getCellRange(cIdx, tableRow)
-                  : { start: { col: cIdx, row: tableRow }, end: { col: cIdx, row: tableRow } };
-
-                const alreadyExists = ranges.some(
-                  (r) =>
-                    r.start.col === range.start.col &&
-                    r.start.row === range.start.row &&
-                    r.end.col === range.end.col &&
-                    r.end.row === range.end.row
-                );
-                if (!alreadyExists) {
-                  ranges.push(range);
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-    // 次选主维度值对齐 (若未从 slices 匹配出 ranges，但存在 activeLinkage.dimensionValue)
-    // 关键安全校验：必须确认 activeLinkage.dimensionField 与当前表格的 dimensionField 确属同一物理维度或别名，防止跨维度误标
-    const isDimensionFieldMatched =
-      Boolean(activeLinkage?.dimensionField) &&
-      Boolean(dimensionField) &&
-      (activeLinkage?.dimensionField === dimensionField ||
-        (headers && headers[dimensionField] === activeLinkage?.dimensionField) ||
-        (headers && headers[activeLinkage?.dimensionField || ''] === dimensionField) ||
-        visibleColumnsMeta.some(
-          (c) =>
-            c.key === dimensionField &&
-            (c.title === activeLinkage?.dimensionField || c.title === activeLinkage?.dimensionTitle)
-        ));
-
-    if (
-      ranges.length === 0 &&
-      isDimensionFieldMatched &&
-      dimensionField &&
-      activeLinkage?.dimensionValue !== undefined &&
-      activeLinkage.dimensionValue !== null
-    ) {
-      const dimColIdx = tableColumns.findIndex((c) => c.field === dimensionField);
-      if (dimColIdx >= 0) {
-        for (let rIdx = 0; rIdx < rawData.length; rIdx++) {
-          const row = rawData[rIdx];
-          if (!row || row.__isSummaryRow) continue;
-          const rowVal = getRowFieldValue(row, dimensionField, headers);
-          if (matchSliceValue(rowVal, activeLinkage.dimensionValue)) {
-            const bodyRowIdx = typeof (table as any).getBodyRowIndexByRecordIndex === 'function'
-              ? (table as any).getBodyRowIndexByRecordIndex(rIdx)
-              : rIdx;
-            const tableRow = bodyRowIdx + headerOffset;
-            const range = typeof table.getCellRange === 'function'
-              ? table.getCellRange(dimColIdx, tableRow)
-              : { start: { col: dimColIdx, row: tableRow }, end: { col: dimColIdx, row: tableRow } };
-
-            const alreadyExists = ranges.some(
-              (r) =>
-                r.start.col === range.start.col &&
-                r.start.row === range.start.row &&
-                r.end.col === range.end.col &&
-                r.end.row === range.end.row
-            );
-            if (!alreadyExists) {
-              ranges.push(range);
-            }
-            break;
-          }
-        }
-      }
-    }
-
-    if (ranges.length > 0) {
-      try {
-        const firstRange = ranges[0];
-        if (ranges.length === 1 && firstRange) {
-          // 单个单元格或合并单元格区域：调用 selectCell(col, row, false, false, true, false)
-          // 传入 skipBodyMerge = false 确保 VTable 原生将选中框完整包络住合并单元格所有行
-          if (typeof table.selectCell === 'function') {
-            table.selectCell(firstRange.start.col, firstRange.start.row, false, false, true, false);
-          } else if (typeof table.selectCells === 'function') {
-            table.selectCells(ranges);
-          }
-        } else {
-          if (typeof table.selectCells === 'function') {
-            table.selectCells(ranges);
-          } else if (typeof table.selectCell === 'function' && firstRange) {
-            table.selectCell(firstRange.start.col, firstRange.start.row, false, false, true, false);
-          }
-        }
-      } catch {
-        // 静默捕获
-      }
-    } else {
-      try {
-        table.clearSelected();
-      } catch {
-        // 静默捕获
-      }
-    }
-  }, [effectiveSlices, activeLinkage, filteredData, dimensionField, drilldownState.active, tableColumns, visibleColumnsMeta, result.meta]);
 
   // 10. 导出 CSV 逻辑 (自适应 2D 多维交叉透视矩阵或明细平面表)
   const handleExportCSV = useCallback(() => {
-    if (isCrossTab && !drilldownState.active && tableRef.current) {
+    if (isCrossTab && tableRef.current) {
       exportTableInstanceToCsv(tableRef.current, `pivot_table_${Date.now()}.csv`);
       message.success(t('已导出 CSV 表格文件'));
       return;
@@ -1803,15 +1776,14 @@ export const VTableView: React.FC<VTableViewProps> = ({
       return;
     }
 
-    const exportCols = visibleColumnsMeta.filter((c) => c.key !== '__action_drilldown');
-    const prefix = drilldownState.active ? `drilldown_${drilldownState.label}_` : 'dynamic_report_';
-    exportToCsv(dataToExport, exportCols, `${prefix}${Date.now()}.csv`);
+    const exportCols = visibleColumnsMeta;
+    exportToCsv(dataToExport, exportCols, `dynamic_report_${Date.now()}.csv`);
     message.success(t('已导出 CSV 表格文件'));
-  }, [isCrossTab, filteredData, visibleColumnsMeta, drilldownState.active, drilldownState.label, t]);
+  }, [isCrossTab, filteredData, visibleColumnsMeta, t]);
 
   // 10.1 导出 Excel (.xls) 逻辑 (推荐：完整保留纯文本日期、分桶格式与数值，防止 Excel 自动篡改)
   const handleExportExcel = useCallback(() => {
-    if (isCrossTab && !drilldownState.active && tableRef.current) {
+    if (isCrossTab && tableRef.current) {
       exportTableInstanceToExcel(tableRef.current, `pivot_table_${Date.now()}.xls`);
       message.success(t('已导出 Excel 工作簿文件 (.xls)'));
       return;
@@ -1823,15 +1795,14 @@ export const VTableView: React.FC<VTableViewProps> = ({
       return;
     }
 
-    const exportCols = visibleColumnsMeta.filter((c) => c.key !== '__action_drilldown');
-    const prefix = drilldownState.active ? `drilldown_${drilldownState.label}_` : 'dynamic_report_';
-    exportToHtmlExcel(dataToExport, exportCols, `${prefix}${Date.now()}.xls`);
+    const exportCols = visibleColumnsMeta;
+    exportToHtmlExcel(dataToExport, exportCols, `dynamic_report_${Date.now()}.xls`);
     message.success(t('已导出 Excel 工作簿文件 (.xls)'));
-  }, [isCrossTab, filteredData, visibleColumnsMeta, drilldownState.active, drilldownState.label, t]);
+  }, [isCrossTab, filteredData, visibleColumnsMeta, t]);
 
   // 11. 复制数据到剪贴板 (双 MIME 格式：HTML + TSV，粘贴到 Excel 原汁原味保留日期与文本格式)
   const handleCopyTSV = useCallback(async () => {
-    if (isCrossTab && !drilldownState.active && tableRef.current) {
+    if (isCrossTab && tableRef.current) {
       const ok = await copyTableInstanceAsTsv(tableRef.current);
       if (ok) {
         message.success(t('已复制表格数据到剪贴板 (已注入 Excel 文本格式保护，粘贴不会改变日期格式)'));
@@ -1846,16 +1817,14 @@ export const VTableView: React.FC<VTableViewProps> = ({
       message.warning(t('当前无数据可复制'));
       return;
     }
-    const exportCols = visibleColumnsMeta
-      .filter((c) => c.key !== '__action_drilldown')
-      .map((c) => ({ key: c.key, title: c.title || c.key }));
+    const exportCols = visibleColumnsMeta.map((c) => ({ key: c.key, title: c.title || c.key }));
     const ok = await copyToClipboardAsTsv(dataToExport, exportCols);
     if (ok) {
       message.success(t('已复制表格数据到剪贴板 (已注入 Excel 文本格式保护，粘贴不会改变日期格式)'));
     } else {
       message.error(t('复制到剪贴板失败，请检查浏览器权限'));
     }
-  }, [isCrossTab, filteredData, visibleColumnsMeta, drilldownState.active, t]);
+  }, [isCrossTab, filteredData, visibleColumnsMeta, t]);
 
   // 统计已生效的列筛选数量
   const activeFilterCount = useMemo(() => {
@@ -1864,28 +1833,26 @@ export const VTableView: React.FC<VTableViewProps> = ({
 
   // 工具条「列筛选」下拉菜单配置项
   const filterMenuItems = useMemo(() => {
-    return visibleColumnsMeta
-      .filter((c) => c.key !== '__action_drilldown')
-      .map((col) => {
-        const isFiltered = Array.isArray(columnFilters[col.key]);
-        return {
-          key: col.key,
-          label: (
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minWidth: 140 }}>
-              <span>{col.title || col.key}</span>
-              {isFiltered && <Tag color="blue" style={{ margin: 0, fontSize: 10 }}>{t('已应用筛选')}</Tag>}
-            </div>
-          ),
-          icon: isFiltered ? <FilterFilled style={{ color: '#1677ff' }} /> : <FilterOutlined />,
-          onClick: () => {
-            setFilterAnchorPos({ x: 260, y: 70 });
-            setActiveFilterCol({
-              colKey: col.key,
-              colTitle: col.title || col.key,
-            });
-          },
-        };
-      });
+    return visibleColumnsMeta.map((col) => {
+      const isFiltered = Array.isArray(columnFilters[col.key]);
+      return {
+        key: col.key,
+        label: (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minWidth: 140 }}>
+            <span>{col.title || col.key}</span>
+            {isFiltered && <Tag color="blue" style={{ margin: 0, fontSize: 10 }}>{t('已应用筛选')}</Tag>}
+          </div>
+        ),
+        icon: isFiltered ? <FilterFilled style={{ color: '#1677ff' }} /> : <FilterOutlined />,
+        onClick: () => {
+          setFilterAnchorPos({ x: 260, y: 70 });
+          setActiveFilterCol({
+            colKey: col.key,
+            colTitle: col.title || col.key,
+          });
+        },
+      };
+    });
   }, [visibleColumnsMeta, columnFilters, t]);
 
   // 沉浸全屏样式 (普通模式需 position: relative 供内部浮动 Popover 定位)
@@ -2210,76 +2177,7 @@ export const VTableView: React.FC<VTableViewProps> = ({
             );
           });
 
-          const hasActionCol = tableColumns.some((c) => c.field === '__action_drilldown');
-
-          return (
-            <>
-              {items}
-              {hasActionCol && (
-                <div
-                  key="__action_drilldown_settings_item"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    padding: '6px 8px',
-                    borderRadius: 4,
-                    backgroundColor: isDark ? 'rgba(19, 194, 194, 0.12)' : 'rgba(19, 194, 194, 0.06)',
-                    border: `1px solid ${isDark ? '#137a7a' : '#87e8de'}`,
-                    cursor: 'default',
-                  }}
-                >
-                  {/* 锁定手柄 */}
-                  <LockOutlined style={{ color: theme.colorTextSecondary, fontSize: 13, flexShrink: 0 }} />
-
-                  {/* 列名 */}
-                  <span
-                    style={{
-                      flex: 1,
-                      fontSize: 12,
-                      fontWeight: 500,
-                      color: theme.colorText,
-                    }}
-                  >
-                    {t('下钻明细操作列')}
-                  </span>
-
-                  {/* 默认常驻右固定标签 */}
-                  <Tag
-                    color="cyan"
-                    style={{ margin: 0, fontSize: 10, lineHeight: '16px', padding: '0 4px', flexShrink: 0 }}
-                  >
-                    {t('默认右固定')}
-                  </Tag>
-
-                  {/* 状态图标 */}
-                  <Tooltip title={t('当开启数据下钻透视时常驻在最右侧，不可拖拽')}>
-                    <Button
-                      type="text"
-                      size="small"
-                      disabled
-                      style={{
-                        padding: '0 2px',
-                        height: 20,
-                        width: 20,
-                        minWidth: 20,
-                        backgroundColor: isDark ? 'rgba(19, 194, 194, 0.2)' : '#e6fffb',
-                        cursor: 'default',
-                      }}
-                      icon={
-                        <VerticalLeftOutlined
-                          style={{
-                            fontSize: 12,
-                            color: '#13c2c2',
-                          }}
-                        />
-                      }
-                    />
-                  </Tooltip>
-                </div>
-              )}
-            </>
-          );
+          return <>{items}</>;
         })()}
       </div>
     </div>
@@ -2288,60 +2186,6 @@ export const VTableView: React.FC<VTableViewProps> = ({
   return (
     <ConfigProvider theme={antdThemeConfig} getPopupContainer={() => wrapperRef.current || document.body}>
       <div ref={wrapperRef} className={`hw-vtable-view ${className || ''}`} style={wrapperStyle}>
-        {/* 若处于原地明细下钻态，呈现全量明细事实表面包屑导航条 (决策 1 & 2: 形态 A 全列展示) */}
-        {drilldownState.active && (
-          <div
-            style={{
-              padding: '8px 12px',
-              marginBottom: 8,
-              backgroundColor: isDark ? '#1a2332' : '#e6f4ff',
-              border: `1px solid ${isDark ? '#1765ad' : '#91caff'}`,
-              borderRadius: 6,
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: 8,
-            }}
-          >
-            <Space size={8}>
-              <Button
-                size="small"
-                type="primary"
-                icon={<ArrowLeftOutlined />}
-                onClick={() => {
-                  setDrilldownState({ active: false, rowRecord: null, rawRows: [], label: '' });
-                }}
-              >
-                {t('返回透视视图')}
-              </Button>
-              <Tag color="processing" style={{ margin: 0, fontSize: 12 }}>
-                {t('下钻范围: ')}<b>{drilldownState.label}</b>
-              </Tag>
-              <span style={{ fontSize: 12, color: theme.colorTextSecondary }}>
-                {t('原始明细: ')}<b>{drilldownState.rawRows.length} 条事实流水</b>
-              </span>
-            </Space>
-            <Space size={8}>
-              <Tag color="cyan">{t('全量明细事实表 (形态 A)')}</Tag>
-              <Button
-                size="small"
-                icon={<FileExcelOutlined style={{ color: '#52c41a' }} />}
-                onClick={handleExportExcel}
-              >
-                {t('导出明细 (Excel)')}
-              </Button>
-              <Button
-                size="small"
-                icon={<DownloadOutlined />}
-                onClick={handleExportCSV}
-              >
-                {t('导出 CSV')}
-              </Button>
-            </Space>
-          </div>
-        )}
-
         {/* 极速报表工具条 */}
         <div
           style={{
@@ -2361,9 +2205,14 @@ export const VTableView: React.FC<VTableViewProps> = ({
               {t('共 {count} 项', { count: filteredData.length.toLocaleString() })}
               {filteredData.length !== rawDataSource.length && ` ${t('(已过滤，原 {total} 项)', { total: rawDataSource.length.toLocaleString() })}`}
             </span>
-            {features.drilldown !== false && !drilldownState.active && (
+            {hasTreeHierarchy && (
               <span style={{ fontSize: 11, color: theme.colorTextSecondary, opacity: 0.85 }}>
-                💡 {t('点击下钻查看聚合明细')}
+                💡 {t('点击行首箭头展开明细流水')}
+              </span>
+            )}
+            {isCrossTab && features.drilldown !== false && (
+              <span style={{ fontSize: 11, color: theme.colorTextSecondary, opacity: 0.85 }}>
+                💡 {t('双击单元格穿透底层流水')}
               </span>
             )}
           </Space>
@@ -2654,50 +2503,18 @@ export const VTableView: React.FC<VTableViewProps> = ({
           </Popover>
         )}
 
-        {/* 抽屉模式下钻明细弹层 (支持全屏挂载) */}
-        {features.drilldown === 'drawer' && (
-          <SimpleDrawer
-            title={drawerTitle}
-            placement="right"
-            width={880}
-            open={drawerOpen}
-            onClose={() => setDrawerOpen(false)}
-            destroyOnClose
+        {/* 透视表单元格穿透明细弹窗 (Excel 经典模式) */}
+        {drillModalState.open && (
+          <PivotDrillthroughModal
+            open={drillModalState.open}
+            title={drillModalState.title}
+            records={drillModalState.records}
+            rawHeaders={drillModalState.rawHeaders}
+            onClose={() => setDrillModalState((prev) => ({ ...prev, open: false }))}
             isDark={isDark}
-          >
-            <div style={{ height: 'calc(100vh - 120px)' }}>
-              <VTableView
-                result={{
-                  data: drawerRows,
-                  columns: (result.meta?.rawHeaders
-                    ? Object.entries(result.meta.rawHeaders).map(([k, label]) => ({
-                        key: k,
-                        title: label,
-                        type: typeof drawerRows[0]?.[k] === 'number' ? 'number' : 'text',
-                        kind: 'dimension',
-                      }))
-                    : candidateColumnsMeta) as OutputColumnMeta[],
-                  meta: {
-                    form: 'detail',
-                    inputRows: drawerRows.length,
-                    outputRows: drawerRows.length,
-                    executionTimeMs: 0,
-                  },
-                }}
-                dimensionField={dimensionField}
-                theme={theme}
-                locale={propLocale}
-                tableFeatures={{
-                  drilldown: false,
-                  summaryRow: true,
-                  export: true,
-                  fullscreen: true,
-                  columnVisibility: true,
-                  filterDropdown: true,
-                }}
-              />
-            </div>
-          </SimpleDrawer>
+            theme={theme}
+            locale={t.locale}
+          />
         )}
       </div>
     </ConfigProvider>

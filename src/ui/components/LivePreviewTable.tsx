@@ -9,9 +9,11 @@ import { useDynamicDataLocale } from '../../locale/index.js';
 const { Text } = Typography;
 
 export interface LivePreviewTableProps {
-  readonly result?: TransformResult;
-  readonly loading?: boolean;
-  readonly config?: DynamicTransformConfig;
+  readonly result?: TransformResult | undefined;
+  readonly loading?: boolean | undefined;
+  readonly config?: DynamicTransformConfig | undefined;
+  readonly headers?: Record<string, string> | undefined;
+  readonly showFieldKeys?: boolean | undefined;
 }
 
 interface DimTuple {
@@ -106,12 +108,35 @@ export const LivePreviewTable: React.FC<LivePreviewTableProps> = ({
   result,
   loading = false,
   config,
+  headers: propHeaders,
+  showFieldKeys = false,
 }) => {
   const t = useDynamicDataLocale();
   const data = result?.data ?? [];
   const columnsMeta = result?.columns ?? [];
   const meta = result?.meta;
   const isCrossTab = Boolean(meta?.isCrossTab);
+
+  // 全局字段字典映射 (优先合并 result.meta.rawHeaders、config.headers、propHeaders)
+  const rawHeaders = React.useMemo<Record<string, string>>(() => {
+    return {
+      ...(config?.headers || {}),
+      ...(meta?.rawHeaders || {}),
+      ...(propHeaders || {}),
+    };
+  }, [config?.headers, meta?.rawHeaders, propHeaders]);
+
+  // 解析字段友好显示名称 (支持 showFieldKeys 模式)
+  const getFieldLabel = React.useCallback(
+    (fieldKey: string): string => {
+      const label = rawHeaders[fieldKey] || config?.headers?.[fieldKey] || fieldKey;
+      if (showFieldKeys && label !== fieldKey) {
+        return `${label} (${fieldKey})`;
+      }
+      return label;
+    },
+    [rawHeaders, config?.headers, showFieldKeys]
+  );
 
   // =========================================================================
   // 提取 2D 交叉透视矩阵结构
@@ -467,7 +492,7 @@ export const LivePreviewTable: React.FC<LivePreviewTableProps> = ({
                         }}
                       >
                         <Space size={4}>
-                          <span>{config?.headers?.[f] || f}</span>
+                          <span>{getFieldLabel(f)}</span>
                           <Tag color="default" style={{ fontSize: 10, margin: 0, padding: '0 3px' }}>
                             {t('行')}
                           </Tag>
@@ -488,6 +513,7 @@ export const LivePreviewTable: React.FC<LivePreviewTableProps> = ({
                           color: '#1d39c4',
                           whiteSpace: 'nowrap',
                         }}
+                        title={pivotData.colDimFields.map((field) => getFieldLabel(field)).join(' / ')}
                       >
                         {c.label}
                       </th>
@@ -693,7 +719,7 @@ export const LivePreviewTable: React.FC<LivePreviewTableProps> = ({
                           backgroundColor: '#f5f7fa',
                         }}
                       >
-                        {config?.headers?.[f] || f}
+                        {getFieldLabel(f)}
                       </th>
                     ))}
                     <th

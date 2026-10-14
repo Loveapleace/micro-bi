@@ -1134,7 +1134,12 @@ export const DynamicDataConfigPanel = React.forwardRef<
               />
 
               {/* 实时预览表格 */}
-              <LivePreviewTable result={transformResult} config={activeConfig} />
+              <LivePreviewTable
+                result={transformResult}
+                config={getEffectiveConfig()}
+                {...(effectiveHeaders ? { headers: effectiveHeaders } : {})}
+                showFieldKeys={showFieldKeys}
+              />
             </Col>
           </Row>
         </Spin>

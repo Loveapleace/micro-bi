@@ -309,134 +309,6 @@ test('table: 维度列相邻同类单元格纵向合并逻辑验证 (时间分�
   assert.equal(mergeCrossTimeWorkshop, false, '上级时间维度不同时，子维度车间绝不跨时间边界错误合并');
 });
 
-test('table: 合并单元格联动激活范围自动扩展与去重 (单组合并单元格全范围包络高亮)', () => {
-  // 模拟带有合并单元格的表格数据
-  const rawData = [
-    { plan_start_time: '2026-08', workshop: '1号五轴切削车间' },
-    { plan_start_time: '2026-08', workshop: '2号重型冲压车间' },
-    { plan_start_time: '2026-08', workshop: '3号智能装配车间' },
-    { plan_start_time: '2026-09', workshop: '1号五轴切削车间' },
-  ];
-
-  const tableColumns = [
-    { field: 'plan_start_time', title: '计划投产时间' },
-    { field: 'workshop', title: '承制车间' },
-  ];
-
-  // 模拟 VTable 实例方法：第 0 列的行 1、2、3 合并为一个大单元格 (start: 1, end: 3)
-  const mockTable = {
-    columnHeaderLevelCount: 1,
-    getCellRange: (col, row) => {
-      if (col === 0 && row >= 1 && row <= 3) {
-        return { start: { col: 0, row: 1 }, end: { col: 0, row: 3 } };
-      }
-      return { start: { col, row }, end: { col, row } };
-    },
-    selectCellCalledWith: null,
-    selectCellsCalledWith: null,
-    selectCell(col, row, shift, ctrl, visible, skipBodyMerge) {
-      this.selectCellCalledWith = { col, row, shift, ctrl, visible, skipBodyMerge };
-    },
-    selectCells(ranges) {
-      this.selectCellsCalledWith = ranges;
-    },
-  };
-
-  // 模拟当切片为 { field: 'plan_start_time', value: '2026-08' } 时 VTableView 的 ranges 计算与调用
-  const effectiveSlices = [{ field: 'plan_start_time', value: '2026-08' }];
-  const headerOffset = mockTable.columnHeaderLevelCount;
-  const ranges = [];
-
-  for (let rIdx = 0; rIdx < rawData.length; rIdx++) {
-    const row = rawData[rIdx];
-    const tableRow = rIdx + headerOffset;
-
-    for (let cIdx = 0; cIdx < tableColumns.length; cIdx++) {
-      const colDef = tableColumns[cIdx];
-      const colField = colDef.field;
-      for (const s of effectiveSlices) {
-        if (s.field === colField && row[colField] === s.value) {
-          const range = mockTable.getCellRange(cIdx, tableRow);
-          const exists = ranges.some(
-            (r) =>
-              r.start.col === range.start.col &&
-              r.start.row === range.start.row &&
-              r.end.col === range.end.col &&
-              r.end.row === range.end.row
-          );
-          if (!exists) {
-            ranges.push(range);
-          }
-        }
-      }
-    }
-  }
-
-  // 1. 验证 3 行 2026-08 经 getCellRange 与 deduplicate 处理后，完美聚合成唯一个合并 range
-  assert.equal(ranges.length, 1, '去重后仅产生 1 个代表整体合并范围的 range');
-  assert.deepEqual(ranges[0], {
-    start: { col: 0, row: 1 },
-    end: { col: 0, row: 3 },
-  });
-
-  // 2. 模拟触发 selectCell 逻辑
-  if (ranges.length === 1) {
-    mockTable.selectCell(ranges[0].start.col, ranges[0].start.row, false, false, true, false);
-  }
-
-  assert.ok(mockTable.selectCellCalledWith);
-  assert.equal(mockTable.selectCellCalledWith.col, 0);
-  assert.equal(mockTable.selectCellCalledWith.row, 1);
-  assert.equal(mockTable.selectCellCalledWith.skipBodyMerge, false, 'skipBodyMerge 必须为 false 才能包络合并范围');
-});
-
-test('table: 跨卡片联动防串扰保护 (次选主维度值对齐仅在维度字段名/别名精准匹配时触发，异构看板绝不误选)', () => {
-  // 看板二：完工质检节奏与缺陷质量分析，其主维度为 finish_time (完工质检时间)，无 plan_start_time
-  const dimensionField = 'finish_time';
-  const visibleColumnsMeta = [
-    { key: 'finish_time', title: '完工质检时间', type: 'time' },
-    { key: 'workshop', title: '承制车间', type: 'text' },
-    { key: 'output_qty', title: '交付总数', type: 'number' },
-  ];
-  const headers = {
-    finish_time: '完工质检时间',
-    workshop: '承制车间',
-  };
-
-  // 看板一发出的联动切片：针对计划投产时间 (plan_start_time = '2026-08')
-  const activeLinkageFromCard1 = {
-    dimensionField: 'plan_start_time',
-    dimensionTitle: '计划投产时间',
-    dimensionValue: '2026-08',
-  };
-
-  // 检测看板二中的 isDimensionFieldMatched 判定
-  const isDimensionFieldMatched =
-    Boolean(activeLinkageFromCard1.dimensionField) &&
-    Boolean(dimensionField) &&
-    (activeLinkageFromCard1.dimensionField === dimensionField ||
-      (headers && headers[dimensionField] === activeLinkageFromCard1.dimensionField) ||
-      (headers && headers[activeLinkageFromCard1.dimensionField] === dimensionField) ||
-      visibleColumnsMeta.some(
-        (c) =>
-          c.key === dimensionField &&
-          (c.title === activeLinkageFromCard1.dimensionField || c.title === activeLinkageFromCard1.dimensionTitle)
-      ));
-
-  // 1. 计划投产时间与完工质检时间不是同名或别名字段，严禁误认为主维度对齐
-  assert.equal(isDimensionFieldMatched, false, '不同维度字段绝不触发跨维度错误次选匹配');
-
-  // 2. 当用户点击的是车间联动 (workshop = '1号车间') 时，同名字段正常匹配
-  const activeLinkageWorkshop = {
-    dimensionField: 'workshop',
-    dimensionTitle: '承制车间',
-    dimensionValue: '1号车间',
-  };
-  const isWorkshopMatched =
-    activeLinkageWorkshop.dimensionField === 'workshop' ||
-    headers.workshop === activeLinkageWorkshop.dimensionField;
-  assert.equal(isWorkshopMatched, true, '相同维度字段正常命中切片匹配');
-});
 
 test('table: 列设置支持靠右冻结 (rightFrozenColumnKeys) 并保证 [左冻结列 -> 中间流动列 -> 右冻结列] 组织顺序', () => {
   const candidateColumnsMeta = [
@@ -683,5 +555,116 @@ test('tableFilter: 列筛选全取消勾选时 (0项已选) 精确触发空数�
   const restoredFilters = Object.entries(clearedFilters).filter(([_, vals]) => Array.isArray(vals));
   assert.equal(restoredFilters.length, 0);
   assert.equal(rawDataSource.length, 3);
+});
+
+test('table: columnResize 与 dragOrder 特性开关与 VTable 配置及位置变更协同逻辑', () => {
+  // 1. 模拟 features 默认解析逻辑
+  function resolveTableFeatures(tableFeatures) {
+    if (typeof tableFeatures === 'boolean') {
+      return {
+        summaryRow: tableFeatures,
+        export: tableFeatures,
+        fullscreen: tableFeatures,
+        columnVisibility: tableFeatures,
+        drilldown: tableFeatures,
+        headerMenu: tableFeatures,
+        filterDropdown: tableFeatures,
+        mergeCells: tableFeatures,
+        dataBars: tableFeatures,
+        columnResize: tableFeatures,
+        dragOrder: tableFeatures,
+      };
+    }
+    return {
+      summaryRow: true,
+      export: true,
+      fullscreen: true,
+      columnVisibility: true,
+      drilldown: true,
+      headerMenu: true,
+      filterDropdown: true,
+      mergeCells: true,
+      dataBars: true,
+      columnResize: true,
+      dragOrder: true,
+      ...tableFeatures,
+    };
+  }
+
+  // 默认情况下两项均应为 true
+  const defaultFeatures = resolveTableFeatures();
+  assert.equal(defaultFeatures.columnResize, true);
+  assert.equal(defaultFeatures.dragOrder, true);
+
+  // 支持显式关闭
+  const disabledFeatures = resolveTableFeatures({ columnResize: false, dragOrder: false });
+  assert.equal(disabledFeatures.columnResize, false);
+  assert.equal(disabledFeatures.dragOrder, false);
+
+  // 2. 模拟 ListTable options 构建
+  const mockColumns = [
+    { field: 'workshop', title: '承制车间' },
+    { field: 'output_qty', title: '交付总件数' },
+    { field: '__action_drilldown', title: '操作' },
+  ];
+
+  const buildListTableOptions = (features) => ({
+    columnResizeMode: features.columnResize !== false ? 'all' : 'none',
+    dragHeaderMode: features.dragOrder !== false ? 'column' : 'none',
+    dragOrder: features.dragOrder !== false ? {
+      dragHeaderMode: 'column',
+      validateDragOrderOnEnd: (source, target) => {
+        const sourceCol = mockColumns[source?.col];
+        const targetCol = mockColumns[target?.col];
+        if (sourceCol?.field === '__action_drilldown' || targetCol?.field === '__action_drilldown') {
+          return false;
+        }
+        return true;
+      },
+    } : undefined,
+  });
+
+  const enabledOptions = buildListTableOptions(defaultFeatures);
+  assert.equal(enabledOptions.columnResizeMode, 'all');
+  assert.equal(enabledOptions.dragHeaderMode, 'column');
+  assert.ok(enabledOptions.dragOrder);
+
+  // 验证拖拽保护：允许普通业务列之间拖拽，严禁拖拽操作列
+  assert.equal(enabledOptions.dragOrder.validateDragOrderOnEnd({ col: 0 }, { col: 1 }), true, '车间与交付件数列之间允许拖拽换位');
+  assert.equal(enabledOptions.dragOrder.validateDragOrderOnEnd({ col: 0 }, { col: 2 }), false, '严禁拖动至操作列');
+  assert.equal(enabledOptions.dragOrder.validateDragOrderOnEnd({ col: 2 }, { col: 1 }), false, '严禁拖动操作列自身');
+
+  // 3. 模拟 change_header_position 事件触发与 columnOrder 同步
+  let currentColumnOrder = null;
+  const setColumnOrder = (updater) => {
+    currentColumnOrder = typeof updater === 'function' ? updater(currentColumnOrder) : updater;
+  };
+
+  // 模拟 VTable 内部拖拽完毕后 columns 变为新顺序
+  const reorderedVTableColumns = [
+    { field: 'output_qty', title: '交付总件数' },
+    { field: 'workshop', title: '承制车间' },
+    { field: '__action_drilldown', title: '操作' },
+  ];
+
+  // 模拟 change_header_position 监听器逻辑
+  const handleHeaderPositionChange = (args) => {
+    if (args.movingColumnOrRow === 'column' || (args.source && args.target && args.source.col !== args.target.col)) {
+      const newKeys = reorderedVTableColumns
+        .map((c) => c.field || c.key)
+        .filter((k) => k && k !== '__action_drilldown');
+      if (newKeys.length > 0) {
+        setColumnOrder(newKeys);
+      }
+    }
+  };
+
+  handleHeaderPositionChange({
+    source: { col: 0, row: 0 },
+    target: { col: 1, row: 0 },
+    movingColumnOrRow: 'column',
+  });
+
+  assert.deepEqual(currentColumnOrder, ['output_qty', 'workshop'], '拖拽换位后 React columnOrder 状态成功自动同步');
 });
 

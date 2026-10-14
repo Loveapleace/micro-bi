@@ -4,7 +4,7 @@
  * - 原生支持柱状图 (Bar)、折线图 (Line)、饼图 (Pie) 及 Pareto 双 Y 轴 (Dual Axis) 柱线复合图
  * - 声明式 Spec 驱动，支持微任务级极速响应与平滑交互
  * - 与 VTableView 共享底层 VRender 引擎，实现统一的视觉样式与色彩主题
- * - 深度集成同源多维交叉切片过滤联动 (LinkageBus)
+ * - 与 VTableView 共享底层 VRender 引擎，实现统一的视觉样式与色彩主题
  */
 import React, { useRef, useEffect, useMemo } from 'react';
 import * as VChartPkg from '@visactor/vchart';
@@ -13,9 +13,7 @@ const vchartMod: any = VChartPkg;
 const vchartActual = vchartMod.VChart ? vchartMod : (vchartMod['def' + 'ault'] || vchartMod);
 const VChart = vchartActual.VChart || vchartActual;
 import type { TransformResult, DataRecord, OutputColumnMeta } from '../../../engine/types.js';
-import type { LinkageEvent } from '../types.js';
 import type { ResolvedThemeConfig } from '../theme.js';
-import { getRowFieldValue, matchSliceValue } from '../DynamicDataLinkage.js';
 import { isRateOrRatioMetric, isPerMilleMetric } from './metricUtils.js';
 import { useDynamicDataLocale } from '../../../locale/index.js';
 import type { DynamicDataLocale, DeepPartial } from '../../../locale/types.js';
@@ -35,20 +33,6 @@ export interface VChartViewProps {
   vchartSpec?: Partial<ISpec> | undefined;
   /** 容器外层样式覆盖 */
   chartStyle?: React.CSSProperties | undefined;
-  /** 外部传入的当前联动事件 (接收其他同源组件的广播) */
-  activeLinkage?: LinkageEvent | null | undefined;
-  /** 点击图表数据项时触发联动回调 */
-  onSelectData?: ((payload: {
-    dimensionField?: string | undefined;
-    dimensionValue: string | number;
-    dimensionTitle?: string | undefined;
-    secondaryField?: string | undefined;
-    secondaryValue?: string | number | undefined;
-    secondaryTitle?: string | undefined;
-    metricKey?: string | undefined;
-    dataIndex: number;
-    record?: DataRecord | undefined;
-  }) => void) | undefined;
   /** 自定义国际化语言包或局部文案覆盖 */
   locale?: DeepPartial<DynamicDataLocale> | undefined;
 }
@@ -61,15 +45,11 @@ export const VChartView: React.FC<VChartViewProps> = ({
   theme,
   vchartSpec,
   chartStyle,
-  activeLinkage,
-  onSelectData,
   locale: propLocale,
 }) => {
   const t = useDynamicDataLocale(propLocale);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const chartRef = useRef<IVChart | null>(null);
-  const onSelectDataRef = useRef(onSelectData);
-  onSelectDataRef.current = onSelectData;
   const viewTypeRef = useRef(viewType);
   viewTypeRef.current = viewType;
   const dimensionFieldRef = useRef(dimensionField);
@@ -179,7 +159,7 @@ export const VChartView: React.FC<VChartViewProps> = ({
 
       for (let i = 0; i < data.length; i++) {
         const row = data[i]!;
-        const rawCategory = getRowFieldValue(row, dimensionField);
+        const rawCategory = row[dimensionField] ?? (row as any)[(result.meta?.rawHeaders as any)?.[dimensionField]];
         const catKey = rawCategory !== undefined && rawCategory !== null && rawCategory !== ''
           ? String(rawCategory)
           : t('未分类');
@@ -797,49 +777,7 @@ export const VChartView: React.FC<VChartViewProps> = ({
     // 渲染图表
     vchart.renderAsync();
 
-    // 监听图元点击事件，驱动同源交叉切片联动
-    vchart.on('click', (params: any) => {
-      const datum = params.datum;
-      if (!datum || !onSelectDataRef.current) return;
 
-      const dimField = dimensionFieldRef.current;
-      const dimVal = datum[dimField] ?? datum.x ?? datum.category ?? '';
-      const metric = datum.__seriesId__ || params.mark?.name;
-
-      // 饼图无 XY 轴及次级维度，点击扇区仅透传分类维度与所选指标
-      if (viewTypeRef.current === 'pie') {
-        const dimTitle = titleMapRef.current?.[dimField] || dimField;
-        onSelectDataRef.current({
-          dimensionField: dimField,
-          dimensionValue: dimVal,
-          dimensionTitle: dimTitle,
-          secondaryField: undefined,
-          secondaryValue: undefined,
-          secondaryTitle: undefined,
-          metricKey: datum.__metricName__ || metric,
-          dataIndex: params.dataIndex ?? 0,
-          record: datum.__record__ || datum,
-        });
-        return;
-      }
-
-      const secField = secondaryDimFieldRef.current;
-      const secVal = secField ? datum[secField] : undefined;
-      const secTitle = secField ? (titleMapRef.current?.[secField] || secField) : undefined;
-      const dimTitle = titleMapRef.current?.[dimField] || dimField;
-
-      onSelectDataRef.current({
-        dimensionField: dimField,
-        dimensionValue: dimVal,
-        dimensionTitle: dimTitle,
-        secondaryField: secField,
-        secondaryValue: secVal,
-        secondaryTitle: secTitle,
-        metricKey: metric,
-        dataIndex: params.dataIndex ?? 0,
-        record: datum.__record__ || datum,
-      });
-    });
 
     // 响应式 Resize 监听
     let rAfId: number;
@@ -872,59 +810,7 @@ export const VChartView: React.FC<VChartViewProps> = ({
     vchart.updateSpec(finalSpec);
   }, [generatedSpec, vchartSpec]);
 
-  // 4. 显式同源联动响应：扇区高亮或笛卡尔坐标 X 轴高亮
-  useEffect(() => {
-    const vchart = chartRef.current;
-    if (!vchart) return;
 
-    if (!activeLinkage || activeLinkage.dimensionValue === undefined || activeLinkage.dimensionValue === null) {
-      try {
-        if (viewType === 'pie') {
-          vchart.clearState?.('selected');
-        } else {
-          vchart.setDimensionIndex?.(-1);
-        }
-      } catch {
-        // 静默捕获
-      }
-      return;
-    }
-
-    if (viewType === 'pie') {
-      try {
-        // 饼图高亮：通过匹配分类维度值高亮对应扇区
-        const pieData = (generatedSpec as any)?.data?.[0]?.values;
-        if (Array.isArray(pieData)) {
-          const targetDatum = pieData.find((d: any) =>
-            matchSliceValue(d[dimensionField], activeLinkage.dimensionValue)
-          );
-          if (targetDatum) {
-            vchart.setSelected?.(targetDatum);
-          } else {
-            vchart.clearState?.('selected');
-          }
-        }
-      } catch {
-        // 静默捕获
-      }
-      return;
-    }
-
-    // 笛卡尔坐标系图表 (柱状图/折线图)：通过 setDimensionIndex 高亮离散 X 轴
-    const { data } = result;
-    const targetIdx = data.findIndex((r) => {
-      const val = getRowFieldValue(r, dimensionField);
-      return matchSliceValue(val, activeLinkage.dimensionValue);
-    });
-
-    if (targetIdx >= 0) {
-      try {
-        vchart.setDimensionIndex?.(targetIdx);
-      } catch {
-        // 静默捕获
-      }
-    }
-  }, [activeLinkage, result, dimensionField, viewType, generatedSpec]);
 
   return (
     <div

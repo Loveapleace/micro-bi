@@ -3,7 +3,6 @@
  */
 export * from './types.js';
 export * from './theme.js';
-export * from './DynamicDataLinkage.js';
 export * from './DynamicDataView.js';
 export * from './charts/metricUtils.js';
 export * from './charts/VChartView.js';
