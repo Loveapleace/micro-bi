@@ -5,6 +5,7 @@ import type { CSSProperties } from 'react';
 import type {
   DynamicTransformConfig,
   TransformResult,
+  DataRecord,
 } from '../engine/types.js';
 import type { ConfigValidationResult } from '../engine/validator.js';
 import type { DynamicDataLocale, DeepPartial } from '../locale/types.js';
@@ -101,6 +102,8 @@ export interface DynamicDataConfigPanelProps {
   readonly style?: CSSProperties | undefined;
   /** 自定义外层类名 */
   readonly className?: string | undefined;
+  /** 主题样式模式（浅色/深色） */
+  readonly theme?: 'light' | 'dark' | undefined;
   /** 国际化语言包或局部覆盖词条 */
   readonly locale?: DeepPartial<DynamicDataLocale> | undefined;
   /** 是否展示快速一键分析模板（趋势/对比/明细/占比），默认 true */
@@ -113,4 +116,22 @@ export interface DynamicDataConfigPanelProps {
    * 设为 true 时开启开发者模式，界面同时显式展示 Label 与 Key。
    */
   readonly showFieldKeys?: boolean | undefined;
+
+  /**
+   * 自定义右侧预览区渲染插槽 (Preview Slot)
+   * 缺省时使用内置的 LivePreviewTable 预览。
+   * 报表配置模式下可通过此插槽接入 Univer 表格编辑器。
+   */
+  readonly renderPreview?: ((context: PreviewSlotContext) => React.ReactNode) | undefined;
+}
+
+/** 预览插槽上下文参数 */
+export interface PreviewSlotContext {
+  readonly config: DynamicTransformConfig;
+  readonly result: TransformResult;
+  readonly records?: readonly DataRecord[] | undefined;
+  readonly headers?: Record<string, string> | undefined;
+  readonly datasetId?: string | undefined;
+  readonly dataset?: RegisteredDataset | undefined;
+  readonly isLoading: boolean;
 }

@@ -13,3 +13,4 @@ export * from './table/vtableSortPatch.js';
 export * from './toolbar/MetricSwitcher.js';
 export * from './toolbar/DimensionSwitcher.js';
 export * from './toolbar/ViewTypeSwitcher.js';
+export * from './report/index.js';

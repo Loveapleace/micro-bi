@@ -4,6 +4,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import type { TransformResult, DataRecord, OutputColumnMeta, DynamicTransformConfig } from '../../engine/types.js';
 import type { DynamicDataLocale, DeepPartial } from '../../locale/types.js';
+import type { PublishedReport } from '../../report/types.js';
 
 /** 支持的可视化展示形态 */
 export type DynamicDataViewType = 'table' | 'line' | 'bar' | 'pie';
@@ -32,6 +33,9 @@ export interface ViewThemeConfig {
 export interface DynamicDataViewProps {
   /** 管道引擎计算输出的标准结果 (TransformResult) */
   result: TransformResult;
+
+  /** 可选的已发布报表模型输入 (MBI-16: 若提供且为表格视图，优先使用 ReportTableView 进行精确呈现) */
+  publishedReport?: PublishedReport | undefined;
 
   /** 点击表格行或单元格回调 */
   onRowSelect?: ((record: DataRecord, index: number, colField?: string | undefined) => void) | undefined;
@@ -123,40 +127,6 @@ export interface DynamicDataViewProps {
    * 默认全部特性开启
    */
   tableFeatures?: boolean | TableFeatureConfig | undefined;
-
-  /**
-   * 双向交叉透视表单元格穿透下钻回调 (外部扩展入口)
-   * - 若外部提供此回调：内部不再弹出默认 Modal，全权交由外部组件自行处理（例如呼出自定义业务抽屉、页面跳转、弹窗增强等）
-   * - 若外部未提供此回调：回退到内置的开箱即用 Excel 穿透弹窗
-   */
-  onCellDrillthrough?: ((info: CellDrillthroughInfo) => void) | undefined;
-}
-
-/** 透视表单元格穿透事件上下文信息 */
-export interface CellDrillthroughInfo {
-  /** 构成该单元格的所有底层原始流水数据 */
-  records: readonly DataRecord[];
-
-  /** 面包屑标题 (如: "2026-08 · 1号五轴切削车间 · 航空钛合金压气机叶片 · WO-202608-01") */
-  title: string;
-
-  /** 原始字段中英文名称字典 (如: { order_code: '工单流水号', finish_time: '完工质检时间' }) */
-  rawHeaders: Record<string, string>;
-
-  /** 当前穿透的交叉维度条件集合 */
-  conditions: {
-    rowDimensions: Record<string, any>;
-    colDimensions: Record<string, any>;
-    indicatorKey?: string | undefined;
-    indicatorTitle?: string | undefined;
-    cellValue?: any;
-  };
-
-  /** 单元格行列坐标 */
-  cell: {
-    col: number;
-    row: number;
-  };
 }
 
 /** 表格高阶交互功能增强配置 */
@@ -181,14 +151,6 @@ export interface TableFeatureConfig {
   columnResize?: boolean | undefined;
   /** 是否支持直接在 Canvas 表头上拖拽列排序调序，默认 true */
   dragOrder?: boolean | undefined;
-  /**
-   * 是否支持数据下钻（主从表树形展开与透视树）：
-   * - true: 启用下钻（ListTable 采用主从树形展开，PivotTable 采用多维透视与维度折叠）
-   * - false: 禁用下钻
-   * - 'tree': 显式启用树形主从展开
-   * - 'inplace': 兼容旧配置项，自动转为树形主从展开
-   */
-  drilldown?: boolean | 'tree' | 'inplace' | undefined;
 }
 
 /** 指标元信息简化结构 */

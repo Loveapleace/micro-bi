@@ -389,21 +389,19 @@ test('table: 靠左固定与靠右固定具有互斥性，且重置能一键清�
   assert.equal(hiddenKeys.length, 0);
 });
 
-test('table: VTable rightFrozenColCount 计算逻辑 (操作列默认常驻靠右冻结，与用户自定义右冻结列平滑叠加)', () => {
-  const computeRightFrozenCount = (rightFrozenKeys, canDrill) => {
-    return rightFrozenKeys.length + (canDrill ? 1 : 0);
+test('table: VTable rightFrozenColCount 计算逻辑 (与用户自定义右冻结列平滑联动)', () => {
+  const computeRightFrozenCount = (rightFrozenKeys) => {
+    return rightFrozenKeys.length;
   };
 
-  // 1. 无右侧用户自定义冻结列时，若有下钻操作列，默认 rightFrozenColCount = 1 (操作列默认常驻右固定)
-  assert.equal(computeRightFrozenCount([], true), 1);
-  // 2. 无下钻操作列且无用户冻结时，rightFrozenColCount = 0
-  assert.equal(computeRightFrozenCount([], false), 0);
+  // 1. 无右侧用户自定义冻结列时，rightFrozenColCount = 0
+  assert.equal(computeRightFrozenCount([]), 0);
 
-  // 3. 有 1 列用户右侧冻结，无下钻列时，rightFrozenColCount = 1
-  assert.equal(computeRightFrozenCount(['cost'], false), 1);
+  // 2. 有 1 列用户右侧冻结，rightFrozenColCount = 1
+  assert.equal(computeRightFrozenCount(['cost']), 1);
 
-  // 4. 有 2 列右侧冻结，且包含原地下钻列 (末尾追加操作列) 时，rightFrozenColCount = 2 + 1 = 3 (保证操作列与用户右冻结列共同贴紧右侧)
-  assert.equal(computeRightFrozenCount(['cost', 'profit'], true), 3);
+  // 3. 有 2 列右侧冻结，rightFrozenColCount = 2
+  assert.equal(computeRightFrozenCount(['cost', 'profit']), 2);
 });
 
 test('table: 表头筛选图标使用与列设置弹层一致的 Ant Design FilterOutlined / FilterFilled 矢量规范', () => {
@@ -566,7 +564,6 @@ test('table: columnResize 与 dragOrder 特性开关与 VTable 配置及位置�
         export: tableFeatures,
         fullscreen: tableFeatures,
         columnVisibility: tableFeatures,
-        drilldown: tableFeatures,
         headerMenu: tableFeatures,
         filterDropdown: tableFeatures,
         mergeCells: tableFeatures,
@@ -580,7 +577,6 @@ test('table: columnResize 与 dragOrder 特性开关与 VTable 配置及位置�
       export: true,
       fullscreen: true,
       columnVisibility: true,
-      drilldown: true,
       headerMenu: true,
       filterDropdown: true,
       mergeCells: true,
@@ -605,7 +601,6 @@ test('table: columnResize 与 dragOrder 特性开关与 VTable 配置及位置�
   const mockColumns = [
     { field: 'workshop', title: '承制车间' },
     { field: 'output_qty', title: '交付总件数' },
-    { field: '__action_drilldown', title: '操作' },
   ];
 
   const buildListTableOptions = (features) => ({
@@ -613,14 +608,6 @@ test('table: columnResize 与 dragOrder 特性开关与 VTable 配置及位置�
     dragHeaderMode: features.dragOrder !== false ? 'column' : 'none',
     dragOrder: features.dragOrder !== false ? {
       dragHeaderMode: 'column',
-      validateDragOrderOnEnd: (source, target) => {
-        const sourceCol = mockColumns[source?.col];
-        const targetCol = mockColumns[target?.col];
-        if (sourceCol?.field === '__action_drilldown' || targetCol?.field === '__action_drilldown') {
-          return false;
-        }
-        return true;
-      },
     } : undefined,
   });
 
@@ -628,11 +615,6 @@ test('table: columnResize 与 dragOrder 特性开关与 VTable 配置及位置�
   assert.equal(enabledOptions.columnResizeMode, 'all');
   assert.equal(enabledOptions.dragHeaderMode, 'column');
   assert.ok(enabledOptions.dragOrder);
-
-  // 验证拖拽保护：允许普通业务列之间拖拽，严禁拖拽操作列
-  assert.equal(enabledOptions.dragOrder.validateDragOrderOnEnd({ col: 0 }, { col: 1 }), true, '车间与交付件数列之间允许拖拽换位');
-  assert.equal(enabledOptions.dragOrder.validateDragOrderOnEnd({ col: 0 }, { col: 2 }), false, '严禁拖动至操作列');
-  assert.equal(enabledOptions.dragOrder.validateDragOrderOnEnd({ col: 2 }, { col: 1 }), false, '严禁拖动操作列自身');
 
   // 3. 模拟 change_header_position 事件触发与 columnOrder 同步
   let currentColumnOrder = null;
@@ -644,7 +626,6 @@ test('table: columnResize 与 dragOrder 特性开关与 VTable 配置及位置�
   const reorderedVTableColumns = [
     { field: 'output_qty', title: '交付总件数' },
     { field: 'workshop', title: '承制车间' },
-    { field: '__action_drilldown', title: '操作' },
   ];
 
   // 模拟 change_header_position 监听器逻辑
@@ -652,7 +633,7 @@ test('table: columnResize 与 dragOrder 特性开关与 VTable 配置及位置�
     if (args.movingColumnOrRow === 'column' || (args.source && args.target && args.source.col !== args.target.col)) {
       const newKeys = reorderedVTableColumns
         .map((c) => c.field || c.key)
-        .filter((k) => k && k !== '__action_drilldown');
+        .filter(Boolean);
       if (newKeys.length > 0) {
         setColumnOrder(newKeys);
       }

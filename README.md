@@ -88,7 +88,6 @@ npm install @visactor/vtable @visactor/vchart antd @ant-design/icons dayjs
   - **双向多维交叉透视表 (Cross-Tab)**：当配置了透视列维度时，自动启用 `PivotTable` 纯 Canvas 渲染，指标支持横向排布或纵向排布，行总计/列总计原生计算；
   - **真实 2D 矩阵导出与复制**：导出 CSV 或复制 TSV 时，完美导出包含多级列头、行头、指标及总计的真实 2D 透视矩阵，Excel 粘贴即用；
   - **明细/扁平聚合表 (ListTable)**：轻松承载 100,000+ 明细行，支持区域框选、多格复制、列宽自由拖拽；
-  - **原地无缝下钻 (In-place Drilldown)**：透视单元格与聚合行均支持穿透原始流水；
   - **列排序隔离的总计行计算、列显隐气泡、冻结首列与右侧操作列**；
 - **VisActor Canvas 图表 (`VChart`)**：
   - 柱/线/面积/饼图，自动识别比率型与绝对数值型指标，天然呈现**双 Y 轴复合图**；
@@ -214,7 +213,6 @@ export const SalesDashboardCard: React.FC<Props> = ({ dataset, result, config, o
       allowMetricSwitch={true}     // 开启度量指标切换与多指标对比
       chartStyle={{ height: 380 }}
       tableFeatures={{
-        drilldown: 'inplace',      // 原地无缝下钻穿透原始流水
         export: true,              // 允许导出 CSV 与复制 TSV
         summaryRow: true,          // 底部科学总计行
         columnVisibility: true,    // 列显隐管理

@@ -1,0 +1,346 @@
+/**
+ * 引擎通用汇总与度量计算模块 (summary.ts)
+ * 纯计算模块，无 UI 与 DOM 依赖。
+ * 提供聚合度量与计算列的统计求值：
+ * - SUM: 真实求和
+ * - AVG: 加权平均（基于底层流水事实或有效数值）
+ * - MIN / MAX: 极值
+ * - COUNT: 指定字段非空计数
+ * - COMPUTED: 汇总级公式重新求值（避免百分比/比率简单累加）
+ */
+import type { DataRecord, OutputColumnMeta, AggregationFunction } from './types.js';
+import { evaluateFormula } from './formula/evaluator.js';
+import {
+  accumulateMetric,
+  createMetricAccumulator,
+  getAggregatedValue,
+  mergeMetricAccumulator,
+  type MetricAccumulator,
+} from './aggregation.js';
+import { getRecordAggregates } from './recordMetadata.js';
+
+export function collectAggregates(rows: readonly DataRecord[]): Map<string, MetricAccumulator> {
+  const totals = new Map<string, MetricAccumulator>();
+  for (const row of rows) {
+    const stored = getRecordAggregates(row);
+    if (stored) {
+      for (const [field, acc] of stored) {
+        let total = totals.get(field);
+        if (!total) {
+          total = createMetricAccumulator();
+          totals.set(field, total);
+        }
+        mergeMetricAccumulator(total, acc);
+      }
+    } else if (Array.isArray(row._rawRows)) {
+      for (const raw of row._rawRows as DataRecord[]) {
+        for (const [field, value] of Object.entries(raw)) {
+          let total = totals.get(field);
+          if (!total) {
+            total = createMetricAccumulator();
+            totals.set(field, total);
+          }
+          accumulateMetric(total, value);
+        }
+      }
+    }
+  }
+  return totals;
+}
+
+export function roundTo(num: number, precision?: number): number {
+  if (precision === undefined) return num;
+  const factor = 10 ** precision;
+  return Math.round(num * factor) / factor;
+}
+
+/**
+ * 智能推断度量列的聚合类型
+ */
+export function inferColumnAggType(key: string, title: string): AggregationFunction {
+  const upperKey = key.toUpperCase();
+  const lowerTitle = title.toLowerCase();
+
+  if (
+    upperKey.startsWith('AVG(') ||
+    lowerTitle.includes('平均') ||
+    lowerTitle.includes('均值') ||
+    lowerTitle.includes('率') ||
+    lowerTitle.includes('%') ||
+    lowerTitle.includes('‰') ||
+    lowerTitle.includes('占比') ||
+    lowerTitle.includes('比率') ||
+    lowerTitle.includes('rate') ||
+    lowerTitle.includes('ratio')
+  ) {
+    return 'avg';
+  }
+  if (upperKey.startsWith('MIN(') || lowerTitle.includes('最小')) {
+    return 'min';
+  }
+  if (upperKey.startsWith('MAX(') || lowerTitle.includes('最大')) {
+    return 'max';
+  }
+  if (upperKey.startsWith('COUNT(') || lowerTitle.includes('计数') || lowerTitle.includes('总次数')) {
+    return 'count';
+  }
+  return 'sum';
+}
+
+/**
+ * 计算表格全局总计行数据
+ */
+export function computeSummaryValues(
+  rows: readonly DataRecord[],
+  columns: readonly OutputColumnMeta[],
+  rawHeaders?: Record<string, string>
+): Record<string, unknown> {
+  const summary: Record<string, unknown> = {};
+  if (!rows || rows.length === 0) return summary;
+
+  const aggregates = collectAggregates(rows);
+  for (const [field, acc] of aggregates) {
+    summary[field] = acc.sum;
+    for (const agg of ['sum', 'avg', 'min', 'max', 'count'] as const) {
+      const value = getAggregatedValue(acc, agg);
+      summary[`${agg.toUpperCase()}(${field})`] = value;
+      summary[`${agg}(${field})`] = value;
+      const label = rawHeaders?.[field];
+      if (label) {
+        summary[`${agg.toUpperCase()}(${label})`] = value;
+        summary[`${agg}(${label})`] = value;
+      }
+    }
+    if (rawHeaders?.[field]) summary[rawHeaders[field]!] = acc.sum;
+  }
+
+  // 1. 搜集底层真实原始流水记录（如果由管道分组挂载）
+  const allRawRows: DataRecord[] = [];
+  for (const r of rows) {
+    if (Array.isArray((r as any)._rawRows)) {
+      if (!getRecordAggregates(r)) {
+        for (const raw of r._rawRows as DataRecord[]) allRawRows.push(raw);
+      }
+    }
+  }
+  const hasRawRows = allRawRows.length > 0;
+
+  // 2. 第一阶段：计算所有非 computed 的基础度量指标
+  for (const col of columns) {
+    if (col.kind === 'computed') {
+      continue;
+    }
+
+    if (col.type === 'number') {
+      const aggType: AggregationFunction =
+        col.agg || inferColumnAggType(col.key, col.title);
+
+      const acc = col.field ? aggregates.get(col.field) : undefined;
+      if (acc) {
+        const value = getAggregatedValue(acc, aggType);
+        summary[col.key] = value;
+        summary[col.title] = value;
+        if (col.field) summary[col.field] = value;
+        continue;
+      }
+
+      if (aggType === 'sum') {
+        const sum = rows.reduce((acc, r) => acc + (Number(r[col.key]) || 0), 0);
+        summary[col.key] = sum;
+        if (col.field) {
+          summary[col.field] = sum;
+          summary[`SUM(${col.field})`] = sum;
+          summary[`sum(${col.field})`] = sum;
+          const header = rawHeaders?.[col.field];
+          if (header) {
+            summary[`SUM(${header})`] = sum;
+            summary[`sum(${header})`] = sum;
+          }
+        }
+        summary[col.title] = sum;
+      } else if (aggType === 'avg') {
+        let avg = 0;
+        if (hasRawRows && col.field) {
+          let total = 0;
+          let count = 0;
+          for (const raw of allRawRows) {
+            const v = raw[col.field];
+            if (v !== null && v !== undefined && v !== '') {
+              const num = Number(v);
+              if (Number.isFinite(num)) {
+                total += num;
+                count += 1;
+              }
+            }
+          }
+          avg = count > 0 ? total / count : 0;
+        } else {
+          let total = 0;
+          let count = 0;
+          for (const r of rows) {
+            const v = r[col.key];
+            if (v !== null && v !== undefined && v !== '') {
+              const num = Number(v);
+              if (Number.isFinite(num)) {
+                total += num;
+                count += 1;
+              }
+            }
+          }
+          avg = count > 0 ? total / count : 0;
+        }
+        avg = roundTo(avg, col.precision !== undefined ? col.precision : 2);
+        summary[col.key] = avg;
+        if (col.field) {
+          summary[col.field] = avg;
+          summary[`AVG(${col.field})`] = avg;
+          summary[`avg(${col.field})`] = avg;
+          const header = rawHeaders?.[col.field];
+          if (header) {
+            summary[`AVG(${header})`] = avg;
+            summary[`avg(${header})`] = avg;
+          }
+        }
+        summary[col.title] = avg;
+      } else if (aggType === 'min') {
+        let min = Infinity;
+        for (const r of rows) {
+          const v = r[col.key];
+          if (v !== null && v !== undefined && v !== '') {
+            const num = Number(v);
+            if (Number.isFinite(num) && num < min) min = num;
+          }
+        }
+        const minVal = min === Infinity ? 0 : min;
+        summary[col.key] = minVal;
+        if (col.field) {
+          summary[col.field] = minVal;
+          summary[`MIN(${col.field})`] = minVal;
+        }
+        summary[col.title] = minVal;
+      } else if (aggType === 'max') {
+        let max = -Infinity;
+        for (const r of rows) {
+          const v = r[col.key];
+          if (v !== null && v !== undefined && v !== '') {
+            const num = Number(v);
+            if (Number.isFinite(num) && num > max) max = num;
+          }
+        }
+        const maxVal = max === -Infinity ? 0 : max;
+        summary[col.key] = maxVal;
+        if (col.field) {
+          summary[col.field] = maxVal;
+          summary[`MAX(${col.field})`] = maxVal;
+        }
+        summary[col.title] = maxVal;
+      } else if (aggType === 'count') {
+        const count = hasRawRows && col.field
+          ? allRawRows.filter((row) => row[col.field!] !== null && row[col.field!] !== undefined && row[col.field!] !== '').length
+          : rows.reduce((total, row) => {
+              const value = row[col.key];
+              if (value === null || value === undefined || value === '') return total;
+              const number = Number(value);
+              return total + (Number.isFinite(number) ? number : 1);
+            }, 0);
+        summary[col.key] = count;
+        if (col.field) {
+          summary[col.field] = count;
+          summary[`COUNT(${col.field})`] = count;
+        }
+        summary[col.title] = count;
+      }
+    }
+  }
+
+  // 3. 第二阶段：计算所有 computed 动态计算列（在汇总基础指标上求值）
+  for (const col of columns) {
+    if (col.kind === 'computed' || col.expression) {
+      if (col.scope === 'row') {
+        const acc = aggregates.get(col.key);
+        const value = acc ? acc.sum : rows.reduce((total, row) => total + (Number(row[col.key]) || 0), 0);
+        summary[col.key] = roundTo(value, col.precision);
+        summary[col.title] = summary[col.key];
+        continue;
+      }
+      if (col.expression) {
+        try {
+          const val = evaluateFormula(col.expression, summary, { nullAsZero: true });
+          const numVal =
+            typeof val === 'number'
+              ? roundTo(val, col.precision !== undefined ? col.precision : 2)
+              : val;
+          summary[col.key] = numVal;
+          summary[col.title] = numVal;
+        } catch {
+          const isRatio =
+            col.key.includes('ratio') ||
+            col.key.includes('rate') ||
+            col.title.includes('%') ||
+            col.title.includes('‰') ||
+            col.title.includes('率');
+          if (isRatio) {
+            let total = 0;
+            let count = 0;
+            for (const r of rows) {
+              const v = Number(r[col.key]);
+              if (Number.isFinite(v)) {
+                total += v;
+                count += 1;
+              }
+            }
+            const avg = count > 0 ? roundTo(total / count, col.precision ?? 2) : 0;
+            summary[col.key] = avg;
+          } else {
+            summary[col.key] = rows.reduce((acc, r) => acc + (Number(r[col.key]) || 0), 0);
+          }
+        }
+      } else {
+        const isRatio =
+          col.key.includes('ratio') ||
+          col.key.includes('rate') ||
+          col.title.includes('%') ||
+          col.title.includes('‰') ||
+          col.title.includes('率');
+        if (isRatio) {
+          let total = 0;
+          let count = 0;
+          for (const r of rows) {
+            const v = Number(r[col.key]);
+            if (Number.isFinite(v)) {
+              total += v;
+            }
+          }
+          summary[col.key] = count > 0 ? roundTo(total / count, col.precision ?? 2) : 0;
+        } else {
+          summary[col.key] = rows.reduce((acc, r) => acc + (Number(r[col.key]) || 0), 0);
+        }
+      }
+    }
+  }
+
+  return summary;
+}
+
+/** VTable receives already aggregated intersections, so each bucket uses BI totals. */
+export function createPivotAggregationRules(
+  columns: readonly OutputColumnMeta[],
+  rawHeaders?: Record<string, string>,
+  contextColumns: readonly OutputColumnMeta[] = columns
+) {
+  const cache = new WeakMap<readonly DataRecord[], Record<string, unknown>>();
+  return columns.map((column) => ({
+    indicatorKey: column.key,
+    field: column.key,
+    aggregationType: 'CUSTOM' as const,
+    aggregationFun: (_values: unknown[], records: DataRecord[]): unknown => {
+      if (records.length === 1) return records[0]?.[column.key];
+      let summary = cache.get(records);
+      if (!summary) {
+        summary = computeSummaryValues(records, contextColumns, rawHeaders);
+        cache.set(records, summary);
+      }
+      return summary[column.key];
+    },
+  }));
+}

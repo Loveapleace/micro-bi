@@ -66,6 +66,7 @@ export const DynamicDataConfigPanel = React.forwardRef<
     showQuickPresets = true,
     showDslTools = false,
     showFieldKeys = false,
+    renderPreview,
   },
   ref
 ) {
@@ -1134,12 +1135,24 @@ export const DynamicDataConfigPanel = React.forwardRef<
               />
 
               {/* 实时预览表格 */}
-              <LivePreviewTable
-                result={transformResult}
-                config={getEffectiveConfig()}
-                {...(effectiveHeaders ? { headers: effectiveHeaders } : {})}
-                showFieldKeys={showFieldKeys}
-              />
+              {renderPreview ? (
+                renderPreview({
+                  config: getEffectiveConfig(),
+                  result: transformResult,
+                  records: effectiveData,
+                  ...(effectiveHeaders ? { headers: effectiveHeaders } : {}),
+                  datasetId: effectiveDatasetId,
+                  dataset: selectedRegisteredDataset,
+                  isLoading: isDatasetLoading,
+                })
+              ) : (
+                <LivePreviewTable
+                  result={transformResult}
+                  config={getEffectiveConfig()}
+                  {...(effectiveHeaders ? { headers: effectiveHeaders } : {})}
+                  showFieldKeys={showFieldKeys}
+                />
+              )}
             </Col>
           </Row>
         </Spin>

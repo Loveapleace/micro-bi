@@ -20,6 +20,7 @@ import { DimensionSwitcher } from './toolbar/DimensionSwitcher.js';
 import { ViewTypeSwitcher } from './toolbar/ViewTypeSwitcher.js';
 import { VTableView } from './table/VTableView.js';
 import { VChartView } from './charts/VChartView.js';
+import { ReportTableView } from './report/ReportTableView.js';
 import { useDynamicDataLocale, type ViewLocale } from '../../locale/index.js';
 
 interface ViewErrorBoundaryProps {
@@ -72,6 +73,7 @@ const { Text } = Typography;
 
 export const DynamicDataView: React.FC<DynamicDataViewProps> = ({
   result,
+  publishedReport,
   viewType: controlledViewType,
   defaultViewType = 'table',
   onViewTypeChange,
@@ -108,7 +110,6 @@ export const DynamicDataView: React.FC<DynamicDataViewProps> = ({
   extra,
   tableFeatures = true,
   onRowSelect,
-  onCellDrillthrough,
 }) => {
 
   // 1. 主题、国际化与样式解析
@@ -501,23 +502,30 @@ export const DynamicDataView: React.FC<DynamicDataViewProps> = ({
           >
             <ViewErrorBoundary key={effectiveViewType} t={t}>
               {effectiveViewType === 'table' ? (
-                <VTableView
-                  result={result}
-                  dimensionField={effectiveDimensionField}
-                  activeMetrics={controlledActiveMetrics !== undefined ? effectiveActiveMetrics : undefined}
-                  theme={themeConfig}
-                  tableFeatures={tableFeatures}
-                  vtableOption={vtableOption}
-                  showSummaryRow={showSummaryRow}
-                  mergeCells={mergeCells}
-                  showDataBars={showDataBars}
-                  frozenColumnKeys={frozenColumnKeys}
-                  rightFrozenColumnKeys={rightFrozenColumnKeys}
-                  style={tableStyle}
-                  locale={t.locale}
-                  onRowSelect={onRowSelect}
-                  onCellDrillthrough={onCellDrillthrough}
-                />
+                publishedReport ? (
+                  <ReportTableView
+                    report={publishedReport}
+                    height={tableStyle?.height || 360}
+                    style={tableStyle}
+                  />
+                ) : (
+                  <VTableView
+                    result={result}
+                    dimensionField={effectiveDimensionField}
+                    activeMetrics={controlledActiveMetrics !== undefined ? effectiveActiveMetrics : undefined}
+                    theme={themeConfig}
+                    tableFeatures={tableFeatures}
+                    vtableOption={vtableOption}
+                    showSummaryRow={showSummaryRow}
+                    mergeCells={mergeCells}
+                    showDataBars={showDataBars}
+                    frozenColumnKeys={frozenColumnKeys}
+                    rightFrozenColumnKeys={rightFrozenColumnKeys}
+                    style={tableStyle}
+                    locale={t.locale}
+                    onRowSelect={onRowSelect}
+                  />
+                )
               ) : (
                 <VChartView
                   viewType={effectiveViewType}

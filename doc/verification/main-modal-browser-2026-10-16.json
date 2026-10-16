@@ -1,0 +1,100 @@
+{
+  "executedAt": "2026-10-16T10:55:47.795Z",
+  "url": "http://localhost:5174/",
+  "entry": "原看板配置弹窗，未使用独立报表工作区",
+  "results": [
+    {
+      "id": "UI-01",
+      "status": "passed",
+      "observation": "设备台账原配置弹窗中加载 Univer 工具栏、公式栏、页签及画布，识别12条事实记录、10个字段。"
+    },
+    {
+      "id": "UI-02",
+      "status": "passed",
+      "observation": "C2加粗后通过原保存按钮进入原卡片VTable；重新打开C2仍为加粗。仅覆盖基础样式。"
+    },
+    {
+      "id": "UI-03",
+      "status": "failed",
+      "observation": "C2由1250输入987654并按Enter，画布可见987654；点击原保存按钮后，VTable仍显示1250。保存前后截图留存。"
+    },
+    {
+      "id": "UI-04",
+      "status": "failed",
+      "observation": "原分组预览可见所属车间合并标签；发布后的VTable对应合并区域标签为空。"
+    },
+    {
+      "id": "UI-05",
+      "status": "passed",
+      "observation": "原双向透视看板配置中可加载横向指标矩阵，当前视口内层级表头和数据可见。未对所有单元格作像素校验。"
+    },
+    {
+      "id": "UI-06",
+      "status": "failed",
+      "observation": "在同一弹窗将横向列展开改为纵向行展开，新指标值与旧横向表头及合并区域混合，未正确重建区域。已取消该草稿。"
+    },
+    {
+      "id": "UI-07",
+      "status": "failed",
+      "observation": "重复打开、保存后捕获SheetsScrollRenderController2依赖缺失错误，画布仍可出现；生命周期稳定性未通过。"
+    },
+    {
+      "id": "UI-08",
+      "status": "failed",
+      "observation": "保存期间捕获Calculation end timeout，保存流程仍退出弹窗。不能据此认为公式已稳定。"
+    },
+    {
+      "id": "UI-09",
+      "status": "passed",
+      "observation": "原新建分析看板入口同样加载Univer工具栏、分析工作表页签和853×339画布；已取消草稿。未提交创建新条目。"
+    }
+  ],
+  "screenshots": [
+    "main-modal-before-save-2026-10-16.jpg",
+    "main-vtable-after-save-2026-10-16.jpg",
+    "main-pivot-horizontal-2026-10-16.jpg",
+    "main-pivot-direction-change-2026-10-16.jpg"
+  ],
+  "errors": [
+    {
+      "level": "error",
+      "message": "Error: Calculation end timeout\n    at http://localhost:5174/node_modules/.vite/deps/@univerjs_preset-sheets-core.js?v=54c36b77:167098:22",
+      "timestamp": "2026-10-16T10:48:18.779Z",
+      "url": "http://localhost:5174/node_modules/.vite/deps/@univerjs_preset-sheets-core.js?v=54c36b77"
+    },
+    {
+      "level": "error",
+      "message": "Error: Calculation end timeout\n    at http://localhost:5174/node_modules/.vite/deps/@univerjs_preset-sheets-core.js?v=54c36b77:167098:22",
+      "timestamp": "2026-10-16T10:48:19.015Z",
+      "url": "http://localhost:5174/node_modules/.vite/deps/@univerjs_preset-sheets-core.js?v=54c36b77"
+    },
+    {
+      "level": "error",
+      "message": "Warning: [antd: message] Static function can not consume context like dynamic theme. Please use 'App' component instead.",
+      "timestamp": "2026-10-16T10:48:19.320Z",
+      "url": "http://localhost:5174/node_modules/.vite/deps/chunk-UTNTMYQZ.js?v=1f7f7d4f"
+    },
+    {
+      "level": "error",
+      "message": "DependencyNotFoundError: [redi]: Cannot find \"SheetsScrollRenderController2\" registered by any injector. The stack of dependencies is: \"\".\n    at ResolvedDependencyCollection.get (http://localhost:5174/node_modules/.vite/deps/chunk-5ELJ6BAN.js?v=1f7f7d4f:6835:21)\n    at onSelf (http://localhost:5174/node_modules/.vite/deps/chunk-5ELJ6BAN.js?v=1f7f7d4f:7412:48)\n    at Injector2.getValue (http://localhost:5174/node_modules/.vite/deps/chunk-5ELJ6BAN.js?v=1f7f7d4f:7424:40)\n    at Injector2._get (http://localhost:5174/node_modules/.vite/deps/chunk-5ELJ6BAN.js?v=1f7f7d4f:7239:33)\n    at Injector2.get (http://localhost:5174/node_modules/.vite/deps/chunk-5ELJ6BAN.js?v=1f7f7d4f:7230:28)\n    at RenderUnitDependencyService.resolve (http://localhost:5174/node_modules/.vite/deps/@univerjs_preset-sheets-core.js?v=54c36b77:40081:27)\n    at RenderUnit2.with (http://localhost:5174/node_modules/.vite/deps/@univerjs_preset-sheets-core.js?v=54c36b77:40026:36)\n    at handler (http://localhost:5174/node_modules/.vite/deps/@univerjs_preset-sheets-core.js?v=54c36b77:238788:145)\n    at Injector2.invoke (http://localhost:5174/node_modules/.vite/deps/chunk-5ELJ6BAN.js?v=1f7f7d4f:7177:12)\n    at CommandService2._execute (http://localhost:5174/node_modules/.vite/deps/chunk-5ELJ6BAN.js?v=1f7f7d4f:19429:38)",
+      "timestamp": "2026-10-16T10:48:58.933Z",
+      "url": "http://localhost:5174/node_modules/.vite/deps/chunk-5ELJ6BAN.js?v=1f7f7d4f"
+    },
+    {
+      "level": "error",
+      "message": "Error: Calculation end timeout\n    at http://localhost:5174/node_modules/.vite/deps/@univerjs_preset-sheets-core.js?v=54c36b77:167098:22",
+      "timestamp": "2026-10-16T10:49:45.342Z",
+      "url": "http://localhost:5174/node_modules/.vite/deps/@univerjs_preset-sheets-core.js?v=54c36b77"
+    },
+    {
+      "level": "error",
+      "message": "Error: Calculation end timeout\n    at http://localhost:5174/node_modules/.vite/deps/@univerjs_preset-sheets-core.js?v=54c36b77:167098:22",
+      "timestamp": "2026-10-16T10:49:45.571Z",
+      "url": "http://localhost:5174/node_modules/.vite/deps/@univerjs_preset-sheets-core.js?v=54c36b77"
+    }
+  ],
+  "limitations": [
+    "未修改源数据文件或通过隐藏API注入数据；动态增删与重排由独立的真实SDK/刷新effect诊断覆盖。",
+    "未完成所有Excel操作、异步loader故障重试、浏览器刷新持久化及纯展示打包隔离验收。"
+  ]
+}

@@ -14,7 +14,6 @@ import {
   DimensionSwitcher,
   MetricSwitcher,
   ViewTypeSwitcher,
-  PivotDrillthroughModal,
   resolveThemeConfig,
   deepMerge,
   isRateOrRatioMetric,
@@ -38,7 +37,6 @@ test('ui: 配置层与展示层组件正常暴露与加载', () => {
   assert.equal(typeof DimensionSwitcher, 'function');
   assert.equal(typeof MetricSwitcher, 'function');
   assert.equal(typeof ViewTypeSwitcher, 'function');
-  assert.equal(typeof PivotDrillthroughModal, 'function');
 });
 
 
@@ -319,7 +317,7 @@ test('vchart: 双 Y 轴 Pareto 复合图与分组柱状图 Long/Tidy 数据投�
   assert.equal(lineData[0].__metricValue__, 98.5);
 });
 
-test('vtable: 聚合行原始流水挂载、下钻明细穿透与列显隐过滤完整性', () => {
+test('vtable: 聚合行底层原始流水隔离与列显隐过滤完整性', () => {
   const rawOrders = [
     { order_id: 'WO-001', workshop: '1号车间', qty: 100 },
     { order_id: 'WO-002', workshop: '1号车间', qty: 200 },
@@ -512,151 +510,6 @@ test('ui: DynamicDataView 维度切换在非受控模式下稳定保持用户选
   assert.equal(internalDimensionField, 'plan_start_time', '当旧维度在候选池中消失时，智能回退至 autoDimensionField');
 });
 
-test('pivot: 单元格穿透下钻控制反转 (onCellDrillthrough) 回调与 CellDrillthroughInfo 契约验证', () => {
-  const rawOrders = [
-    { order_id: 'WO-001', plan_month: '2026-08', workshop: '1号车间', qty: 100 },
-    { order_id: 'WO-002', plan_month: '2026-08', workshop: '1号车间', qty: 150 },
-    { order_id: 'WO-003', plan_month: '2026-08', workshop: '2号车间', qty: 200 },
-    { order_id: 'WO-004', plan_month: '2026-09', workshop: '1号车间', qty: 300 },
-  ];
-
-  const rawHeaders = {
-    order_id: '工单号',
-    plan_month: '计划月份',
-    workshop: '承制车间',
-    qty: '产量',
-  };
-
-  // 模拟透视单元格提取逻辑
-  function simulateDrillthroughTrigger({
-    onCellDrillthrough,
-    selectedRowPaths,
-    selectedColPaths,
-    cellCol = 2,
-    cellRow = 3,
-    cellValue = 250,
-  }) {
-    let internalModalOpened = false;
-    let internalModalPayload = null;
-
-    // 1. 根据路径匹配原始记录
-    const matchedRecords = rawOrders.filter((row) => {
-      const matchRow = selectedRowPaths.every((p) => row[p.dimensionKey] === p.value);
-      const matchCol = selectedColPaths.every((p) => !p.dimensionKey || row[p.dimensionKey] === p.value);
-      return matchRow && matchCol;
-    });
-
-    // 2. 提取维度条件与指标信息
-    const labels = [];
-    const rowDimMap = {};
-    const colDimMap = {};
-    let indicatorKey;
-    let indicatorTitle;
-
-    for (const p of selectedRowPaths) {
-      if (p.dimensionKey && p.value !== undefined) {
-        labels.push(String(p.value));
-        rowDimMap[p.dimensionKey] = p.value;
-      }
-    }
-    for (const p of selectedColPaths) {
-      if (p.dimensionKey && p.value !== undefined) {
-        labels.push(String(p.value));
-        colDimMap[p.dimensionKey] = p.value;
-      }
-      if (p.indicatorKey) {
-        indicatorKey = p.indicatorKey;
-        indicatorTitle = p.value;
-      }
-    }
-
-    const titleStr = labels.length > 0 ? labels.join(' · ') : '选定单元格';
-
-    const drillInfo = {
-      records: matchedRecords,
-      title: titleStr,
-      rawHeaders,
-      conditions: {
-        rowDimensions: rowDimMap,
-        colDimensions: colDimMap,
-        indicatorKey,
-        indicatorTitle,
-        cellValue,
-      },
-      cell: {
-        col: cellCol,
-        row: cellRow,
-      },
-    };
-
-    // 3. 模拟控制反转判定
-    if (typeof onCellDrillthrough === 'function') {
-      onCellDrillthrough(drillInfo);
-      return { internalModalOpened, internalModalPayload };
-    }
-
-    internalModalOpened = true;
-    internalModalPayload = {
-      open: true,
-      title: titleStr,
-      records: matchedRecords,
-      rawHeaders,
-    };
-
-    return { internalModalOpened, internalModalPayload };
-  }
-
-  // 场景 A: 外部传入自定义 onCellDrillthrough 回调 (控制反转模式)
-  let interceptedInfo = null;
-  const customCallback = (info) => {
-    interceptedInfo = info;
-  };
-
-  const resA = simulateDrillthroughTrigger({
-    onCellDrillthrough: customCallback,
-    selectedRowPaths: [{ dimensionKey: 'workshop', value: '1号车间' }],
-    selectedColPaths: [
-      { dimensionKey: 'plan_month', value: '2026-08' },
-      { indicatorKey: 'qty', value: '交付总件数' },
-    ],
-    cellCol: 2,
-    cellRow: 1,
-    cellValue: 250,
-  });
-
-  // 验证: 内部模态框绝不打开，外部回调被精准触发并捕获完整上下文
-  assert.equal(resA.internalModalOpened, false, '外部注入回调时，内部 Modal 不应打开');
-  assert.equal(resA.internalModalPayload, null);
-  assert.ok(interceptedInfo, '外部回调应接收到 drillInfo');
-  assert.equal(interceptedInfo.title, '1号车间 · 2026-08');
-  assert.equal(interceptedInfo.records.length, 2);
-  assert.deepEqual(interceptedInfo.records.map((r) => r.order_id), ['WO-001', 'WO-002']);
-  assert.deepEqual(interceptedInfo.conditions.rowDimensions, { workshop: '1号车间' });
-  assert.deepEqual(interceptedInfo.conditions.colDimensions, { plan_month: '2026-08' });
-  assert.equal(interceptedInfo.conditions.indicatorKey, 'qty');
-  assert.equal(interceptedInfo.conditions.indicatorTitle, '交付总件数');
-  assert.equal(interceptedInfo.conditions.cellValue, 250);
-  assert.deepEqual(interceptedInfo.cell, { col: 2, row: 1 });
-
-  // 场景 B: 外部未传入回调 (开箱即用保底模式)
-  const resB = simulateDrillthroughTrigger({
-    onCellDrillthrough: undefined,
-    selectedRowPaths: [{ dimensionKey: 'workshop', value: '2号车间' }],
-    selectedColPaths: [
-      { dimensionKey: 'plan_month', value: '2026-08' },
-      { indicatorKey: 'qty', value: '交付总件数' },
-    ],
-    cellCol: 2,
-    cellRow: 2,
-    cellValue: 200,
-  });
-
-  // 验证: 自动唤起内置弹窗状态
-  assert.equal(resB.internalModalOpened, true, '外部未传回调时，内置 Modal 自动唤起保底');
-  assert.equal(resB.internalModalPayload.title, '2号车间 · 2026-08');
-  assert.equal(resB.internalModalPayload.records.length, 1);
-  assert.equal(resB.internalModalPayload.records[0].order_id, 'WO-003');
-});
 
 
 

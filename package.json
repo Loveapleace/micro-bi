@@ -41,6 +41,12 @@
       ],
       "locale": [
         "./dist/esm/locale/index.d.ts"
+      ],
+      "report": [
+        "./dist/esm/report/index.d.ts"
+      ],
+      "univer": [
+        "./dist/esm/univer/index.d.ts"
       ]
     }
   },
@@ -95,18 +101,51 @@
         "default": "./dist/cjs/locale/index.js"
       }
     },
+    "./report": {
+      "import": {
+        "types": "./dist/esm/report/index.d.ts",
+        "default": "./dist/esm/report/index.js"
+      },
+      "require": {
+        "types": "./dist/esm/report/index.d.ts",
+        "default": "./dist/cjs/report/index.js"
+      }
+    },
+    "./univer": {
+      "import": {
+        "types": "./dist/esm/univer/index.d.ts",
+        "default": "./dist/esm/univer/index.js"
+      },
+      "require": {
+        "types": "./dist/esm/univer/index.d.ts",
+        "default": "./dist/cjs/univer/index.js"
+      }
+    },
     "./package.json": "./package.json"
   },
   "peerDependencies": {
     "@ant-design/icons": ">=5.0.0",
+    "@univerjs/core": ">=1.0.4",
+    "@univerjs/preset-sheets-core": ">=1.0.4",
+    "@univerjs/presets": ">=1.0.4",
     "@visactor/vchart": ">=0.1.0",
     "@visactor/vtable": ">=0.1.0",
     "antd": ">=5.0.0",
     "react": ">=17.0.0",
-    "react-dom": ">=17.0.0"
+    "react-dom": ">=17.0.0",
+    "rxjs": ">=7.0.0"
   },
   "peerDependenciesMeta": {
     "@ant-design/icons": {
+      "optional": true
+    },
+    "@univerjs/core": {
+      "optional": true
+    },
+    "@univerjs/preset-sheets-core": {
+      "optional": true
+    },
+    "@univerjs/presets": {
       "optional": true
     },
     "@visactor/vchart": {
@@ -122,6 +161,9 @@
       "optional": true
     },
     "react-dom": {
+      "optional": true
+    },
+    "rxjs": {
       "optional": true
     }
   },
@@ -151,11 +193,15 @@
     "@ant-design/icons": "^5.6.0",
     "@types/react": "^17.0.80",
     "@types/react-dom": "^17.0.25",
+    "@univerjs/core": "^1.0.4",
+    "@univerjs/preset-sheets-core": "^1.0.4",
+    "@univerjs/presets": "^1.0.4",
     "@visactor/vchart": "^2.1.7",
     "@visactor/vtable": "^1.26.8",
     "antd": "^5.24.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "rxjs": "^7.8.1",
     "typescript": "^5.6.3"
   },
   "dependencies": {

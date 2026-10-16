@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createRequire } from 'node:module';
 import React from 'react';
-import ReactDOMServer from 'react-dom/server.js';
+import ReactDOMServer from 'react-dom/server';
 import {
   transformData, getRecordKey, getSourceRowKey, cloneTransformRecord,
   formatTimeBucket,
