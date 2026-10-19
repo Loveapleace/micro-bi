@@ -42,7 +42,8 @@ function extractMemberPaths(
   records: readonly DataRecord[],
   dims: readonly NormalizedDimension[],
   showSubTotals: boolean,
-  subTotalLabel: string = '小计'
+  subTotalLabel: string = '小计',
+  sorts?: readonly { field: string; order?: 'asc' | 'desc' }[] | undefined
 ): MemberPathItem[] {
   if (dims.length === 0) {
     return [
@@ -101,7 +102,14 @@ function extractMemberPaths(
     depth: number,
     ancestorRefs: AxisMemberRef[]
   ) {
-    const sortedKeys = Array.from(nodes.keys()).sort((a, b) => a.localeCompare(b));
+    const currentDim = dims[depth];
+    const sortDef = currentDim ? sorts?.find((s) => s.field === currentDim.field) : undefined;
+    const isDesc = sortDef?.order === 'desc';
+
+    const sortedKeys = Array.from(nodes.keys()).sort((a, b) => {
+      const comp = a.localeCompare(b);
+      return isDesc ? -comp : comp;
+    });
 
     for (const key of sortedKeys) {
       const node = nodes.get(key)!;
@@ -180,13 +188,15 @@ export function projectPivotReport(
     records,
     rowDims,
     Boolean(axes.rowTotals.showSubTotals),
-    axes.rowTotals.subTotalLabel || '小计'
+    axes.rowTotals.subTotalLabel || '小计',
+    axes.options?.sort
   );
   const colMembers = extractMemberPaths(
     records,
     colDims,
     Boolean(axes.colTotals.showSubTotals),
-    axes.colTotals.subTotalLabel || '小计'
+    axes.colTotals.subTotalLabel || '小计',
+    axes.options?.sort
   );
 
   // 2. 建立桶数据索引（全前缀索引，使叶子与小计均可 O(1) 检索且键结构无歧义）

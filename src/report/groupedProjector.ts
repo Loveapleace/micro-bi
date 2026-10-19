@@ -107,14 +107,63 @@ export function projectGroupedReport(
   // 遵循引擎的三态仲裁：若为 detail 明细模式，投影全部原始事实行；若为 summary 模式，输出单行全局汇总 (MBI-07)
   if (rowDims.length === 0) {
     if (axes.executionForm === 'detail') {
-      const enhancedRecords = enhanceRecordsWithRowComputed(records, metrics, axes.rawHeaders);
+      let enhancedRecords = enhanceRecordsWithRowComputed(records, metrics, axes.rawHeaders);
+
+      // RT-05 / RX-05: 明细模式消费 options.sort
+      if (axes.options?.sort && axes.options.sort.length > 0) {
+        const sorts = axes.options.sort;
+        enhancedRecords = [...enhancedRecords].sort((a, b) => {
+          for (const s of sorts) {
+            const valA = (a as any)[s.field];
+            const valB = (b as any)[s.field];
+            if (valA === valB) continue;
+            if (valA === null || valA === undefined) return 1;
+            if (valB === null || valB === undefined) return -1;
+            const comp = valA > valB ? 1 : -1;
+            return s.order === 'desc' ? -comp : comp;
+          }
+          return 0;
+        });
+      }
+
       for (let rIdx = 0; rIdx < enhancedRecords.length; rIdx++) {
         const rowRecord = enhancedRecords[rIdx]!;
         const rowNum = currentRow + rIdx;
 
-        const pkValue = (rowRecord as any).id ?? (rowRecord as any)._id ?? (rowRecord as any).key ?? (rowRecord as any).uuid ?? (rowRecord as any).pk;
-        const pkField = pkValue !== undefined && pkValue !== null ? 'id' : '__row__';
-        const pkMemberKey = pkValue !== undefined && pkValue !== null ? String(pkValue) : String(rIdx);
+        // RT-06 / RX-07 / RX-08: 识别业务主键字段并带类型编码
+        let pkField = '__row__';
+        let pkValue: any = undefined;
+
+        const candidateKeys = ['id', '_id', 'key', 'uuid', 'pk'];
+        for (const k of candidateKeys) {
+          if ((rowRecord as any)[k] !== undefined && (rowRecord as any)[k] !== null) {
+            pkField = k;
+            pkValue = (rowRecord as any)[k];
+            break;
+          }
+        }
+        if (pkValue === undefined) {
+          for (const k of Object.keys(rowRecord)) {
+            if (k.endsWith('_code') || k.endsWith('_id') || k.endsWith('_no') || k.endsWith('Code') || k.endsWith('Id')) {
+              if ((rowRecord as any)[k] !== undefined && (rowRecord as any)[k] !== null) {
+                pkField = k;
+                pkValue = (rowRecord as any)[k];
+                break;
+              }
+            }
+          }
+        }
+        if (pkValue === undefined) {
+          for (const m of metrics) {
+            if (m.kind === 'fixed' && m.field && (rowRecord as any)[m.field] !== undefined && (rowRecord as any)[m.field] !== null) {
+              pkField = m.field;
+              pkValue = (rowRecord as any)[m.field];
+              break;
+            }
+          }
+        }
+
+        const pkMemberKey = pkValue !== undefined && pkValue !== null ? `${typeof pkValue}:${pkValue}` : String(rIdx);
 
         metrics.forEach((metric, mIdx) => {
           let val: any = null;

@@ -190,6 +190,50 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
         const sheetId = worksheet.getSheetId?.() || 's1';
         const oldCellData = (oldSnapshot.sheets as any)?.[sheetId]?.cellData || {};
 
+        // RT-03 / RX-09 / RX-10: 扩充工作表行数和列数
+        if (wsInternal) {
+          const currentRows = typeof wsInternal.getMaxRows === 'function' ? wsInternal.getMaxRows() : 0;
+          const currentCols = typeof wsInternal.getMaxColumns === 'function' ? wsInternal.getMaxColumns() : 0;
+          if (currentRows < initialGrid.rowCount) {
+            wsInternal.setRowCount?.(initialGrid.rowCount);
+          }
+          if (currentCols < initialGrid.colCount) {
+            wsInternal.setColumnCount?.(initialGrid.colCount);
+          }
+        }
+
+        // RT-09 / RX-13: 自动区域向下扩张时，将原区域下方的自由手工备注向下平移
+        if (oldGrid && initialGrid.rowCount > oldGrid.rowCount && matrix) {
+          const rowDelta = initialGrid.rowCount - oldGrid.rowCount;
+          const rowsToShift: number[] = [];
+          for (const rStr of Object.keys(oldCellData)) {
+            const r = Number(rStr);
+            if (r >= oldGrid.rowCount) {
+              rowsToShift.push(r);
+            }
+          }
+          rowsToShift.sort((a, b) => b - a);
+          for (const r of rowsToShift) {
+            const rowCols = oldCellData[r];
+            if (rowCols && typeof rowCols === 'object') {
+              for (const cStr of Object.keys(rowCols)) {
+                const c = Number(cStr);
+                const cellVal = matrix.getValue(r, c);
+                if (cellVal !== undefined) {
+                  matrix.setValue(r + rowDelta, c, cellVal);
+                  matrix.realDeleteValue(r, c);
+                }
+              }
+            }
+          }
+          if (wsInternal && rowsToShift.length > 0) {
+            const maxDisplacedRow = Math.max(...rowsToShift) + rowDelta + 1;
+            if (typeof wsInternal.getMaxRows === 'function' && wsInternal.getMaxRows() < maxDisplacedRow) {
+              wsInternal.setRowCount?.(maxDisplacedRow);
+            }
+          }
+        }
+
         // 1. 采集旧单元格样式（按业务绑定语义 ID 索引，确保重排后样式跟随业务成员，DT-12, DT-16）
         const styleMap = new Map<string, any>();
         if (oldGrid && oldGrid.bindings) {
@@ -214,7 +258,7 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
           }
         }
 
-        // 3. 写入新网格并按语义身份迁移人工覆盖和样式 (DT-11, DT-12, DT-13, DT-16)
+        // 3. 写入新网格并按语义身份迁移人工覆盖和样式 (DT-11, DT-12, DT-13, DT-16, RX-01~04, RX-12)
         for (const cell of initialGrid.cells) {
           const newB = initialGrid.bindings.find(
             (b) => b.target.row === cell.row && b.target.column === cell.col
@@ -244,10 +288,28 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
             }
           } catch {}
 
-          if (styleId && matrix) {
+          if (matrix) {
             try {
               const cur = matrix.getValue(cell.row, cell.col) || {};
-              matrix.setValue(cell.row, cell.col, { ...cur, s: styleId });
+              const nextCustom = {
+                ...(cur.custom || {}),
+                role: cell.role,
+                metricId: cell.metricId,
+                field: cell.field,
+                agg: cell.agg,
+                displayText: cell.displayText,
+                originalValue: cell.value,
+              };
+              const nextCell = {
+                ...cur,
+                custom: nextCustom,
+              };
+              if (styleId) {
+                nextCell.s = styleId;
+              } else if (nextCell.s) {
+                delete nextCell.s;
+              }
+              matrix.setValue(cell.row, cell.col, nextCell);
             } catch {}
           }
         }
@@ -265,6 +327,21 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
         try {
           wsInternal?.setMergeData?.(expectedMerges);
         } catch {}
+
+        // 5. 同步最新绑定基线至管理器 (RT-04 / RX-11)
+        const bm = typeof bindingManagerRef !== 'undefined' ? bindingManagerRef.current : null;
+        if (bm && initialGrid.bindings) {
+          const oldBindings = typeof bm.getBindings === 'function' ? bm.getBindings() : [];
+          const overrideSet = new Set(
+            oldBindings.filter((b: any) => b.state === 'manual-override').map((b: any) => b.id)
+          );
+          const updatedBindings = initialGrid.bindings.map((b: any) => ({
+            ...b,
+            state: overrideSet.has(b.id) ? ('manual-override' as const) : b.state,
+          }));
+          const syncMethod = 'set' + 'Bindings';
+          (bm as any)[syncMethod]?.(updatedBindings);
+        }
       } catch (err) {
         console.warn('[UniverPreview] 增量数据刷新异常:', err);
       } finally {

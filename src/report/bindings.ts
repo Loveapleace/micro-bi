@@ -22,12 +22,14 @@ export function createSemanticKey(
   rowPath: readonly AxisMemberRef[],
   colPath: readonly AxisMemberRef[],
   metricId: string | undefined,
-  role: BindingRole
+  role: BindingRole,
+  field?: string | undefined
 ): string {
   const r = serializeAxisPath(rowPath);
   const c = serializeAxisPath(colPath);
   const m = metricId || 'NONE';
-  return `${analysisId}::R[${r}]::C[${c}]::M[${m}]::ROLE[${role}]`;
+  const f = field && role === 'dimension-header' ? `::F[${field}]` : '';
+  return `${analysisId}::R[${r}]::C[${c}]::M[${m}]${f}::ROLE[${role}]`;
 }
 
 export function createReportBinding(params: {
@@ -51,7 +53,8 @@ export function createReportBinding(params: {
     rowPath,
     colPath,
     params.metricId,
-    params.role
+    params.role,
+    params.field
   );
 
   return {

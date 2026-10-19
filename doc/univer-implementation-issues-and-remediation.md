@@ -1,18 +1,20 @@
 # MicroBI Univer 集成问题清单与整改方案
 
-整理日期：2026-10-16。主流程接入问题补充日期：2026-10-16。当前版本复验、动态报表模板及测试用例补充日期：2026-10-16。
+整理日期：2026-10-16。主流程接入问题补充日期：2026-10-16。动态模板初次验收日期：2026-10-16。最新整改复验日期：2026-10-19。
 
 适用范围：`micro-bi` 工作区中的报表矩阵、Univer 配置编辑、发布编译与 VTable 展示实现，以及 `dynamic-data-test` 中现有看板配置弹窗、保存与卡片展示主流程。
 
-本文保留原 MBI-01～18 的登记原因与整改要求，并追加当前版本复验及 DYN-01～08 动态模板整改项。**最新结论以第 9～13 节为准**：原配置弹窗已经出现 Univer，基础加粗可以保存到原卡片 VTable 并在重开时恢复；但人工数值保存、动态行列重建和编辑随成员迁移仍未通过。不能再沿用“主弹窗尚未接入”的历史结论，也不能据此将完整保存、刷新流程标为完成。
+**2026-10-19 合并策略调整**：单元格合并、取消合并及其格式统一跟随配置态 Excel/Univer，正式 VTable 不按相邻同值数据再次自动合并；详见第 16 节。该节为本次新增实施要求，不代表已完成代码修改或验收。
 
-本轮实际执行库 `npm test`（139 项通过）、宿主构建、20 项动态专项诊断（8 项通过、12 项失败）及原看板主入口浏览器回归。新增了诊断脚本和 `doc/verification/` 证据，未修改业务源码。本文的模板类型、编译流程和实现步骤是待实施设计，不能当作当前已有 API。
+本文保留原 MBI-01～18、DYN-01～08 的登记原因与整改要求。**最新整体复验见第 14 节（2026-10-19），展示态合并格空白的根因补证见第 15 节**：当前提交 `82f107c` 已让上一轮 20 项动态专项全部通过，但新增 19 项边界检查仍有 16 项失败，原主配置弹窗仍存在人工值提交回退、真实工作表容量不扩展和保存后 VTable 不随源数据更新等问题。不能据此将完整保存、动态刷新流程标为完成。
+
+2026-10-19 实际执行库 `npm test`（139 项通过）、宿主构建、原 20 项专项（全部通过）、新增 19 项边界专项（3 项通过、16 项失败）及原看板浏览器回归。证据按日期保存在 `doc/verification/`，不覆盖 10 月 16 日结果。新增测试脚本与文档，未保留业务源码修改；本地演示数据在临时变更验证后已经按原始 SHA-256 恢复。本文 v2 模板类型和实施步骤仍是设计要求，不能当作当前已有 API。
 
 **本次明确的交付要求：Univer 必须接入现有看板“配置／新建”弹窗，替换其中的 HTML 预览，保留现有字段、维度与指标配置区域；保存后在同一看板的表格视图中由 VTable 展示用户编辑结果。独立报表工作区或验收页只能用于辅助测试，不能替代这条主流程。**
 
 设计依据：[配置态 Univer 编辑与 VTable 报表展示集成方案](C:/Users/And19/Desktop/web/micro-bi/doc/univer-preview-vtable-report-design.md)。
 
-## 1. 历史检查结论与证据范围（最新复验见第 9 节）
+## 1. 历史检查结论与证据范围（最新复验见第 14 节）
 
 原检查时，新增模块已经覆盖报表类型、矩阵生成、编辑容器、绑定管理、编译器和展示适配器，但“加载数据 → 编辑 → 保存 → 正式展示 → 重新编辑”的完整流程仍有阻断问题。以下描述保留当时证据，部分代码已经更新。
 
@@ -37,7 +39,7 @@
 - 独立入口显示“未检测到可用数据集、已探查 0 个字段”；现有主页面则显示已注册 4 个数据源。
 - 独立编辑器工具栏短暂出现后画布为空白，检查时未发现 canvas；控制台出现 React 同步卸载 root 警告。样式加载、实例初始化和销毁需要联合整改，不能仅凭该警告认定全部空白原因已经定位完毕。
 
-原清单登记 **18 项问题：14 项 P1，4 项 P2**。本轮追加 **8 项 P1 动态模板整改项**，当前共 **26 项：22 项 P1、4 项 P2**。原 18 项的阶段性复验状态见 9.3，新增项见 10.1；关联编号表示依赖，不将同一测试失败重复统计成多个新问题。
+原清单登记 **18 项问题：14 项 P1，4 项 P2**。2026-10-16 追加 **8 项 P1 动态模板整改项**，共 **26 项：22 项 P1、4 项 P2**。原登记及首次复验保留在 9.3、10.1；最新状态见第 14 节。本次 RT 编号是这些问题的复验细项，不另行增加累计问题数量。
 
 - P1：影响数据正确性、编辑内容保存、配置生效或可重复安装，需要在功能验收前修复。
 - P2：影响已承诺的透视、布局、可见性或维度身份行为，需要在本轮完整交付前修复。
@@ -45,7 +47,7 @@
 
 ## 2. 原问题登记清单
 
-下表保留最初登记状态以追踪整改来源，不能作为当前版本是否修复的判断；当前状态见 9.3。动态模板的 8 项追加清单见 10.1。
+下表保留最初登记状态以追踪整改来源，不能作为当前版本是否修复的判断；最新状态见第 14 节。动态模板的 8 项追加清单见 10.1。
 
 | 编号 | 级别 | 问题 | 主要影响 | 原登记证据 | 原登记状态 |
 | --- | --- | --- | --- | --- | --- |
@@ -70,7 +72,7 @@
 
 ## 3. 逐项整改方案
 
-本节的“现象与原因”保留原缺陷描述；用户已修改部分实现，当前仍需完成的内容以第 9 节复验和第 10～13 节动态专项为准。
+本节的“现象与原因”保留原缺陷描述；用户已修改部分实现，最新复验状态以第 14 节为准，实施要求同时参照第 11～13 节。
 
 ### MBI-01：已保存快照没有回填
 
@@ -825,7 +827,7 @@ npm run build
 
 本轮未执行业务代码整改。已经执行的测试、阶段性通过项和仍未通过项记录在下文，不以少量样式保存成功代替完整功能验收。
 
-## 9. 当前版本功能复验记录（2026-10-16）
+## 9. 首次动态模板功能复验记录（2026-10-16，历史结果）
 
 ### 9.1 执行环境、命令与证据边界
 
@@ -923,7 +925,7 @@ DT-02、05、06 的通过只说明基础语义身份与部分元数据迁移有�
 - [原弹窗横向透视预览](C:/Users/And19/Desktop/web/micro-bi/doc/verification/main-pivot-horizontal-2026-10-16.jpg)。
 - [切换纵向后出现结构混杂](C:/Users/And19/Desktop/web/micro-bi/doc/verification/main-pivot-direction-change-2026-10-16.jpg)。
 
-## 10. 动态报表模板追加整改清单
+## 10. 动态报表模板追加整改清单（2026-10-16 登记，最新状态见第 14 节）
 
 目标是让用户在现有 Univer 预览完成的编辑，能够根据新数据重新定位、继承和计算，并由现有 VTable 展示最新结果。**保存的对象必须包含可重放的模板意图；工作簿快照用于恢复编辑，PublishedReport 用于展示和缓存。** 单独保存快照或固定坐标的覆盖不足以实现动态报表。
 
@@ -940,7 +942,7 @@ DT-02、05、06 的通过只说明基础语义身份与部分元数据迁移有�
 | DYN-07 | 缺少数据/结构版本与异步竞态控制；保存等待契约错误 | 分离配置、数据、schema、编辑序号；提交计算屏障；旧任务丢弃；发布原子提交；实例生命周期隔离 | MBI-02、09、18；UI-07、08；E-19～23 |
 | DYN-08 | 发布模型与 VTable 消费存在差异：快照旧文本、合并标签丢失 | 规范化当前值/格式文本/合并主格/行列状态；在 VTable 对照实际发布，不静默忽略支持范围内能力 | MBI-11、12、16；DT-20；UI-04；E-24～27 |
 
-### 10.2 当前实现的直接证据
+### 10.2 登记时实现的直接证据（历史状态）
 
 - `src/univer/UniverPreview.tsx`：刷新 effect 只遍历新 `cells`，通过旧绑定的 `row/column` 查找覆盖并调用 `setValue`；没有按语义迁移样式，也没有清理旧行列及更新合并区域。`revision` 属性尚未承担版本控制。
 - `src/report/refresh.ts`：可以重建矩阵和匹配覆盖 ID，但没有接入实际编辑器；缺失成员的覆盖只产生“归档”诊断，没有保存到任何归档容器；返回的新矩阵不等于已经应用人工覆盖的最终工作簿。
@@ -1037,7 +1039,8 @@ interface SavedReportBundleV2 {
 | 手工备注、标题、额外行列 | 独立自由内容块，或 `afterGroup(A)` / `beforeGrandTotal` 等 LayoutRule | 自动区域扩展时按锚点移动；锚点消失进入孤立编辑，不占到其他成员上 |
 | 插入/删除/移动、列宽行高、隐藏、冻结 | 受管区保存语义布局规则，自由区保存常规工作表操作 | 业务数据按规则重新排布；冻结范围重新解析并夹在有效边界内 |
 | 排序、过滤 | 分析排序/过滤写入模板配置，单次查看状态另存 session | 刷新后先重算全量事实，再排序过滤，再布局；新增成员按相同规则进入 |
-| 合并 | 自动分组/透视合并由基础矩阵生成；手工合并保存语义范围或自由区范围 | 重建时重新解析；跨不同受管区、跨受管/自由区的危险合并必须报冲突 |
+| 合并 | 首次选用模板可提供配置态可见的初始合并；最终按 Excel/Univer 编辑保存语义范围或自由区范围 | 按保存规则重新解析，VTable 不再自动推断；跨不同受管区、跨受管/自由区的危险合并必须报冲突 |
+| 取消合并 | 保存解除操作及作用范围，移除或抑制对应的初始合并规则 | 刷新后保持解除；再次合并及撤销重做按最新有效编辑顺序生效 |
 | 多工作表、命名区域、批注、验证与保护 | 中性资源 + 稳定 sheetId/nameId/target selector | 工作表重命名不破坏引用；不存在的资源进入诊断，展示交互按明确能力实现 |
 
 规则优先级固定为：基础主题 → 分析区域 → 指标/成员集合 → 单格例外；同层按持久化的优先级与 editId 确定顺序，避免刷新顺序影响样式。条件规则按自身优先级及停止条件合成，不反写为丢失 predicate 的静态颜色。
@@ -1290,6 +1293,450 @@ ManualOverride 至少记录 `target、baseValueHash、baseDataRevision、value/f
 4. 使用真实浏览器直接驱动原看板主流程，通过 E-12、17～23、25、28～30，记录版本及编辑前后画面。辅助页可复用 fixture，但不能替代原配置入口。
 5. 同一模板在编辑器与纯编译路径产出的 publication，按业务身份逐格比较 v、formula 结果、displayText、style、合并、行列状态与对象；忽略 createdAt 等非业务差异。通过后再验证 VTable 实际消费。
 
-**完成标准**：基础测试、全部动态断言、原主流程和展示依赖隔离均通过，才可宣称“数据增删、排序、分组及透视列变化后，Univer 编辑配置能够正确保留并在 VTable 生效”。当前版本尚未达到该标准，本轮交付的是已执行的失败证据、可复跑诊断和可逐步落地的整改设计。
+**完成标准**：基础测试、全部动态断言、原主流程和展示依赖隔离均通过，才可宣称“数据增删、排序、分组及透视列变化后，Univer 编辑配置能够正确保留并在 VTable 生效”。截至 2026-10-19 仍未达到该标准，最新验证与继续整改要求如下。
+
+## 14. 整改后复验与继续整改（2026-10-19，最新结论）
+
+### 14.1 被测版本、执行结果及证据
+
+被测库提交为 `82f107cc23dfbd45ebd8aea18620ad37f774382a`。开始验证时库工作区干净；本轮仅新增验证脚本、证据并更新本文。库构建完成后才运行宿主构建，没有并行清理 `dist`。运行环境 Node.js `v22.22.0`、Univer `1.0.4`。
+
+| 验证项 | 实际结果 | 结论范围 |
+| --- | --- | --- |
+| `npm test` | 139 项通过，0 失败、0 跳过 | ESM/CJS 构建与现有单测通过 |
+| 宿主 `npm run build` | 通过 | 打包仍提示大 chunk；没有完成展示依赖隔离验收 |
+| 原 DT-01～20 | **20 通过，0 失败** | 上一轮的 12 个失败断言已修复，不再按旧结果判定 |
+| 新增 RX-01～19 | **3 通过，16 失败** | 验证目标编辑是否只属于目标成员、连续刷新、真实尺寸、排序与事件等边界 |
+| 原主看板浏览器 BR-01～09 | 2 个样例通过，7 个失败 | 人工提交、保存展示、透视扩容、真实源数据变化和控制台异常仍未通过 |
+
+本轮可复跑命令：
+
+```powershell
+# micro-bi
+npm test
+node scripts/verify-dynamic-report-template.mjs doc/verification/dynamic-report-template-2026-10-19.json
+node scripts/verify-dynamic-report-regression.mjs
+
+# 库构建结束后，再在 dynamic-data-test 运行
+npm run build
+```
+
+原脚本和原断言没有修改。新增脚本因已确认的失败断言返回退出码 1，不是依赖缺失或语法错误；最终 JSON 中失败均为 `AssertionError`。
+
+证据文件：
+
+- [本轮版本、构建、测试汇总及源码哈希](C:/Users/And19/Desktop/web/micro-bi/doc/verification/retest-summary-2026-10-19.json)。
+- [原 20 项复跑结果](C:/Users/And19/Desktop/web/micro-bi/doc/verification/dynamic-report-template-2026-10-19.json)。
+- [新增边界验证脚本](C:/Users/And19/Desktop/web/micro-bi/scripts/verify-dynamic-report-regression.mjs)、[19 项详细结果](C:/Users/And19/Desktop/web/micro-bi/doc/verification/dynamic-report-regression-2026-10-19.json)。
+- [原看板浏览器复验记录](C:/Users/And19/Desktop/web/micro-bi/doc/verification/main-modal-browser-2026-10-19.json)。
+- [真实演示源变更及还原记录](C:/Users/And19/Desktop/web/micro-bi/doc/verification/source-refresh-2026-10-19.json)。
+
+新增脚本继续使用真实已安装 SDK、生产编译器与 VTable 输入适配器，并从当前源码提取真实刷新/bindings effect；不另写一套刷新算法。大部分样式用例预留工作表空间以隔离样式问题，RX-09、10 则取消预留、使用与真实编辑器相同的初始尺寸。脚本不挂载 React，也不验证任意 Excel 公式或 Canvas 像素；浏览器记录补充真实主入口，不能把脚本结果宣传为全部端到端通过。
+
+### 14.2 原动态整改项的最新状态
+
+| 原编号 | 最新复验状态 | 已改善和剩余缺口 |
+| --- | --- | --- |
+| DYN-01 | 部分修复，未关闭 | `id` 明细身份与分组指标排序通过；业务字段主键、类型化身份、表头唯一性、明细与透视排序仍失败 |
+| DYN-02 | 部分修复，未关闭 | 根 Facade 事件已接通，原 DT-18 通过；主面板输入提交丢失、刷新后旧绑定和批量输入仍失败 |
+| DYN-03 | 部分修复，未关闭 | 能迁移目标格样式、清除部分尾部旧行列并重建合并；旧坐标样式未清、真实容量未扩、自由内容仍被覆盖 |
+| DYN-04 | 部分修复，未关闭 | 覆盖可归档/恢复，首次源值冲突有诊断；未解决冲突会在下一次刷新自行消失，且尚未接入主面板完整流程 |
+| DYN-05 | 尚未完整实现 | 当前仍主要保存快照、格样式和覆盖，没有完整的样式作用域、条件/公式规则、手工行列锚点及能力重放协议 |
+| DYN-06 | 未通过 | 真实源数据变成 2250，配置预览可重算为 2250，已保存 VTable 仍为 1250；没有自动重编译 publication |
+| DYN-07 | 未通过 | 保存仍出现公式等待超时并继续成功，重复开关仍有渲染控制器依赖异常；版本化事务和竞态验收未完成 |
+| DYN-08 | 部分修复，未关闭 | 新快照的旧 displayText 用例已通过；布局变化后 custom role 过期，VTable 分组合并标签仍为空 |
+
+原 MBI-04 的“根 API 没有正确监听”原因已修复，不能继续沿用历史描述；后续事件缺陷按 RT-01、04、07 追踪。原 MBI-02、09、16、18 的完整验收仍未通过。其余 MBI 项未在本轮完成全部关闭标准，保持已有证据边界。
+
+### 14.3 新增边界断言的实际输出
+
+RX 使用四条事实数据：A 的两条数量为 10、20，B 为 100、40，因此 A=30、B=140。它与 6.2 的五条固定数值样例分开，不混用总计期望。
+
+| 编号 | 本轮结果 | 应有结果 / 实际输出 |
+| --- | --- | --- |
+| RX-01 | 失败 | A 加粗后重排，应 A 加粗、B 不加粗；实际二者均加粗 |
+| RX-02 | 失败 | 两次排序并新增 C 后仍只应 A 加粗；实际 A、B、C 全部加粗 |
+| RX-03 | 失败 | 横向指标新增前置月份后仅总计加粗；实际十一月也继承原总计格加粗 |
+| RX-04 | 失败 | 纵向指标执行同一变化，实际同样污染十一月 |
+| RX-05 | 失败 | 明细按 qty 降序，引擎首行 b1，报表矩阵首行仍 a1 |
+| RX-06 | 失败 | 透视列月份降序应十一月在前，实际仍十月在前 |
+| RX-07 | 失败 | 使用宿主已有的 device_code 作为业务身份，重排后仍退回 `__row__=0/1` |
+| RX-08 | 失败 | id=数字 1 与 id=字符串 1 应有两个身份，实际只有一个 |
+| RX-09 | 失败 | 新增组后实际工作表至少需 5 行，仍只有 4 行 |
+| RX-10 | 失败 | 新增透视月份后至少需 9 列，仍只有 7 列 |
+| RX-11 | 失败 | 新增 A 导致 B 换位后编辑 B，应捕获 B 的 metric-value 身份，实际捕获 grand-total 身份 |
+| RX-12 | 失败 | 增加第二层分组后第 2 列表头应为 dimension-header，发布仍为旧 metric-header |
+| RX-13 | 失败 | 自动区下方已有手工备注，新增组应迁移备注或报冲突；实际备注被总计覆盖且未阻断 |
+| RX-14 | 失败 | 两行批量写入 1000、2000，应捕获两个覆盖；实际只捕获第一个身份，值还是 undefined |
+| RX-15 | 通过 | 仅值变化、拓扑不变时，A 的单格加粗不污染 B，VTable 输入显示新聚合值 60 |
+| RX-16 | 通过 | 删除 B 后发布给 VTable 为 3 行，总计 30，无尾部旧数据 |
+| RX-17 | 失败 | 人工 999 的源值冲突未解决，再次相同刷新仍应提示；实际诊断消失但 999 继续生效 |
+| RX-18 | 通过 | null 基础值变为 5 时可以检测覆盖冲突 |
+| RX-19 | 失败 | workshop、line 两个维度表头应有两个独立 ID，实际共用一个 ID |
+
+其中 RX-01～04 直接检查发布后 VTable 列样式回调，能够说明错误样式会被展示层消费；不是仅观察编辑快照里还残留一个 styleId。RX-11 同时执行当前 bindings 同步 effect 和刷新 effect，复现主面板优先使用旧持久化 bindings 的行为。
+
+### 14.4 主流程与真实数据变化的浏览器记录
+
+| 编号 | 实际行为 | 结果 |
+| --- | --- | --- |
+| BR-01 | 原设备台账配置中出现工具栏、页签、画布及 12 条数据源记录 | 样例通过 |
+| BR-02 | C2 输入 987654，输入态可见该数；按 Enter 后立即回到 1250 | 失败，保存前就已丢失人工值 |
+| BR-03 | 点击原保存按钮，返回原卡片 VTable 仍显示 1250 | 失败，人工编辑未发布 |
+| BR-04 | Univer 分组预览可见车间合并标签，VTable 对应合并区为空 | 失败 |
+| BR-05 | 同一原透视弹窗由横向改纵向，表头合并有所改善，但画布仍只有 7 行，输入 D9 后仍停在 D4 | 失败，新增业务行不可访问 |
+| BR-06 | 已保存报表的原始 running_hours 从 1250 改成 2250，页面重新加载后卡片仍为 1250；原配置中触发草稿重算后可见 2250 | 失败，publication 未随源数据重编译 |
+| BR-07 | 取消透视方向及表头测试草稿后，原已保存配置不变 | 本次样例通过 |
+| BR-08 | 保存出现 `Calculation end timeout`，流程仍结束并关闭弹窗 | 失败 |
+| BR-09 | 多次保存、开关弹窗后捕获 `SheetsScrollRenderController2` 依赖缺失 | 失败，不能认定生命周期已稳定 |
+
+主透视预设的纯矩阵对照为：横向 7 行×30 列，纵向 10 行×17 列。浏览器切换后没有扩成 10 行，与 RX-09、10 暴露的容量缺口一致；不能因为工作簿 cellData 或 publication 可写出更大坐标，就认为当前画布已经可访问这些数据。
+
+BR-06 通过本地文件变更及页面正常重载触发真实数据更新，没有通过浏览器隐藏 API 注入状态：仅临时修改 `dynamic-data-test/src/mockData.ts` 中 `CNC-201.running_hours` 的一处值。为确认新源已被读取，在原配置中修改一个草稿表头触发重算，看到 2250 后取消，没有重新保存模板。最后按原始字节恢复源文件，SHA-256 为 `7ae500177b538d96817ecb646f80804965e0ed2c85f21a7a11d7aa13f59ba125`，备份文件已清理。这不是一次生产数据修改，也不把 HMR 本身当成运行时数据订阅已经实现的证据。
+
+截图：
+
+- [987654 输入态](C:/Users/And19/Desktop/web/micro-bi/doc/verification/main-input-before-commit-2026-10-19.jpg)、[提交后回到 1250](C:/Users/And19/Desktop/web/micro-bi/doc/verification/main-input-after-commit-2026-10-19.jpg)、[原 VTable 保存结果](C:/Users/And19/Desktop/web/micro-bi/doc/verification/main-vtable-after-save-2026-10-19.jpg)。
+- [横向透视](C:/Users/And19/Desktop/web/micro-bi/doc/verification/main-pivot-horizontal-2026-10-19.jpg)、[纵向切换后的 7 行画布](C:/Users/And19/Desktop/web/micro-bi/doc/verification/main-pivot-vertical-2026-10-19.jpg)。
+- [新源 2250 的配置预览](C:/Users/And19/Desktop/web/micro-bi/doc/verification/main-editor-source-changed-2026-10-19.jpg)、[源更新后仍为 1250 的 VTable](C:/Users/And19/Desktop/web/micro-bi/doc/verification/main-vtable-source-changed-2026-10-19.jpg)。
+
+### 14.5 继续整改细项、代码落点与验收要求
+
+RT-01～13 是原 MBI/DYN 的细化触发条件及关闭要求，不另计为 13 项顶层问题。应优先修复主保存与数据更新流程，再完成全部边界；不能只让已存在的 20 项断言通过。
+
+#### RT-01：输入提交后草稿状态互相覆盖（DYN-02，MBI-16）
+
+位置：[ReportConfigPanel.tsx](C:/Users/And19/Desktop/web/micro-bi/src/univer/ReportConfigPanel.tsx:293)、[BiBindingPlugin.ts](C:/Users/And19/Desktop/web/micro-bi/src/univer/BiBindingPlugin.ts:246)。
+
+一次事件先调用 `onManualOverride`，再调用 `onBindingsChange`；两个回调都从同一闭包的 `activeDoc/activeAnalysis` 构造整份新文档。后一个文档没有前一个刚写入的覆盖，可以覆盖它；重新生成 initialGrid 后基础值又写回单元格。BR-02 已确认提交即回退，以上状态写法是明确需要消除的覆盖路径，不能只修保存按钮的等待时长。
+
+- [ ] 将一次编辑的覆盖、bindings、基线和编辑序号作为一个 patch，使用单一 reducer/事务合并到最新草稿；受控、非受控两种模式都不能用旧对象整份替换。
+- [ ] 初始化绑定回调和用户事件使用最新 ref/会话状态，不能永久捕获首次挂载的回调闭包。
+- [ ] 基础数据版本未变时，不因草稿对象变化重复写回整个区域；保存前显式提交当前输入并等待草稿事件完成。
+- [ ] 回归 BR-02、03、E-12：连续编辑三个格、焦点中保存、重开后值与公式均保留，VTable 显示对应结果。
+
+#### RT-02：迁移样式后旧坐标未清理（DYN-03、05）
+
+位置：[UniverPreview.tsx](C:/Users/And19/Desktop/web/micro-bi/src/univer/UniverPreview.tsx:194)。
+
+当前会把旧样式按业务 ID 迁到新目标，但 `setValue` 保留目标格已有样式；当新成员没有对应 styleId 时也没有清空其旧样式。于是 A 到新位置后正确加粗，原 A 位置的 B 也保留加粗，第二次刷新又把错误样式当成 B 的真实编辑继续传播。
+
+- [ ] 先将业务样式还原为按身份的规则/例外，再构建完整目标格；在受管区显式清除旧位置的格式、条件状态与 metadata，然后只重放属于新身份的属性。
+- [ ] 不能只在新目标 `s` 为空时“不做处理”，也不能从已经被污染的格继续无条件采样为新模板意图。
+- [ ] 在迁移/清理前保存自由块，整次应用保持原子性。通过 RX-01～04，必须同时断言目标存在样式和非目标没有样式，并连续刷新至少两次。
+
+#### RT-03：刷新数据没有扩展真实工作表容量（DYN-03，MBI-02）
+
+位置：[UniverPreview.tsx](C:/Users/And19/Desktop/web/micro-bi/src/univer/UniverPreview.tsx:184)。
+
+- [ ] 计算含 anchor、业务区及保留自由内容的目标边界，比较 Facade 的 `getMaxRows()/getMaxColumns()`；写值和合并前先用当前 SDK 类型化行列插入 API 增加容量。
+- [ ] 扩容操作必须标记为程序事务，避免管理器当成人工插入再次移动绑定；数据缩小后可保留容量，但应清理失效内容及重新确定发布范围。
+- [ ] 不以修改 cellData、私有矩阵或 publication 尺寸代替画布容量更新。通过 RX-09、10；原主透视从 7 行变为 10 行后，能够定位 D9/D10 并看到完整总计。
+
+#### RT-04：刷新后绑定及业务元信息仍指向旧布局（DYN-02、03、08）
+
+位置：[ReportConfigPanel.tsx](C:/Users/And19/Desktop/web/micro-bi/src/univer/ReportConfigPanel.tsx:268)、[UniverPreview.tsx](C:/Users/And19/Desktop/web/micro-bi/src/univer/UniverPreview.tsx:219)、[compileReport.ts](C:/Users/And19/Desktop/web/micro-bi/src/univer/compileReport.ts:243)。
+
+主面板优先传入旧文档中非空 bindings；刷新仅更新实际值/样式/合并，没有把新网格绑定同步为文档和管理器的新基线，`custom.role/metricId/field` 也保留原坐标含义。RX-11 中 B 新位置的编辑被登记成了总计覆盖；RX-12 中维度头仍被发布为指标头。
+
+- [ ] 重基生成完整新 bindings 和语义索引，应用数据后同一事务更新管理器与持久化文档；状态和覆盖按 ID 合并，target 使用新 sheet/anchor 坐标。
+- [ ] 新单元格同时更新 role、fieldId/metricId、bindingId 及当前显示值的基线信息，不复用旧物理位置的 custom 对象。
+- [ ] 保留人工移动产生的布局意图再定位，不将 oldGrid 的原始坐标当成真实已移动绑定。通过 RX-11、12；在新增、删除、排序之后再手工编辑目标成员，检查实际覆盖 ID 和 VTable 结果。
+
+#### RT-05：排序只覆盖了部分报表形态（DYN-01）
+
+位置：[groupedProjector.ts](C:/Users/And19/Desktop/web/micro-bi/src/report/groupedProjector.ts:109)、[pivotProjector.ts](C:/Users/And19/Desktop/web/micro-bi/src/report/pivotProjector.ts:104)。
+
+- [ ] 明细返回路径也消费 `config.options.sort`，在按主键建立身份后排序输出；不能只在分组树遍历时排序。
+- [ ] 双轴成员展开消费对应行/列排序配置；当前无条件 `localeCompare` 升序不能覆盖月份降序和指标排序。相同字段同时在双轴时明确按 axisId 定位。
+- [ ] 用现有引擎作为可比场景的结果对照，并增加稳定同值排序。通过 RX-05、06，横/纵指标两种方向共同验证，排序后的覆盖和样式也须通过 RX-01～04、11。
+
+#### RT-06：主键猜测及表头身份仍会碰撞（DYN-01）
+
+位置：[groupedProjector.ts](C:/Users/And19/Desktop/web/micro-bi/src/report/groupedProjector.ts:115)、[bindings.ts](C:/Users/And19/Desktop/web/micro-bi/src/report/bindings.ts)。
+
+- [ ] 在数据集契约中显式配置主键及组合键，支持宿主真实 `device_code/order_code` 等字段；不能只猜 id、_id、key、uuid、pk，再退回行号。
+- [ ] 主键和维度值使用带类型的规范编码，数字 1 与字符串 1、空值与空串不能合并；重复/缺失键明确诊断。
+- [ ] 维度头的 ID 包含 fieldId/axisId 和层级，不能多个表头共用空路径、空 metricId 的相同 key。
+- [ ] 通过 RX-07、08、19，并验证指标/字段改显示名、同名不同父组、组合键与旧文档迁移。
+
+#### RT-07：批量编辑事件只读起点，且值解析错误（DYN-02）
+
+位置：[BiBindingPlugin.ts](C:/Users/And19/Desktop/web/micro-bi/src/univer/BiBindingPlugin.ts:240)。
+
+当前 `params.range + params.value` 分支仅匹配左上角，并把非标量 value 当成单格 `{v,f}` 读取。真实两行 `setValues([[1000],[2000]])` 只产生第一个绑定的 undefined 覆盖。
+
+- [ ] 将当前 SDK 的标量、单格对象、二维数组及稀疏矩阵事件统一转换为逐格 changes，正确处理绝对坐标、范围起点、空值与公式。
+- [ ] 一次批量变化生成一个草稿事务，每个受管格生成正确业务覆盖；mutation 去重及程序来源隔离仍需保留。
+- [ ] 通过 RX-14，并增加多行多列粘贴、清空、多区域编辑和撤销/重做；单格 DT-18 通过不能代替批量验收。
+
+#### RT-08：未解决的覆盖冲突被下一次刷新清除（DYN-04）
+
+位置：[refresh.ts](C:/Users/And19/Desktop/web/micro-bi/src/report/refresh.ts:124)。
+
+人工覆盖没有固定自己的 baseValue 时，首次刷新会用旧 region.baseValues 发现冲突，再把 region.baseValues 更新为新值。第二次相同刷新就比较“新值与新值”，诊断消失，但人工 999 仍在，没有任何用户解决动作。
+
+- [ ] 在人工编辑发生时固定覆盖的原基线，独立维护 `active/conflict/orphaned/resolved` 状态及产生原因；正常刷新不得更新未解决覆盖的原基线或清除冲突。
+- [ ] 仅在用户明确保留覆盖并确认新基线、恢复源值或转换为调整规则时解决冲突；孤立编辑恢复也要重新比较原基线。
+- [ ] 将 `refreshAnalysisRegion` 的结果真正接入主预览和发布流程，存在未解决冲突时不能只给 warning 后仍宣称成功。通过 RX-17，保留 DT-09、10 和 RX-18 的通过行为。
+
+#### RT-09：区域扩张覆盖手工内容且不诊断（DYN-03、05）
+
+位置：[UniverPreview.tsx](C:/Users/And19/Desktop/web/micro-bi/src/univer/UniverPreview.tsx:205)、[refresh.ts](C:/Users/And19/Desktop/web/micro-bi/src/report/refresh.ts:68)。
+
+- [ ] 在计算新区域前登记自由内容块及手工锚点，不仅检测其他 analysis.range，还检测实际自由单元格、手工行列及跨区合并。
+- [ ] 先生成可验证的迁移计划，按锚点移动自由内容或返回阻断冲突；不能先覆盖，再提示用户内容已丢失。
+- [ ] 旧区域差集的清理也必须区分业务与自由内容，使用范围来源标记。通过 RX-13、E-26，新增组、列、总计与删除后再恢复均不能丢备注。
+
+#### RT-10：数据更新没有重编译已保存的 publication（DYN-06、07，MBI-16）
+
+位置：[DashboardCard.tsx](C:/Users/And19/Desktop/web/dynamic-data-test/src/components/DashboardCard.tsx:38)、[App.tsx](C:/Users/And19/Desktop/web/dynamic-data-test/src/App.tsx:98)。
+
+BR-06 将原代码检查升级为真实复现：新数据 2250 能生成新的配置预览，原卡片仍直接消费保存时的 `viewItem.report.publication`，所以页面重载也只恢复旧的 1250。
+
+- [ ] 保存模板意图及数据/schema 版本，订阅数据集变化；普通分析 result 的更新与 report publication 的重新编译都使用同一版本化事实源。当前结果 memo 也需对数据版本变化失效。
+- [ ] `publication` 作为缓存，模板/数据版本不匹配时运行第 11.7 节的纯编译流程，成功后原子替换原卡片输入；失败保留上次结果并标识版本过期。
+- [ ] 不能直接丢弃 report 改用普通 result，从而让编辑配置失效；也不能在展示组件或 Worker 中创建 Univer。默认纯 TS 编译，超出能力时使用独立编译服务或明确诊断。
+- [ ] 用原看板在编辑器关闭时完成值变化、增删成员、排序、分组和透视列变化，断言 VTable 自动更新且旧编辑只作用正确成员；不能要求用户重新保存模板。复跑 BR-06、E-17～19、28。
+
+#### RT-11：VTable 合并区仍丢失主格内容（DYN-08，MBI-11、16）
+
+位置：[gridAdapter.ts](C:/Users/And19/Desktop/web/micro-bi/src/ui/presentation/report/gridAdapter.ts:74)。
+
+本项空白问题已通过只补合并 text 的原卡片 A/B/A 对照确认，详见第 15 节；缺少 text 是根因，未显式传 style 不应被一并认定为根因。
+
+- [ ] 按当前 VTable 合并协议提供主格文本和样式，不能只传 range；验证合并位置与 `showHeader:false`、冻结和工作表坐标一致。
+- [ ] 对分组标签、双轴多层表头、总计和纯标题合并分别保存发布结果并核对真实 Canvas，不能只比较合并数组是否存在。
+- [ ] 同步补齐已承诺的行高、隐藏、格式等消费者；尚未实现的能力保持明确诊断。通过 BR-04、E-24、25，并对 RX-12 的业务元信息作逐格对照。
+
+#### RT-12：公式等待契约仍未修正（DYN-07，MBI-09）
+
+位置：[adapter.ts](C:/Users/And19/Desktop/web/micro-bi/src/univer/adapter.ts:80)。
+
+- [ ] 当前 `onCalculationResultApplied(timeout?: number): Promise<void>` 应等待 Promise 并处理 reject；不要传回调或在 300ms 定时器到期后无条件 resolve 成功。
+- [ ] 区分输入未提交、计算中、结果已应用、无公式空闲；保存必须使用同一编辑序号/数据版本的稳定快照，超时和计算错误阻止发布并保留草稿。
+- [ ] 通过 BR-08、E-20、22，真实慢公式、错误公式和空闲工作簿分别验证。当前浏览器异常只证明等待不可靠，不据此声称已经完成任意公式正确性验证。
+
+#### RT-13：重复开关仍触发滚动渲染控制器依赖异常（DYN-07，MBI-18）
+
+位置：[UniverPreview.tsx](C:/Users/And19/Desktop/web/micro-bi/src/univer/UniverPreview.tsx:94)、[adapter.ts](C:/Users/And19/Desktop/web/micro-bi/src/univer/adapter.ts)。
+
+- [ ] 以本轮控制台栈定位旧选择/滚动事件、插件订阅、异步回调和实例释放的先后顺序；根因尚未完全定位，不能只因仍有 canvas 就忽略异常。
+- [ ] 将文档/session token 与全部异步任务、插件销毁和编辑事件关联；卸载后禁止旧任务访问已销毁服务，严格释放监听器，避免全局程序写入标记影响其他会话。
+- [ ] 通过 BR-09、E-19、21、29：StrictMode 下交替打开两个原看板、保存、取消、滚动和改尺寸，多轮验证无依赖缺失、空白或旧任务回写。
+
+### 14.6 下一轮关闭顺序与证据要求
+
+1. 优先解决 RT-01、04、07：让原配置输入真正保留、事件绑定正确，再验证保存/重开，不先扩展更多独立演示功能。
+2. 解决 RT-02、03、09：构建带容量、边界和自由块迁移的区域事务。同时验证“应保留”和“不得外溢/残留”，连续多次变化不能只跑一次。
+3. 解决 RT-05、06、08：稳定身份、三类布局排序和冲突状态，接入实际模板流程，而非只让辅助纯函数返回正确元数据。
+4. 解决 RT-10～13：打通无需重开保存的数据更新、VTable 消费、计算屏障与生命周期；以原卡片浏览器结果关闭问题。
+5. 原 139 项、DT-01～20 继续通过；新增 RX-01～19 全部通过且 BR-02～06、08、09 有修复后证据。第 13 节未覆盖的异步、公式、条件规则、迁移与展示隔离用例仍需补齐。
+
+**本次结论**：基础修复和原 20 项专项已通过，但动态编辑保留与正式 VTable 生效的完整要求仍未通过。尤其不能把“样式找到了新位置”“发布 JSON 尺寸正确”或“Facade 单格事件有回调”分别当作无样式污染、画布已扩容或原面板状态已正确保存的替代证据。
+
+## 15. 展示态合并单元格空白专项定位（2026-10-19，RT-11 补证）
+
+### 15.1 结论：合并文本漏传，不是旧表格功能参数互相覆盖
+
+用户截图中，普通运行状态和数值能显示，第一列车间名称及最后一行“总计”消失；这些消失的内容正好属于纵向、横向合并区域。工具栏、工作表页签和普通单元格仍可见。
+
+本次通过原卡片的参数对照确认：**`gridAdapter.ts` 给 VTable 的 `customMergeCell` 只传了 range，没有传 text。当前安装的 VTable 在合并绘制路径中会直接用 `customMerge.text` 替换原始单元格值；text 为 undefined，就绘制成空白。**
+
+只临时补充该字段，车间名称和“总计”立即恢复；恢复原代码后，相同区域再次空白。没有修改或重新保存报表数据，没有更改字体、颜色、表头、冻结、筛选、总计和旧自动合并等选项。因此，这张截图的空白已定位为合并渲染输入不完整，不应继续按旧 table 参数冲突排查。
+
+本项仍归属于 DYN-08 / RT-11，未增加顶层问题数量。本轮完成定位和修复路径验证，临时源码已恢复，正式修复尚未提交。
+
+### 15.2 丢失发生在哪一层
+
+| 环节 | 核查结果 |
+| --- | --- |
+| BI 矩阵、PublishedSheet | 同型分组样例中存在车间名称、“总计”和正确数值 |
+| VTable records | 主格的 `col_0` 仍有名称和“总计”；MC-01 通过，不是适配 records 时统一丢了第一列 |
+| `customMergeCell` | 只有 `range`，缺少主格的 `text` |
+| VTable 初始创建合并格 | `createComplexColumn` 读取 records 后，又无条件赋值 `value = customMergeText` |
+| VTable 更新合并格 | `updateCell` 同样使用 `customMergeText` 替换值，滚动、重绘或更新不能依赖原 records 自动兜底 |
+
+应用位置：[gridAdapter.ts:74](C:/Users/And19/Desktop/web/micro-bi/src/ui/presentation/report/gridAdapter.ts:74)。依赖实现已核对本地安装的 `@visactor/vtable`，版本记录在专项 JSON 中，相关文件为：
+
+- `node_modules/@visactor/vtable/es/scenegraph/group-creater/column-helper.js` 的 `createComplexColumn`。
+- `node_modules/@visactor/vtable/es/scenegraph/group-creater/cell-helper.js` 的 `updateCell`。
+- `node_modules/@visactor/vtable/es/ts-types/table-engine.d.ts` 的 `CustomMerge`，包含 `range`、可选 `text` 和可选 `style`。
+
+这里的关键是 Canvas 绘制行为：数据读取接口可能仍返回原始 records 值，所以“records 中有字”“只检查 getCellValue”或“合并数组存在”都不足以验证画面没有空白。原测试只断言普通值和布局范围，没有对合并显示文本作断言，因此没有覆盖这个问题。
+
+### 15.3 与原 VTable 属性的关系
+
+[DynamicDataView.tsx:505](C:/Users/And19/Desktop/web/micro-bi/src/ui/presentation/DynamicDataView.tsx:505) 有互斥的两个表格分支：
+
+| 分支 | 消费的内容 | 与本次空白的关系 |
+| --- | --- | --- |
+| 有 `publishedReport` | `ReportTableView` 消费 publication、height 和外层 tableStyle | 用户配置保存后使用的分支，合并来自 PublishedSheet |
+| 没有 `publishedReport` | 原 `VTableView` 消费 result、tableFeatures、vtableOption、mergeCells、showSummaryRow 等 | 旧自动合并、列筛选、数据条和汇总功能配置没有直接传入报表渲染分支 |
+
+[ReportTableView.tsx:100](C:/Users/And19/Desktop/web/micro-bi/src/ui/presentation/report/ReportTableView.tsx:100) 创建的是新的 ListTable，合并来自 `adaptPublishedSheetToVTable`。这次没有证据表明两个分支在同一实例里叠加了合并规则。
+
+`showHeader:false` 应保留：报表中的第一行本来就是真实单元格表头。改成 true 会额外生成 VTable 表头并改变坐标语义，不能修复合并文本缺失。直接禁用合并虽然可能显示重复的底层文字，却会破坏分组和双轴表头结构，也不作为整改方案。
+
+样式同样需要正确消费，但**不是这次空白的必要原因**。当前 VTable 未传 customMerge.style 时，可以使用合并主格位置的列样式回调；本次仅补 text 就恢复了文字，不能把“style 未显式传入”也直接认定为根因。
+
+### 15.4 原卡片 A/B/A 对照证据
+
+| 阶段 | 唯一变动 | 原卡片表现 |
+| --- | --- | --- |
+| A：原代码 | 合并项只含 range | 第一列车间名称、合并总计标签空白 |
+| B：临时诊断 | 新增 `text: records[m.startRow]?.[colKey] ?? ''` | 车间名称和“总计”恢复，原数值保留 |
+| A：还原代码 | 按原始字节恢复适配器并重新加载 | 车间名称、合并总计标签再次空白 |
+
+对照只改变合并文本的传入，不改变 records、range、showHeader 或旧表格功能选项。测试使用同一原主看板和原保存结果，没有用独立演示页替代。原始适配器 SHA-256 已恢复为 `47ea2c06195f92c725eedd5a92f9e8b354f869dd6860dc7de9da73c168692752`，临时备份已清理。
+
+证据：
+
+- [用户提供的空白截图存档](C:/Users/And19/Desktop/web/micro-bi/doc/verification/merged-cells-user-example-2026-10-19.png)。
+- [原卡片空白](C:/Users/And19/Desktop/web/micro-bi/doc/verification/merged-cells-before-2026-10-19.jpg)。
+- [仅补 text 后内容恢复](C:/Users/And19/Desktop/web/micro-bi/doc/verification/merged-cells-text-probe-full-card-2026-10-19.jpg)。
+- [恢复原源码后空白重现](C:/Users/And19/Desktop/web/micro-bi/doc/verification/merged-cells-restored-source-2026-10-19.jpg)。
+- [参数对照及源码恢复记录](C:/Users/And19/Desktop/web/micro-bi/doc/verification/merge-text-probe-2026-10-19.json)。
+
+### 15.5 正式修复要求
+
+修改 `src/ui/presentation/report/gridAdapter.ts` 的合并映射，读取合并左上角主格已经计算好的展示值，并明确传给 VTable。建议基于现有 records，复用其 displayText 优先级：
+
+```ts
+const customMergeCell = (sheet.merges || []).map((m) => {
+  const value = records[m.startRow]?.[`col_${m.startCol}`];
+
+  return {
+    range: {
+      start: { col: m.startCol, row: m.startRow },
+      end: { col: m.endCol, row: m.endRow },
+    },
+    text: value === null || value === undefined ? '' : String(value),
+  };
+});
+```
+
+- [ ] 将本地 `VTableReportGridConfig.customMergeCell` 中的 `text: string` 定为必填，尽量去掉消费处的 `as any`，避免字段继续被遗漏。
+- [ ] 传入合并主格的最终展示文本，不直接使用 raw v；百分比、日期、精度等已有 displayText 应保留。
+- [ ] 不使用 `value || ''` 或 truthy 判断，避免 0、false 变成空白；按 VTable 的 text 字符串协议转换。
+- [ ] 如果 displayText 明确是空串，应尊重该格式结果；不要扫描合并内部找第一个非空值，也不要擅自退回未格式化原值。
+- [ ] 样式以主格语义为准；现有列样式兜底可保留，若显式提供 customMerge.style，需验证与主格样式一致。
+- [ ] 增加合并范围和主格坐标校验；越界或倒置有明确诊断，不能把非法范围静默变成空白。
+- [ ] 同时覆盖初始渲染、更新、滚动、冻结、工作表切换和数据刷新，不只看第一次出现时是否有字。
+
+上述是可落地的最小文本修复，不替代第 14 节的样式迁移、区域扩容、绑定及动态 publication 等其他整改。
+
+### 15.6 专项断言与关闭门槛
+
+新增 [verify-report-merge-text.mjs](C:/Users/And19/Desktop/web/micro-bi/scripts/verify-report-merge-text.mjs)，直接调用生产矩阵、编译器和适配器；[当前结果 JSON](C:/Users/And19/Desktop/web/micro-bi/doc/verification/report-merge-text-2026-10-19.json) 为 **8 项中 3 项通过、5 项失败**，退出码 1 对应已确认的协议断言失败。该脚本验证适配器输入协议，真实 Canvas 的因果证据来自上面的主卡片对照，两者不混淆。
+
+```powershell
+# 在 micro-bi 已构建后执行
+node scripts/verify-report-merge-text.mjs
+```
+
+| 编号 | 场景 | 当前结果 |
+| --- | --- | --- |
+| MC-01 | 发布模型和 records 保留车间名称及总计 | 通过，证明样例上游数据没有丢失 |
+| MC-02 | 纵向分组合并传入主格 text | 失败，实际 undefined |
+| MC-03 | 横向“总计”合并传入 text | 失败，实际 undefined |
+| MC-04 | 双轴透视合并表头传入各自主格文本 | 失败，实际 undefined |
+| MC-05 | 数字 0 的合并文本为字符串 "0" | 失败，实际 undefined |
+| MC-06 | false 的合并文本为字符串 "false" | 失败，实际 undefined |
+| MC-07 | 有意格式化空串不回退到原始非空值 | 通过，需在修复后继续保持 |
+| MC-08 | 普通数值及总量仍在 records 中 | 通过，1250 与合计 6120 正确 |
+
+关闭本项需要：8 项全部通过，并在原看板确认分组合并、横/纵指标透视表头、总计和手工标题文字完整；再进行滚动、resize、冻结和页签切换，确认后续更新仍有文本。数据增删、排序或透视结构变化后，应使用新主格重新生成合并文本，不缓存旧坐标文本。
+
+## 16. 自动合并策略调整：跟随 Excel/Univer（2026-10-19）
+
+### 16.1 新的产品规则
+
+**工作表怎么合并，VTable 就怎么显示；工作表已取消合并，VTable 及数据刷新都不能自行合回去。** 合并范围、主格显示文本、字体、边框、对齐和数字格式都随工作表保存，不再由展示端的相邻同值判断决定。
+
+这项调整细化 DYN-03、05、08 和 RT-11，不增加顶层问题数量。分组和透视仍由 BI 引擎计算；是否把相同车间名称视觉合并属于版式，解除合并不改变业务分组或总计。
+
+本次开始时，`gridAdapter.ts`、`ReportTableView.tsx` 已存在新的未提交代码修改，包括合并 text 处理。本轮只调整方案，不覆盖这些代码，也不将第 15 节旧版本测试结果当作新修改的复验结果。
+
+### 16.2 当前找到的自动合并来源
+
+旧 [VTableView.tsx](C:/Users/And19/Desktop/web/micro-bi/src/ui/presentation/table/VTableView.tsx:378) 在未传 `mergeCells` 时默认开启自动合并；构建列定义时，根据 `features.mergeCells`、`autoMergeCells` 和列类型，为相邻同值的非数值维度生成 `mergeCell` 函数。公开开关位于 [presentation/types.ts](C:/Users/And19/Desktop/web/micro-bi/src/ui/presentation/types.ts:107) 的 `mergeCells` 和 `TableFeatureConfig.mergeCells`。
+
+本轮代码检索确认了上述配置及默认行为，未找到一个独立的可点击“自动合并”设置控件；不能把推测的 UI 入口写成已经存在。若宿主在表格设置中另行暴露了这个开关，报表模式下应移除可编辑开关，必要时只读显示“单元格合并：跟随工作表”，通过原配置按钮进入 Excel/Univer 修改。
+
+当前 `publishedReport` 分支已经与旧 `VTableView` 分开；新策略需要继续约束配置迁移、数据刷新、合并解除记录及高级选项，不能仅因为分支隔离就认为这些要求已经实现。
+
+### 16.3 各阶段的唯一依据
+
+| 阶段 | 应采用的合并依据 | 必须避免的行为 |
+| --- | --- | --- |
+| 普通新建工作簿 | 无合并，除非用户在 Excel 中操作 | 因相邻值相同而自动合并 |
+| 首次明确选用分组/透视模板 | 可将初始合并写入配置画布一次，作为可编辑布局 | 只在展示端生成用户没见过的合并 |
+| 配置编辑与保存 | 当前工作表的合并/解除结果及实际单元格格式 | 每次 render 都用 initialGrid.merges 覆盖用户操作 |
+| 数据增删、排序、分组或透视列改变 | 重放已保存的版式意图，重新解析语义坐标 | 根据新数据再次套用默认同值合并，恢复用户已解除的范围 |
+| 正式发布 | 当前稳定工作表的 mergeData → PublishedSheet.merges | 把基础矩阵的建议合并直接当成最终合并 |
+| VTable 展示、复制与导出 | 同一发布模型的最终范围、主格文本和格式 | 自行生成、补齐、删除或重排合并区域 |
+
+`merges: []` 是明确的“不合并”，不能当成缺少配置再走自动合并。旧数据若缺少合并字段，应按版本迁移或返回结构诊断，不能悄悄读取旧布尔开关补造范围。
+
+取消合并后的值、空白和格式按实际工作表结果保存；不要自动把主格值复制到所有拆分格。若业务需要重复填充分组标签，应作为明确的数据填充规则处理，不作为取消合并的隐式副作用。
+
+### 16.4 旧设置的兼容与覆盖规则
+
+| 旧配置/行为 | 报表模式的新规则 |
+| --- | --- |
+| `mergeCells=true/false` | 均不得修改工作表最终合并；停止作为报表版式开关 |
+| `tableFeatures.mergeCells` | 不再启用报表的相邻同值合并；UI 隐藏旧开关或只读“跟随工作表” |
+| 列定义中的 `mergeCell` | 不从旧列配置带入报表列定义 |
+| 高级 `vtableOption.customMergeCell`、自定义 columns 等 | 不允许覆盖发布模型的合并及坐标；高级交互选项按白名单接入 |
+| 旧文档只保存自动合并布尔值 | 首次编辑时迁移为配置态可见的初始布局，之后以用户保存结果为准；不能保留两套同时生效的规则 |
+| 尚未迁移的主应用 config-only 条目 | 不在新报表流程中默认开启旧自动合并；迁移后取得明确工作表布局 |
+
+库中独立的旧纯分析调用若需要保留既有行为，应明确隔离为 legacy 兼容入口，不能回流到当前报表主流程。不要向 `ReportTableView` 硬塞原组件的布尔开关来表达“跟随 Excel”；该组件直接消费 publication 即可。
+
+### 16.5 必须保存“取消合并”，不能只记住当前 merge 数组
+
+当前 [UniverPreview.tsx](C:/Users/And19/Desktop/web/micro-bi/src/univer/UniverPreview.tsx:254) 的刷新逻辑会从 `initialGrid.merges` 重建合并，不能保证用户的解除操作继续有效。只将快照中的 mergeData 变为空数组仍不足以解决下一轮重建问题。
+
+建议在第 11 节 LayoutRule 中增加可重放的合并与解除操作（拟议设计）：
+
+1. 首次选用模板，将初始合并登记为低优先级布局规则，保存来源和稳定作用域；不是每次刷新都新增默认规则。
+2. 捕获真实 Excel/Univer 合并、取消、再次合并与撤销重做事件，保存涉及的语义成员/自由区锚点、主格和编辑序号。
+3. 取消时移除对应已保存规则，或记录对初始规则的显式抑制；“全部取消合并”也需要明确范围，避免新增成员又获得旧默认合并。
+4. 人工操作按最新有效编辑顺序重放，优先于初始化规则。不能把取消永久设成最高优先级，否则用户之后再次合并会失效。
+5. 数据变化后只解析已保存的有效规则，生成最终范围并校验越界、重叠、父组边界和自由块冲突；配置画布与 publication 使用同一份最终结果。
+6. 清理旧合并后，用程序事务应用新范围及主格格式，原子更新 bindings 和草稿，避免刷新被记录成一次用户合并。
+
+### 16.6 具体改造步骤
+
+| 顺序 | 代码落点 | 实施内容 |
+| --- | --- | --- |
+| 1 | `src/ui/presentation/types.ts`、`VTableView.tsx`、宿主表格设置 | 标明旧自动合并仅供 legacy；主应用报表流程移除默认同值合并和可覆盖版式的开关 |
+| 2 | `src/report/types.ts`、模板 LayoutRule、迁移模块 | 定义合并/解除的作用域、顺序、主格与初始规则抑制；迁移旧布尔配置 |
+| 3 | `BiBindingPlugin.ts`、`ReportConfigPanel.tsx` | 以同一编辑事务捕获并保存 merge/unmerge、值与样式，支持撤销重做和取消草稿 |
+| 4 | `refresh.ts`、布局重放模块、`UniverPreview.tsx` | 按用户保存意图生成最终范围，替代直接应用 initialGrid.merges；增删/排序后不恢复已解除范围 |
+| 5 | `compileReport.ts`、`gridAdapter.ts`、`ReportTableView.tsx` | 原样传递最终 merges，显式提供主格 text，保留格式；空数组不合并，禁止旧选项覆盖 |
+| 6 | 主配置→保存→原卡片→重开 | 对照 Excel 画布验证布局、格式、显示内容、复制和导出一致，再进行动态刷新回归 |
+
+这次是规则来源和保存流程调整；第 15 节的 text 修复仍是必要条件，不能由取消旧自动合并替代。
+
+### 16.7 新策略验收用例（待执行）
+
+| 编号 | 操作 | 必须得到的结果 |
+| --- | --- | --- |
+| FM-01 | Excel 不合并，连续两格/多格内容相同 | VTable 保持独立格，不因同值产生自动合并 |
+| FM-02 | Excel 明确合并，旧 mergeCells/tableFeatures.mergeCells=false | 保存后 VTable 仍按 Excel 范围合并，文字和格式完整 |
+| FM-03 | Excel 取消合并，旧 mergeCells=true | 保存、重开、刷新后仍不合并；主格及拆分格内容符合工作表结果 |
+| FM-04 | 发布模型 merges=[]，数据含重复维度 | 不生成 customMergeCell，不回退旧自动合并 |
+| FM-05 | 合并→取消→再次合并，并执行撤销/重做 | 按最新有效编辑生效，不被旧解除标记或初始预设压住 |
+| FM-06 | 取消某个分组的默认合并后，新增/删除成员、排序、改分组 | 解除意图按作用域保留；其他明确保留的合并按新业务坐标正确重定位 |
+| FM-07 | 双向透视增删列、切换横/纵指标 | 表头合并/解除与当前配置画布一致，不能回退 VTable 原生透视的自动布局 |
+| FM-08 | 合并主格设置字体、边框、对齐、百分比，包含0/false/格式空串 | 范围、显示文本和格式跟随工作表，不丢值、不擅自填空 |
+| FM-09 | 两张工作表、多个分析区域分别合并/取消，保存后切换页签 | 只影响目标表与区域，不复用另一张表的旧范围或格式 |
+| FM-10 | 尝试通过旧开关或高级 options 注入自动合并 | 不覆盖 publication；报表设置中只有“跟随工作表”的明确入口/说明 |
+| FM-11 | 旧自动合并条目迁移，编辑时取消，再保存/重开 | 只保留一套工作表合并意图，不遗留旧布尔开关持续生效 |
+| FM-12 | 滚动、resize、冻结、复制、导出，并进行数据刷新 | 均使用同一最终合并结果，既无多余合并，也无主格文字空白 |
+
+完成标准是主配置画布、持久化模板、发布模型及 VTable 四者一致。本轮只更新策略和验收要求，没有执行上述新用例，也未替用户修改正在整改的业务源码。
 
 

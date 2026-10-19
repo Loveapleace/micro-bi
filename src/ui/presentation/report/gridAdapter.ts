@@ -12,7 +12,11 @@ import { mapPublishedStyleToVTable } from './styleAdapter.js';
 export interface VTableReportGridConfig {
   columns: ColumnDefine[];
   records: Record<string, unknown>[];
-  customMergeCell: { range: { start: { col: number; row: number }; end: { col: number; row: number } } }[];
+  customMergeCell: {
+    range: { start: { col: number; row: number }; end: { col: number; row: number } };
+    text: string;
+    style?: any;
+  }[];
   options: Partial<ListTableConstructorOptions>;
 }
 
@@ -71,12 +75,35 @@ export function adaptPublishedSheetToVTable(
   }
 
   // 4. 生成 customMergeCell
-  const customMergeCell = (sheet.merges || []).map((m) => ({
-    range: {
-      start: { col: m.startCol, row: m.startRow },
-      end: { col: m.endCol, row: m.endRow },
-    },
-  }));
+  const customMergeCell = (sheet.merges || []).map((m) => {
+    const startCol = Math.min(m.startCol, m.endCol);
+    const endCol = Math.max(m.startCol, m.endCol);
+    const startRow = Math.min(m.startRow, m.endRow);
+    const endRow = Math.max(m.startRow, m.endRow);
+
+    if (startCol < 0 || startRow < 0 || endCol >= colCount || endRow >= rowCount) {
+      console.warn(
+        `[gridAdapter] 合并区域超出工作表边界: (${startRow},${startCol}) -> (${endRow},${endCol}), 当前容量: ${rowCount}x${colCount}`
+      );
+    }
+
+    const value = records[startRow]?.[`col_${startCol}`];
+    const text = value === null || value === undefined ? '' : String(value);
+
+    const masterCell = cellIndex.get(`${startRow},${startCol}`);
+    const style = masterCell?.styleId && styles[masterCell.styleId]
+      ? (mapPublishedStyleToVTable(styles[masterCell.styleId]) as any)
+      : undefined;
+
+    return {
+      range: {
+        start: { col: startCol, row: startRow },
+        end: { col: endCol, row: endRow },
+      },
+      text,
+      ...(style ? { style } : {}),
+    };
+  });
 
   // 5. 组合 VTable 选项
   const options: Partial<ListTableConstructorOptions> = {

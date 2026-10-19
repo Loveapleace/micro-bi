@@ -99,7 +99,7 @@ export const ReportTableView: React.FC<ReportTableViewProps> = ({
       const instance = new ListTable(containerRef.current, {
         columns,
         records,
-        customMergeCell: customMergeCell as any,
+        customMergeCell,
         widthMode: 'standard',
         autoFillWidth: true,
         ...options,

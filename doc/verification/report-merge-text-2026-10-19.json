@@ -1,0 +1,84 @@
+{
+  "executedAt": "2026-10-19T02:09:34.176Z",
+  "vtableVersion": "1.26.8",
+  "scope": "Production publication/adapter contract checks; actual Canvas causation verified separately by a main-card text-only A/B/A probe.",
+  "summary": {
+    "total": 8,
+    "passed": 8,
+    "failed": 0
+  },
+  "groupedMerges": [
+    {
+      "range": {
+        "start": {
+          "col": 0,
+          "row": 1
+        },
+        "end": {
+          "col": 0,
+          "row": 2
+        }
+      },
+      "recordMasterText": "车间A",
+      "hasTextProperty": true,
+      "mergeText": "车间A"
+    },
+    {
+      "range": {
+        "start": {
+          "col": 0,
+          "row": 4
+        },
+        "end": {
+          "col": 1,
+          "row": 4
+        }
+      },
+      "recordMasterText": "总计",
+      "hasTextProperty": true,
+      "mergeText": "总计"
+    }
+  ],
+  "checks": [
+    {
+      "id": "MC-01",
+      "name": "发布模型与records仍保留分组名称和总计",
+      "status": "passed"
+    },
+    {
+      "id": "MC-02",
+      "name": "纵向分组合并必须传入主格文本",
+      "status": "passed"
+    },
+    {
+      "id": "MC-03",
+      "name": "横向总计合并必须传入主格文本",
+      "status": "passed"
+    },
+    {
+      "id": "MC-04",
+      "name": "双轴透视表头合并必须传入对应文本",
+      "status": "passed"
+    },
+    {
+      "id": "MC-05",
+      "name": "合并主格数字0不能变成空白",
+      "status": "passed"
+    },
+    {
+      "id": "MC-06",
+      "name": "合并主格false应转换为文本而不是丢失",
+      "status": "passed"
+    },
+    {
+      "id": "MC-07",
+      "name": "有意格式化为空串时不回退到原始值",
+      "status": "passed"
+    },
+    {
+      "id": "MC-08",
+      "name": "普通非合并数值仍在records中",
+      "status": "passed"
+    }
+  ]
+}

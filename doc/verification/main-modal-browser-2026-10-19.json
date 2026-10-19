@@ -1,0 +1,103 @@
+{
+  "executedAt": "2026-10-19T01:23:35.586Z",
+  "url": "http://localhost:5174/",
+  "entry": "原看板配置及原保存按钮，未使用独立报表工作区",
+  "results": [
+    {
+      "id": "BR-01",
+      "status": "passed",
+      "observation": "原设备台账配置弹窗加载Univer工具栏、分析工作表和非零画布，数据集12条记录。"
+    },
+    {
+      "id": "BR-02",
+      "status": "failed",
+      "observation": "C2编辑中可见987654；按Enter后立即恢复1250，保存前已丢失人工值。截图成对保存。"
+    },
+    {
+      "id": "BR-03",
+      "status": "failed",
+      "observation": "通过原保存按钮返回原卡片，VTable仍显示1250，没有显示987654。"
+    },
+    {
+      "id": "BR-04",
+      "status": "failed",
+      "observation": "分组预览可见车间合并标签，VTable对应合并区域为空。"
+    },
+    {
+      "id": "BR-05",
+      "status": "failed",
+      "observation": "原透视弹窗从横向切纵向后表头合并有所更新，但画布仍只有1至7行；输入D9后名称框仍为D4，不能定位新增行。草稿已取消。"
+    },
+    {
+      "id": "BR-06",
+      "status": "failed",
+      "observation": "临时将CNC-201.running_hours从1250改为2250，页面重载后保存的VTable仍1250；在原配置中只修改草稿表头触发重算，预览显示2250。取消草稿，证明源数据已生效而publication仍旧。源文件已按SHA256恢复。"
+    },
+    {
+      "id": "BR-07",
+      "status": "passed",
+      "observation": "取消透视方向与临时表头草稿后，原卡片保持原已保存配置。只验证本次样例。"
+    },
+    {
+      "id": "BR-08",
+      "status": "failed",
+      "observation": "保存过程中仍捕获Calculation end timeout，保存流程继续退出弹窗。"
+    },
+    {
+      "id": "BR-09",
+      "status": "failed",
+      "observation": "重复保存和打开弹窗后仍捕获SheetsScrollRenderController2依赖缺失错误。"
+    }
+  ],
+  "screenshots": [
+    "main-input-before-commit-2026-10-19.jpg",
+    "main-input-after-commit-2026-10-19.jpg",
+    "main-vtable-after-save-2026-10-19.jpg",
+    "main-pivot-horizontal-2026-10-19.jpg",
+    "main-pivot-vertical-2026-10-19.jpg",
+    "main-vtable-source-changed-2026-10-19.jpg",
+    "main-editor-source-changed-2026-10-19.jpg"
+  ],
+  "errors": [
+    {
+      "level": "error",
+      "message": "Error: Calculation end timeout\n    at http://localhost:5174/node_modules/.vite/deps/@univerjs_preset-sheets-core.js?v=1de0bb21:167098:22",
+      "timestamp": "2026-10-19T01:15:31.007Z",
+      "url": "http://localhost:5174/node_modules/.vite/deps/@univerjs_preset-sheets-core.js?v=1de0bb21"
+    },
+    {
+      "level": "error",
+      "message": "Error: Calculation end timeout\n    at http://localhost:5174/node_modules/.vite/deps/@univerjs_preset-sheets-core.js?v=1de0bb21:167098:22",
+      "timestamp": "2026-10-19T01:15:31.229Z",
+      "url": "http://localhost:5174/node_modules/.vite/deps/@univerjs_preset-sheets-core.js?v=1de0bb21"
+    },
+    {
+      "level": "error",
+      "message": "Warning: [antd: message] Static function can not consume context like dynamic theme. Please use 'App' component instead.",
+      "timestamp": "2026-10-19T01:15:31.535Z",
+      "url": "http://localhost:5174/node_modules/.vite/deps/chunk-UTNTMYQZ.js?v=1de0bb21"
+    },
+    {
+      "level": "error",
+      "message": "DependencyNotFoundError: [redi]: Cannot find \"SheetsScrollRenderController2\" registered by any injector. The stack of dependencies is: \"\".\n    at ResolvedDependencyCollection.get (http://localhost:5174/node_modules/.vite/deps/chunk-5ELJ6BAN.js?v=1de0bb21:6835:21)\n    at onSelf (http://localhost:5174/node_modules/.vite/deps/chunk-5ELJ6BAN.js?v=1de0bb21:7412:48)\n    at Injector2.getValue (http://localhost:5174/node_modules/.vite/deps/chunk-5ELJ6BAN.js?v=1de0bb21:7424:40)\n    at Injector2._get (http://localhost:5174/node_modules/.vite/deps/chunk-5ELJ6BAN.js?v=1de0bb21:7239:33)\n    at Injector2.get (http://localhost:5174/node_modules/.vite/deps/chunk-5ELJ6BAN.js?v=1de0bb21:7230:28)\n    at RenderUnitDependencyService.resolve (http://localhost:5174/node_modules/.vite/deps/@univerjs_preset-sheets-core.js?v=1de0bb21:40081:27)\n    at RenderUnit2.with (http://localhost:5174/node_modules/.vite/deps/@univerjs_preset-sheets-core.js?v=1de0bb21:40026:36)\n    at handler (http://localhost:5174/node_modules/.vite/deps/@univerjs_preset-sheets-core.js?v=1de0bb21:238788:145)\n    at Injector2.invoke (http://localhost:5174/node_modules/.vite/deps/chunk-5ELJ6BAN.js?v=1de0bb21:7177:12)\n    at CommandService2._execute (http://localhost:5174/node_modules/.vite/deps/chunk-5ELJ6BAN.js?v=1de0bb21:19429:38)",
+      "timestamp": "2026-10-19T01:18:23.991Z",
+      "url": "http://localhost:5174/node_modules/.vite/deps/chunk-5ELJ6BAN.js?v=1de0bb21"
+    },
+    {
+      "level": "error",
+      "message": "Warning: [antd: Modal] `destroyOnClose` is deprecated. Please use `destroyOnHidden` instead.",
+      "timestamp": "2026-10-19T01:22:14.187Z",
+      "url": "http://localhost:5174/node_modules/.vite/deps/chunk-UTNTMYQZ.js?v=1de0bb21"
+    },
+    {
+      "level": "error",
+      "message": "Warning: [antd: Card] `bodyStyle` is deprecated. Please use `styles.body` instead.",
+      "timestamp": "2026-10-19T01:22:28.431Z",
+      "url": "http://localhost:5174/node_modules/.vite/deps/chunk-UTNTMYQZ.js?v=1de0bb21"
+    }
+  ],
+  "limitations": [
+    "数据新增、删除、排序、分组变化和双向透视列变化的详细断言在真实SDK/实际effect与VTable输入测试中执行；浏览器没有逐一覆盖全部组合。",
+    "本轮未完成任意Excel公式、条件格式继承、异步源乱序、干净安装及展示依赖隔离验收。"
+  ]
+}

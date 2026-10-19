@@ -1,0 +1,35 @@
+{
+  "target": "C:/Users/And19/Desktop/web/micro-bi/src/ui/presentation/report/gridAdapter.ts",
+  "backup": "C:/Users/And19/Desktop/web/micro-bi/.codex-qa-merge-adapter-20261019.backup",
+  "originalSha256": "47ea2c06195f92c725eedd5a92f9e8b354f869dd6860dc7de9da73c168692752",
+  "modifiedSha256": "e6580d9fc735fe74d772d8fddf06b7b18a32e30ffae742c29ab075c9454c362b",
+  "change": "Diagnostic only: populate customMergeCell.text from master record; all other rendering options unchanged.",
+  "date": "2026-10-19",
+  "restoredAt": "2026-10-19T01:34:32.316Z",
+  "restored": true,
+  "finalSha256": "47ea2c06195f92c725eedd5a92f9e8b354f869dd6860dc7de9da73c168692752",
+  "changedParameters": [
+    "customMergeCell[].text"
+  ],
+  "unchangedParameters": [
+    "records",
+    "showHeader",
+    "columns",
+    "mergeCells",
+    "filterDropdown",
+    "showSummaryRow",
+    "theme",
+    "frozenRowCount",
+    "frozenColCount"
+  ],
+  "observations": {
+    "before": "Workshop labels and grand-total merge area blank in the original card.",
+    "probe": "Adding only merge.text from master records restores workshop labels and 总计 in the original VTable card; numbers remain unchanged.",
+    "restored": "After restoring the original source and reloading the same card, workshop and 总计 merge text are blank again."
+  },
+  "screenshots": [
+    "merged-cells-before-2026-10-19.jpg",
+    "merged-cells-text-probe-full-card-2026-10-19.jpg",
+    "merged-cells-restored-source-2026-10-19.jpg"
+  ]
+}

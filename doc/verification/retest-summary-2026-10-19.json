@@ -1,0 +1,62 @@
+{
+  "date": "2026-10-19",
+  "timezone": "Asia/Shanghai",
+  "executedAt": "2026-10-19T01:28:39.715Z",
+  "commit": "82f107cc23dfbd45ebd8aea18620ad37f774382a",
+  "nodeVersion": "v22.22.0",
+  "univerVersion": "1.0.4",
+  "baseline": {
+    "command": "npm test",
+    "exitCode": 0,
+    "total": 139,
+    "passed": 139,
+    "failed": 0,
+    "logSha256": "24f6d88ae0175f19012b8e8631239e614cf27ba8d411911663354ddd8b886de6"
+  },
+  "hostBuild": {
+    "command": "npm run build",
+    "exitCode": 0,
+    "logSha256": "995e1052565b4abf31f3a11fb0a9c6db18c1355ecaa9667a6747278dfb94566d"
+  },
+  "originalDiagnostics": {
+    "total": 20,
+    "passed": 20,
+    "failed": 0
+  },
+  "additionalDiagnostics": {
+    "total": 19,
+    "passed": 3,
+    "failed": 16
+  },
+  "browser": {
+    "total": 9,
+    "passed": 2,
+    "failed": 7,
+    "bufferedErrors": 6
+  },
+  "mainFixture": {
+    "records": 13,
+    "horizontal": {
+      "rows": 7,
+      "columns": 30
+    },
+    "vertical": {
+      "rows": 10,
+      "columns": 17
+    }
+  },
+  "sourceRestored": true,
+  "productionHashes": {
+    "src/univer/UniverPreview.tsx": "cfc069e50fa5d6ce2708b1f92009754f51c925026564872d6f9b28e49f8630fd",
+    "src/univer/ReportConfigPanel.tsx": "cd5e6b49531325c727aaef73bad02c117a8abc2d470da0734064e2a41a7a05ab",
+    "src/univer/BiBindingPlugin.ts": "84803fa8bdd19a79c5727e804b17662f7037a668bac7f7c208db2bc28f3d55ce",
+    "src/univer/adapter.ts": "24dab189c5fcbd4747eeef14a44ba1181123c651d9996058b367e4955ea82c29",
+    "src/report/refresh.ts": "f1ff03021b4174b61cd76485ffd8170c6db959a89a2418394d138f72c013fbf8",
+    "src/report/groupedProjector.ts": "2c13b7d0fbc1504407035b4dff40aab50a731626b2fe8d0a387606b383b54a21",
+    "src/report/pivotProjector.ts": "40065968f3d9df32bdc444a95be9cda4a56648360046c9e63746e3636824198b",
+    "src/ui/presentation/report/gridAdapter.ts": "47ea2c06195f92c725eedd5a92f9e8b354f869dd6860dc7de9da73c168692752",
+    "../dynamic-data-test/src/App.tsx": "071593853e2b6b385d93f4034757b915669e9bc47167c366032a2f1885cfc186",
+    "../dynamic-data-test/src/components/DashboardCard.tsx": "b5a7057e54c25a4fb765325ed265b62610c3debacca70a9b7d4858c772ece03f",
+    "../dynamic-data-test/src/mockData.ts": "7ae500177b538d96817ecb646f80804965e0ed2c85f21a7a11d7aa13f59ba125"
+  }
+}

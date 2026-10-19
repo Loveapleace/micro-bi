@@ -239,22 +239,59 @@ export class BiBindingManager {
     if (!params) return;
     const sheetId: SheetId = params.subUnitId || params.sheetId || params.unitId || 'sheet-1';
 
-    // 1. Univer command 格式: params.range + params.value (DT-18)
+    // 1. Univer command 格式: params.range + params.value (DT-18, RX-14)
     if (params.range && params.value !== undefined) {
       const startRow = params.range.startRow;
       const startCol = params.range.startColumn;
+      const endRow = params.range.endRow !== undefined ? params.range.endRow : startRow;
+      const endCol = params.range.endColumn !== undefined ? params.range.endColumn : startCol;
       const rawVal = params.value;
       let changed = false;
       const nextBindings = this._bindings.map((b) => {
         if (sheetId && b.target.sheetId && b.target.sheetId !== sheetId) {
           return b;
         }
-        if (b.target.row === startRow && b.target.column === startCol) {
+        if (
+          b.target.row < startRow ||
+          b.target.row > endRow ||
+          b.target.column < startCol ||
+          b.target.column > endCol
+        ) {
+          return b;
+        }
+
+        let extracted: { v: any; f?: string } | null = null;
+        if (typeof rawVal === 'object' && rawVal !== null && !Array.isArray(rawVal)) {
+          const rowObj = rawVal[b.target.row] ?? rawVal[b.target.row - startRow];
+          if (rowObj && typeof rowObj === 'object' && !('v' in rawVal) && !('f' in rawVal)) {
+            const cell = rowObj[b.target.column] ?? rowObj[b.target.column - startCol];
+            if (cell !== undefined) {
+              extracted = cell && typeof cell === 'object' ? { v: cell.v, f: cell.f ?? undefined } : { v: cell };
+            }
+          } else if ('v' in rawVal || 'f' in rawVal) {
+            if (b.target.row === startRow && b.target.column === startCol) {
+              extracted = { v: rawVal.v, f: rawVal.f ?? undefined };
+            }
+          }
+        } else if (Array.isArray(rawVal)) {
+          const relR = b.target.row - startRow;
+          const relC = b.target.column - startCol;
+          if (relR >= 0 && relR < rawVal.length) {
+            const rowArr = rawVal[relR];
+            if (Array.isArray(rowArr) && relC >= 0 && relC < rowArr.length) {
+              const cell = rowArr[relC];
+              extracted = cell && typeof cell === 'object' && ('v' in cell || 'f' in cell)
+                ? { v: cell.v, f: cell.f ?? undefined }
+                : { v: cell };
+            }
+          }
+        } else if (b.target.row === startRow && b.target.column === startCol) {
+          extracted = { v: rawVal };
+        }
+
+        if (extracted !== null) {
           changed = true;
-          this._onManualOverride?.(b.id, {
-            v: rawVal && typeof rawVal === 'object' ? rawVal.v : rawVal,
-            f: rawVal && typeof rawVal === 'object' ? rawVal.f : undefined,
-          });
+          this._onManualOverride?.(b.id, extracted);
           return {
             ...b,
             state: 'manual-override' as const,

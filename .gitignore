@@ -9,6 +9,7 @@ dist/
 
 # 日志与缓存
 *.log
+.*.log
 npm-debug.log*
 .npm/
 .eslintcache

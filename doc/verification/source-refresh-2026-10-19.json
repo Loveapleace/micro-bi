@@ -1,0 +1,16 @@
+{
+  "target": "C:/Users/And19/Desktop/web/dynamic-data-test/src/mockData.ts",
+  "backup": "C:/Users/And19/Desktop/web/dynamic-data-test/.codex-qa-mockData-20261019.backup",
+  "originalSha256": "7ae500177b538d96817ecb646f80804965e0ed2c85f21a7a11d7aa13f59ba125",
+  "modifiedSha256": "5f09a4ff11739c09c1ba2015de710b39433b450ee20e0b8f9e6d0dda60cc41e7",
+  "change": {
+    "device": "CNC-201",
+    "field": "running_hours",
+    "before": 1250,
+    "after": 2250
+  },
+  "restoredAt": "2026-10-19T01:23:03.029Z",
+  "restored": true,
+  "finalSha256": "7ae500177b538d96817ecb646f80804965e0ed2c85f21a7a11d7aa13f59ba125",
+  "observation": "After changing running_hours 1250→2250 and reloading, saved VTable remained 1250. Original configuration preview rendered 2250 after a draft-only header edit; draft was canceled. Source restored byte-for-byte."
+}

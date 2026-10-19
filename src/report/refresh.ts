@@ -124,6 +124,11 @@ export function refreshAnalysisRegion(
       const prevBase = override.baseValue ?? region.baseValues?.[bindingId];
       const curBase = currentBaseValues[bindingId];
       if (prevBase !== undefined && curBase !== undefined && prevBase !== curBase) {
+        // 固定原有冲突基线，确保下一次未解决的相同刷新仍然能报出冲突诊断 (RT-08 / RX-17)
+        updatedOverrides[bindingId] = {
+          ...override,
+          baseValue: prevBase,
+        };
         diagnostics.push({
           severity: 'warning',
           code: 'BASE_CHANGED',

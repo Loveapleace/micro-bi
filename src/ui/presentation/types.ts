@@ -103,7 +103,10 @@ export interface DynamicDataViewProps {
 
   /** 是否由外部强制控制总计行显示 */
   showSummaryRow?: boolean | undefined;
-  /** 是否由外部强制控制相邻同类单元格合并显示 */
+  /**
+   * 是否由外部强制控制相邻同类单元格合并显示
+   * @deprecated 仅用于传统 VTableView legacy 纯表格模式；报表模式 (publishedReport) 下无效，合并完全跟随 Excel/Univer 工作表定义。
+   */
   mergeCells?: boolean | undefined;
   /** 是否由外部强制控制微型数据条显示 */
   showDataBars?: boolean | undefined;
@@ -145,7 +148,10 @@ export interface TableFeatureConfig {
   fullscreen?: boolean | undefined;
   /** 是否支持列显隐控制面板，默认 true */
   columnVisibility?: boolean | undefined;
-  /** 是否支持同类相邻维度单元格自动合并 (如时间分桶、分类维度)，默认 true */
+  /**
+   * 是否支持同类相邻维度单元格自动合并 (如时间分桶、分类维度)，默认 true
+   * @deprecated 仅用于传统 VTableView legacy 纯表格模式；报表模式 (publishedReport) 下无效，合并完全跟随 Excel/Univer 工作表定义。
+   */
   mergeCells?: boolean | undefined;
   /** 是否支持鼠标直接在 Canvas 上拖拽调整列宽，默认 true */
   columnResize?: boolean | undefined;
