@@ -1,0 +1,234 @@
+{
+  "timestamp": "2026-10-21T01:20:29.447Z",
+  "target": "Cell-Driven Expansion Engine (CE-01 ~ CE-07)",
+  "schemaVersion": "2.0",
+  "capability": "cell-expansion-v2",
+  "total": 22,
+  "passed": 22,
+  "failed": 0,
+  "results": [
+    {
+      "id": "CE-T01",
+      "title": "新建纯格驱动模板，不填写 layoutKind/metricDirection",
+      "passed": true,
+      "durationMs": 4,
+      "details": {
+        "valid": true,
+        "sheetCellCount": 9
+      }
+    },
+    {
+      "id": "CE-T02",
+      "title": "同一记录块绑定订单号、日期、数量三个 list 格，主键对齐无笛卡尔积",
+      "passed": true,
+      "durationMs": 1,
+      "details": {
+        "rowCount": 4,
+        "alignedColumns": [
+          0,
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "id": "CE-T03",
+      "title": "工厂→车间→明细嵌套，多级父格自适应高度展开，不互相覆盖",
+      "passed": true,
+      "durationMs": 7,
+      "details": {
+        "detailCount": 6,
+        "f1Span": 3,
+        "f2Span": 3
+      }
+    },
+    {
+      "id": "CE-T04",
+      "title": "车间向下、日期向右，三个指标配置双父，正交切片计算精准",
+      "passed": true,
+      "durationMs": 1,
+      "details": {
+        "w1_d1_delivered": 100,
+        "w1_d1_rate": 0.02
+      }
+    },
+    {
+      "id": "CE-T05",
+      "title": "将三个指标从三行移动到三列，保存再移回，相对位置自然决定几何",
+      "passed": true,
+      "durationMs": 1,
+      "details": {
+        "horizontalTileWidth": 3,
+        "verticalTileHeight": 1
+      }
+    },
+    {
+      "id": "CE-T06",
+      "title": "同页放横排汇总、纵排明细及日期交叉块，三者和平共存无干扰",
+      "passed": true,
+      "durationMs": 0,
+      "details": {
+        "summaryTotal": 700,
+        "w1Sum": 250,
+        "w2Sum": 450
+      }
+    },
+    {
+      "id": "CE-T07",
+      "title": "改列表为分组或改 SUM 为 AVG，统计行为随单格定义实时变化",
+      "passed": true,
+      "durationMs": 0,
+      "details": {
+        "w1Avg": 125,
+        "w2Avg": 225
+      }
+    },
+    {
+      "id": "CE-T08",
+      "title": "保持几何位置不变，更换父格上下文，切片范围准确转移",
+      "passed": true,
+      "durationMs": 0,
+      "details": {
+        "f1Sum": 55,
+        "f2Sum": 105
+      }
+    },
+    {
+      "id": "CE-T09",
+      "title": "移动模板格物理列位置，父格与数据切片逻辑完全保持",
+      "passed": true,
+      "durationMs": 0,
+      "details": {
+        "placedColumn": 5
+      }
+    },
+    {
+      "id": "CE-T10",
+      "title": "多个子块不同高度自适应扩展，车道对齐无漂移",
+      "passed": true,
+      "durationMs": 0,
+      "details": {
+        "f1Height": 2,
+        "f2Height": 1
+      }
+    },
+    {
+      "id": "CE-T11",
+      "title": "固定标题、旁边独立摘要与全量汇总，计算范围严密清晰",
+      "passed": true,
+      "durationMs": 0,
+      "details": {
+        "title": "集团产线月报",
+        "totalDefects": 14
+      }
+    },
+    {
+      "id": "CE-T12",
+      "title": "数据乱序输入，引擎生成稳定确定的身份和有序结果",
+      "passed": true,
+      "durationMs": 0,
+      "details": {
+        "deterministic": true,
+        "cellCount": 4
+      }
+    },
+    {
+      "id": "CE-T13",
+      "title": "数据清空再恢复，静态模板、样式与合并策略完好无损",
+      "passed": true,
+      "durationMs": 0,
+      "details": {
+        "emptyMergesPreserved": true,
+        "restoredRecordCount": 4
+      }
+    },
+    {
+      "id": "CE-T14",
+      "title": "分组覆盖动态合并基于真实 Footprint 驱动",
+      "passed": true,
+      "durationMs": 0,
+      "details": {
+        "w1Span": 2,
+        "w2Span": 2
+      }
+    },
+    {
+      "id": "CE-T15",
+      "title": "成员级取消例外 (Suppression) 精准匹配语义上下文",
+      "passed": true,
+      "durationMs": 1,
+      "details": {
+        "w1Suppressed": true,
+        "w2Retained": true
+      }
+    },
+    {
+      "id": "CE-T16",
+      "title": "检测并拦截父格依赖环路，不发生栈溢出或无限循环",
+      "passed": true,
+      "durationMs": 0,
+      "details": {
+        "cycleDetected": true
+      }
+    },
+    {
+      "id": "CE-T17",
+      "title": "区域过滤条件在数据事实切片上严格生效",
+      "passed": true,
+      "durationMs": 0,
+      "details": {
+        "filteredCount": 2
+      }
+    },
+    {
+      "id": "CE-T18",
+      "title": "业务公式在正交切片上精准求值，支持除零保护",
+      "passed": true,
+      "durationMs": 0,
+      "details": {
+        "w1Rate": 0,
+        "w2RateDivZero": null
+      }
+    },
+    {
+      "id": "CE-T19",
+      "title": "存量 1.0/1.1 模板由旧投影器正常解释，2.0 模板由新展开引擎驱动",
+      "passed": true,
+      "durationMs": 2,
+      "details": {
+        "dualEngineCoexistence": true
+      }
+    },
+    {
+      "id": "CE-T20",
+      "title": "compileCellReport 输出标准 PublishedReport，包含正确样式、文本与合并",
+      "passed": true,
+      "durationMs": 0,
+      "details": {
+        "publishedMerges": 1,
+        "stylesCount": 2
+      }
+    },
+    {
+      "id": "CE-T21",
+      "title": "深冻结输入重复编译，执行具备严格纯函数性与确定性",
+      "passed": true,
+      "durationMs": 0,
+      "details": {
+        "pureFunction": true,
+        "cellCount": 4
+      }
+    },
+    {
+      "id": "CE-T22",
+      "title": "大数据量与两轴乘积展开性能与稳定性验证",
+      "passed": true,
+      "durationMs": 1,
+      "details": {
+        "recordCount": 500,
+        "cellCount": 120,
+        "elapsedMs": 1
+      }
+    }
+  ]
+}

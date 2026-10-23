@@ -1,0 +1,148 @@
+TAP version 13
+# Subtest: HDIM-01 all time and category axes have ordered explicit parent chains
+ok 1 - HDIM-01 all time and category axes have ordered explicit parent chains
+  ---
+  duration_ms: 2.3927
+  type: 'test'
+  ...
+# Subtest: HDIM-02 multi-axis cross values use the complete row and column fact intersection
+ok 2 - HDIM-02 multi-axis cross values use the complete row and column fact intersection
+  ---
+  duration_ms: 20.1077
+  type: 'test'
+  ...
+# Subtest: HDIM-03 nested headers with repeated names merge within their complete parent path
+ok 3 - HDIM-03 nested headers with repeated names merge within their complete parent path
+  ---
+  duration_ms: 3.123
+  type: 'test'
+  ...
+# Subtest: HDIM-04 insert/delete/reorder facts retains VTable values and moving totals after JSON save
+ok 4 - HDIM-04 insert/delete/reorder facts retains VTable values and moving totals after JSON save
+  ---
+  duration_ms: 17.1543
+  type: 'test'
+  ...
+# Subtest: HDIM-05 grouped time and three categories do not truncate and keep all measures
+ok 5 - HDIM-05 grouped time and three categories do not truncate and keep all measures
+  ---
+  duration_ms: 1.6293
+  type: 'test'
+  ...
+# Subtest: HDIM-06 column time and multiple categories work without a row dimension
+ok 6 - HDIM-06 column time and multiple categories work without a row dimension
+  ---
+  duration_ms: 1.5961
+  type: 'test'
+  ...
+# Subtest: HDIM-07 raw date classification and bucket axis have separate driver identities
+ok 7 - HDIM-07 raw date classification and bucket axis have separate driver identities
+  ---
+  duration_ms: 1.2957
+  type: 'test'
+  ...
+# Subtest: HDIM-08 missing axes, wrong bucket and broken hierarchy block publication
+ok 8 - HDIM-08 missing axes, wrong bucket and broken hierarchy block publication
+  ---
+  duration_ms: 0.9995
+  type: 'test'
+  ...
+# Subtest: HDIM-09 duplicate selection and missing dataset field produce explicit errors
+ok 9 - HDIM-09 duplicate selection and missing dataset field produce explicit errors
+  ---
+  duration_ms: 0.4281
+  type: 'test'
+  ...
+# Subtest: HDIM-10 saved intent restores on empty facts and legacy axes follow parents rather than array order
+ok 10 - HDIM-10 saved intent restores on empty facts and legacy axes follow parents rather than array order
+  ---
+  duration_ms: 0.7134
+  type: 'test'
+  ...
+# Subtest: HDIM-11 styles and advanced formats follow metric identity when axes insert or reorder
+ok 11 - HDIM-11 styles and advanced formats follow metric identity when axes insert or reorder
+  ---
+  duration_ms: 4.9469
+  type: 'test'
+  ...
+# Subtest: HDIM-12 a new axis occupying a free note reports a collision without discarding the note
+ok 12 - HDIM-12 a new axis occupying a free note reports a collision without discarding the note
+  ---
+  duration_ms: 0.2712
+  type: 'test'
+  ...
+# Subtest: HDIM-13 clearing all group merges and JSON resave does not restore nested merges
+ok 13 - HDIM-13 clearing all group merges and JSON resave does not restore nested merges
+  ---
+  duration_ms: 4.3331
+  type: 'test'
+  ...
+# Subtest: HDIM-14 manual note merges and widths survive composition and JSON save
+ok 14 - HDIM-14 manual note merges and widths survive composition and JSON save
+  ---
+  duration_ms: 0.2933
+  type: 'test'
+  ...
+# Subtest: HDIM-15 native unmerge retains the semantic parent-group exception across source changes
+ok 15 - HDIM-15 native unmerge retains the semantic parent-group exception across source changes
+  ---
+  duration_ms: 4.5785
+  type: 'test'
+  ...
+# Subtest: HDIM-16 static note merge follows the same block displacement as its content
+ok 16 - HDIM-16 static note merge follows the same block displacement as its content
+  ---
+  duration_ms: 4.1983
+  type: 'test'
+  ...
+# Subtest: HDIM-17 native cancel of a manual note merge remains cancelled after preview capture and JSON save
+ok 17 - HDIM-17 native cancel of a manual note merge remains cancelled after preview capture and JSON save
+  ---
+  duration_ms: 4.0319
+  type: 'test'
+  ...
+# Subtest: HDIM-18 custom time buckets and saved category order remain explicit
+ok 18 - HDIM-18 custom time buckets and saved category order remain explicit
+  ---
+  duration_ms: 1.4293
+  type: 'test'
+  ...
+# Subtest: HDIM-19 sparse fields beyond first 100 facts and declared nullable fields remain valid
+ok 19 - HDIM-19 sparse fields beyond first 100 facts and declared nullable fields remain valid
+  ---
+  duration_ms: 1.001
+  type: 'test'
+  ...
+# Subtest: HDIM-20 legacy secondary-axis merge policy rebinds by field identity and keeps its suppression
+ok 20 - HDIM-20 legacy secondary-axis merge policy rebinds by field identity and keeps its suppression
+  ---
+  duration_ms: 0.5633
+  type: 'test'
+  ...
+# Subtest: HDIM-21 saved time attributes and category order survive unchanged reopen, explicit reorder takes effect
+ok 21 - HDIM-21 saved time attributes and category order survive unchanged reopen, explicit reorder takes effect
+  ---
+  duration_ms: 0.2378
+  type: 'test'
+  ...
+# Subtest: HDIM-22 temporary axis removal and empty preview capture preserve dormant merge rules
+ok 22 - HDIM-22 temporary axis removal and empty preview capture preserve dormant merge rules
+  ---
+  duration_ms: 0.2328
+  type: 'test'
+  ...
+# Subtest: HDIM-23 explicit legacy default axis options still compile complete dimensions
+ok 23 - HDIM-23 explicit legacy default axis options still compile complete dimensions
+  ---
+  duration_ms: 0.6555
+  type: 'test'
+  ...
+1..23
+# tests 23
+# suites 0
+# pass 23
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 166.3576

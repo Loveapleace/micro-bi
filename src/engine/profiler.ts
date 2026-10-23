@@ -99,7 +99,7 @@ export function detectFieldType(values: readonly unknown[]): FieldDataType {
   if (dateMatchCount / total >= 0.8) {
     return 'time';
   }
-  // 若 85% 以上样本符合数字特征，推断为数字
+  // 若 80% 以上样本符合数字特征，推断为数字
   if (numberMatchCount / total >= 0.8) {
     return 'number';
   }

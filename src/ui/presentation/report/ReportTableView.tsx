@@ -95,6 +95,7 @@ export const ReportTableView: React.FC<ReportTableViewProps> = ({
       report.styles || {}
     );
 
+    let localInstance: ListTableType | null = null;
     try {
       const instance = new ListTable(containerRef.current, {
         columns,
@@ -105,14 +106,19 @@ export const ReportTableView: React.FC<ReportTableViewProps> = ({
         ...options,
       });
 
+      localInstance = instance;
       tableInstanceRef.current = instance;
     } catch (e) {
       console.error('[ReportTableView] 渲染 VTable 失败:', e);
     }
 
     return () => {
-      if (tableInstanceRef.current) {
-        tableInstanceRef.current.release();
+      if (localInstance) {
+        try {
+          localInstance.release();
+        } catch {}
+      }
+      if (tableInstanceRef.current === localInstance) {
         tableInstanceRef.current = null;
       }
     };

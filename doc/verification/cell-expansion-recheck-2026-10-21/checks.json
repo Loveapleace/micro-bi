@@ -1,0 +1,97 @@
+{
+  "timestamp": "2026-10-21T00:46:23.909005+00:00",
+  "scope": "Independent v2 compiler/snapshot/JSON/VTable-input verification. Not browser E2E. No business source or fixture edits.",
+  "gitHead": "e8eb3b453f03ea3d9473ac846e2c858eb7e2909d",
+  "includesUncommittedImplementation": true,
+  "unitTests": {
+    "command": "npm test",
+    "total": 213,
+    "passed": 213,
+    "failed": 0,
+    "log": "unit-tests.log"
+  },
+  "hostBuild": {
+    "command": "npm run build -- --manifest",
+    "passed": true,
+    "durationSeconds": 37.24,
+    "log": "host-build.log",
+    "manifest": "build-manifest.json",
+    "largeChunkWarning": true
+  },
+  "suites": {
+    "cer": {
+      "timestamp": "2026-10-21T00:42:32.889Z",
+      "total": 21,
+      "passed": 4,
+      "failed": 17
+    },
+    "legacy-fr": {
+      "timestamp": "2026-10-21T00:42:33.054Z",
+      "total": 12,
+      "passed": 12,
+      "failed": 0
+    },
+    "legacy-rc": {
+      "timestamp": "2026-10-21T00:42:53.443Z",
+      "total": 25,
+      "passed": 25,
+      "failed": 0
+    },
+    "legacy-ac-cx": {
+      "timestamp": "2026-10-21T00:42:33.444Z",
+      "total": 15,
+      "passed": 15,
+      "failed": 0
+    }
+  },
+  "browser": {
+    "status": "not_completed",
+    "reason": "Previous attempt to read the Windows browser was stopped by the computer-use URL identification safety check; no browser success is inferred from compiler tests.",
+    "configurationSavedToDashboard": false
+  },
+  "notRerunStandalone": [
+    "verify-cell-driven-expansion.mjs",
+    "verify-cell-dynamic-merge.mjs",
+    "verify-cell-r4-persistence.mjs",
+    "verify-cell-report-full-cycle.mjs",
+    "verify-react18-acceptance.mjs",
+    "verify-dynamic-report-template.mjs",
+    "verify-dynamic-report-regression.mjs"
+  ],
+  "fixture": {
+    "path": "dynamic-data-test/src/mockData.ts",
+    "sha256": "7ae500177b538d96817ecb646f80804965e0ed2c85f21a7a11d7aa13f59ba125",
+    "modifiedThisReview": false
+  },
+  "newFindings": 9,
+  "sourceSha256": {
+    "dynamic-data-test/package-lock.json": "4f2274d733c6c8dab83cf56dad1d87b34cbc042c786b85792ac8491879238bed",
+    "dynamic-data-test/package.json": "297942f660651c61ac5d7d1e0ac8b7515ce31c9fc1c0c027353e04d963563451",
+    "dynamic-data-test/src/App.tsx": "bf103076085a4d3ef6f3cae49ca0fea39a8b5e8aa327e768279b41fbdf91f3b3",
+    "dynamic-data-test/src/components/CellReportEditModal.tsx": "42b8057554883ccf7bc853bd47bb5526f8938a0a8381a43c9ba4aa8c8c3539db",
+    "micro-bi/package-lock.json": "7de63d6b31948ecb9c1cc020111d76074b320458f4e15e578c8c05f4df43c5ef",
+    "micro-bi/package.json": "a92cbba0a371a11e4b36284b95223f19d2ce84d704cc7e1712b2d9333c4dcb96",
+    "micro-bi/scripts/verify-cell-expansion-recheck.mjs": "bdfe432653b00d044b20efdc4edec187669c330b1aaff90ac127244b7b79a3fe",
+    "micro-bi/src/cell-designer/CellAdvancedSettings.tsx": "7c380fa1b5d77b959c89773eb6e5967dc83c66cfe55efbec584663855a728ec3",
+    "micro-bi/src/cell-designer/CellInspector.tsx": "3c081a3a6c425dc84c64b08d7cf631f0634831616bf2878022240f7610d04ace",
+    "micro-bi/src/cell-designer/CellReportDesigner.tsx": "5a1cd17c8d0f9b4a2aa58f2dcc766e4e0eaa6114a7b04205d65b8ec1b709a43b",
+    "micro-bi/src/cell-designer/designerReducer.ts": "66f43b8f3fd11697d853e903c6be52a92a5da7f97d680e0de24283eb7f810945",
+    "micro-bi/src/cell-designer/index.ts": "3f3b2bf087f77223f629c32b6acc72412c96c2edb7f08137c589a4365891a503",
+    "micro-bi/src/cell-designer/syncWorkbookToTemplate.ts": "8385d5f189a13fbbafaf7f9aadf36f780346db8b359b3b05f182f2a558937c91",
+    "micro-bi/src/cell-designer/univerEvents.ts": "fb1045c1d488f5a2a95b7417c36a0b3d0e9e5486854b94543fe502c8af1ac0c0",
+    "micro-bi/src/report/buildBiGrid.ts": "75c5d9aecffa79d164bb992daefd61a9c61c0e61b24860914682af7af34e7d6c",
+    "micro-bi/src/report-template/cellExpansionEngine.ts": "6ea4b3dc9d7a7ff2291e878ac1913bae12af9944a80117eaabfaf52e61e74b4e",
+    "micro-bi/src/report-template/compileCellReport.ts": "dcd39a5446c7b12daec07398cc5f9ca96fd1310660b81b4bbe6731508b3eba8f",
+    "micro-bi/src/report-template/expandTemplate.ts": "4f5a5ef9a8f4de1020dfcf5f3bf90854080fc01bf31572ac34d684c524fe798b",
+    "micro-bi/src/report-template/identity.ts": "56aa8057f21f960eee0229b2ed0e363851b04fe03f7c2ac241c67fa88eb6bd12",
+    "micro-bi/src/report-template/index.ts": "8ca175aa0d453111604978f9c91e2599bc4b054ff158f7e1cf90cc26d960d2fe",
+    "micro-bi/src/report-template/mergeMigration.ts": "26ce0a519fb4ace62436c1a9f2295d4e8f881a4efbd4810f4e5fab98ee33167d",
+    "micro-bi/src/report-template/mergeResolver.ts": "03e9425a1913b74741e77b068ae562c565fd8780a39994edcf89c2425720f751",
+    "micro-bi/src/report-template/normalizeCellTemplate.ts": "8b82c14167afbb41de2fb31866ac6dc663bf85d3575aa572f804c4256108137a",
+    "micro-bi/src/report-template/types.ts": "a5d7dc823037b89dc0b7c6fa09db2397ae22c53b462183275b723aa8683f78e2",
+    "micro-bi/src/report-template/validator.ts": "da3078a3d68a4029b5fd61bbf4f70a6e678d6b7995f3102d16853c1c45b1cd12",
+    "micro-bi/src/ui/presentation/report/gridAdapter.ts": "d0d26d45e3f695fdae9dde25969aecbd76eba0669cc8944aa45323fa75f787b9",
+    "micro-bi/src/univer/UniverPreview.tsx": "9fe2da8f59a4614c5aaf8e7827190c775d87134c4a844c94f3a2766437337dea",
+    "micro-bi/test/cell-driven-expansion.test.mjs": "6f5c47be91bee8ca9259541d4113d54871b0acf0ab0d0a69902a2983454b34d5"
+  }
+}

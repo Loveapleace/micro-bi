@@ -1,0 +1,31 @@
+{
+  "date": "2026-10-23",
+  "url": "http://localhost:5174/",
+  "scope": "独立Chromium上下文复现截图；未改业务源码和用户浏览器存储",
+  "checks": [
+    {
+      "id": "DUI-01",
+      "finding": "confirmed",
+      "detail": "左侧列分类承制车间已选，右侧仍编译9格且无承制车间占位符",
+      "templateUnchanged": true,
+      "hasWorkshopPlaceholder": false
+    },
+    {
+      "id": "DUI-02",
+      "finding": "confirmed",
+      "detail": "实际动态预览只有时间列轴，没有承制车间层级"
+    },
+    {
+      "id": "DUI-03",
+      "finding": "control-pass",
+      "detail": "清空列时间后，车间字段立即进入模板，Univer增量刷新能够工作"
+    },
+    {
+      "id": "DUI-04",
+      "finding": "confirmed",
+      "detail": "保存后重开，列分类的承制车间选择消失",
+      "columnCategoryTags": []
+    }
+  ],
+  "pageErrors": []
+}

@@ -190,9 +190,12 @@ export const VChartView: React.FC<VChartViewProps> = ({
         };
       });
 
-      const totalVal = aggregatedCategories.reduce((acc, cur) => acc + (cur.finalVal > 0 ? cur.finalVal : 0), 0);
+      // 占比饼图仅由正值构成：非正值扇区（如负增长率）在“占比”语义下无意义，
+      // 既会导致分母失真，又可能产生负角度扇区，故直接排除。
+      const pieCategories = aggregatedCategories.filter((item) => item.finalVal > 0);
+      const totalVal = pieCategories.reduce((acc, cur) => acc + cur.finalVal, 0);
 
-      const pieValues = aggregatedCategories.map((item, idx) => {
+      const pieValues = pieCategories.map((item, idx) => {
         const ratio = totalVal > 0 ? (item.finalVal / totalVal) * 100 : 0;
         const ratioStr = `${ratio.toFixed(1)}%`;
         return {
@@ -774,10 +777,14 @@ export const VChartView: React.FC<VChartViewProps> = ({
     });
     chartRef.current = vchart;
 
-    // 渲染图表
-    vchart.renderAsync();
+    let isCurrent = true;
 
-
+    // 渲染图表并捕获异步竞态与错误
+    vchart.renderAsync().catch((err: any) => {
+      if (isCurrent) {
+        console.warn('[VChartView] renderAsync failed:', err);
+      }
+    });
 
     // 响应式 Resize 监听
     let rAfId: number;
@@ -786,18 +793,23 @@ export const VChartView: React.FC<VChartViewProps> = ({
       rAfId = requestAnimationFrame(() => {
         const w = dom.clientWidth;
         const h = dom.clientHeight;
-        if (w && h) {
-          chartRef.current?.resize(w, h);
+        if (w && h && isCurrent) {
+          vchart.resize(w, h);
         }
       });
     });
     ro.observe(dom);
 
     return () => {
+      isCurrent = false;
       cancelAnimationFrame(rAfId);
       ro.disconnect();
-      vchart.release();
-      chartRef.current = null;
+      try {
+        vchart.release();
+      } catch {}
+      if (chartRef.current === vchart) {
+        chartRef.current = null;
+      }
     };
   }, [isDark, viewType]); // 当明暗模式或图表视图坐标系变化时重建实例
 

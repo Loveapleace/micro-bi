@@ -1,0 +1,2433 @@
+{
+  "version": "0.1.0",
+  "name": "micro-bi",
+  "problems": [
+    "invalid: @types/react-dom@18.3.7 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react-dom",
+    "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react",
+    "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom",
+    "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+  ],
+  "dependencies": {
+    "@ant-design/icons": {
+      "version": "5.6.1",
+      "resolved": "http://test-verdaccio.haiwell.com/@ant-design/icons/-/icons-5.6.1.tgz",
+      "overridden": false,
+      "dependencies": {
+        "rc-util": {
+          "version": "5.44.4",
+          "resolved": "http://test-verdaccio.haiwell.com/rc-util/-/rc-util-5.44.4.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "react-dom": {
+          "version": "18.3.1",
+          "invalid": "\"^17.0.2\" from the root project",
+          "problems": [
+            "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+          ]
+        },
+        "react": {
+          "version": "18.3.1",
+          "invalid": "\"^17.0.2\" from the root project",
+          "problems": [
+            "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+          ]
+        }
+      }
+    },
+    "@types/react-dom": {
+      "version": "18.3.7",
+      "resolved": "http://test-verdaccio.haiwell.com/@types/react-dom/-/react-dom-18.3.7.tgz",
+      "overridden": false,
+      "invalid": "\"^17.0.25\" from the root project",
+      "problems": [
+        "invalid: @types/react-dom@18.3.7 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react-dom"
+      ],
+      "dependencies": {
+        "@types/react": {
+          "version": "18.3.31",
+          "invalid": "\"^17.0.80\" from the root project",
+          "problems": [
+            "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+          ]
+        }
+      }
+    },
+    "@types/react": {
+      "version": "18.3.31",
+      "resolved": "http://test-verdaccio.haiwell.com/@types/react/-/react-18.3.31.tgz",
+      "overridden": false,
+      "invalid": "\"^17.0.80\" from the root project",
+      "problems": [
+        "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+      ]
+    },
+    "@univerjs/core": {
+      "version": "1.0.4",
+      "resolved": "http://test-verdaccio.haiwell.com/@univerjs/core/-/core-1.0.4.tgz",
+      "overridden": false,
+      "dependencies": {
+        "@wendellhu/redi": {
+          "version": "1.1.3",
+          "resolved": "http://test-verdaccio.haiwell.com/@wendellhu/redi/-/redi-1.1.3.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "rxjs": {
+          "version": "7.8.2"
+        }
+      }
+    },
+    "@univerjs/preset-sheets-conditional-formatting": {
+      "version": "1.0.4",
+      "resolved": "http://test-verdaccio.haiwell.com/@univerjs/preset-sheets-conditional-formatting/-/preset-sheets-conditional-formatting-1.0.4.tgz",
+      "overridden": false,
+      "extraneous": true,
+      "dependencies": {
+        "react-dom": {
+          "version": "18.3.1",
+          "invalid": "\"^17.0.2\" from the root project",
+          "problems": [
+            "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+          ]
+        },
+        "react": {
+          "version": "18.3.1",
+          "invalid": "\"^17.0.2\" from the root project",
+          "problems": [
+            "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+          ]
+        },
+        "rxjs": {
+          "version": "7.8.2"
+        }
+      }
+    },
+    "@univerjs/preset-sheets-core": {
+      "version": "1.0.4",
+      "resolved": "http://test-verdaccio.haiwell.com/@univerjs/preset-sheets-core/-/preset-sheets-core-1.0.4.tgz",
+      "overridden": false,
+      "dependencies": {
+        "@univerjs/design": {
+          "version": "1.0.4",
+          "resolved": "http://test-verdaccio.haiwell.com/@univerjs/design/-/design-1.0.4.tgz",
+          "overridden": false,
+          "dependencies": {
+            "@radix-ui/react-dialog": {
+              "version": "1.3.1",
+              "resolved": "http://test-verdaccio.haiwell.com/@radix-ui/react-dialog/-/react-dialog-1.3.1.tgz",
+              "overridden": false,
+              "dependencies": {
+                "@radix-ui/react-compose-refs": {
+                  "version": "1.1.5",
+                  "resolved": "http://test-verdaccio.haiwell.com/@radix-ui/react-compose-refs/-/react-compose-refs-1.1.5.tgz",
+                  "overridden": false,
+                  "dependencies": {
+                    "@types/react": {
+                      "version": "18.3.31",
+                      "invalid": "\"^17.0.80\" from the root project",
+                      "problems": [
+                        "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                      ]
+                    },
+                    "react": {
+                      "version": "18.3.1",
+                      "invalid": "\"^17.0.2\" from the root project",
+                      "problems": [
+                        "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                      ]
+                    }
+                  }
+                },
+                "@radix-ui/react-context": {
+                  "version": "1.3.0",
+                  "resolved": "http://test-verdaccio.haiwell.com/@radix-ui/react-context/-/react-context-1.3.0.tgz",
+                  "overridden": false,
+                  "dependencies": {
+                    "@types/react": {
+                      "version": "18.3.31",
+                      "invalid": "\"^17.0.80\" from the root project",
+                      "problems": [
+                        "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                      ]
+                    },
+                    "react": {
+                      "version": "18.3.1",
+                      "invalid": "\"^17.0.2\" from the root project",
+                      "problems": [
+                        "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                      ]
+                    }
+                  }
+                },
+                "@radix-ui/react-dismissable-layer": {
+                  "version": "1.2.1",
+                  "resolved": "http://test-verdaccio.haiwell.com/@radix-ui/react-dismissable-layer/-/react-dismissable-layer-1.2.1.tgz",
+                  "overridden": false,
+                  "dependencies": {
+                    "@radix-ui/react-use-callback-ref": {
+                      "version": "1.1.5",
+                      "resolved": "http://test-verdaccio.haiwell.com/@radix-ui/react-use-callback-ref/-/react-use-callback-ref-1.1.5.tgz",
+                      "overridden": false,
+                      "dependencies": {
+                        "@types/react": {
+                          "version": "18.3.31",
+                          "invalid": "\"^17.0.80\" from the root project",
+                          "problems": [
+                            "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                          ]
+                        },
+                        "react": {
+                          "version": "18.3.1",
+                          "invalid": "\"^17.0.2\" from the root project",
+                          "problems": [
+                            "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                          ]
+                        }
+                      }
+                    },
+                    "@radix-ui/react-use-effect-event": {
+                      "version": "0.0.5",
+                      "resolved": "http://test-verdaccio.haiwell.com/@radix-ui/react-use-effect-event/-/react-use-effect-event-0.0.5.tgz",
+                      "overridden": false,
+                      "dependencies": {
+                        "@types/react": {
+                          "version": "18.3.31",
+                          "invalid": "\"^17.0.80\" from the root project",
+                          "problems": [
+                            "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                          ]
+                        },
+                        "react": {
+                          "version": "18.3.1",
+                          "invalid": "\"^17.0.2\" from the root project",
+                          "problems": [
+                            "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                          ]
+                        }
+                      }
+                    },
+                    "@types/react-dom": {
+                      "version": "18.3.7",
+                      "invalid": "\"^17.0.25\" from the root project",
+                      "problems": [
+                        "invalid: @types/react-dom@18.3.7 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react-dom"
+                      ]
+                    },
+                    "@types/react": {
+                      "version": "18.3.31",
+                      "invalid": "\"^17.0.80\" from the root project",
+                      "problems": [
+                        "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                      ]
+                    },
+                    "react-dom": {
+                      "version": "18.3.1",
+                      "invalid": "\"^17.0.2\" from the root project",
+                      "problems": [
+                        "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+                      ]
+                    },
+                    "react": {
+                      "version": "18.3.1",
+                      "invalid": "\"^17.0.2\" from the root project",
+                      "problems": [
+                        "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                      ]
+                    }
+                  }
+                },
+                "@radix-ui/react-focus-guards": {
+                  "version": "1.2.0",
+                  "resolved": "http://test-verdaccio.haiwell.com/@radix-ui/react-focus-guards/-/react-focus-guards-1.2.0.tgz",
+                  "overridden": false,
+                  "dependencies": {
+                    "@types/react": {
+                      "version": "18.3.31",
+                      "invalid": "\"^17.0.80\" from the root project",
+                      "problems": [
+                        "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                      ]
+                    },
+                    "react": {
+                      "version": "18.3.1",
+                      "invalid": "\"^17.0.2\" from the root project",
+                      "problems": [
+                        "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                      ]
+                    }
+                  }
+                },
+                "@radix-ui/react-focus-scope": {
+                  "version": "1.3.1",
+                  "resolved": "http://test-verdaccio.haiwell.com/@radix-ui/react-focus-scope/-/react-focus-scope-1.3.1.tgz",
+                  "overridden": false,
+                  "dependencies": {
+                    "@types/react-dom": {
+                      "version": "18.3.7",
+                      "invalid": "\"^17.0.25\" from the root project",
+                      "problems": [
+                        "invalid: @types/react-dom@18.3.7 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react-dom"
+                      ]
+                    },
+                    "@types/react": {
+                      "version": "18.3.31",
+                      "invalid": "\"^17.0.80\" from the root project",
+                      "problems": [
+                        "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                      ]
+                    },
+                    "react-dom": {
+                      "version": "18.3.1",
+                      "invalid": "\"^17.0.2\" from the root project",
+                      "problems": [
+                        "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+                      ]
+                    },
+                    "react": {
+                      "version": "18.3.1",
+                      "invalid": "\"^17.0.2\" from the root project",
+                      "problems": [
+                        "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                      ]
+                    }
+                  }
+                },
+                "@radix-ui/react-id": {
+                  "version": "1.1.4",
+                  "resolved": "http://test-verdaccio.haiwell.com/@radix-ui/react-id/-/react-id-1.1.4.tgz",
+                  "overridden": false,
+                  "dependencies": {
+                    "@types/react": {
+                      "version": "18.3.31",
+                      "invalid": "\"^17.0.80\" from the root project",
+                      "problems": [
+                        "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                      ]
+                    },
+                    "react": {
+                      "version": "18.3.1",
+                      "invalid": "\"^17.0.2\" from the root project",
+                      "problems": [
+                        "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                      ]
+                    }
+                  }
+                },
+                "@radix-ui/react-portal": {
+                  "version": "1.2.0",
+                  "resolved": "http://test-verdaccio.haiwell.com/@radix-ui/react-portal/-/react-portal-1.2.0.tgz",
+                  "overridden": false,
+                  "dependencies": {
+                    "@types/react-dom": {
+                      "version": "18.3.7",
+                      "invalid": "\"^17.0.25\" from the root project",
+                      "problems": [
+                        "invalid: @types/react-dom@18.3.7 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react-dom"
+                      ]
+                    },
+                    "@types/react": {
+                      "version": "18.3.31",
+                      "invalid": "\"^17.0.80\" from the root project",
+                      "problems": [
+                        "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                      ]
+                    },
+                    "react-dom": {
+                      "version": "18.3.1",
+                      "invalid": "\"^17.0.2\" from the root project",
+                      "problems": [
+                        "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+                      ]
+                    },
+                    "react": {
+                      "version": "18.3.1",
+                      "invalid": "\"^17.0.2\" from the root project",
+                      "problems": [
+                        "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                      ]
+                    }
+                  }
+                },
+                "@radix-ui/react-presence": {
+                  "version": "1.1.11",
+                  "resolved": "http://test-verdaccio.haiwell.com/@radix-ui/react-presence/-/react-presence-1.1.11.tgz",
+                  "overridden": false,
+                  "dependencies": {
+                    "@types/react-dom": {
+                      "version": "18.3.7",
+                      "invalid": "\"^17.0.25\" from the root project",
+                      "problems": [
+                        "invalid: @types/react-dom@18.3.7 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react-dom"
+                      ]
+                    },
+                    "@types/react": {
+                      "version": "18.3.31",
+                      "invalid": "\"^17.0.80\" from the root project",
+                      "problems": [
+                        "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                      ]
+                    },
+                    "react-dom": {
+                      "version": "18.3.1",
+                      "invalid": "\"^17.0.2\" from the root project",
+                      "problems": [
+                        "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+                      ]
+                    },
+                    "react": {
+                      "version": "18.3.1",
+                      "invalid": "\"^17.0.2\" from the root project",
+                      "problems": [
+                        "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                      ]
+                    }
+                  }
+                },
+                "@radix-ui/react-primitive": {
+                  "version": "2.2.0",
+                  "resolved": "http://test-verdaccio.haiwell.com/@radix-ui/react-primitive/-/react-primitive-2.2.0.tgz",
+                  "overridden": false,
+                  "dependencies": {
+                    "@types/react-dom": {
+                      "version": "18.3.7",
+                      "invalid": "\"^17.0.25\" from the root project",
+                      "problems": [
+                        "invalid: @types/react-dom@18.3.7 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react-dom"
+                      ]
+                    },
+                    "@types/react": {
+                      "version": "18.3.31",
+                      "invalid": "\"^17.0.80\" from the root project",
+                      "problems": [
+                        "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                      ]
+                    },
+                    "react-dom": {
+                      "version": "18.3.1",
+                      "invalid": "\"^17.0.2\" from the root project",
+                      "problems": [
+                        "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+                      ]
+                    },
+                    "react": {
+                      "version": "18.3.1",
+                      "invalid": "\"^17.0.2\" from the root project",
+                      "problems": [
+                        "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                      ]
+                    }
+                  }
+                },
+                "@radix-ui/react-use-controllable-state": {
+                  "version": "1.3.0",
+                  "resolved": "http://test-verdaccio.haiwell.com/@radix-ui/react-use-controllable-state/-/react-use-controllable-state-1.3.0.tgz",
+                  "overridden": false,
+                  "dependencies": {
+                    "@types/react": {
+                      "version": "18.3.31",
+                      "invalid": "\"^17.0.80\" from the root project",
+                      "problems": [
+                        "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                      ]
+                    },
+                    "react": {
+                      "version": "18.3.1",
+                      "invalid": "\"^17.0.2\" from the root project",
+                      "problems": [
+                        "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                      ]
+                    }
+                  }
+                },
+                "@radix-ui/react-use-layout-effect": {
+                  "version": "1.1.4",
+                  "resolved": "http://test-verdaccio.haiwell.com/@radix-ui/react-use-layout-effect/-/react-use-layout-effect-1.1.4.tgz",
+                  "overridden": false,
+                  "dependencies": {
+                    "@types/react": {
+                      "version": "18.3.31",
+                      "invalid": "\"^17.0.80\" from the root project",
+                      "problems": [
+                        "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                      ]
+                    },
+                    "react": {
+                      "version": "18.3.1",
+                      "invalid": "\"^17.0.2\" from the root project",
+                      "problems": [
+                        "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                      ]
+                    }
+                  }
+                },
+                "@types/react-dom": {
+                  "version": "18.3.7",
+                  "invalid": "\"^17.0.25\" from the root project",
+                  "problems": [
+                    "invalid: @types/react-dom@18.3.7 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react-dom"
+                  ]
+                },
+                "@types/react": {
+                  "version": "18.3.31",
+                  "invalid": "\"^17.0.80\" from the root project",
+                  "problems": [
+                    "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                  ]
+                },
+                "react-dom": {
+                  "version": "18.3.1",
+                  "invalid": "\"^17.0.2\" from the root project",
+                  "problems": [
+                    "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+                  ]
+                },
+                "react-remove-scroll": {
+                  "version": "2.7.2",
+                  "resolved": "http://test-verdaccio.haiwell.com/react-remove-scroll/-/react-remove-scroll-2.7.2.tgz",
+                  "overridden": false,
+                  "dependencies": {
+                    "@types/react": {
+                      "version": "18.3.31",
+                      "invalid": "\"^17.0.80\" from the root project",
+                      "problems": [
+                        "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                      ]
+                    },
+                    "react-remove-scroll-bar": {
+                      "version": "2.3.8",
+                      "resolved": "http://test-verdaccio.haiwell.com/react-remove-scroll-bar/-/react-remove-scroll-bar-2.3.8.tgz",
+                      "overridden": false,
+                      "dependencies": {
+                        "@types/react": {
+                          "version": "18.3.31",
+                          "invalid": "\"^17.0.80\" from the root project",
+                          "problems": [
+                            "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                          ]
+                        },
+                        "react": {
+                          "version": "18.3.1",
+                          "invalid": "\"^17.0.2\" from the root project",
+                          "problems": [
+                            "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                          ]
+                        }
+                      }
+                    },
+                    "react-style-singleton": {
+                      "version": "2.2.3",
+                      "resolved": "http://test-verdaccio.haiwell.com/react-style-singleton/-/react-style-singleton-2.2.3.tgz",
+                      "overridden": false,
+                      "dependencies": {
+                        "@types/react": {
+                          "version": "18.3.31",
+                          "invalid": "\"^17.0.80\" from the root project",
+                          "problems": [
+                            "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                          ]
+                        },
+                        "react": {
+                          "version": "18.3.1",
+                          "invalid": "\"^17.0.2\" from the root project",
+                          "problems": [
+                            "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                          ]
+                        }
+                      }
+                    },
+                    "react": {
+                      "version": "18.3.1",
+                      "invalid": "\"^17.0.2\" from the root project",
+                      "problems": [
+                        "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                      ]
+                    },
+                    "use-callback-ref": {
+                      "version": "1.3.3",
+                      "resolved": "http://test-verdaccio.haiwell.com/use-callback-ref/-/use-callback-ref-1.3.3.tgz",
+                      "overridden": false,
+                      "dependencies": {
+                        "@types/react": {
+                          "version": "18.3.31",
+                          "invalid": "\"^17.0.80\" from the root project",
+                          "problems": [
+                            "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                          ]
+                        },
+                        "react": {
+                          "version": "18.3.1",
+                          "invalid": "\"^17.0.2\" from the root project",
+                          "problems": [
+                            "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                          ]
+                        }
+                      }
+                    },
+                    "use-sidecar": {
+                      "version": "1.1.3",
+                      "resolved": "http://test-verdaccio.haiwell.com/use-sidecar/-/use-sidecar-1.1.3.tgz",
+                      "overridden": false,
+                      "dependencies": {
+                        "@types/react": {
+                          "version": "18.3.31",
+                          "invalid": "\"^17.0.80\" from the root project",
+                          "problems": [
+                            "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                          ]
+                        },
+                        "react": {
+                          "version": "18.3.1",
+                          "invalid": "\"^17.0.2\" from the root project",
+                          "problems": [
+                            "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                },
+                "react": {
+                  "version": "18.3.1",
+                  "invalid": "\"^17.0.2\" from the root project",
+                  "problems": [
+                    "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                  ]
+                }
+              }
+            },
+            "@radix-ui/react-direction": {
+              "version": "1.2.0",
+              "resolved": "http://test-verdaccio.haiwell.com/@radix-ui/react-direction/-/react-direction-1.2.0.tgz",
+              "overridden": false,
+              "dependencies": {
+                "@types/react": {
+                  "version": "18.3.31",
+                  "invalid": "\"^17.0.80\" from the root project",
+                  "problems": [
+                    "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                  ]
+                },
+                "react": {
+                  "version": "18.3.1",
+                  "invalid": "\"^17.0.2\" from the root project",
+                  "problems": [
+                    "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                  ]
+                }
+              }
+            },
+            "@radix-ui/react-dropdown-menu": {
+              "version": "2.2.1",
+              "resolved": "http://test-verdaccio.haiwell.com/@radix-ui/react-dropdown-menu/-/react-dropdown-menu-2.2.1.tgz",
+              "overridden": false,
+              "dependencies": {
+                "@radix-ui/react-menu": {
+                  "version": "2.2.1",
+                  "resolved": "http://test-verdaccio.haiwell.com/@radix-ui/react-menu/-/react-menu-2.2.1.tgz",
+                  "overridden": false,
+                  "dependencies": {
+                    "@radix-ui/react-collection": {
+                      "version": "1.2.0",
+                      "resolved": "http://test-verdaccio.haiwell.com/@radix-ui/react-collection/-/react-collection-1.2.0.tgz",
+                      "overridden": false,
+                      "dependencies": {
+                        "@types/react-dom": {
+                          "version": "18.3.7",
+                          "invalid": "\"^17.0.25\" from the root project",
+                          "problems": [
+                            "invalid: @types/react-dom@18.3.7 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react-dom"
+                          ]
+                        },
+                        "@types/react": {
+                          "version": "18.3.31",
+                          "invalid": "\"^17.0.80\" from the root project",
+                          "problems": [
+                            "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                          ]
+                        },
+                        "react-dom": {
+                          "version": "18.3.1",
+                          "invalid": "\"^17.0.2\" from the root project",
+                          "problems": [
+                            "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+                          ]
+                        },
+                        "react": {
+                          "version": "18.3.1",
+                          "invalid": "\"^17.0.2\" from the root project",
+                          "problems": [
+                            "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                          ]
+                        }
+                      }
+                    },
+                    "@radix-ui/react-roving-focus": {
+                      "version": "1.2.1",
+                      "resolved": "http://test-verdaccio.haiwell.com/@radix-ui/react-roving-focus/-/react-roving-focus-1.2.1.tgz",
+                      "overridden": false,
+                      "dependencies": {
+                        "@radix-ui/react-use-is-hydrated": {
+                          "version": "0.1.3",
+                          "resolved": "http://test-verdaccio.haiwell.com/@radix-ui/react-use-is-hydrated/-/react-use-is-hydrated-0.1.3.tgz",
+                          "overridden": false,
+                          "dependencies": {
+                            "@types/react": {
+                              "version": "18.3.31",
+                              "invalid": "\"^17.0.80\" from the root project",
+                              "problems": [
+                                "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                              ]
+                            },
+                            "react": {
+                              "version": "18.3.1",
+                              "invalid": "\"^17.0.2\" from the root project",
+                              "problems": [
+                                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                              ]
+                            }
+                          }
+                        },
+                        "@types/react-dom": {
+                          "version": "18.3.7",
+                          "invalid": "\"^17.0.25\" from the root project",
+                          "problems": [
+                            "invalid: @types/react-dom@18.3.7 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react-dom"
+                          ]
+                        },
+                        "@types/react": {
+                          "version": "18.3.31",
+                          "invalid": "\"^17.0.80\" from the root project",
+                          "problems": [
+                            "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                          ]
+                        },
+                        "react-dom": {
+                          "version": "18.3.1",
+                          "invalid": "\"^17.0.2\" from the root project",
+                          "problems": [
+                            "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+                          ]
+                        },
+                        "react": {
+                          "version": "18.3.1",
+                          "invalid": "\"^17.0.2\" from the root project",
+                          "problems": [
+                            "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                          ]
+                        }
+                      }
+                    },
+                    "@types/react-dom": {
+                      "version": "18.3.7",
+                      "invalid": "\"^17.0.25\" from the root project",
+                      "problems": [
+                        "invalid: @types/react-dom@18.3.7 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react-dom"
+                      ]
+                    },
+                    "@types/react": {
+                      "version": "18.3.31",
+                      "invalid": "\"^17.0.80\" from the root project",
+                      "problems": [
+                        "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                      ]
+                    },
+                    "react-dom": {
+                      "version": "18.3.1",
+                      "invalid": "\"^17.0.2\" from the root project",
+                      "problems": [
+                        "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+                      ]
+                    },
+                    "react": {
+                      "version": "18.3.1",
+                      "invalid": "\"^17.0.2\" from the root project",
+                      "problems": [
+                        "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                      ]
+                    }
+                  }
+                },
+                "@types/react-dom": {
+                  "version": "18.3.7",
+                  "invalid": "\"^17.0.25\" from the root project",
+                  "problems": [
+                    "invalid: @types/react-dom@18.3.7 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react-dom"
+                  ]
+                },
+                "@types/react": {
+                  "version": "18.3.31",
+                  "invalid": "\"^17.0.80\" from the root project",
+                  "problems": [
+                    "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                  ]
+                },
+                "react-dom": {
+                  "version": "18.3.1",
+                  "invalid": "\"^17.0.2\" from the root project",
+                  "problems": [
+                    "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+                  ]
+                },
+                "react": {
+                  "version": "18.3.1",
+                  "invalid": "\"^17.0.2\" from the root project",
+                  "problems": [
+                    "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                  ]
+                }
+              }
+            },
+            "@radix-ui/react-hover-card": {
+              "version": "1.2.1",
+              "resolved": "http://test-verdaccio.haiwell.com/@radix-ui/react-hover-card/-/react-hover-card-1.2.1.tgz",
+              "overridden": false,
+              "dependencies": {
+                "@radix-ui/react-popper": {
+                  "version": "1.4.0",
+                  "resolved": "http://test-verdaccio.haiwell.com/@radix-ui/react-popper/-/react-popper-1.4.0.tgz",
+                  "overridden": false,
+                  "dependencies": {
+                    "@floating-ui/react-dom": {
+                      "version": "2.1.9",
+                      "resolved": "http://test-verdaccio.haiwell.com/@floating-ui/react-dom/-/react-dom-2.1.9.tgz",
+                      "overridden": false,
+                      "dependencies": {
+                        "react-dom": {
+                          "version": "18.3.1",
+                          "invalid": "\"^17.0.2\" from the root project",
+                          "problems": [
+                            "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+                          ]
+                        },
+                        "react": {
+                          "version": "18.3.1",
+                          "invalid": "\"^17.0.2\" from the root project",
+                          "problems": [
+                            "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                          ]
+                        }
+                      }
+                    },
+                    "@radix-ui/react-arrow": {
+                      "version": "1.1.17",
+                      "resolved": "http://test-verdaccio.haiwell.com/@radix-ui/react-arrow/-/react-arrow-1.1.17.tgz",
+                      "overridden": false,
+                      "dependencies": {
+                        "@types/react-dom": {
+                          "version": "18.3.7",
+                          "invalid": "\"^17.0.25\" from the root project",
+                          "problems": [
+                            "invalid: @types/react-dom@18.3.7 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react-dom"
+                          ]
+                        },
+                        "@types/react": {
+                          "version": "18.3.31",
+                          "invalid": "\"^17.0.80\" from the root project",
+                          "problems": [
+                            "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                          ]
+                        },
+                        "react-dom": {
+                          "version": "18.3.1",
+                          "invalid": "\"^17.0.2\" from the root project",
+                          "problems": [
+                            "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+                          ]
+                        },
+                        "react": {
+                          "version": "18.3.1",
+                          "invalid": "\"^17.0.2\" from the root project",
+                          "problems": [
+                            "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                          ]
+                        }
+                      }
+                    },
+                    "@radix-ui/react-use-rect": {
+                      "version": "1.1.4",
+                      "resolved": "http://test-verdaccio.haiwell.com/@radix-ui/react-use-rect/-/react-use-rect-1.1.4.tgz",
+                      "overridden": false,
+                      "dependencies": {
+                        "@types/react": {
+                          "version": "18.3.31",
+                          "invalid": "\"^17.0.80\" from the root project",
+                          "problems": [
+                            "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                          ]
+                        },
+                        "react": {
+                          "version": "18.3.1",
+                          "invalid": "\"^17.0.2\" from the root project",
+                          "problems": [
+                            "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                          ]
+                        }
+                      }
+                    },
+                    "@radix-ui/react-use-size": {
+                      "version": "1.1.5",
+                      "resolved": "http://test-verdaccio.haiwell.com/@radix-ui/react-use-size/-/react-use-size-1.1.5.tgz",
+                      "overridden": false,
+                      "dependencies": {
+                        "@types/react": {
+                          "version": "18.3.31",
+                          "invalid": "\"^17.0.80\" from the root project",
+                          "problems": [
+                            "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                          ]
+                        },
+                        "react": {
+                          "version": "18.3.1",
+                          "invalid": "\"^17.0.2\" from the root project",
+                          "problems": [
+                            "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                          ]
+                        }
+                      }
+                    },
+                    "@types/react-dom": {
+                      "version": "18.3.7",
+                      "invalid": "\"^17.0.25\" from the root project",
+                      "problems": [
+                        "invalid: @types/react-dom@18.3.7 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react-dom"
+                      ]
+                    },
+                    "@types/react": {
+                      "version": "18.3.31",
+                      "invalid": "\"^17.0.80\" from the root project",
+                      "problems": [
+                        "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                      ]
+                    },
+                    "react-dom": {
+                      "version": "18.3.1",
+                      "invalid": "\"^17.0.2\" from the root project",
+                      "problems": [
+                        "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+                      ]
+                    },
+                    "react": {
+                      "version": "18.3.1",
+                      "invalid": "\"^17.0.2\" from the root project",
+                      "problems": [
+                        "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                      ]
+                    }
+                  }
+                },
+                "@types/react-dom": {
+                  "version": "18.3.7",
+                  "invalid": "\"^17.0.25\" from the root project",
+                  "problems": [
+                    "invalid: @types/react-dom@18.3.7 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react-dom"
+                  ]
+                },
+                "@types/react": {
+                  "version": "18.3.31",
+                  "invalid": "\"^17.0.80\" from the root project",
+                  "problems": [
+                    "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                  ]
+                },
+                "react-dom": {
+                  "version": "18.3.1",
+                  "invalid": "\"^17.0.2\" from the root project",
+                  "problems": [
+                    "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+                  ]
+                },
+                "react": {
+                  "version": "18.3.1",
+                  "invalid": "\"^17.0.2\" from the root project",
+                  "problems": [
+                    "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                  ]
+                }
+              }
+            },
+            "@radix-ui/react-popover": {
+              "version": "1.3.1",
+              "resolved": "http://test-verdaccio.haiwell.com/@radix-ui/react-popover/-/react-popover-1.3.1.tgz",
+              "overridden": false,
+              "dependencies": {
+                "@types/react-dom": {
+                  "version": "18.3.7",
+                  "invalid": "\"^17.0.25\" from the root project",
+                  "problems": [
+                    "invalid: @types/react-dom@18.3.7 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react-dom"
+                  ]
+                },
+                "@types/react": {
+                  "version": "18.3.31",
+                  "invalid": "\"^17.0.80\" from the root project",
+                  "problems": [
+                    "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                  ]
+                },
+                "react-dom": {
+                  "version": "18.3.1",
+                  "invalid": "\"^17.0.2\" from the root project",
+                  "problems": [
+                    "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+                  ]
+                },
+                "react": {
+                  "version": "18.3.1",
+                  "invalid": "\"^17.0.2\" from the root project",
+                  "problems": [
+                    "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                  ]
+                }
+              }
+            },
+            "@radix-ui/react-separator": {
+              "version": "1.2.0",
+              "resolved": "http://test-verdaccio.haiwell.com/@radix-ui/react-separator/-/react-separator-1.2.0.tgz",
+              "overridden": false,
+              "dependencies": {
+                "@types/react-dom": {
+                  "version": "18.3.7",
+                  "invalid": "\"^17.0.25\" from the root project",
+                  "problems": [
+                    "invalid: @types/react-dom@18.3.7 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react-dom"
+                  ]
+                },
+                "@types/react": {
+                  "version": "18.3.31",
+                  "invalid": "\"^17.0.80\" from the root project",
+                  "problems": [
+                    "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                  ]
+                },
+                "react-dom": {
+                  "version": "18.3.1",
+                  "invalid": "\"^17.0.2\" from the root project",
+                  "problems": [
+                    "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+                  ]
+                },
+                "react": {
+                  "version": "18.3.1",
+                  "invalid": "\"^17.0.2\" from the root project",
+                  "problems": [
+                    "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                  ]
+                }
+              }
+            },
+            "@radix-ui/react-slot": {
+              "version": "1.5.0",
+              "resolved": "http://test-verdaccio.haiwell.com/@radix-ui/react-slot/-/react-slot-1.5.0.tgz",
+              "overridden": false,
+              "dependencies": {
+                "@types/react": {
+                  "version": "18.3.31",
+                  "invalid": "\"^17.0.80\" from the root project",
+                  "problems": [
+                    "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                  ]
+                },
+                "react": {
+                  "version": "18.3.1",
+                  "invalid": "\"^17.0.2\" from the root project",
+                  "problems": [
+                    "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                  ]
+                }
+              }
+            },
+            "cmdk": {
+              "version": "1.1.1",
+              "resolved": "http://test-verdaccio.haiwell.com/cmdk/-/cmdk-1.1.1.tgz",
+              "overridden": false,
+              "dependencies": {
+                "react-dom": {
+                  "version": "18.3.1",
+                  "invalid": "\"^17.0.2\" from the root project",
+                  "problems": [
+                    "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+                  ]
+                },
+                "react": {
+                  "version": "18.3.1",
+                  "invalid": "\"^17.0.2\" from the root project",
+                  "problems": [
+                    "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                  ]
+                }
+              }
+            },
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            },
+            "sonner": {
+              "version": "2.0.8",
+              "resolved": "http://test-verdaccio.haiwell.com/sonner/-/sonner-2.0.8.tgz",
+              "overridden": false,
+              "dependencies": {
+                "@types/react": {
+                  "version": "18.3.31",
+                  "invalid": "\"^17.0.80\" from the root project",
+                  "problems": [
+                    "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react"
+                  ]
+                },
+                "react-dom": {
+                  "version": "18.3.1",
+                  "invalid": "\"^17.0.2\" from the root project",
+                  "problems": [
+                    "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+                  ]
+                },
+                "react": {
+                  "version": "18.3.1",
+                  "invalid": "\"^17.0.2\" from the root project",
+                  "problems": [
+                    "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "@univerjs/docs-ui": {
+          "version": "1.0.4",
+          "resolved": "http://test-verdaccio.haiwell.com/@univerjs/docs-ui/-/docs-ui-1.0.4.tgz",
+          "overridden": false,
+          "dependencies": {
+            "@univerjs/core": {
+              "version": "1.0.4"
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            },
+            "rxjs": {
+              "version": "7.8.2"
+            }
+          }
+        },
+        "@univerjs/docs": {
+          "version": "1.0.4",
+          "resolved": "http://test-verdaccio.haiwell.com/@univerjs/docs/-/docs-1.0.4.tgz",
+          "overridden": false,
+          "dependencies": {
+            "@univerjs/core": {
+              "version": "1.0.4"
+            },
+            "rxjs": {
+              "version": "7.8.2"
+            }
+          }
+        },
+        "@univerjs/engine-formula": {
+          "version": "1.0.4",
+          "resolved": "http://test-verdaccio.haiwell.com/@univerjs/engine-formula/-/engine-formula-1.0.4.tgz",
+          "overridden": false,
+          "dependencies": {
+            "@univerjs/core": {
+              "version": "1.0.4"
+            },
+            "rxjs": {
+              "version": "7.8.2"
+            }
+          }
+        },
+        "@univerjs/engine-render": {
+          "version": "1.0.4",
+          "resolved": "http://test-verdaccio.haiwell.com/@univerjs/engine-render/-/engine-render-1.0.4.tgz",
+          "overridden": false,
+          "dependencies": {
+            "@univerjs/core": {
+              "version": "1.0.4"
+            },
+            "rxjs": {
+              "version": "7.8.2"
+            }
+          }
+        },
+        "@univerjs/network": {
+          "version": "1.0.4",
+          "resolved": "http://test-verdaccio.haiwell.com/@univerjs/network/-/network-1.0.4.tgz",
+          "overridden": false,
+          "dependencies": {
+            "@univerjs/core": {
+              "version": "1.0.4"
+            },
+            "rxjs": {
+              "version": "7.8.2"
+            }
+          }
+        },
+        "@univerjs/rpc": {
+          "version": "1.0.4",
+          "resolved": "http://test-verdaccio.haiwell.com/@univerjs/rpc/-/rpc-1.0.4.tgz",
+          "overridden": false,
+          "dependencies": {
+            "@univerjs/core": {
+              "version": "1.0.4"
+            },
+            "rxjs": {
+              "version": "7.8.2"
+            }
+          }
+        },
+        "@univerjs/sheets-formula-ui": {
+          "version": "1.0.4",
+          "resolved": "http://test-verdaccio.haiwell.com/@univerjs/sheets-formula-ui/-/sheets-formula-ui-1.0.4.tgz",
+          "overridden": false,
+          "dependencies": {
+            "@univerjs/core": {
+              "version": "1.0.4"
+            },
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            },
+            "rxjs": {
+              "version": "7.8.2"
+            }
+          }
+        },
+        "@univerjs/sheets-formula": {
+          "version": "1.0.4",
+          "resolved": "http://test-verdaccio.haiwell.com/@univerjs/sheets-formula/-/sheets-formula-1.0.4.tgz",
+          "overridden": false,
+          "dependencies": {
+            "@univerjs/core": {
+              "version": "1.0.4"
+            },
+            "rxjs": {
+              "version": "7.8.2"
+            }
+          }
+        },
+        "@univerjs/sheets-numfmt-ui": {
+          "version": "1.0.4",
+          "resolved": "http://test-verdaccio.haiwell.com/@univerjs/sheets-numfmt-ui/-/sheets-numfmt-ui-1.0.4.tgz",
+          "overridden": false,
+          "dependencies": {
+            "@univerjs/core": {
+              "version": "1.0.4"
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            },
+            "rxjs": {
+              "version": "7.8.2"
+            }
+          }
+        },
+        "@univerjs/sheets-numfmt": {
+          "version": "1.0.4",
+          "resolved": "http://test-verdaccio.haiwell.com/@univerjs/sheets-numfmt/-/sheets-numfmt-1.0.4.tgz",
+          "overridden": false,
+          "dependencies": {
+            "@univerjs/core": {
+              "version": "1.0.4"
+            },
+            "rxjs": {
+              "version": "7.8.2"
+            }
+          }
+        },
+        "@univerjs/sheets-ui": {
+          "version": "1.0.4",
+          "resolved": "http://test-verdaccio.haiwell.com/@univerjs/sheets-ui/-/sheets-ui-1.0.4.tgz",
+          "overridden": false,
+          "dependencies": {
+            "@univerjs/core": {
+              "version": "1.0.4"
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            },
+            "rxjs": {
+              "version": "7.8.2"
+            }
+          }
+        },
+        "@univerjs/sheets": {
+          "version": "1.0.4",
+          "resolved": "http://test-verdaccio.haiwell.com/@univerjs/sheets/-/sheets-1.0.4.tgz",
+          "overridden": false,
+          "dependencies": {
+            "@univerjs/core": {
+              "version": "1.0.4"
+            },
+            "rxjs": {
+              "version": "7.8.2"
+            }
+          }
+        },
+        "@univerjs/ui": {
+          "version": "1.0.4",
+          "resolved": "http://test-verdaccio.haiwell.com/@univerjs/ui/-/ui-1.0.4.tgz",
+          "overridden": false,
+          "dependencies": {
+            "@univerjs/core": {
+              "version": "1.0.4"
+            },
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            },
+            "rxjs": {
+              "version": "7.8.2"
+            }
+          }
+        },
+        "react-dom": {
+          "version": "18.3.1",
+          "invalid": "\"^17.0.2\" from the root project",
+          "problems": [
+            "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+          ]
+        },
+        "react": {
+          "version": "18.3.1",
+          "invalid": "\"^17.0.2\" from the root project",
+          "problems": [
+            "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+          ]
+        },
+        "rxjs": {
+          "version": "7.8.2"
+        }
+      }
+    },
+    "@univerjs/presets": {
+      "version": "1.0.4",
+      "resolved": "http://test-verdaccio.haiwell.com/@univerjs/presets/-/presets-1.0.4.tgz",
+      "overridden": false,
+      "dependencies": {
+        "@univerjs/core": {
+          "version": "1.0.4"
+        },
+        "@univerjs/drawing": {
+          "version": "1.0.4",
+          "resolved": "http://test-verdaccio.haiwell.com/@univerjs/drawing/-/drawing-1.0.4.tgz",
+          "overridden": false,
+          "dependencies": {
+            "@univerjs/core": {
+              "version": "1.0.4"
+            },
+            "rxjs": {
+              "version": "7.8.2"
+            }
+          }
+        },
+        "@univerjs/telemetry": {
+          "version": "1.0.4",
+          "resolved": "http://test-verdaccio.haiwell.com/@univerjs/telemetry/-/telemetry-1.0.4.tgz",
+          "overridden": false,
+          "dependencies": {
+            "@univerjs/core": {
+              "version": "1.0.4"
+            }
+          }
+        }
+      }
+    },
+    "@univerjs/sheets-conditional-formatting-ui": {
+      "version": "1.0.4",
+      "resolved": "http://test-verdaccio.haiwell.com/@univerjs/sheets-conditional-formatting-ui/-/sheets-conditional-formatting-ui-1.0.4.tgz",
+      "overridden": false,
+      "extraneous": true,
+      "dependencies": {
+        "@univerjs/core": {
+          "version": "1.0.4"
+        },
+        "@univerjs/icons": {
+          "version": "1.43.1",
+          "resolved": "http://test-verdaccio.haiwell.com/@univerjs/icons/-/icons-1.43.1.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "react": {
+          "version": "18.3.1",
+          "invalid": "\"^17.0.2\" from the root project",
+          "problems": [
+            "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+          ]
+        },
+        "rxjs": {
+          "version": "7.8.2"
+        }
+      }
+    },
+    "@univerjs/sheets-conditional-formatting": {
+      "version": "1.0.4",
+      "resolved": "http://test-verdaccio.haiwell.com/@univerjs/sheets-conditional-formatting/-/sheets-conditional-formatting-1.0.4.tgz",
+      "overridden": false,
+      "extraneous": true,
+      "dependencies": {
+        "@univerjs/core": {
+          "version": "1.0.4"
+        },
+        "rxjs": {
+          "version": "7.8.2"
+        }
+      }
+    },
+    "@visactor/vchart": {
+      "version": "2.1.7",
+      "resolved": "http://test-verdaccio.haiwell.com/@visactor/vchart/-/vchart-2.1.7.tgz",
+      "overridden": false
+    },
+    "@visactor/vtable-plugins": {
+      "version": "1.26.8",
+      "resolved": "http://test-verdaccio.haiwell.com/@visactor/vtable-plugins/-/vtable-plugins-1.26.8.tgz",
+      "overridden": false,
+      "extraneous": true,
+      "dependencies": {
+        "@visactor/vtable": {
+          "version": "1.26.8"
+        }
+      }
+    },
+    "@visactor/vtable": {
+      "version": "1.26.8",
+      "resolved": "http://test-verdaccio.haiwell.com/@visactor/vtable/-/vtable-1.26.8.tgz",
+      "overridden": false
+    },
+    "antd": {
+      "version": "5.24.0",
+      "resolved": "http://test-verdaccio.haiwell.com/antd/-/antd-5.24.0.tgz",
+      "overridden": false,
+      "dependencies": {
+        "@ant-design/cssinjs-utils": {
+          "version": "1.1.3",
+          "resolved": "http://test-verdaccio.haiwell.com/@ant-design/cssinjs-utils/-/cssinjs-utils-1.1.3.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "@ant-design/cssinjs": {
+          "version": "1.24.0",
+          "resolved": "http://test-verdaccio.haiwell.com/@ant-design/cssinjs/-/cssinjs-1.24.0.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "@ant-design/icons": {
+          "version": "5.6.1"
+        },
+        "@ant-design/react-slick": {
+          "version": "1.1.2",
+          "resolved": "http://test-verdaccio.haiwell.com/@ant-design/react-slick/-/react-slick-1.1.2.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "@rc-component/color-picker": {
+          "version": "2.0.1",
+          "resolved": "http://test-verdaccio.haiwell.com/@rc-component/color-picker/-/color-picker-2.0.1.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "@rc-component/mutate-observer": {
+          "version": "1.1.0",
+          "resolved": "http://test-verdaccio.haiwell.com/@rc-component/mutate-observer/-/mutate-observer-1.1.0.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "@rc-component/qrcode": {
+          "version": "1.0.1",
+          "resolved": "http://test-verdaccio.haiwell.com/@rc-component/qrcode/-/qrcode-1.0.1.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "@rc-component/tour": {
+          "version": "1.15.1",
+          "resolved": "http://test-verdaccio.haiwell.com/@rc-component/tour/-/tour-1.15.1.tgz",
+          "overridden": false,
+          "dependencies": {
+            "@rc-component/portal": {
+              "version": "1.1.2",
+              "resolved": "http://test-verdaccio.haiwell.com/@rc-component/portal/-/portal-1.1.2.tgz",
+              "overridden": false,
+              "dependencies": {
+                "react-dom": {
+                  "version": "18.3.1",
+                  "invalid": "\"^17.0.2\" from the root project",
+                  "problems": [
+                    "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+                  ]
+                },
+                "react": {
+                  "version": "18.3.1",
+                  "invalid": "\"^17.0.2\" from the root project",
+                  "problems": [
+                    "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                  ]
+                }
+              }
+            },
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "@rc-component/trigger": {
+          "version": "2.3.1",
+          "resolved": "http://test-verdaccio.haiwell.com/@rc-component/trigger/-/trigger-2.3.1.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "rc-cascader": {
+          "version": "3.33.1",
+          "resolved": "http://test-verdaccio.haiwell.com/rc-cascader/-/rc-cascader-3.33.1.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "rc-checkbox": {
+          "version": "3.5.0",
+          "resolved": "http://test-verdaccio.haiwell.com/rc-checkbox/-/rc-checkbox-3.5.0.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "rc-collapse": {
+          "version": "3.9.0",
+          "resolved": "http://test-verdaccio.haiwell.com/rc-collapse/-/rc-collapse-3.9.0.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "rc-dialog": {
+          "version": "9.6.0",
+          "resolved": "http://test-verdaccio.haiwell.com/rc-dialog/-/rc-dialog-9.6.0.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "rc-drawer": {
+          "version": "7.2.0",
+          "resolved": "http://test-verdaccio.haiwell.com/rc-drawer/-/rc-drawer-7.2.0.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "rc-dropdown": {
+          "version": "4.2.1",
+          "resolved": "http://test-verdaccio.haiwell.com/rc-dropdown/-/rc-dropdown-4.2.1.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "rc-field-form": {
+          "version": "2.7.1",
+          "resolved": "http://test-verdaccio.haiwell.com/rc-field-form/-/rc-field-form-2.7.1.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "rc-image": {
+          "version": "7.11.1",
+          "resolved": "http://test-verdaccio.haiwell.com/rc-image/-/rc-image-7.11.1.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "rc-input-number": {
+          "version": "9.4.0",
+          "resolved": "http://test-verdaccio.haiwell.com/rc-input-number/-/rc-input-number-9.4.0.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "rc-input": {
+          "version": "1.7.3",
+          "resolved": "http://test-verdaccio.haiwell.com/rc-input/-/rc-input-1.7.3.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "rc-mentions": {
+          "version": "2.19.1",
+          "resolved": "http://test-verdaccio.haiwell.com/rc-mentions/-/rc-mentions-2.19.1.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "rc-menu": {
+          "version": "9.16.1",
+          "resolved": "http://test-verdaccio.haiwell.com/rc-menu/-/rc-menu-9.16.1.tgz",
+          "overridden": false,
+          "dependencies": {
+            "rc-overflow": {
+              "version": "1.5.0",
+              "resolved": "http://test-verdaccio.haiwell.com/rc-overflow/-/rc-overflow-1.5.0.tgz",
+              "overridden": false,
+              "dependencies": {
+                "react-dom": {
+                  "version": "18.3.1",
+                  "invalid": "\"^17.0.2\" from the root project",
+                  "problems": [
+                    "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+                  ]
+                },
+                "react": {
+                  "version": "18.3.1",
+                  "invalid": "\"^17.0.2\" from the root project",
+                  "problems": [
+                    "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                  ]
+                }
+              }
+            },
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "rc-motion": {
+          "version": "2.9.5",
+          "resolved": "http://test-verdaccio.haiwell.com/rc-motion/-/rc-motion-2.9.5.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "rc-notification": {
+          "version": "5.6.4",
+          "resolved": "http://test-verdaccio.haiwell.com/rc-notification/-/rc-notification-5.6.4.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "rc-pagination": {
+          "version": "5.1.0",
+          "resolved": "http://test-verdaccio.haiwell.com/rc-pagination/-/rc-pagination-5.1.0.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "rc-picker": {
+          "version": "4.11.3",
+          "resolved": "http://test-verdaccio.haiwell.com/rc-picker/-/rc-picker-4.11.3.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "rc-progress": {
+          "version": "4.0.0",
+          "resolved": "http://test-verdaccio.haiwell.com/rc-progress/-/rc-progress-4.0.0.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "rc-rate": {
+          "version": "2.13.1",
+          "resolved": "http://test-verdaccio.haiwell.com/rc-rate/-/rc-rate-2.13.1.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "rc-resize-observer": {
+          "version": "1.4.3",
+          "resolved": "http://test-verdaccio.haiwell.com/rc-resize-observer/-/rc-resize-observer-1.4.3.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "rc-segmented": {
+          "version": "2.7.1",
+          "resolved": "http://test-verdaccio.haiwell.com/rc-segmented/-/rc-segmented-2.7.1.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "rc-select": {
+          "version": "14.16.8",
+          "resolved": "http://test-verdaccio.haiwell.com/rc-select/-/rc-select-14.16.8.tgz",
+          "overridden": false,
+          "dependencies": {
+            "rc-virtual-list": {
+              "version": "3.19.2",
+              "resolved": "http://test-verdaccio.haiwell.com/rc-virtual-list/-/rc-virtual-list-3.19.2.tgz",
+              "overridden": false,
+              "dependencies": {
+                "react-dom": {
+                  "version": "18.3.1",
+                  "invalid": "\"^17.0.2\" from the root project",
+                  "problems": [
+                    "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+                  ]
+                },
+                "react": {
+                  "version": "18.3.1",
+                  "invalid": "\"^17.0.2\" from the root project",
+                  "problems": [
+                    "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                  ]
+                }
+              }
+            },
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "rc-slider": {
+          "version": "11.1.9",
+          "resolved": "http://test-verdaccio.haiwell.com/rc-slider/-/rc-slider-11.1.9.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "rc-steps": {
+          "version": "6.0.1",
+          "resolved": "http://test-verdaccio.haiwell.com/rc-steps/-/rc-steps-6.0.1.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "rc-switch": {
+          "version": "4.1.0",
+          "resolved": "http://test-verdaccio.haiwell.com/rc-switch/-/rc-switch-4.1.0.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "rc-table": {
+          "version": "7.50.5",
+          "resolved": "http://test-verdaccio.haiwell.com/rc-table/-/rc-table-7.50.5.tgz",
+          "overridden": false,
+          "dependencies": {
+            "@rc-component/context": {
+              "version": "1.4.0",
+              "resolved": "http://test-verdaccio.haiwell.com/@rc-component/context/-/context-1.4.0.tgz",
+              "overridden": false,
+              "dependencies": {
+                "react-dom": {
+                  "version": "18.3.1",
+                  "invalid": "\"^17.0.2\" from the root project",
+                  "problems": [
+                    "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+                  ]
+                },
+                "react": {
+                  "version": "18.3.1",
+                  "invalid": "\"^17.0.2\" from the root project",
+                  "problems": [
+                    "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+                  ]
+                }
+              }
+            },
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "rc-tabs": {
+          "version": "15.5.2",
+          "resolved": "http://test-verdaccio.haiwell.com/rc-tabs/-/rc-tabs-15.5.2.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "rc-textarea": {
+          "version": "1.9.0",
+          "resolved": "http://test-verdaccio.haiwell.com/rc-textarea/-/rc-textarea-1.9.0.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "rc-tooltip": {
+          "version": "6.4.0",
+          "resolved": "http://test-verdaccio.haiwell.com/rc-tooltip/-/rc-tooltip-6.4.0.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "rc-tree-select": {
+          "version": "5.27.0",
+          "resolved": "http://test-verdaccio.haiwell.com/rc-tree-select/-/rc-tree-select-5.27.0.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "rc-tree": {
+          "version": "5.13.1",
+          "resolved": "http://test-verdaccio.haiwell.com/rc-tree/-/rc-tree-5.13.1.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "rc-upload": {
+          "version": "4.8.1",
+          "resolved": "http://test-verdaccio.haiwell.com/rc-upload/-/rc-upload-4.8.1.tgz",
+          "overridden": false,
+          "dependencies": {
+            "react-dom": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+              ]
+            },
+            "react": {
+              "version": "18.3.1",
+              "invalid": "\"^17.0.2\" from the root project",
+              "problems": [
+                "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+              ]
+            }
+          }
+        },
+        "react-dom": {
+          "version": "18.3.1",
+          "invalid": "\"^17.0.2\" from the root project",
+          "problems": [
+            "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+          ]
+        },
+        "react": {
+          "version": "18.3.1",
+          "invalid": "\"^17.0.2\" from the root project",
+          "problems": [
+            "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+          ]
+        }
+      }
+    },
+    "react-dom": {
+      "version": "18.3.1",
+      "resolved": "http://test-verdaccio.haiwell.com/react-dom/-/react-dom-18.3.1.tgz",
+      "overridden": false,
+      "invalid": "\"^17.0.2\" from the root project",
+      "problems": [
+        "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom"
+      ],
+      "dependencies": {
+        "react": {
+          "version": "18.3.1",
+          "invalid": "\"^17.0.2\" from the root project",
+          "problems": [
+            "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+          ]
+        }
+      }
+    },
+    "react": {
+      "version": "18.3.1",
+      "resolved": "http://test-verdaccio.haiwell.com/react/-/react-18.3.1.tgz",
+      "overridden": false,
+      "invalid": "\"^17.0.2\" from the root project",
+      "problems": [
+        "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+      ]
+    },
+    "rxjs": {
+      "version": "7.8.2",
+      "resolved": "http://test-verdaccio.haiwell.com/rxjs/-/rxjs-7.8.2.tgz",
+      "overridden": false
+    }
+  },
+  "error": {
+    "code": "ELSPROBLEMS",
+    "summary": "invalid: @types/react-dom@18.3.7 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react-dom\ninvalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react\ninvalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom\ninvalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react",
+    "detail": ""
+  }
+}

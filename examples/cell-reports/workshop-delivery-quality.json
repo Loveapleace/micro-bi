@@ -1,0 +1,249 @@
+{
+  "documentType": "cell-template",
+  "schemaVersion": "1.0",
+  "id": "example-workshop-delivery-quality",
+  "title": "[单元格示例] 车间交付与质量交叉报表",
+  "templateRevision": 1,
+  "sheets": [
+    {
+      "id": "sheet-1",
+      "name": "车间交付质量"
+    }
+  ],
+  "regions": [
+    {
+      "id": "delivery-region",
+      "datasetId": "industrial_lifecycle_orders",
+      "layoutKind": "pivot",
+      "sheetId": "sheet-1",
+      "anchor": {
+        "row": 3,
+        "column": 0
+      },
+      "metricDirection": "rows",
+      "filters": [],
+      "rowTotals": {
+        "showGrandTotals": true,
+        "showSubTotals": false,
+        "label": "总计"
+      },
+      "columnTotals": {
+        "showGrandTotals": true,
+        "showSubTotals": false,
+        "label": "总计"
+      }
+    }
+  ],
+  "cells": [
+    {
+      "id": "title",
+      "sheetId": "sheet-1",
+      "position": {
+        "row": 0,
+        "column": 0
+      },
+      "content": {
+        "kind": "literal",
+        "value": "车间交付与质量交叉报表"
+      },
+      "parents": {
+        "row": null,
+        "column": null
+      },
+      "style": {
+        "bold": true,
+        "color": "#1677ff",
+        "textAlign": "center"
+      }
+    },
+    {
+      "id": "note",
+      "sheetId": "sheet-1",
+      "position": {
+        "row": 1,
+        "column": 0
+      },
+      "content": {
+        "kind": "literal",
+        "value": "按计划投产日统计；缺陷率 = 缺陷件数合计 / 交付件数合计"
+      },
+      "parents": {
+        "row": null,
+        "column": null
+      }
+    },
+    {
+      "id": "workshop",
+      "sheetId": "sheet-1",
+      "regionId": "delivery-region",
+      "position": {
+        "row": 4,
+        "column": 0
+      },
+      "content": {
+        "kind": "field",
+        "fieldId": "workshop",
+        "fieldKey": "workshop",
+        "role": "row-dimension",
+        "operation": "group",
+        "expand": "down",
+        "displayName": "承制车间"
+      },
+      "parents": {
+        "row": null,
+        "column": null
+      }
+    },
+    {
+      "id": "plan-date",
+      "sheetId": "sheet-1",
+      "regionId": "delivery-region",
+      "position": {
+        "row": 3,
+        "column": 2
+      },
+      "content": {
+        "kind": "field",
+        "fieldId": "plan_start_time",
+        "fieldKey": "plan_start_time",
+        "role": "column-dimension",
+        "operation": "group",
+        "expand": "right",
+        "timeBucket": {
+          "granularity": "day"
+        },
+        "displayName": "计划投产日"
+      },
+      "parents": {
+        "row": null,
+        "column": null
+      }
+    },
+    {
+      "id": "quantity",
+      "sheetId": "sheet-1",
+      "regionId": "delivery-region",
+      "position": {
+        "row": 4,
+        "column": 2
+      },
+      "content": {
+        "kind": "field",
+        "fieldId": "output_qty",
+        "fieldKey": "output_qty",
+        "metricId": "qty-sum",
+        "role": "measure",
+        "operation": "sum",
+        "expand": "inherit",
+        "displayName": "交付件数",
+        "format": "number"
+      },
+      "parents": {
+        "row": "workshop",
+        "column": "plan-date"
+      },
+      "style": {
+        "textAlign": "right",
+        "color": "#1677ff",
+        "bold": true
+      }
+    },
+    {
+      "id": "defects",
+      "sheetId": "sheet-1",
+      "regionId": "delivery-region",
+      "position": {
+        "row": 5,
+        "column": 2
+      },
+      "content": {
+        "kind": "field",
+        "fieldId": "defect_count",
+        "fieldKey": "defect_count",
+        "metricId": "defect-sum",
+        "role": "measure",
+        "operation": "sum",
+        "expand": "inherit",
+        "displayName": "缺陷件数"
+      },
+      "parents": {
+        "row": "workshop",
+        "column": "plan-date"
+      }
+    },
+    {
+      "id": "defect-rate",
+      "sheetId": "sheet-1",
+      "regionId": "delivery-region",
+      "position": {
+        "row": 6,
+        "column": 2
+      },
+      "content": {
+        "kind": "business-formula",
+        "metricId": "defect-rate",
+        "expression": "IF([SUM(output_qty)] > 0, [SUM(defect_count)] / [SUM(output_qty)], 0)",
+        "scope": "summary",
+        "precision": 6,
+        "displayName": "加权缺陷率",
+        "format": "percent"
+      },
+      "parents": {
+        "row": "workshop",
+        "column": "plan-date"
+      },
+      "style": {
+        "textAlign": "right",
+        "bold": true,
+        "color": "#d46b08"
+      }
+    }
+  ],
+  "layoutRules": [
+    {
+      "id": "title-merge",
+      "kind": "merge",
+      "sheetId": "sheet-1",
+      "range": {
+        "startRow": 0,
+        "endRow": 0,
+        "startColumn": 0,
+        "endColumn": 7
+      },
+      "source": "user",
+      "sequence": 1
+    },
+    {
+      "id": "note-merge",
+      "kind": "merge",
+      "sheetId": "sheet-1",
+      "range": {
+        "startRow": 1,
+        "endRow": 1,
+        "startColumn": 0,
+        "endColumn": 7
+      },
+      "source": "user",
+      "sequence": 2
+    },
+    {
+      "id": "workshop-width",
+      "kind": "column-width",
+      "sheetId": "sheet-1",
+      "index": 0,
+      "size": 180
+    },
+    {
+      "id": "metric-width",
+      "kind": "column-width",
+      "sheetId": "sheet-1",
+      "index": 1,
+      "size": 140
+    }
+  ],
+  "styleRules": [],
+  "conditionalRules": [],
+  "instanceOverrides": [],
+  "orphanedEdits": [],
+  "capabilitiesVersion": "cell-v1"
+}

@@ -17,10 +17,10 @@ import type {
   ReportBinding,
   AxisMemberRef,
 } from './types.js';
-import type { NormalizedAxes, NormalizedDimension } from './normalizeAxes.js';
+import type { NormalizedAxes, NormalizedDimension, NormalizedMetric } from './normalizeAxes.js';
 import { formatTimeBucket } from '../engine/bucketing.js';
 import { createReportBinding, serializeAxisPath } from './bindings.js';
-import { evaluateMetricsForBucket } from './calculateMetrics.js';
+import { evaluateMetricsForBucket, type EvaluatedMetricResult } from './calculateMetrics.js';
 
 interface MemberPathItem {
   path: AxisMemberRef[];
@@ -35,6 +35,7 @@ interface GroupNode {
   memberKey: string;
   label: string;
   ref: AxisMemberRef;
+  records: DataRecord[];
   children?: Map<string, GroupNode> | undefined;
 }
 
@@ -43,7 +44,10 @@ function extractMemberPaths(
   dims: readonly NormalizedDimension[],
   showSubTotals: boolean,
   subTotalLabel: string = '小计',
-  sorts?: readonly { field: string; order?: 'asc' | 'desc' }[] | undefined
+  sorts?: readonly { field: string; order?: 'asc' | 'desc' }[] | undefined,
+  metrics?: readonly NormalizedMetric[] | undefined,
+  rawHeaders?: Record<string, string> | undefined,
+  enableMetricSort = true
 ): MemberPathItem[] {
   if (dims.length === 0) {
     return [
@@ -83,10 +87,12 @@ function extractMemberPaths(
             memberKey,
             label,
           },
+          records: [],
           children: d < dims.length - 1 ? new Map<string, GroupNode>() : undefined,
         };
         currentMap.set(memberKey, node);
       }
+      node.records.push(record);
 
       if (node.children) {
         currentMap = node.children;
@@ -97,6 +103,33 @@ function extractMemberPaths(
   // 2. 深度遍历分组树，生成叶子节点与层级小计节点
   const list: MemberPathItem[] = [];
 
+  // 指标排序规则：字段不匹配任何维度、且能解析到某个指标时，按该指标在节点上的聚合值排序
+  const metricSortRule = enableMetricSort
+    ? sorts?.find(
+        (s) =>
+          !dims.some((d) => d.field === s.field) &&
+          metrics?.some(
+            (m) =>
+              m.id === s.field ||
+              m.label === s.field ||
+              m.field === s.field ||
+              `${(m.agg || 'SUM').toUpperCase()}(${m.field})` === s.field
+          )
+      )
+    : undefined;
+  const metricTarget = metricSortRule
+    ? metrics!.find(
+        (m) =>
+          m.id === metricSortRule.field ||
+          m.label === metricSortRule.field ||
+          m.field === metricSortRule.field ||
+          `${(m.agg || 'SUM').toUpperCase()}(${m.field})` === metricSortRule.field
+      )
+    : undefined;
+  const metricCache: Map<GroupNode, Map<string, EvaluatedMetricResult>> | undefined = metricTarget
+    ? new Map()
+    : undefined;
+
   function walk(
     nodes: Map<string, GroupNode>,
     depth: number,
@@ -106,13 +139,36 @@ function extractMemberPaths(
     const sortDef = currentDim ? sorts?.find((s) => s.field === currentDim.field) : undefined;
     const isDesc = sortDef?.order === 'desc';
 
-    const sortedKeys = Array.from(nodes.keys()).sort((a, b) => {
-      const comp = a.localeCompare(b);
+    const nodeList = Array.from(nodes.values());
+    nodeList.sort((nodeA, nodeB) => {
+      if (metricTarget && metrics && metricCache) {
+        const getMetricValue = (n: GroupNode): unknown => {
+          let cached = metricCache.get(n);
+          if (!cached) {
+            cached = evaluateMetricsForBucket(n.records, metrics, rawHeaders ?? {});
+            metricCache.set(n, cached);
+          }
+          return cached.get(metricTarget.id)?.value;
+        };
+        const valA = getMetricValue(nodeA);
+        const valB = getMetricValue(nodeB);
+        const order = metricSortRule!.order || 'asc';
+        if (valA !== valB) {
+          if (valA === null || valA === undefined) return 1;
+          if (valB === null || valB === undefined) return -1;
+          if (typeof valA === 'number' && typeof valB === 'number') {
+            return order === 'desc' ? valB - valA : valA - valB;
+          }
+          const cmp = String(valA).localeCompare(String(valB), 'zh-CN', { numeric: true });
+          return order === 'desc' ? -cmp : cmp;
+        }
+        return 0;
+      }
+      const comp = nodeA.memberKey.localeCompare(nodeB.memberKey, 'zh-CN', { numeric: true });
       return isDesc ? -comp : comp;
     });
 
-    for (const key of sortedKeys) {
-      const node = nodes.get(key)!;
+    for (const node of nodeList) {
       const currentRef = node.ref;
       const currentPath = [...ancestorRefs, currentRef];
 
@@ -183,21 +239,40 @@ export function projectPivotReport(
   const metrics = axes.metrics;
   const indicatorsAsCol = axes.indicatorsAsCol;
 
-  // 1. 提取行列成员路径（结合各轴 subtotal 开关）
+  // 1. 提取行列成员路径（结合各轴 subtotal 开关；指标排序仅作用于行轴，避免重排时间列）
   const rowMembers = extractMemberPaths(
     records,
     rowDims,
     Boolean(axes.rowTotals.showSubTotals),
     axes.rowTotals.subTotalLabel || '小计',
-    axes.options?.sort
+    axes.options?.sort,
+    metrics,
+    axes.rawHeaders,
+    true
   );
   const colMembers = extractMemberPaths(
     records,
     colDims,
     Boolean(axes.colTotals.showSubTotals),
     axes.colTotals.subTotalLabel || '小计',
-    axes.options?.sort
+    axes.options?.sort,
+    metrics,
+    axes.rawHeaders,
+    false
   );
+
+  // 桶级度量求值缓存：同一桶被交叉格/行总计/列总计/角落总计反复引用，按桶数组实例复用求值结果
+  const EMPTY_RECORDS: DataRecord[] = [];
+  const metricEvalCache = new WeakMap<readonly DataRecord[], Map<string, EvaluatedMetricResult>>();
+  const evaluateBucketCached = (bucketRecords: readonly DataRecord[]): Map<string, EvaluatedMetricResult> => {
+    const source = bucketRecords.length > 0 ? bucketRecords : EMPTY_RECORDS;
+    let cached = metricEvalCache.get(source);
+    if (!cached) {
+      cached = evaluateMetricsForBucket(source, metrics, axes.rawHeaders);
+      metricEvalCache.set(source, cached);
+    }
+    return cached;
+  };
 
   // 2. 建立桶数据索引（全前缀索引，使叶子与小计均可 O(1) 检索且键结构无歧义）
   const intersectionBuckets = new Map<string, DataRecord[]>();
@@ -276,7 +351,7 @@ export function projectPivotReport(
   }
 
   // 预先计算全局总计指标（全量底层流水）
-  const grandTotalMetrics = evaluateMetricsForBucket(records, metrics, axes.rawHeaders);
+  const grandTotalMetrics = evaluateBucketCached(records);
 
   // =========================================================================
   // 形态 A：指标横向展开 (indicatorsAsCol === true)
@@ -343,7 +418,7 @@ export function projectPivotReport(
         const startCol = rowDimCount + runStartIdx * colGroupSpan;
         const endCol = rowDimCount + runEndIdx * colGroupSpan + colGroupSpan - 1;
         const ref = startMem.path[lvl];
-        const val = ref ? ref.label || ref.memberKey : '';
+        const val = ref ? (ref.label || (ref.memberKey === '__subtotal__' ? '' : ref.memberKey)) : '';
         const isSubtotalLvl = startMem.isSubtotal && lvl > (startMem.subtotalDepth ?? -1);
 
         cells.push({
@@ -587,8 +662,8 @@ export function projectPivotReport(
       colMembers.forEach((colMem, cIdx) => {
         const baseCol = rowDimCount + cIdx * colGroupSpan;
         const intersectKey = JSON.stringify([rowMem.key, colMem.key]);
-        const intersectRecords = intersectionBuckets.get(intersectKey) || [];
-        const evaluated = evaluateMetricsForBucket(intersectRecords, metrics, axes.rawHeaders);
+        const intersectRecords = intersectionBuckets.get(intersectKey) || EMPTY_RECORDS;
+        const evaluated = evaluateBucketCached(intersectRecords);
         const isSubtotalCell = rowMem.isSubtotal || colMem.isSubtotal;
         const cellRole = isSubtotalCell ? 'subtotal' : 'metric-value';
 
@@ -627,8 +702,8 @@ export function projectPivotReport(
       // 右侧总计格 (行汇总：直接基于 rowBuckets 对应前缀计算，杜绝相加)
       if (axes.colTotals.showGrandTotals) {
         const baseCol = rowDimCount + colMembers.length * colGroupSpan;
-        const rowAllRecords = rowBuckets.get(rowMem.key) || [];
-        const evaluatedRow = evaluateMetricsForBucket(rowAllRecords, metrics, axes.rawHeaders);
+        const rowAllRecords = rowBuckets.get(rowMem.key) || EMPTY_RECORDS;
+        const evaluatedRow = evaluateBucketCached(rowAllRecords);
         const cellRole = rowMem.isSubtotal ? 'subtotal' : 'grand-total';
 
         metrics.forEach((m, mIdx) => {
@@ -708,8 +783,8 @@ export function projectPivotReport(
       // 底部各列汇总 (直接基于 colBuckets 对应前缀计算)
       colMembers.forEach((colMem, cIdx) => {
         const baseCol = rowDimCount + cIdx * colGroupSpan;
-        const colAllRecords = colBuckets.get(colMem.key) || [];
-        const evaluatedCol = evaluateMetricsForBucket(colAllRecords, metrics, axes.rawHeaders);
+        const colAllRecords = colBuckets.get(colMem.key) || EMPTY_RECORDS;
+        const evaluatedCol = evaluateBucketCached(colAllRecords);
         const cellRole = colMem.isSubtotal ? 'subtotal' : 'grand-total';
 
         metrics.forEach((m, mIdx) => {
@@ -1067,13 +1142,13 @@ export function projectPivotReport(
     }
 
     // 预计算本行跨列的各桶值
-    const rowAllRecords = rowBuckets.get(rowMem.key) || [];
-    const evaluatedRowAll = evaluateMetricsForBucket(rowAllRecords, metrics, axes.rawHeaders);
+    const rowAllRecords = rowBuckets.get(rowMem.key) || EMPTY_RECORDS;
+    const evaluatedRowAll = evaluateBucketCached(rowAllRecords);
 
     const evaluatedCols = colMembers.map((colMem) => {
       const intersectKey = JSON.stringify([rowMem.key, colMem.key]);
-      const recordsInIntersect = intersectionBuckets.get(intersectKey) || [];
-      return evaluateMetricsForBucket(recordsInIntersect, metrics, axes.rawHeaders);
+      const recordsInIntersect = intersectionBuckets.get(intersectKey) || EMPTY_RECORDS;
+      return evaluateBucketCached(recordsInIntersect);
     });
 
     // 纵向展开每个指标
@@ -1220,8 +1295,8 @@ export function projectPivotReport(
 
     // 预计算底部各列汇总
     const evaluatedBottomCols = colMembers.map((colMem) => {
-      const recordsInCol = colBuckets.get(colMem.key) || [];
-      return evaluateMetricsForBucket(recordsInCol, metrics, axes.rawHeaders);
+      const recordsInCol = colBuckets.get(colMem.key) || EMPTY_RECORDS;
+      return evaluateBucketCached(recordsInCol);
     });
 
     // 纵向展开每个指标的总计行

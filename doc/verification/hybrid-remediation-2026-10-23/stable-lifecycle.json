@@ -1,0 +1,19 @@
+{
+  "date": "2026-10-23",
+  "cycles": [
+    {
+      "cycle": 1,
+      "success": true
+    },
+    {
+      "cycle": 2,
+      "success": true
+    },
+    {
+      "cycle": 3,
+      "success": true
+    }
+  ],
+  "pageErrors": [],
+  "scope": "新建保存、设计态备注保存、刷新；随后三次打开高级设置取消→预览开关总计→切设计→保存→刷新。"
+}

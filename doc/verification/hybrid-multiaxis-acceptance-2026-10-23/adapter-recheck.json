@@ -1,0 +1,125 @@
+{
+  "date": "2026-10-23",
+  "results": [
+    {
+      "id": "DIM-01",
+      "expectedRow": [
+        "order_code"
+      ],
+      "expectedCol": [
+        "plan_start_time"
+      ],
+      "actualRow": [
+        "order_code"
+      ],
+      "actualCol": [
+        "plan_start_time"
+      ],
+      "status": "pass"
+    },
+    {
+      "id": "DIM-02",
+      "expectedRow": [
+        "order_code"
+      ],
+      "expectedCol": [
+        "plan_start_time",
+        "workshop"
+      ],
+      "actualRow": [
+        "order_code"
+      ],
+      "actualCol": [
+        "plan_start_time",
+        "workshop"
+      ],
+      "status": "pass"
+    },
+    {
+      "id": "DIM-03",
+      "expectedRow": [
+        "order_code"
+      ],
+      "expectedCol": [
+        "workshop"
+      ],
+      "actualRow": [
+        "order_code"
+      ],
+      "actualCol": [
+        "workshop"
+      ],
+      "status": "pass"
+    },
+    {
+      "id": "DIM-04",
+      "expectedRow": [
+        "order_code"
+      ],
+      "expectedCol": [
+        "workshop",
+        "part_name"
+      ],
+      "actualRow": [
+        "order_code"
+      ],
+      "actualCol": [
+        "workshop",
+        "part_name"
+      ],
+      "status": "pass"
+    },
+    {
+      "id": "DIM-05",
+      "expectedRow": [
+        "workshop",
+        "part_name"
+      ],
+      "expectedCol": [
+        "plan_start_time"
+      ],
+      "actualRow": [
+        "workshop",
+        "part_name"
+      ],
+      "actualCol": [
+        "plan_start_time"
+      ],
+      "status": "pass"
+    },
+    {
+      "id": "DIM-06",
+      "expectedRow": [
+        "finish_time",
+        "workshop"
+      ],
+      "expectedCol": [
+        "plan_start_time"
+      ],
+      "actualRow": [
+        "finish_time",
+        "workshop"
+      ],
+      "actualCol": [
+        "plan_start_time"
+      ],
+      "status": "pass"
+    },
+    {
+      "id": "DIM-07",
+      "expectedRow": [
+        "workshop",
+        "part_name",
+        "order_code"
+      ],
+      "expectedCol": [],
+      "actualRow": [
+        "workshop",
+        "part_name",
+        "order_code"
+      ],
+      "actualCol": [],
+      "status": "pass"
+    }
+  ]
+}

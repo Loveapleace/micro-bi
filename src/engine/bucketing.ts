@@ -47,7 +47,13 @@ export function formatTimeBucket(value: unknown, config: TimeBucketConfig): stri
         diffDays = -currentDay;
       }
       const startOfWeek = d.add(diffDays, 'day');
-      return format ? startOfWeek.format(format) : `${startOfWeek.format('YYYY-MM-DD')} (第${Math.ceil(startOfWeek.date() / 7)}周)`;
+      if (format) return startOfWeek.format(format);
+      // 正确计算“月内第几周”：以该周起始日所在月份首日的星期偏移对齐后取整
+      const firstOfMonth = startOfWeek.startOf('month');
+      const weekStart = weekStartsOn === 1 ? 1 : 0;
+      const offset = (firstOfMonth.day() - weekStart + 7) % 7;
+      const weekOfMonth = Math.ceil((startOfWeek.date() + offset) / 7);
+      return `${startOfWeek.format('YYYY-MM-DD')} (第${weekOfMonth}周)`;
     }
 
     case 'month':
@@ -64,11 +70,12 @@ export function formatTimeBucket(value: unknown, config: TimeBucketConfig): stri
 
     case 'custom': {
       const daysInterval = Math.max(1, config.customIntervalDays ?? 1);
-      // 以 2000-01-01 为相对基准计算天数分片
-      const baseMs = 946684800000; // 2000-01-01T00:00:00Z
+      // 以本地时区 2000-01-01 00:00 为基准、按本地自然日切分，
+      // 避免 UTC 毫秒基准与本地时区格式化不一致导致桶边界在非 UTC 时区漂移。
+      const baseMs = dayjs('2000-01-01').valueOf();
       const oneDayMs = 86400000;
-      const targetMs = d.valueOf();
-      const diffDays = Math.floor((targetMs - baseMs) / oneDayMs);
+      const dayStartMs = d.startOf('day').valueOf();
+      const diffDays = Math.round((dayStartMs - baseMs) / oneDayMs);
       const bucketIndex = Math.floor(diffDays / daysInterval);
       const startMs = baseMs + bucketIndex * daysInterval * oneDayMs;
       const endMs = startMs + (daysInterval - 1) * oneDayMs;

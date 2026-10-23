@@ -1,11 +1,11 @@
 {
-  "executedAt": "2026-10-19T02:09:28.975Z",
+  "executedAt": "2026-10-19T08:59:18.109Z",
   "nodeVersion": "v22.22.0",
   "scope": "Supplemental assertions: pure model, actual isolated production effects, installed headless SDK and compiler/VTable inputs. Not mounted React/browser tests; no formula calculation.",
   "fixture": "Four facts: A=30, B=140. Most style tests reserve space; RX-09/10 use exact initial grid dimensions as the real editor does.",
   "source": {
     "path": "src/univer/UniverPreview.tsx",
-    "sha256": "0c4a97396e225f012bc7442d36f5ca73647c8e798deb69cfa5c06fd98fbb859e"
+    "sha256": "9fe2da8f59a4614c5aaf8e7827190c775d87134c4a844c94f3a2766437337dea"
   },
   "summary": {
     "total": 19,

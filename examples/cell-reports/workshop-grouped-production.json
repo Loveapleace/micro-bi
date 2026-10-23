@@ -1,0 +1,390 @@
+{
+  "documentType": "cell-template",
+  "schemaVersion": "2.0",
+  "id": "example-workshop-grouped-production",
+  "title": "[单元格示例] 车间与工件两级分组生产报表",
+  "templateRevision": 1,
+  "sheets": [
+    {
+      "id": "sheet-1",
+      "name": "车间工件汇总"
+    }
+  ],
+  "regions": [
+    {
+      "id": "grouped-region",
+      "datasetId": "industrial_lifecycle_orders",
+      "sheetId": "sheet-1",
+      "anchor": {
+        "row": 3,
+        "column": 0
+      },
+      "filters": []
+    }
+  ],
+  "cells": [
+    {
+      "id": "title",
+      "sheetId": "sheet-1",
+      "position": {
+        "row": 0,
+        "column": 0
+      },
+      "content": {
+        "kind": "literal",
+        "value": "车间与工件两级分组生产汇总表"
+      },
+      "parents": {
+        "row": null,
+        "column": null
+      },
+      "style": {
+        "bold": true,
+        "color": "#1677ff",
+        "textAlign": "center"
+      }
+    },
+    {
+      "id": "note",
+      "sheetId": "sheet-1",
+      "position": {
+        "row": 1,
+        "column": 0
+      },
+      "content": {
+        "kind": "literal",
+        "value": "按承制车间与加工工件两级分组向下展开；左侧车间自动跨度合并，右侧度量按工件精确聚合"
+      },
+      "parents": {
+        "row": null,
+        "column": null
+      }
+    },
+    {
+      "id": "h-workshop",
+      "sheetId": "sheet-1",
+      "position": {
+        "row": 2,
+        "column": 0
+      },
+      "content": {
+        "kind": "literal",
+        "value": "承制车间"
+      },
+      "parents": {
+        "row": null,
+        "column": null
+      },
+      "style": {
+        "bold": true,
+        "textAlign": "center"
+      }
+    },
+    {
+      "id": "h-part",
+      "sheetId": "sheet-1",
+      "position": {
+        "row": 2,
+        "column": 1
+      },
+      "content": {
+        "kind": "literal",
+        "value": "加工工件名称"
+      },
+      "parents": {
+        "row": null,
+        "column": null
+      },
+      "style": {
+        "bold": true,
+        "textAlign": "center"
+      }
+    },
+    {
+      "id": "h-qty",
+      "sheetId": "sheet-1",
+      "position": {
+        "row": 2,
+        "column": 2
+      },
+      "content": {
+        "kind": "literal",
+        "value": "交付总件数"
+      },
+      "parents": {
+        "row": null,
+        "column": null
+      },
+      "style": {
+        "bold": true,
+        "textAlign": "right"
+      }
+    },
+    {
+      "id": "h-defects",
+      "sheetId": "sheet-1",
+      "position": {
+        "row": 2,
+        "column": 3
+      },
+      "content": {
+        "kind": "literal",
+        "value": "缺陷零件总数"
+      },
+      "parents": {
+        "row": null,
+        "column": null
+      },
+      "style": {
+        "bold": true,
+        "textAlign": "right"
+      }
+    },
+    {
+      "id": "h-rate",
+      "sheetId": "sheet-1",
+      "position": {
+        "row": 2,
+        "column": 4
+      },
+      "content": {
+        "kind": "literal",
+        "value": "综合缺陷率"
+      },
+      "parents": {
+        "row": null,
+        "column": null
+      },
+      "style": {
+        "bold": true,
+        "textAlign": "right"
+      }
+    },
+    {
+      "id": "workshop",
+      "sheetId": "sheet-1",
+      "regionId": "grouped-region",
+      "position": {
+        "row": 3,
+        "column": 0
+      },
+      "content": {
+        "kind": "field",
+        "fieldId": "workshop",
+        "fieldKey": "workshop",
+        "role": "row-dimension",
+        "operation": "group",
+        "expand": "down",
+        "displayName": "承制车间"
+      },
+      "parents": {
+        "row": null,
+        "column": null
+      },
+      "style": {
+        "bold": true,
+        "textAlign": "left"
+      }
+    },
+    {
+      "id": "part-name",
+      "sheetId": "sheet-1",
+      "regionId": "grouped-region",
+      "position": {
+        "row": 3,
+        "column": 1
+      },
+      "content": {
+        "kind": "field",
+        "fieldId": "part_name",
+        "fieldKey": "part_name",
+        "role": "row-dimension",
+        "operation": "group",
+        "expand": "down",
+        "displayName": "加工工件名称"
+      },
+      "parents": {
+        "row": "workshop",
+        "column": null
+      },
+      "style": {
+        "textAlign": "left"
+      }
+    },
+    {
+      "id": "output-qty",
+      "sheetId": "sheet-1",
+      "regionId": "grouped-region",
+      "position": {
+        "row": 3,
+        "column": 2
+      },
+      "content": {
+        "kind": "field",
+        "fieldId": "output_qty",
+        "fieldKey": "output_qty",
+        "metricId": "qty-sum",
+        "role": "measure",
+        "operation": "sum",
+        "expand": "inherit",
+        "displayName": "交付总件数",
+        "format": "number"
+      },
+      "parents": {
+        "row": "part-name",
+        "column": null
+      },
+      "style": {
+        "textAlign": "right",
+        "color": "#1677ff",
+        "bold": true
+      }
+    },
+    {
+      "id": "defect-count",
+      "sheetId": "sheet-1",
+      "regionId": "grouped-region",
+      "position": {
+        "row": 3,
+        "column": 3
+      },
+      "content": {
+        "kind": "field",
+        "fieldId": "defect_count",
+        "fieldKey": "defect_count",
+        "metricId": "defect-sum",
+        "role": "measure",
+        "operation": "sum",
+        "expand": "inherit",
+        "displayName": "缺陷零件总数",
+        "format": "number"
+      },
+      "parents": {
+        "row": "part-name",
+        "column": null
+      },
+      "style": {
+        "textAlign": "right"
+      }
+    },
+    {
+      "id": "defect-rate",
+      "sheetId": "sheet-1",
+      "regionId": "grouped-region",
+      "position": {
+        "row": 3,
+        "column": 4
+      },
+      "content": {
+        "kind": "business-formula",
+        "metricId": "defect-rate",
+        "expression": "IF([SUM(output_qty)] > 0, [SUM(defect_count)] / [SUM(output_qty)], 0)",
+        "scope": "summary",
+        "precision": 4,
+        "displayName": "综合缺陷率",
+        "format": "percent"
+      },
+      "parents": {
+        "row": "part-name",
+        "column": null
+      },
+      "style": {
+        "textAlign": "right",
+        "bold": true,
+        "color": "#d46b08"
+      }
+    }
+  ],
+  "mergeConfig": {
+    "capability": "template-merge-v1",
+    "identityVersion": 1,
+    "legacyFallback": "explicit-only",
+    "policies": [
+      {
+        "id": "p-workshop-span",
+        "sheetId": "sheet-1",
+        "regionId": "grouped-region",
+        "target": {
+          "kind": "template-cell",
+          "templateCellId": "workshop",
+          "subject": "row-member-label"
+        },
+        "kind": "group-span",
+        "direction": "auto",
+        "boundary": "parent-group",
+        "enabled": true,
+        "source": "user",
+        "sequence": 1
+      }
+    ],
+    "suppressions": []
+  },
+  "layoutRules": [
+    {
+      "id": "title-merge",
+      "kind": "merge",
+      "sheetId": "sheet-1",
+      "range": {
+        "startRow": 0,
+        "endRow": 0,
+        "startColumn": 0,
+        "endColumn": 4
+      },
+      "source": "user",
+      "sequence": 1
+    },
+    {
+      "id": "note-merge",
+      "kind": "merge",
+      "sheetId": "sheet-1",
+      "range": {
+        "startRow": 1,
+        "endRow": 1,
+        "startColumn": 0,
+        "endColumn": 4
+      },
+      "source": "user",
+      "sequence": 2
+    },
+    {
+      "id": "col-w0",
+      "kind": "column-width",
+      "sheetId": "sheet-1",
+      "index": 0,
+      "size": 180
+    },
+    {
+      "id": "col-w1",
+      "kind": "column-width",
+      "sheetId": "sheet-1",
+      "index": 1,
+      "size": 220
+    },
+    {
+      "id": "col-w2",
+      "kind": "column-width",
+      "sheetId": "sheet-1",
+      "index": 2,
+      "size": 130
+    },
+    {
+      "id": "col-w3",
+      "kind": "column-width",
+      "sheetId": "sheet-1",
+      "index": 3,
+      "size": 130
+    },
+    {
+      "id": "col-w4",
+      "kind": "column-width",
+      "sheetId": "sheet-1",
+      "index": 4,
+      "size": 130
+    }
+  ],
+  "styleRules": [],
+  "conditionalRules": [],
+  "instanceOverrides": [],
+  "orphanedEdits": [],
+  "capabilitiesVersion": "cell-expansion-v2"
+}

@@ -1,0 +1,68 @@
+{
+  "total": 10,
+  "passed": 10,
+  "failed": 0,
+  "timestamp": "2026-10-21T01:20:38.229Z",
+  "results": [
+    {
+      "code": "CD-01",
+      "name": "校验器严格校验独立 documentType 命名空间",
+      "passed": true,
+      "detail": {}
+    },
+    {
+      "code": "CD-02",
+      "name": "活动数据区域数量约束检测 (首版最多 1 个，杜绝静默忽略)",
+      "passed": true,
+      "detail": {}
+    },
+    {
+      "code": "CD-03",
+      "name": "父格有向依赖环路检测并给出明确阻断诊断",
+      "passed": true,
+      "detail": {}
+    },
+    {
+      "code": "CD-04",
+      "name": "实例语义键严格区分数字1与字符串1",
+      "passed": true,
+      "detail": {}
+    },
+    {
+      "code": "CD-05",
+      "name": "D0 明细模板展开产生 5 条准确记录，多列按同一记录对齐",
+      "passed": true,
+      "detail": {}
+    },
+    {
+      "code": "CD-06",
+      "name": "D0 分组汇总精度验证 (总和=200, 总均值=40, 非简单二次均值45)",
+      "passed": true,
+      "detail": {}
+    },
+    {
+      "code": "CD-07",
+      "name": "D0 车间x月份交叉报表行列交叉计算正确 (A=30/30/60, B=100/40/140)",
+      "passed": true,
+      "detail": {}
+    },
+    {
+      "code": "CD-08",
+      "name": "区域级字段过滤在聚合前生效 (车间A过滤后总计严格为60)",
+      "passed": true,
+      "detail": {}
+    },
+    {
+      "code": "CD-09",
+      "name": "层级合并单元格必须携带非空主格文本 (VTable 契约)",
+      "passed": true,
+      "detail": {}
+    },
+    {
+      "code": "CD-10",
+      "name": "纯 TypeScript 编译输出中性 PublishedReport (展示端零 Univer 依赖)",
+      "passed": true,
+      "detail": {}
+    }
+  ]
+}

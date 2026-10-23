@@ -1,0 +1,111 @@
+{
+  "timestamp": "2026-10-19T07:31:39.640849+00:00",
+  "scope": "R4 acceptance: real application UI plus production template/compiler/adapter paths. No business source fixes.",
+  "gitHead": "e8eb3b453f03ea3d9473ac846e2c858eb7e2909d",
+  "includesUncommittedImplementation": true,
+  "unitTests": {
+    "command": "npm test",
+    "total": 155,
+    "passed": 155,
+    "failed": 0,
+    "log": "unit-tests.log"
+  },
+  "hostBuild": {
+    "command": "npm run build -- --manifest",
+    "passed": true,
+    "durationSeconds": 25.81,
+    "log": "host-build.log",
+    "manifest": "build-manifest.json",
+    "warning": "Large bundle warning remains; no performance claim."
+  },
+  "suites": {
+    "focused": {
+      "timestamp": "2026-10-19T07:11:18.655Z",
+      "total": 12,
+      "passed": 12,
+      "failed": 0
+    },
+    "extended": {
+      "timestamp": "2026-10-19T07:12:00.586Z",
+      "total": 25,
+      "passed": 25,
+      "failed": 0
+    },
+    "baseline": {
+      "timestamp": "2026-10-19T07:12:00.978Z",
+      "total": 15,
+      "passed": 15,
+      "failed": 0
+    },
+    "legacy-template": {
+      "timestamp": "2026-10-19T07:12:00.622Z",
+      "total": 20,
+      "passed": 20,
+      "failed": 0
+    },
+    "legacy-regression": {
+      "timestamp": "2026-10-19T07:12:01.583Z",
+      "total": 19,
+      "passed": 19,
+      "failed": 0
+    },
+    "persistence": {
+      "timestamp": "2026-10-19T07:19:52.272Z",
+      "total": 8,
+      "passed": 2,
+      "failed": 6
+    },
+    "browser": {
+      "timestamp": "2026-10-19T07:22:24.974Z",
+      "total": 7,
+      "passed": 6,
+      "failed": 1
+    }
+  },
+  "notRerun": [
+    "verify-cell-report-full-cycle.mjs",
+    "verify-report-merge-text.mjs"
+  ],
+  "mock": {
+    "path": "dynamic-data-test/src/mockData.ts",
+    "sha256": "7ae500177b538d96817ecb646f80804965e0ed2c85f21a7a11d7aa13f59ba125",
+    "restoredByteForByte": true,
+    "temporaryHelpersRemoved": [
+      ".codex-r4-fixture.mjs",
+      ".codex-r4-fixture-backup.json"
+    ]
+  },
+  "browserFinalState": {
+    "cardTitle": "[R4验收] 合并与覆盖往返",
+    "targetOverride": 1000,
+    "sourceGrandQuantity": 10850,
+    "weightedRateRows": 4,
+    "businessMergeCancelled": true,
+    "badDesignPreviewSaved": false
+  },
+  "sourceSha256": {
+    "dynamic-data-test/package.json": "d9815da7900c6c7b3a0bc184c73d8f4854b5d592f4db28b9f0e6d97fe0097e62",
+    "dynamic-data-test/src/App.tsx": "c382aed83a040c8b8308da837d82176c3f3f096ed3dc4a4f98c7e454ab571211",
+    "dynamic-data-test/src/components/CellReportEditModal.tsx": "9760cfcda41f0ecd772247b02bcb41229711540963f55ca1a4efe2ae25e4db00",
+    "dynamic-data-test/src/components/DashboardEditModal.tsx": "430fdc9cda0a664ceb4b271d9cfb5501bf49263f7ed533c87c1df4e8e4ac6ecf",
+    "micro-bi/examples/cell-reports/workshop-delivery-quality.json": "9bc20e694d0f8d0ffb170136fe59432789b7894aa43a56af6f9194ee9c666fb3",
+    "micro-bi/package.json": "31dadd123a4fcfa655ee4d62f3548fb4b4dd27ce712f765bede0dd819829b82f",
+    "micro-bi/scripts/verify-cell-dynamic-roundtrip.mjs": "9402bcc1b40fb9f2497eb171323461b21897a7a7083bb2a038eae2d709d14458",
+    "micro-bi/scripts/verify-cell-r4-persistence.mjs": "d9afa05d6cbb0ca8c2200f511a1b9c306ce9843b6b14a0920d3ecafd56d4e1fc",
+    "micro-bi/src/cell-designer/CellAdvancedSettings.tsx": "7c380fa1b5d77b959c89773eb6e5967dc83c66cfe55efbec584663855a728ec3",
+    "micro-bi/src/cell-designer/CellInspector.tsx": "ec62da18e603aebd1dd76fb6b9e3bc995fe30182262c7a3acbfc03c637378ad0",
+    "micro-bi/src/cell-designer/CellReportDesigner.tsx": "3012fa00b814e5173a466236e3c69472cf802e47db1abd94b5c7904df8872213",
+    "micro-bi/src/cell-designer/designerReducer.ts": "7771baf44678121825b641b85126c16849deba2e83d856b34737cf5f758c2bc1",
+    "micro-bi/src/cell-designer/index.ts": "3f3b2bf087f77223f629c32b6acc72412c96c2edb7f08137c589a4365891a503",
+    "micro-bi/src/cell-designer/syncWorkbookToTemplate.ts": "016c40b6aa88bde7e63d6f1bc2fa3056f5291b1736871468d25a64358554f94e",
+    "micro-bi/src/cell-designer/univerEvents.ts": "fb1045c1d488f5a2a95b7417c36a0b3d0e9e5486854b94543fe502c8af1ac0c0",
+    "micro-bi/src/report-template/compileCellReport.ts": "b7bd773552fc0a1401108e28b51c751f492cf879ef9e2cf849d15aa0ab0b4b8e",
+    "micro-bi/src/report-template/expandTemplate.ts": "cb8bd809eb5aacd8a4fe2b67e50e7c6362552d954f9fcd9159b63f7f5f17e5e6",
+    "micro-bi/src/report-template/identity.ts": "4b34f2bf4c7102f8ab97ff84f4156cdae63929c171557adba2e40bc8c0723d82",
+    "micro-bi/src/report-template/index.ts": "02ab3365d6947d85e94299beae8577967d7a2028619ba487979727c05a726177",
+    "micro-bi/src/report-template/normalizeCellTemplate.ts": "dbcd03aafdabde4de711cd96ee8c5908ecaacfa030099d545962e962d3e9a19e",
+    "micro-bi/src/report-template/types.ts": "907ef89a2dd05c5ff6302e657f2d60b35ac09e4a59774eff3aae9c6f141212f7",
+    "micro-bi/src/report-template/validator.ts": "bd3998155ff72df7718b6e0b59076ec387093743ae962ffb4f9ab7a18910e17a",
+    "micro-bi/src/univer/UniverPreview.tsx": "69c1951046d500550c774cd06072a1f1f9caa1b60041fb3554100ddecf520136"
+  }
+}

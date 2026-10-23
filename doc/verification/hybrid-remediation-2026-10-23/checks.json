@@ -1,0 +1,63 @@
+{
+  "date": "2026-10-23",
+  "scope": "第29节 H3-F01 / H3-F02 / H3-F03",
+  "focusedTests": {
+    "failed": 0,
+    "passed": 12
+  },
+  "unitTests": {
+    "failed": 0,
+    "passed": 263
+  },
+  "libraryBuild": {
+    "cjs": "passed",
+    "esm": "passed"
+  },
+  "hostBuild": {
+    "result": "passed",
+    "warnings": [
+      "chunk size > 500 kB"
+    ]
+  },
+  "browser": {
+    "functionalPassed": 9,
+    "functionalChecks": 9,
+    "stableLifecycleErrors": 0,
+    "stableLifecycleCycles": 3,
+    "transientPageErrors": 2
+  },
+  "sourceHashes": [
+    {
+      "path": "src/report-template/types.ts",
+      "sha256": "464fcbdea6f56b66a9a8f7697dc9330dce2157a1c074f4433378e3b85472cb15"
+    },
+    {
+      "path": "src/report-template/panelToTemplateAdapter.ts",
+      "sha256": "0d2c62c1ce16df802ce99bbbf63f533446a5ba2a45280967a857fe4fb5051344"
+    },
+    {
+      "path": "src/report-template/cellExpansionEngine.ts",
+      "sha256": "8bed97c601afe8288cf0a5f99a1bd9cd853f5c3d141f905954c69cff6378c6ce"
+    },
+    {
+      "path": "src/cell-designer/HybridCellDesigner.tsx",
+      "sha256": "8df0d3d234c31a17aafc1c65b0a66b92d0a6f3f72d1419721e3d2ff7358ccebe"
+    },
+    {
+      "path": "src/cell-designer/hybridTemplateState.ts",
+      "sha256": "6763dff572da2c46856aea8b95a2a3029110c269efb85f0c0b84528c193716c0"
+    },
+    {
+      "path": "src/univer/UniverPreview.tsx",
+      "sha256": "f797e0f70ac5238d7387e56cbdd21e0e57214f564a213a10db9c96fe45cf7af8"
+    },
+    {
+      "path": "test/hybrid-remediation.test.mjs",
+      "sha256": "59d2c398ceffe286a13ddbdd997f2f8b9466941e9fcbfa29c8741d4b0992dfc4"
+    },
+    {
+      "path": "test/panel-to-template-adapter.test.mjs",
+      "sha256": "a69a5bf7a35dd5c03d0db41c8325a230c7e47c1d967db68c13e21e05c2e4c46a"
+    }
+  ]
+}

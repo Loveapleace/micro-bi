@@ -241,6 +241,7 @@ export function compileReport(
           ...(rawCell.f ? { formula: rawCell.f } : {}),
           ...(typeof rawCell.s === 'string' ? { styleId: rawCell.s } : {}),
           ...(rawCell.custom?.role ? { role: rawCell.custom.role as BindingRole } : {}),
+          ...(rawCell.custom?.tooltip ? { tooltip: rawCell.custom.tooltip } : {}),
         };
 
         cells.push(cell);

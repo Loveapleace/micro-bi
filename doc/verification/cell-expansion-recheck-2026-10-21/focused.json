@@ -1,0 +1,142 @@
+{
+  "timestamp": "2026-10-21T01:45:36.102Z",
+  "scope": "真实v2展开器、编译器、快照同步、JSON边界与VTable适配；入口调用从宿主真实factory提取；非浏览器E2E",
+  "total": 21,
+  "passed": 21,
+  "failed": 0,
+  "results": [
+    {
+      "id": "CER-01",
+      "issue": "baseline",
+      "name": "无全局参数分组SUM可发布并被VTable消费",
+      "passed": true,
+      "evidence": {
+        "cells": 4,
+        "displayed": [
+          "10",
+          "20"
+        ]
+      }
+    },
+    {
+      "id": "CER-02",
+      "issue": "baseline",
+      "name": "双父交叉按行列事实交集计算",
+      "passed": true
+    },
+    {
+      "id": "CER-03",
+      "issue": "entry",
+      "name": "主应用新建入口实际创建v2源模板",
+      "passed": true
+    },
+    {
+      "id": "CER-04",
+      "issue": "save",
+      "name": "预览快照600式单格覆盖JSON保存后可被新引擎消费",
+      "passed": true
+    },
+    {
+      "id": "CER-05",
+      "issue": "override",
+      "name": "事实变化后保留覆盖并产生真实基线冲突诊断",
+      "passed": true
+    },
+    {
+      "id": "CER-06",
+      "issue": "formula",
+      "name": "现有业务公式语法IF与SUM在v2结果中正确计算",
+      "passed": true
+    },
+    {
+      "id": "CER-07",
+      "issue": "formula",
+      "name": "工作表公式=1+1执行或明确阻断",
+      "passed": true
+    },
+    {
+      "id": "CER-08",
+      "issue": "time",
+      "name": "时间按日分组将同日不同时刻合为一组",
+      "passed": true
+    },
+    {
+      "id": "CER-09",
+      "issue": "identity",
+      "name": "明细显示字段重复时不同主键仍具有唯一业务实例键",
+      "passed": true
+    },
+    {
+      "id": "CER-10",
+      "issue": "identity",
+      "name": "重复明细主键在编译时明确阻断",
+      "passed": true
+    },
+    {
+      "id": "CER-11",
+      "issue": "layout",
+      "name": "固定说明与数据展开碰撞不得静默覆盖",
+      "passed": true
+    },
+    {
+      "id": "CER-12",
+      "issue": "layout",
+      "name": "组内静态标签按照声明的父上下文重复",
+      "passed": true
+    },
+    {
+      "id": "CER-13",
+      "issue": "layout",
+      "name": "同页两个并排独立数据块保留各自模板起始行",
+      "passed": true
+    },
+    {
+      "id": "CER-14",
+      "issue": "region",
+      "name": "同页不同区域分别执行自己的过滤并保留区域身份",
+      "passed": true
+    },
+    {
+      "id": "CER-15",
+      "issue": "sheets",
+      "name": "第二张工作表的数据模板同样展开发布",
+      "passed": true
+    },
+    {
+      "id": "CER-16",
+      "issue": "style",
+      "name": "条件格式在当前业务值上生效",
+      "passed": true
+    },
+    {
+      "id": "CER-17",
+      "issue": "merge",
+      "name": "投影生成的动态合并不能经未编辑快照固化为人工规则",
+      "passed": true
+    },
+    {
+      "id": "CER-18",
+      "issue": "merge",
+      "name": "关闭动态规则后保存重开仍保持取消",
+      "passed": true
+    },
+    {
+      "id": "CER-19",
+      "issue": "baseline",
+      "name": "重复编译与数据倒序不修改源模板且简单分组结果稳定",
+      "passed": true
+    },
+    {
+      "id": "CER-20",
+      "issue": "format",
+      "name": "当前侧栏number格式在v2发布保持千分位与两位小数",
+      "passed": true
+    },
+    {
+      "id": "CER-21",
+      "issue": "merge",
+      "name": "取消合并的快照经过保存与模式往返后不会自动复活",
+      "passed": true
+    }
+  ]
+}

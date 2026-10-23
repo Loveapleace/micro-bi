@@ -16,6 +16,8 @@ export interface BiBindingManagerOptions {
 
 export class BiBindingManager {
   public static isProgrammaticWrite = false;
+  // 事务标记：用对象标记替代裸布尔，记录每次程序化写回的唯一 id 与时间戳
+  public static __biTransaction: { id: number; ts: number } | null = null;
   private _bindings: ReportBinding[] = [];
   private _onBindingsChange?: ((bindings: ReportBinding[]) => void) | undefined;
   private _onManualOverride?: ((bindingId: string, override: { v?: unknown; f?: string }) => void) | undefined;
@@ -43,7 +45,12 @@ export class BiBindingManager {
 
     try {
       const handler = (event: any) => {
-        if (BiBindingManager.isProgrammaticWrite || (univerAPI as any)?.__isProgrammaticWrite) return;
+        if (
+          BiBindingManager.isProgrammaticWrite ||
+          BiBindingManager.__biTransaction ||
+          (univerAPI as any)?.__biTransaction ||
+          (univerAPI as any)?.__isProgrammaticWrite
+        ) return;
         this._handleCommand(event);
       };
 

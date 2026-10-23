@@ -12,6 +12,7 @@ import type {
   ReportRange,
   ReportDiagnostic,
   ReportBinding,
+  BiGridCell,
 } from './types.js';
 import { buildBiGrid } from './buildBiGrid.js';
 import { buildBindingIndex } from './bindings.js';
@@ -102,12 +103,14 @@ export function refreshAnalysisRegion(
 
   const { bySemantic: newBindingMap } = buildBindingIndex(adjustedBindings);
 
-  // 记录新网格中每个绑定 ID 对应的基础值
+  // 记录新网格中每个绑定 ID 对应的基础值（先建坐标索引，避免 O(bindings × cells) 查找）
+  const cellByCoord = new Map<string, BiGridCell>();
+  for (const cell of newGrid.cells) {
+    cellByCoord.set(`${cell.row},${cell.col}`, cell);
+  }
   const currentBaseValues: Record<string, unknown> = {};
   for (const b of adjustedBindings) {
-    const cell = newGrid.cells.find(
-      (c) => c.row === b.target.row - anchor.row && c.col === b.target.column - anchor.column
-    );
+    const cell = cellByCoord.get(`${b.target.row - anchor.row},${b.target.column - anchor.column}`);
     if (cell) {
       currentBaseValues[b.id] = cell.value;
     }

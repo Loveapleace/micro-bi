@@ -1,0 +1,89 @@
+{
+  "timestamp": "2026-10-19T07:11:18.655Z",
+  "scope": "保存快照与实际动态编译/适配；真实浏览器模式切换与数据热更新另存",
+  "total": 12,
+  "passed": 12,
+  "failed": 0,
+  "results": [
+    {
+      "id": "FR-01",
+      "requirement": "DCR-02",
+      "name": "一次实际快照编辑只生成一个覆盖并在VTable适配生效",
+      "passed": true,
+      "evidence": {
+        "overrides": 1,
+        "originalBase": 600,
+        "displayed": "999.00"
+      }
+    },
+    {
+      "id": "FR-02",
+      "requirement": "DCR-02",
+      "name": "连续人工改600→999→1000仍保留最初事实基线600",
+      "passed": true
+    },
+    {
+      "id": "FR-03",
+      "requirement": "DCR-02",
+      "name": "事实未变时连续人工编辑不产生源数据冲突",
+      "passed": true
+    },
+    {
+      "id": "FR-04",
+      "requirement": "DCR-02",
+      "name": "总计格覆盖不会改掉同度量的总计行表头",
+      "passed": true
+    },
+    {
+      "id": "FR-05",
+      "requirement": "DCR-02",
+      "name": "其他region的实例键不能消费当前区域的覆盖",
+      "passed": true
+    },
+    {
+      "id": "FR-06",
+      "requirement": "DCR-02",
+      "name": "分组字段语义改变后不按相同成员文字静默继承覆盖",
+      "passed": true
+    },
+    {
+      "id": "FR-07",
+      "requirement": "DCR-02",
+      "name": "前插新行新列、删除无关成员、源记录逆序后覆盖跟随原业务格",
+      "passed": true
+    },
+    {
+      "id": "FR-08",
+      "requirement": "DCR-02",
+      "name": "实际源值变700后的冲突诊断在两次刷新中持续存在",
+      "passed": true
+    },
+    {
+      "id": "FR-09",
+      "requirement": "DCR-01",
+      "name": "前插新行新列后合并主格仍是原车间原日期",
+      "passed": true
+    },
+    {
+      "id": "FR-10",
+      "requirement": "DCR-01",
+      "name": "指标横纵方向变化后合并不落到表头或其他指标",
+      "passed": true,
+      "evidence": {
+        "blockedWithLayoutDiagnostic": true
+      }
+    },
+    {
+      "id": "FR-11",
+      "requirement": "DCR-01",
+      "name": "显式取消全部合并后，分组/透视与新成员均不自动补合并",
+      "passed": true
+    },
+    {
+      "id": "FR-12",
+      "requirement": "DCR-02",
+      "name": "被覆盖成员删除或数据清空后999不污染其他成员",
+      "passed": true
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-23",
+  "url": "http://localhost:5174/",
+  "isolation": "Playwright Chromium context; no access to user browser storage",
+  "checks": [
+    {
+      "id": "H3-R01",
+      "status": "pass",
+      "detail": "原入口配置、预览、保存VTable：总计4400/4550/1900和105/99/33，仅一个总计表头"
+    },
+    {
+      "id": "H3-R02",
+      "status": "pass",
+      "detail": "两位小数格式保存重开后准确回显"
+    },
+    {
+      "id": "H3-R03",
+      "status": "pass",
+      "detail": "预览关闭总计和合并→设计F2两条备注→预览保存：系统总计无残留，同名用户备注保留"
+    },
+    {
+      "id": "H3-R04",
+      "status": "pass",
+      "detail": "页面刷新后重开：总计与合并均保持关闭，不由残留表头反解复活"
+    },
+    {
+      "id": "H3-R05",
+      "status": "pass",
+      "detail": "高级单位后缀使简化控件显示自定义，实际VTable显示600.00件"
+    },
+    {
+      "id": "H3-R06",
+      "status": "pass",
+      "detail": "刷新重开高级设置仍含件后缀，自定义回显正确；未编辑再保存后VTable二维文本逐字一致"
+    },
+    {
+      "id": "H3-R07",
+      "status": "pass",
+      "detail": "重开后选择整数预设实际替换旧精度、保留单位；点击可见F2编辑，设计态直接保存成功"
+    },
+    {
+      "id": "H3-R08",
+      "status": "pass",
+      "detail": "关闭总计往返后显式重新开启，仅恢复一列正确汇总，整数预设和高级单位保留"
+    },
+    {
+      "id": "H3-R09",
+      "status": "pass",
+      "detail": "最终刷新：VTable与刷新前逐字一致；重开总计开启、合并关闭、自定义格式均保持"
+    }
+  ],
+  "pageErrors": [
+    "[redi]: Cannot find \"SheetsScrollRenderController2\" registered by any injector. The stack of dependencies is: \"\".",
+    "Cannot read properties of null (reading 'row')"
+  ],
+  "automationNotes": [
+    "首次本地服务未启动，启动现有 Vite 后重试。",
+    "高级弹窗与直接输入的早期坐标操作受开启动画影响；后续使用弹窗内容定位并核对可见单元格与VTable文本后计通过。",
+    "数据增删与排序在纯函数/保存/VTable适配专项覆盖，本轮浏览器没有修改事实数据。"
+  ]
+}

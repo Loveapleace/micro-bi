@@ -11,3 +11,4 @@ export * from './buildBiGrid.js';
 export * from './bindings.js';
 export * from './refresh.js';
 export * from './validator.js';
+export * from '../report-template/index.js';

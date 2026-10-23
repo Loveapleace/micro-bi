@@ -1,0 +1,504 @@
+{
+  "timestamp": "2026-10-19T08:01:07.352349+00:00",
+  "scope": "React 18 migration assessment only. No dependency install, business implementation edits, or lockfile regeneration.",
+  "environment": {
+    "node": "22.22.0",
+    "npm": "10.9.4"
+  },
+  "projects": {
+    "micro-bi": {
+      "declared": {
+        "name": "micro-bi",
+        "version": "0.1.0",
+        "dependencies": {
+          "dayjs": "^1.11.23"
+        },
+        "devDependencies": {
+          "@ant-design/icons": "^5.6.0",
+          "@types/react": "^17.0.80",
+          "@types/react-dom": "^17.0.25",
+          "@univerjs/core": "^1.0.4",
+          "@univerjs/preset-sheets-core": "^1.0.4",
+          "@univerjs/presets": "^1.0.4",
+          "@visactor/vchart": "^2.1.7",
+          "@visactor/vtable": "^1.26.8",
+          "antd": "^5.24.0",
+          "react": "^17.0.2",
+          "react-dom": "^17.0.2",
+          "rxjs": "^7.8.1",
+          "typescript": "^5.6.3"
+        },
+        "peerDependencies": {
+          "@ant-design/icons": ">=5.0.0",
+          "@univerjs/core": ">=1.0.4",
+          "@univerjs/preset-sheets-core": ">=1.0.4",
+          "@univerjs/presets": ">=1.0.4",
+          "@visactor/vchart": ">=0.1.0",
+          "@visactor/vtable": ">=0.1.0",
+          "antd": ">=5.0.0",
+          "react": ">=17.0.0",
+          "react-dom": ">=17.0.0",
+          "rxjs": ">=7.0.0"
+        },
+        "peerDependenciesMeta": {
+          "@ant-design/icons": {
+            "optional": true
+          },
+          "@univerjs/core": {
+            "optional": true
+          },
+          "@univerjs/preset-sheets-core": {
+            "optional": true
+          },
+          "@univerjs/presets": {
+            "optional": true
+          },
+          "@visactor/vchart": {
+            "optional": true
+          },
+          "@visactor/vtable": {
+            "optional": true
+          },
+          "antd": {
+            "optional": true
+          },
+          "react": {
+            "optional": true
+          },
+          "react-dom": {
+            "optional": true
+          },
+          "rxjs": {
+            "optional": true
+          }
+        },
+        "engines": {
+          "node": ">=18.0.0"
+        }
+      },
+      "lockRoot": {
+        "name": "@hw/dynamic-data",
+        "version": "0.1.0",
+        "license": "MIT",
+        "dependencies": {
+          "dayjs": "^1.11.23"
+        },
+        "devDependencies": {
+          "@ant-design/icons": "^5.6.0",
+          "@types/react": "^17.0.80",
+          "@types/react-dom": "^17.0.25",
+          "@visactor/vchart": "^2.1.7",
+          "@visactor/vtable": "^1.26.8",
+          "antd": "^5.24.0",
+          "echarts": "^5.6.0",
+          "react": "^17.0.2",
+          "react-dom": "^17.0.2",
+          "typescript": "^5.6.3"
+        },
+        "engines": {
+          "node": ">=18.0.0"
+        },
+        "peerDependencies": {
+          "@ant-design/icons": ">=5.0.0",
+          "antd": ">=5.0.0",
+          "echarts": ">=5.0.0",
+          "react": ">=17.0.0",
+          "react-dom": ">=17.0.0"
+        },
+        "peerDependenciesMeta": {
+          "@ant-design/icons": {
+            "optional": true
+          },
+          "antd": {
+            "optional": true
+          },
+          "echarts": {
+            "optional": true
+          },
+          "react": {
+            "optional": true
+          },
+          "react-dom": {
+            "optional": true
+          }
+        }
+      },
+      "lockReact": {
+        "react": "17.0.2",
+        "react-dom": "17.0.2",
+        "@types/react": "17.0.80",
+        "@types/react-dom": "17.0.25"
+      },
+      "installedDirectPaths": {
+        "react": {
+          "version": "18.3.1"
+        },
+        "react-dom": {
+          "version": "18.3.1",
+          "peerDependencies": {
+            "react": "^18.3.1"
+          }
+        },
+        "@types/react": {
+          "version": "18.3.31",
+          "peerDependencies": {}
+        },
+        "@types/react-dom": {
+          "version": "18.3.7",
+          "peerDependencies": {
+            "@types/react": "^18.0.0"
+          }
+        },
+        "antd": {
+          "version": "5.24.0",
+          "peerDependencies": {
+            "react": ">=16.9.0",
+            "react-dom": ">=16.9.0"
+          }
+        },
+        "@ant-design/icons": {
+          "version": "5.6.1",
+          "peerDependencies": {
+            "react": ">=16.0.0",
+            "react-dom": ">=16.0.0"
+          }
+        },
+        "@univerjs/core": {
+          "version": "1.0.4",
+          "peerDependencies": {
+            "rxjs": ">=7.0.0"
+          }
+        },
+        "@univerjs/presets": {
+          "version": "1.0.4"
+        },
+        "@univerjs/preset-sheets-core": {
+          "version": "1.0.4",
+          "peerDependencies": {
+            "react": "^16.9.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc",
+            "react-dom": "^16.9.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc",
+            "rxjs": ">=7.0.0"
+          }
+        },
+        "@univerjs/ui": {
+          "version": "1.0.4",
+          "peerDependencies": {
+            "react": "^16.9.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc",
+            "react-dom": "^16.9.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc",
+            "rxjs": ">=7.0.0"
+          }
+        },
+        "@univerjs/design": {
+          "version": "1.0.4",
+          "peerDependencies": {
+            "react": "^16.9.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc",
+            "react-dom": "^16.9.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc"
+          }
+        },
+        "@visactor/vtable": {
+          "version": "1.26.8"
+        },
+        "@visactor/vchart": {
+          "version": "2.1.7"
+        },
+        "@visactor/vtable-plugins": {
+          "version": "1.26.8",
+          "peerDependencies": {
+            "@visactor/vtable": "1.26.8",
+            "@visactor/vtable-gantt": "1.26.8"
+          },
+          "peerDependenciesMeta": {
+            "@visactor/vtable-gantt": {
+              "optional": true
+            }
+          }
+        },
+        "rxjs": {
+          "version": "7.8.2"
+        },
+        "dayjs": {
+          "version": "1.11.23"
+        },
+        "typescript": {
+          "version": "5.9.3"
+        },
+        "@types/node": {
+          "version": "14.18.63"
+        }
+      },
+      "sourceCounts": {
+        "tsAndTsx": 91,
+        "tsx": 24
+      },
+      "dependencyTree": "library-dependency-tree.json",
+      "dependencyProblems": [
+        "invalid: @types/react-dom@18.3.7 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react-dom",
+        "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react",
+        "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom",
+        "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+      ],
+      "npmError": {
+        "code": "ELSPROBLEMS",
+        "summary": "invalid: @types/react-dom@18.3.7 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react-dom\ninvalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react\ninvalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom\ninvalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react",
+        "detail": ""
+      }
+    },
+    "dynamic-data-test": {
+      "declared": {
+        "name": "dynamic-data-test",
+        "version": "0.0.0",
+        "dependencies": {
+          "@ant-design/icons": "^5.6.0",
+          "@visactor/vchart": "^2.1.7",
+          "@visactor/vtable": "^1.26.8",
+          "@visactor/vtable-plugins": "^1.26.8",
+          "antd": "^5.24.0",
+          "dayjs": "^1.11.13",
+          "micro-bi": "file:../micro-bi",
+          "react": "^18.3.1",
+          "react-dom": "^18.3.1"
+        },
+        "devDependencies": {
+          "@types/react": "^18.3.0",
+          "@types/react-dom": "^18.3.0",
+          "@vitejs/plugin-react": "^4.3.4",
+          "typescript": "^5.6.3",
+          "vite": "^5.4.14"
+        }
+      },
+      "lockRoot": {
+        "name": "dynamic-data-test",
+        "version": "0.0.0",
+        "dependencies": {
+          "@ant-design/icons": "^5.6.0",
+          "@visactor/vchart": "^2.1.7",
+          "@visactor/vtable": "^1.26.8",
+          "@visactor/vtable-plugins": "^1.26.8",
+          "antd": "^5.24.0",
+          "dayjs": "^1.11.13",
+          "micro-bi": "file:../micro-bi",
+          "react": "^18.3.1",
+          "react-dom": "^18.3.1"
+        },
+        "devDependencies": {
+          "@types/react": "^18.3.0",
+          "@types/react-dom": "^18.3.0",
+          "@vitejs/plugin-react": "^4.3.4",
+          "typescript": "^5.6.3",
+          "vite": "^5.4.14"
+        }
+      },
+      "lockReact": {
+        "react": "18.3.1",
+        "react-dom": "18.3.1",
+        "@types/react": "18.3.31",
+        "@types/react-dom": "18.3.7"
+      },
+      "installedDirectPaths": {
+        "react": {
+          "version": "18.3.1"
+        },
+        "react-dom": {
+          "version": "18.3.1",
+          "peerDependencies": {
+            "react": "^18.3.1"
+          }
+        },
+        "@types/react": {
+          "version": "18.3.31",
+          "peerDependencies": {}
+        },
+        "@types/react-dom": {
+          "version": "18.3.7",
+          "peerDependencies": {
+            "@types/react": "^18.0.0"
+          }
+        },
+        "antd": {
+          "version": "5.29.3",
+          "peerDependencies": {
+            "react": ">=16.9.0",
+            "react-dom": ">=16.9.0"
+          }
+        },
+        "@ant-design/icons": {
+          "version": "5.6.1",
+          "peerDependencies": {
+            "react": ">=16.0.0",
+            "react-dom": ">=16.0.0"
+          }
+        },
+        "@visactor/vtable": {
+          "version": "1.26.8"
+        },
+        "@visactor/vchart": {
+          "version": "2.1.7"
+        },
+        "@visactor/vtable-plugins": {
+          "version": "1.26.8",
+          "peerDependencies": {
+            "@visactor/vtable": "1.26.8",
+            "@visactor/vtable-gantt": "1.26.8"
+          },
+          "peerDependenciesMeta": {
+            "@visactor/vtable-gantt": {
+              "optional": true
+            }
+          }
+        },
+        "dayjs": {
+          "version": "1.11.23"
+        },
+        "typescript": {
+          "version": "5.9.3"
+        },
+        "@types/node": {
+          "version": "26.6.5",
+          "peerDependencies": {}
+        },
+        "vite": {
+          "version": "5.4.21",
+          "peerDependencies": {
+            "@types/node": "^18.0.0 || >=20.0.0",
+            "less": "*",
+            "lightningcss": "^1.21.0",
+            "sass": "*",
+            "sass-embedded": "*",
+            "stylus": "*",
+            "sugarss": "*",
+            "terser": "^5.4.0"
+          },
+          "peerDependenciesMeta": {
+            "@types/node": {
+              "optional": true
+            },
+            "sass": {
+              "optional": true
+            },
+            "sass-embedded": {
+              "optional": true
+            },
+            "stylus": {
+              "optional": true
+            },
+            "less": {
+              "optional": true
+            },
+            "sugarss": {
+              "optional": true
+            },
+            "lightningcss": {
+              "optional": true
+            },
+            "terser": {
+              "optional": true
+            }
+          }
+        },
+        "@vitejs/plugin-react": {
+          "version": "4.7.0",
+          "peerDependencies": {
+            "vite": "^4.2.0 || ^5.0.0 || ^6.0.0 || ^7.0.0"
+          }
+        }
+      },
+      "sourceCounts": {
+        "tsAndTsx": 12,
+        "tsx": 8
+      },
+      "dependencyTree": "host-dependency-tree.json",
+      "dependencyProblems": [
+        "invalid: @types/react-dom@18.3.7 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react-dom",
+        "invalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react",
+        "invalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom",
+        "invalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react"
+      ],
+      "npmError": {
+        "code": "ELSPROBLEMS",
+        "summary": "invalid: @types/react-dom@18.3.7 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react-dom\ninvalid: @types/react@18.3.31 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\@types\\react\ninvalid: react-dom@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react-dom\ninvalid: react@18.3.1 C:\\Users\\And19\\Desktop\\web\\micro-bi\\node_modules\\react",
+        "detail": ""
+      }
+    }
+  },
+  "checks": [
+    {
+      "project": "micro-bi",
+      "command": "npm run typecheck",
+      "exitCode": 0,
+      "skipLibCheck": true
+    },
+    {
+      "project": "dynamic-data-test",
+      "command": "npx tsc --noEmit",
+      "exitCode": 0,
+      "skipLibCheck": true
+    },
+    {
+      "project": "micro-bi",
+      "command": "tsc -p tsconfig.json --noEmit --skipLibCheck false",
+      "exitCode": 2,
+      "outputLinesIncludingExplanations": 2380,
+      "sampleOnly": "declaration-check-sample.txt"
+    },
+    {
+      "command": "npm view react@18.3.1 version; npm view @types/react@18.3.31 version; npm view @types/react-dom@18.3.7 version",
+      "result": [
+        "18.3.1",
+        "18.3.31",
+        "18.3.7"
+      ]
+    },
+    {
+      "command": "npm view @univerjs/preset-sheets-core@1.0.4 peerDependencies --json",
+      "result": {
+        "react": "^16.9.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc",
+        "react-dom": "^16.9.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc",
+        "rxjs": ">=7.0.0"
+      }
+    }
+  ],
+  "notRunThisAssessment": [
+    "npm ci",
+    "npm install",
+    "npm test",
+    "host production build",
+    "browser migration acceptance"
+  ],
+  "sourceSha256": {
+    "micro-bi/package.json": "31dadd123a4fcfa655ee4d62f3548fb4b4dd27ce712f765bede0dd819829b82f",
+    "micro-bi/package-lock.json": "0ced3fa6e4b3f2b488a77a6ec8dc862c7340672c5adbc273cced1d72f8e17c5b",
+    "micro-bi/tsconfig.json": "60b09b867f580ef26cd4942334b8b977ac93a4514b886ae25d3da77ae3933956",
+    "micro-bi/tsconfig.cjs.json": "52d32bccd7661201a2b48e823a24dd1495725e793c92696b192af5a1d40bba95",
+    "micro-bi/src/core/registry.ts": "e174616fc74ded8432e3285cf796578e72c00741b0754f5ca34f3c1b7c4003a3",
+    "micro-bi/src/core/datasetRegistry.ts": "783d6a55168d2a9a74b99d05dfd9f60c36531c033cd5119e8aa184c714b38af8",
+    "micro-bi/src/univer/UniverPreview.tsx": "69c1951046d500550c774cd06072a1f1f9caa1b60041fb3554100ddecf520136",
+    "micro-bi/src/univer/ReportConfigPanel.tsx": "cd5e6b49531325c727aaef73bad02c117a8abc2d470da0734064e2a41a7a05ab",
+    "micro-bi/src/cell-designer/CellReportDesigner.tsx": "3012fa00b814e5173a466236e3c69472cf802e47db1abd94b5c7904df8872213",
+    "micro-bi/src/cell-designer/univerEvents.ts": "fb1045c1d488f5a2a95b7417c36a0b3d0e9e5486854b94543fe502c8af1ac0c0",
+    "micro-bi/src/report-template/expandTemplate.ts": "cb8bd809eb5aacd8a4fe2b67e50e7c6362552d954f9fcd9159b63f7f5f17e5e6",
+    "micro-bi/src/ui/presentation/charts/VChartView.tsx": "a569643f54e7b418dcecbf92f42b4120e5290f0eb2e20210bc5a6948a0f2a86d",
+    "micro-bi/src/ui/presentation/table/VTableView.tsx": "1aa725ee14ae5d48f90600d79d4c965de5db6f34fca2f0e01a974d68de01cbba",
+    "micro-bi/src/ui/presentation/report/ReportTableView.tsx": "01208b5e4567c62545d74300cbc422be530e8a373afaf58b17eefc49cc3fa41a",
+    "dynamic-data-test/package.json": "d9815da7900c6c7b3a0bc184c73d8f4854b5d592f4db28b9f0e6d97fe0097e62",
+    "dynamic-data-test/package-lock.json": "7a8cda5c180241190650b643dc05557d0207c2d96c684388cfd2dc8fa2840316",
+    "dynamic-data-test/tsconfig.json": "c84d989bb9bfeac90b87371711a755399511fc447b63a44405830e9291531a6d",
+    "dynamic-data-test/vite.config.ts": "30a187a0d42438e0532414828e138b658de28fd50ef6bd79f36f4e8e115154e5",
+    "dynamic-data-test/src/main.tsx": "72af132a9e5d2c85111f9aa9769b528fcee1392f32d002698d24b5479dda4694",
+    "dynamic-data-test/src/App.tsx": "c382aed83a040c8b8308da837d82176c3f3f096ed3dc4a4f98c7e454ab571211",
+    "dynamic-data-test/src/components/CellReportEditModal.tsx": "9760cfcda41f0ecd772247b02bcb41229711540963f55ca1a4efe2ae25e4db00",
+    "dynamic-data-test/src/components/DashboardEditModal.tsx": "430fdc9cda0a664ceb4b271d9cfb5501bf49263f7ed533c87c1df4e8e4ac6ecf"
+  },
+  "references": [
+    "https://react.dev/blog/2022/03/08/react-18-upgrade-guide",
+    "https://react.dev/blog/2024/04/25/react-19-upgrade-guide",
+    "https://18.react.dev/reference/react/StrictMode",
+    "https://18.react.dev/reference/react-dom/flushSync",
+    "https://react.dev/reference/react/useMemo",
+    "https://react.dev/reference/react/useSyncExternalStore",
+    "https://5x-ant-design.antgroup.com/docs/react/v5-for-19",
+    "https://5x-ant-design.antgroup.com/components/modal/",
+    "https://ant.design/docs/blog/get-container-cn/",
+    "https://docs.univer.ai/guides/sheets/getting-started/integrations/react",
+    "https://docs.univer.ai/guides/sheets/getting-started/installation"
+  ]
+}

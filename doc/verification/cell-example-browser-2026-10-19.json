@@ -1,0 +1,86 @@
+{
+  "timestamp": "2026-10-19T03:42:39.835Z",
+  "url": "http://localhost:5174/",
+  "scope": "人工驱动真实主应用；UI结果来自画面及VTable复制，不读取React或localStorage内部状态",
+  "total": 14,
+  "passed": 13,
+  "failed": 1,
+  "sourceRestoredSha256": "7ae500177b538d96817ecb646f80804965e0ed2c85f21a7a11d7aa13f59ba125",
+  "results": [
+    {
+      "id": "UI-01",
+      "name": "原新建主按钮进入原配置面板",
+      "passed": true
+    },
+    {
+      "id": "UI-02",
+      "name": "主应用示例菜单读取现有13条工单与字段库",
+      "passed": true
+    },
+    {
+      "id": "UI-03",
+      "name": "单击C5定位R5C3及output_qty",
+      "passed": true
+    },
+    {
+      "id": "UI-04",
+      "name": "双击C5打开高级设置并保存加粗",
+      "passed": true
+    },
+    {
+      "id": "UI-05",
+      "name": "显示名称输入焦点中直接保存，VTable名称更新",
+      "passed": true
+    },
+    {
+      "id": "UI-06",
+      "name": "F2画布标题编辑保存后保留",
+      "passed": false,
+      "actual": "画布显示画布编辑验收，保存后VTable仍显示原题",
+      "evidence": "cell-f2-not-captured-2026-10-19.jpg"
+    },
+    {
+      "id": "UI-07",
+      "name": "VTable总量、缺陷与加权率",
+      "passed": true
+    },
+    {
+      "id": "UI-08",
+      "name": "刷新恢复并按cell方式重新打开同一示例",
+      "passed": true
+    },
+    {
+      "id": "UI-09",
+      "name": "新增50件工单自动新增日期列并变更总量",
+      "passed": true
+    },
+    {
+      "id": "UI-10",
+      "name": "删除新工单及源记录逆序，旧列清理",
+      "passed": true,
+      "note": "源事实顺序改变，投影器按成员排序；不代表业务排序DSL或实例级覆盖验收通过"
+    },
+    {
+      "id": "UI-11",
+      "name": "ready-empty清除旧成员和数值且保留标题",
+      "passed": true
+    },
+    {
+      "id": "UI-12",
+      "name": "按字节恢复mock并自动恢复示例结果",
+      "passed": true
+    },
+    {
+      "id": "UI-13",
+      "name": "分组报表预览显示4400、4550、1900、10850及2.18%",
+      "passed": true,
+      "evidence": "cell-example-grouped-preview-2026-10-19.jpg"
+    },
+    {
+      "id": "UI-14",
+      "name": "交叉透视横向指标预览，恢复纵向后保存",
+      "passed": true,
+      "evidence": "cell-example-columns-preview-2026-10-19.jpg"
+    }
+  ]
+}

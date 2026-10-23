@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useSyncExternalStore } from 'react';
 import type { DataRecord, Identifiable } from '../types.js';
 import type { HeaderMapping, DynamicTransformConfig } from '../engine/types.js';
 import { createRegistry, type Registry } from './registry.js';
@@ -74,11 +74,36 @@ export class DatasetRegistry {
   private readonly dataCache = new Map<string, { data: readonly DataRecord[]; headers?: HeaderMapping | undefined }>();
   private readonly pendingLoads = new Map<string, Promise<{ data: readonly DataRecord[]; headers?: HeaderMapping | undefined }>>();
   private readonly loadTokens = new Map<string, object>();
+  private revision = 0;
+  private snapshot: readonly RegisteredDataset[] = Object.freeze([]);
 
   constructor(initial: readonly RegisteredDataset[] = []) {
     this.baseRegistry = createRegistry<RegisteredDataset>();
-    this.registerMany(initial);
+    if (initial.length > 0) {
+      this.registerMany(initial);
+    } else {
+      this.updateSnapshot();
+    }
   }
+
+  private updateSnapshot(): void {
+    this.revision += 1;
+    this.snapshot = Object.freeze(this.baseRegistry.list());
+  }
+
+  /**
+   * 获取当前数据集注册表的只读不可变快照 (并发一致性保障，无变更时引用恒定)
+   */
+  public getSnapshot = (): readonly RegisteredDataset[] => {
+    return this.snapshot;
+  };
+
+  /**
+   * 获取当前注册表的版本号修订计数值
+   */
+  public getRevision = (): number => {
+    return this.revision;
+  };
 
   /**
    * 注册单个数据集，若同 ID 已存在则覆盖。返回自身以便链式调用。
@@ -92,6 +117,7 @@ export class DatasetRegistry {
     } else {
       this.dataCache.delete(dataset.id);
     }
+    this.updateSnapshot();
     this.notify({ action: 'register', dataset });
     return this;
   }
@@ -110,6 +136,7 @@ export class DatasetRegistry {
         this.dataCache.delete(ds.id);
       }
     }
+    this.updateSnapshot();
     this.notify({ action: 'register', datasets });
     return this;
   }
@@ -122,6 +149,7 @@ export class DatasetRegistry {
     const success = this.baseRegistry.unregister(id);
     this.invalidateLoad(id);
     if (success) {
+      this.updateSnapshot();
       this.notify({ action: 'unregister', dataset: existing });
     }
     return success;
@@ -153,10 +181,10 @@ export class DatasetRegistry {
   }
 
   /**
-   * 获取所有已注册数据集列表（按注册顺序）。
+   * 获取所有已注册数据集列表（按注册顺序，返回副本以兼容外部数组修改）。
    */
   public list(): RegisteredDataset[] {
-    return this.baseRegistry.list();
+    return [...this.snapshot];
   }
 
   /**
@@ -181,6 +209,7 @@ export class DatasetRegistry {
     this.dataCache.clear();
     this.pendingLoads.clear();
     this.loadTokens.clear();
+    this.updateSnapshot();
     this.notify({ action: 'clear' });
   }
 
@@ -453,19 +482,22 @@ export function clearDatasetCache(
 
 /**
  * React Hook：响应式获取当前注册的数据集列表。
+ * 基于 React 18 useSyncExternalStore 确保并发一致性与稳定快照。
  * 当代码在运行时动态注册或更新数据集时，组件将自动重渲染。
  */
+const EMPTY_DATASET_SNAPSHOT: readonly RegisteredDataset[] = Object.freeze([]);
+
 export function useRegisteredDatasets(registry: DatasetRegistry = globalDatasetRegistry): RegisteredDataset[] {
-  const [datasets, setDatasets] = useState<RegisteredDataset[]>(() => registry.list());
-
-  useEffect(() => {
-    setDatasets(registry.list());
-    return registry.subscribe(() => {
-      setDatasets(registry.list());
-    });
-  }, [registry]);
-
-  return datasets;
+  const subscribe = useCallback(
+    (onStoreChange: () => void) => registry.subscribe(onStoreChange),
+    [registry]
+  );
+  const getSnapshot = useCallback(
+    () => registry.getSnapshot(),
+    [registry]
+  );
+  // 服务端/初次渲染无数据集，提供稳定空快照，避免复用 getSnapshot 造成 hydration 不一致
+  return useSyncExternalStore(subscribe, getSnapshot, () => EMPTY_DATASET_SNAPSHOT) as RegisteredDataset[];
 }
 
 /**
@@ -529,8 +561,16 @@ export function useDatasetData(
 
       setLoading(true);
       setError(null);
-      setData([]);
-      setHeaders(target.headers);
+      // 刷新期间保留已展示数据，避免闪空：有缓存则继续展示缓存内容；
+      // 仅在目标切换且无缓存时才重置，防止不同数据集间数据串显。
+      const cachedNow = registry.getCachedData(target.id);
+      if (cachedNow) {
+        setData(cachedNow.data);
+        setHeaders(cachedNow.headers);
+      } else {
+        setData([]);
+        setHeaders(target.headers);
+      }
       try {
         const res = await resolveDatasetData(target, { forceRefresh, registry });
         if (request !== requestRef.current) return;

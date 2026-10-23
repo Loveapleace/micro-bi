@@ -1,10 +1,10 @@
 {
-  "executedAt": "2026-10-19T02:09:40.903Z",
+  "executedAt": "2026-10-19T08:59:18.973Z",
   "nodeVersion": "v22.22.0",
   "scope": "Pure report + installed headless Univer SDK + actual isolated data-refresh effect + publication/VTable inputs; not a React/browser E2E suite.",
   "source": {
     "path": "src/univer/UniverPreview.tsx",
-    "sha256": "0c4a97396e225f012bc7442d36f5ca73647c8e798deb69cfa5c06fd98fbb859e"
+    "sha256": "9fe2da8f59a4614c5aaf8e7827190c775d87134c4a844c94f3a2766437337dea"
   },
   "summary": {
     "total": 20,

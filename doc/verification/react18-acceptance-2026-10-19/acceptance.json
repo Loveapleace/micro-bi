@@ -1,0 +1,91 @@
+{
+  "timestamp": "2026-10-21T01:20:46.713Z",
+  "target": "React / ReactDOM 18.3.1",
+  "total": 8,
+  "passed": 8,
+  "failed": 0,
+  "results": [
+    {
+      "id": "R18-T01",
+      "requirement": "R18-01",
+      "name": "两端清单与依赖包精准对齐 React 18.3.1 与匹配类型",
+      "passed": true,
+      "evidence": {
+        "libReact": "18.3.1",
+        "hostReact": "^18.3.1",
+        "typesReact": "^18.3.31",
+        "typesReactDom": "^18.3.7"
+      }
+    },
+    {
+      "id": "R18-T02",
+      "requirement": "R18-02",
+      "name": "严格模式与显式 children 类型检查",
+      "passed": true,
+      "evidence": {
+        "hasProvider": true,
+        "hasView": true
+      }
+    },
+    {
+      "id": "R18-T04",
+      "requirement": "R18-03",
+      "name": "同一源文档重复编译/深冻结输入保持不可变与幂等",
+      "passed": true,
+      "evidence": {
+        "cellsCount": 46,
+        "immutable": true
+      }
+    },
+    {
+      "id": "R18-T07",
+      "requirement": "R18-04",
+      "name": "外部注册表 revision、稳定快照与 useSyncExternalStore 契约",
+      "passed": true,
+      "evidence": {
+        "revisionsChecked": 3,
+        "snapshotStable": true
+      }
+    },
+    {
+      "id": "R18-T08",
+      "requirement": "R18-04",
+      "name": "异步数据源请求共享与并发去重机制",
+      "passed": true,
+      "evidence": {
+        "callCount": 1,
+        "sharedDedupe": true
+      }
+    },
+    {
+      "id": "R18-T09",
+      "requirement": "R18-06",
+      "name": "报表设计器同步草稿计算与单事务提交",
+      "passed": true,
+      "evidence": {
+        "previewGridCells": 46
+      }
+    },
+    {
+      "id": "R18-T15",
+      "requirement": "R18-01",
+      "name": "ESM / CJS 构建双产物与导出映射完备性",
+      "passed": true,
+      "evidence": {
+        "esmValid": true,
+        "cjsValid": true
+      }
+    },
+    {
+      "id": "R18-T16",
+      "requirement": "R18-05",
+      "name": "生产入口静态依赖图完全剥离 Univer 运行时",
+      "passed": true,
+      "evidence": {
+        "entry": "index.html",
+        "totalStaticChunks": 1,
+        "zeroUniverInEntry": true
+      }
+    }
+  ]
+}

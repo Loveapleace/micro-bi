@@ -98,6 +98,13 @@ export interface DynamicDataConfigPanelProps {
   readonly onTransformResult?: ((result: TransformResult) => void) | undefined;
   /** 字段探查样本限制条数，默认 100 */
   readonly sampleLimit?: number | undefined;
+  /**
+   * 切换数据源时是否保留现有配置（非破坏性）。默认 true：
+   * 仅更新 datasetId 与 headers，不清理维度/列、不自动补列、不应用目标数据集的 defaultConfig，
+   * 失效字段交由实时校验与保存校验诊断提示。
+   * 设为 false 时沿用旧的自适应行为（清理失效维度/列、自动补列、应用 defaultConfig）。
+   */
+  readonly preserveConfigOnDatasetSwitch?: boolean | undefined;
   /** 自定义外层样式 */
   readonly style?: CSSProperties | undefined;
   /** 自定义外层类名 */

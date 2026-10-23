@@ -1,0 +1,82 @@
+TAP version 13
+# Subtest: H3-F01: row totals aggregate the entire row once, after all date columns
+ok 1 - H3-F01: row totals aggregate the entire row once, after all date columns
+  ---
+  duration_ms: 18.7332
+  type: 'test'
+  ...
+# Subtest: H3-F01: AVG / COUNT / MIN / MAX totals use row facts rather than per-date aggregates
+ok 2 - H3-F01: AVG / COUNT / MIN / MAX totals use row facts rather than per-date aggregates
+  ---
+  duration_ms: 4.0961
+  type: 'test'
+  ...
+# Subtest: H3-F01: insert/delete/sort and JSON save retain totals and VTable text at the moving right edge
+ok 3 - H3-F01: insert/delete/sort and JSON save retain totals and VTable text at the moving right edge
+  ---
+  duration_ms: 8.1661
+  type: 'test'
+  ...
+# Subtest: H3-F01: row-only total and column-only summary both follow expanded perpendicular blocks
+ok 4 - H3-F01: row-only total and column-only summary both follow expanded perpendicular blocks
+  ---
+  duration_ms: 0.9212
+  type: 'test'
+  ...
+# Subtest: H3-F02: stale design snapshot cannot restore disabled generated cells; identical user note survives
+ok 5 - H3-F02: stale design snapshot cannot restore disabled generated cells; identical user note survives
+  ---
+  duration_ms: 2.0268
+  type: 'test'
+  ...
+# Subtest: H3-F02: explicit false takes priority and a legacy orphan header does not imply row totals
+ok 6 - H3-F02: explicit false takes priority and a legacy orphan header does not imply row totals
+  ---
+  duration_ms: 0.3403
+  type: 'test'
+  ...
+# Subtest: H3-F02: removed metric overrides cannot attach to another metric reusing its coordinates
+ok 7 - H3-F02: removed metric overrides cannot attach to another metric reusing its coordinates
+  ---
+  duration_ms: 0.2043
+  type: 'test'
+  ...
+# Subtest: H3-F02: switching total off then on discards inactive overrides and creates a clean total
+ok 8 - H3-F02: switching total off then on discards inactive overrides and creates a clean total
+  ---
+  duration_ms: 0.1889
+  type: 'test'
+  ...
+# Subtest: H3-F03: each simple format roundtrips as the same preset
+ok 9 - H3-F03: each simple format roundtrips as the same preset
+  ---
+  duration_ms: 0.7366
+  type: 'test'
+  ...
+# Subtest: H3-F03: advanced precision/unit/scale/styles survive reopen and VTable publication without editing
+ok 10 - H3-F03: advanced precision/unit/scale/styles survive reopen and VTable publication without editing
+  ---
+  duration_ms: 1.4831
+  type: 'test'
+  ...
+# Subtest: H3-F03: selecting a simple preset replaces obsolete precision while preserving the unit
+ok 11 - H3-F03: selecting a simple preset replaces obsolete precision while preserving the unit
+  ---
+  duration_ms: 0.2174
+  type: 'test'
+  ...
+# Subtest: Hybrid layout composition preserves distinct custom widths and avoids duplicate title merge
+ok 12 - Hybrid layout composition preserves distinct custom widths and avoids duplicate title merge
+  ---
+  duration_ms: 0.1448
+  type: 'test'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 121.6629

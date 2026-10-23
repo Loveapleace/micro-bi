@@ -1,0 +1,19 @@
+
+> micro-bi@0.1.0 build
+> npm run clean && npm run build:esm && npm run build:cjs && node scripts/postbuild.mjs
+
+
+> micro-bi@0.1.0 clean
+> node scripts/clean.mjs
+
+[clean] 已清理 dist/
+
+> micro-bi@0.1.0 build:esm
+> tsc -p tsconfig.json
+
+
+> micro-bi@0.1.0 build:cjs
+> tsc -p tsconfig.cjs.json
+
+[postbuild] dist/cjs/package.json -> { "type": "commonjs" }
+[postbuild] 构建完成

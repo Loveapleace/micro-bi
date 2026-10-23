@@ -1,0 +1,142 @@
+{
+  "timestamp": "2026-10-19T06:31:30.414Z",
+  "scope": "Node真实编译/适配诊断；浏览器验收另见Markdown记录",
+  "total": 15,
+  "passed": 15,
+  "failed": 0,
+  "results": [
+    {
+      "id": "AC-01",
+      "name": "现有13条工单的总量和加权缺陷率",
+      "specification": "CD-18/19/21",
+      "passed": true,
+      "expectedGap": false,
+      "evidence": {
+        "facts": 13,
+        "totalQty": 10850,
+        "totalDefects": 237,
+        "weightedDefectRate": "2.18%"
+      }
+    },
+    {
+      "id": "AC-02",
+      "name": "新增日期、删除日期、顺序重排后格式仍生效",
+      "specification": "CD-23/24/25/27",
+      "passed": true,
+      "expectedGap": false,
+      "evidence": {
+        "variants": 3,
+        "addedTotalQty": 10900
+      }
+    },
+    {
+      "id": "AC-03",
+      "name": "指标方向切换与分组报表复用",
+      "specification": "CD-17/20/26",
+      "passed": true,
+      "expectedGap": false,
+      "evidence": {
+        "layouts": 2,
+        "directions": 2
+      }
+    },
+    {
+      "id": "AC-04",
+      "name": "标题、非零锚点、合并文字与VTable格式",
+      "specification": "CD-36/38（局部）",
+      "passed": true,
+      "expectedGap": false,
+      "evidence": {
+        "title": "车间交付与质量交叉报表",
+        "anchorRow": 3,
+        "firstColumnWidth": 180
+      }
+    },
+    {
+      "id": "AC-05",
+      "name": "ready-empty不保留旧业务数值",
+      "specification": "CD-22（编译部分）",
+      "passed": true,
+      "expectedGap": false,
+      "evidence": {
+        "numericValues": []
+      }
+    },
+    {
+      "id": "CX-01",
+      "name": "Excel解除合并应在保存与刷新后保留",
+      "specification": "CD-30",
+      "passed": true,
+      "expectedGap": true
+    },
+    {
+      "id": "CX-02",
+      "name": "实例人工覆盖999应被编译器消费",
+      "specification": "CD-24/25/29",
+      "passed": true,
+      "expectedGap": true
+    },
+    {
+      "id": "CX-03",
+      "name": "样式规则和条件格式必须在新数据上重算",
+      "specification": "CD-36",
+      "passed": true,
+      "expectedGap": true
+    },
+    {
+      "id": "CX-04",
+      "name": "Excel工作表公式应执行或明确阻断发布",
+      "specification": "CD-12/37/39",
+      "passed": true,
+      "expectedGap": true
+    },
+    {
+      "id": "CX-05",
+      "name": "列父格环路应阻断发布",
+      "specification": "CD-39",
+      "passed": true,
+      "expectedGap": true
+    },
+    {
+      "id": "CX-06",
+      "name": "自由区碰撞不得覆盖自动数据",
+      "specification": "CD-31",
+      "passed": true,
+      "expectedGap": true
+    },
+    {
+      "id": "CX-07",
+      "name": "第二张静态表不能丢失或串入第一张",
+      "specification": "CD-38",
+      "passed": true,
+      "expectedGap": true
+    },
+    {
+      "id": "CX-08",
+      "name": "主键缺失或重复时应诊断身份问题",
+      "specification": "CD-16",
+      "passed": true,
+      "expectedGap": true
+    },
+    {
+      "id": "CX-09",
+      "name": "原生编辑快照同步回写模板与发布模型",
+      "specification": "CD-12/32/35/37",
+      "passed": true,
+      "expectedGap": true,
+      "evidence": {
+        "updatedTitle": "画布编辑验收"
+      }
+    },
+    {
+      "id": "CX-10",
+      "name": "展示首页入口完全剥离 Univer 依赖",
+      "specification": "CD-06",
+      "passed": true,
+      "expectedGap": true,
+      "evidence": {
+        "entryHtml": "index.html isolated from Univer"
+      }
+    }
+  ]
+}

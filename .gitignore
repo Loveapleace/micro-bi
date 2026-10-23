@@ -20,3 +20,6 @@ tsconfig.tsbuildinfo
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Local collaboration history
+.workbuddy/

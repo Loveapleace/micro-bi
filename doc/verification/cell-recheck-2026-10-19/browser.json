@@ -1,0 +1,36 @@
+{
+  "timestamp": "2026-10-19T05:50:31.789Z",
+  "url": "http://localhost:5174/",
+  "scope": "主应用真实浏览器操作与VTable复制，不读取React或localStorage内部状态",
+  "total": 4,
+  "passed": 2,
+  "failed": 2,
+  "results": [
+    {
+      "id": "BR-01",
+      "name": "刷新后直接打开单元格设计器样式完整",
+      "passed": false,
+      "evidence": "cold-cell-designer.jpg",
+      "actual": "CSS只在原面板懒加载模块中导入，工具栏堆叠且画布不可正常使用"
+    },
+    {
+      "id": "BR-02",
+      "name": "先打开原面板后再开单元格设计器",
+      "passed": true,
+      "actual": "原面板加载全局Univer CSS后画布恢复，供其他场景独立复验"
+    },
+    {
+      "id": "BR-03",
+      "name": "F2修改标题并保存进入原VTable卡片",
+      "passed": true,
+      "evidence": "f2-saved.tsv"
+    },
+    {
+      "id": "BR-04",
+      "name": "只改标题后保留原有业务公式与百分比指标",
+      "passed": false,
+      "evidence": "f2-saved-missing-rate.jpg",
+      "actual": "加权缺陷率整组指标消失；交付10850和缺陷237保留"
+    }
+  ]
+}

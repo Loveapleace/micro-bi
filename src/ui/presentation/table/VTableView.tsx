@@ -1085,8 +1085,12 @@ export const VTableView: React.FC<VTableViewProps> = ({
       return () => {
         cancelAnimationFrame(rAfId);
         ro.disconnect();
-        table.release();
-        tableRef.current = null;
+        try {
+          table.release();
+        } catch {}
+        if (tableRef.current === table) {
+          tableRef.current = null;
+        }
       };
     }
 
@@ -1242,8 +1246,12 @@ export const VTableView: React.FC<VTableViewProps> = ({
     return () => {
       cancelAnimationFrame(rAfId);
       ro.disconnect();
-      table.release();
-      tableRef.current = null;
+      try {
+        table.release();
+      } catch {}
+      if (tableRef.current === table) {
+        tableRef.current = null;
+      }
     };
   }, [
     isDark,

@@ -59,6 +59,16 @@ export function adaptPublishedSheetToVTable(
       field: `col_${c}`,
       title: '', // 无自动表头，统一由第一行真实单元格充当
       width: colWidth,
+      tooltip: (args: any) => {
+        const r = args.row;
+        const cell = cellIndex.get(`${r},${c}`);
+        if (cell?.tooltip) {
+          return {
+            content: cell.tooltip,
+          };
+        }
+        return undefined;
+      },
       style: (args: any) => {
         const r = args.row;
         const cell = cellIndex.get(`${r},${c}`);
@@ -71,7 +81,7 @@ export function adaptPublishedSheetToVTable(
           fontSize: 12,
         };
       },
-    });
+    } as any);
   }
 
   // 4. 生成 customMergeCell

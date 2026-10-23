@@ -1,0 +1,102 @@
+{
+  "timestamp": "2026-10-23T06:10:06.817Z",
+  "scope": "独立Chromium会话实际UI：原新建入口、字段选择、预览、VTable、保存重开、刷新、F2及高级格式；不读取或修改应用内部状态/用户浏览器存储",
+  "url": "http://localhost:5174/",
+  "isolation": "fresh Playwright browser context; user in-app browser untouched",
+  "total": 12,
+  "passed": 9,
+  "failed": 3,
+  "results": [
+    {
+      "id": "H3-01",
+      "name": "原主应用模式三入口与设计器加载",
+      "passed": true,
+      "evidence": "new-designer.png"
+    },
+    {
+      "id": "H3-02",
+      "name": "车间行分组、投产日列分组和交付/缺陷配置展开",
+      "passed": true,
+      "evidence": "configured-preview.png"
+    },
+    {
+      "id": "H3-03",
+      "name": "开启行总计应跨日期聚合并只出现一次",
+      "passed": false,
+      "actual": "每个日期后重复该日值，未得到车间交付4400/4550/1900",
+      "evidence": "saved-vtable.tsv"
+    },
+    {
+      "id": "H3-04",
+      "name": "保存至新看板并由VTable展示",
+      "passed": true,
+      "evidence": "saved-card.png"
+    },
+    {
+      "id": "H3-05",
+      "name": "第一次重开恢复车间、日期粒度及两项指标",
+      "passed": true,
+      "evidence": "reopened-preview.png"
+    },
+    {
+      "id": "H3-06",
+      "name": "两位小数选项保存后准确回显",
+      "passed": false,
+      "actual": "侧栏从两位小数回显为常规数值，现有显示值仍为两位小数",
+      "evidence": "reopened-preview.png"
+    },
+    {
+      "id": "H3-07",
+      "name": "关闭同类项合并保存并重开仍关闭",
+      "passed": true,
+      "evidence": "reopened-disabled-options.png"
+    },
+    {
+      "id": "H3-08",
+      "name": "关闭行总计保存重开仍关闭且无残留表头",
+      "passed": false,
+      "actual": {
+        "afterDisableHeaderRemains": true,
+        "reopenedRowTotal": true
+      },
+      "evidence": "after-disable-vtable.tsv"
+    },
+    {
+      "id": "H3-09",
+      "name": "F2自由备注输入、保存后保留",
+      "passed": true,
+      "evidence": "after-disable-vtable.tsv"
+    },
+    {
+      "id": "H3-10",
+      "name": "刷新后体验看板和自由备注仍在",
+      "passed": true,
+      "evidence": "after-reload.png"
+    },
+    {
+      "id": "H3-11",
+      "name": "双击指标格打开高级设置",
+      "passed": true,
+      "evidence": "advanced-settings.png"
+    },
+    {
+      "id": "H3-12",
+      "name": "高级件单位后缀保存及刷新后保留",
+      "passed": true,
+      "evidence": "reloaded-final-vtable.tsv"
+    }
+  ],
+  "pageErrors": [],
+  "notExercised": [
+    "转入自由设计器：当前模式三界面未发现可见入口",
+    "动态事实增删/重排：本次未修改数据",
+    "其他数据源切换"
+  ],
+  "finalState": {
+    "cardTitle": "[模式三体验] 车间日期交付与缺陷",
+    "mergeDisabled": true,
+    "suffix": "件",
+    "note": "体验备注：按车间与日期统计",
+    "profile": "isolated test context"
+  }
+}

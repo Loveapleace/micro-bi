@@ -1,0 +1,231 @@
+{
+  "date": "2026-10-23",
+  "method": "TypeScript transpileModule executes current adapter source; no business source modifications",
+  "source": {
+    "path": "src/report-template/panelToTemplateAdapter.ts",
+    "sha256": "0d2c62c1ce16df802ce99bbbf63f533446a5ba2a45280967a857fe4fb5051344"
+  },
+  "results": [
+    {
+      "id": "DIM-01",
+      "name": "基线：单行分类、单列时间",
+      "input": {
+        "categories": [
+          "order_code"
+        ],
+        "columnTimeBucket": {
+          "field": "plan_start_time",
+          "granularity": "month"
+        }
+      },
+      "expectedRow": [
+        "order_code"
+      ],
+      "expectedCol": [
+        "plan_start_time"
+      ],
+      "actualRow": [
+        "order_code"
+      ],
+      "actualCol": [
+        "plan_start_time"
+      ],
+      "missingRow": [],
+      "missingCol": [],
+      "cells": 9,
+      "status": "pass"
+    },
+    {
+      "id": "DIM-02",
+      "name": "截图：列时间+列分类",
+      "input": {
+        "categories": [
+          "order_code"
+        ],
+        "columnTimeBucket": {
+          "field": "plan_start_time",
+          "granularity": "month"
+        },
+        "columnCategories": [
+          "workshop"
+        ]
+      },
+      "expectedRow": [
+        "order_code"
+      ],
+      "expectedCol": [
+        "plan_start_time",
+        "workshop"
+      ],
+      "actualRow": [
+        "order_code"
+      ],
+      "actualCol": [
+        "plan_start_time"
+      ],
+      "missingRow": [],
+      "missingCol": [
+        "workshop"
+      ],
+      "cells": 9,
+      "status": "fail"
+    },
+    {
+      "id": "DIM-03",
+      "name": "无列时间，单列分类",
+      "input": {
+        "categories": [
+          "order_code"
+        ],
+        "columnCategories": [
+          "workshop"
+        ]
+      },
+      "expectedRow": [
+        "order_code"
+      ],
+      "expectedCol": [
+        "workshop"
+      ],
+      "actualRow": [
+        "order_code"
+      ],
+      "actualCol": [
+        "workshop"
+      ],
+      "missingRow": [],
+      "missingCol": [],
+      "cells": 9,
+      "status": "pass"
+    },
+    {
+      "id": "DIM-04",
+      "name": "无列时间，多列分类",
+      "input": {
+        "categories": [
+          "order_code"
+        ],
+        "columnCategories": [
+          "workshop",
+          "part_name"
+        ]
+      },
+      "expectedRow": [
+        "order_code"
+      ],
+      "expectedCol": [
+        "workshop",
+        "part_name"
+      ],
+      "actualRow": [
+        "order_code"
+      ],
+      "actualCol": [
+        "workshop"
+      ],
+      "missingRow": [],
+      "missingCol": [
+        "part_name"
+      ],
+      "cells": 9,
+      "status": "fail"
+    },
+    {
+      "id": "DIM-05",
+      "name": "透视模式多个行分类",
+      "input": {
+        "categories": [
+          "workshop",
+          "part_name"
+        ],
+        "columnTimeBucket": {
+          "field": "plan_start_time",
+          "granularity": "month"
+        }
+      },
+      "expectedRow": [
+        "workshop",
+        "part_name"
+      ],
+      "expectedCol": [
+        "plan_start_time"
+      ],
+      "actualRow": [
+        "workshop"
+      ],
+      "actualCol": [
+        "plan_start_time"
+      ],
+      "missingRow": [
+        "part_name"
+      ],
+      "missingCol": [],
+      "cells": 9,
+      "status": "fail"
+    },
+    {
+      "id": "DIM-06",
+      "name": "透视模式行时间+行分类",
+      "input": {
+        "timeBucket": {
+          "field": "finish_time",
+          "granularity": "day"
+        },
+        "categories": [
+          "workshop"
+        ],
+        "columnTimeBucket": {
+          "field": "plan_start_time",
+          "granularity": "month"
+        }
+      },
+      "expectedRow": [
+        "finish_time",
+        "workshop"
+      ],
+      "expectedCol": [
+        "plan_start_time"
+      ],
+      "actualRow": [
+        "workshop"
+      ],
+      "actualCol": [
+        "plan_start_time"
+      ],
+      "missingRow": [
+        "finish_time"
+      ],
+      "missingCol": [],
+      "cells": 9,
+      "status": "fail"
+    },
+    {
+      "id": "DIM-07",
+      "name": "分组模式三个行分类",
+      "input": {
+        "categories": [
+          "workshop",
+          "part_name",
+          "order_code"
+        ]
+      },
+      "expectedRow": [
+        "workshop",
+        "part_name",
+        "order_code"
+      ],
+      "expectedCol": [],
+      "actualRow": [
+        "workshop",
+        "part_name"
+      ],
+      "actualCol": [],
+      "missingRow": [
+        "order_code"
+      ],
+      "missingCol": [],
+      "cells": 9,
+      "status": "fail"
+    }
+  ]
+}

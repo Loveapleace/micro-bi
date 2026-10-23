@@ -1,0 +1,9 @@
+Declaration audit: tsc -p tsconfig.json --noEmit --skipLibCheck false
+Exit: 2. Captured output contained 2380 lines including diagnostic expansions.
+Only representative errors are retained here; this is not the complete output or an error count.
+
+node_modules/@types/node/globals.d.ts(126,13): TS2403: Subsequent variable declarations must have the same type: AbortSignal (DOM includes any(signals), installed Node 14 declaration does not).
+node_modules/@univerjs/core/lib/types/common/async.d.ts(16,23): TS7016: Could not find a declaration file for module async-lock.
+node_modules/@univerjs/core/lib/types/common/lodash.d.ts(16,63): TS7016: Could not find a declaration file for module lodash-es.
+node_modules/@univerjs/core/lib/types/docs/data-model/rich-text-builder.d.ts(1410,5): TS2416: getParagraphs in RichTextBuilder is incompatible with RichTextValue; nested sId string | undefined conflicts with exactOptionalPropertyTypes.
+node_modules/@univerjs/core/lib/types/docs/data-model/rich-text-builder.d.ts(1428,5): TS2416: getTextRuns in RichTextBuilder is incompatible with RichTextValue.

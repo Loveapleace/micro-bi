@@ -1,0 +1,135 @@
+{
+  "executedAt": "2026-10-19T03:37:51.372Z",
+  "nodeVersion": "v22.22.0",
+  "scope": "Supplemental assertions: pure model, actual isolated production effects, installed headless SDK and compiler/VTable inputs. Not mounted React/browser tests; no formula calculation.",
+  "fixture": "Four facts: A=30, B=140. Most style tests reserve space; RX-09/10 use exact initial grid dimensions as the real editor does.",
+  "source": {
+    "path": "src/univer/UniverPreview.tsx",
+    "sha256": "69c1951046d500550c774cd06072a1f1f9caa1b60041fb3554100ddecf520136"
+  },
+  "summary": {
+    "total": 19,
+    "passed": 19,
+    "failed": 0
+  },
+  "results": [
+    {
+      "id": "RX-01",
+      "title": "分组重排后加粗只属于原成员，不残留给邻居",
+      "layer": "actual-effect+SDK+VTable-input",
+      "status": "passed"
+    },
+    {
+      "id": "RX-02",
+      "title": "两次排序及新增成员后样式不扩散",
+      "layer": "actual-effect+SDK+VTable-input",
+      "status": "passed"
+    },
+    {
+      "id": "RX-03",
+      "title": "透视前插月份后总计样式不污染月份（指标横向）",
+      "layer": "actual-effect+SDK+VTable-input",
+      "status": "passed"
+    },
+    {
+      "id": "RX-04",
+      "title": "透视前插月份后总计样式不污染月份（指标纵向）",
+      "layer": "actual-effect+SDK+VTable-input",
+      "status": "passed"
+    },
+    {
+      "id": "RX-05",
+      "title": "明细模式也消费数值降序排序",
+      "layer": "pure-report+existing-engine-oracle",
+      "status": "passed"
+    },
+    {
+      "id": "RX-06",
+      "title": "双轴透视按列月份降序布局",
+      "layer": "pure-report",
+      "status": "passed"
+    },
+    {
+      "id": "RX-07",
+      "title": "设备编号等业务主键的明细重排身份稳定",
+      "layer": "pure-report",
+      "status": "passed"
+    },
+    {
+      "id": "RX-08",
+      "title": "数字主键1与字符串主键1不会碰撞",
+      "layer": "pure-report",
+      "status": "passed"
+    },
+    {
+      "id": "RX-09",
+      "title": "实际初始尺寸下新增分组后扩展工作表行数",
+      "layer": "actual-effect+SDK-unpadded",
+      "status": "passed"
+    },
+    {
+      "id": "RX-10",
+      "title": "实际初始尺寸下新增月份后扩展工作表列数",
+      "layer": "actual-effect+SDK-unpadded",
+      "status": "passed"
+    },
+    {
+      "id": "RX-11",
+      "title": "刷新后的真实编辑事件绑定到新成员坐标",
+      "layer": "actual-binding-effect+refresh-effect+SDK",
+      "status": "passed"
+    },
+    {
+      "id": "RX-12",
+      "title": "改变分组列后发布单元格角色随新布局更新",
+      "layer": "actual-effect+SDK+compiler",
+      "status": "passed"
+    },
+    {
+      "id": "RX-13",
+      "title": "自动区域增长时保留原区域下方手工备注或阻断覆盖",
+      "layer": "actual-effect+SDK",
+      "status": "passed"
+    },
+    {
+      "id": "RX-14",
+      "title": "批量输入两行时分别捕获两个成员的正确值",
+      "layer": "real-SDK+binding-manager",
+      "status": "passed"
+    },
+    {
+      "id": "RX-15",
+      "title": "仅值变化时单格样式和VTable新值保持正确",
+      "layer": "actual-effect+SDK+VTable-input",
+      "status": "passed"
+    },
+    {
+      "id": "RX-16",
+      "title": "删除成员后发布给VTable的行数与总计一致",
+      "layer": "actual-effect+SDK+VTable-input",
+      "status": "passed",
+      "evidence": {
+        "rows": 3,
+        "total": "30"
+      }
+    },
+    {
+      "id": "RX-17",
+      "title": "未解决的人工覆盖冲突在第二次相同刷新后仍保留",
+      "layer": "refresh-metadata",
+      "status": "passed"
+    },
+    {
+      "id": "RX-18",
+      "title": "空值基线变化也能检测人工覆盖冲突",
+      "layer": "refresh-metadata",
+      "status": "passed"
+    },
+    {
+      "id": "RX-19",
+      "title": "多级分组的不同维度表头有独立身份",
+      "layer": "pure-report",
+      "status": "passed"
+    }
+  ]
+}

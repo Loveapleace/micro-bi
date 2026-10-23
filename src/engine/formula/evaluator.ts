@@ -9,6 +9,8 @@ import { parseFormula } from './parser.js';
 export interface EvaluateOptions {
   /** 是否在数值计算中将 null/undefined 视作 0，默认 true */
   readonly nullAsZero?: boolean;
+  /** 除以 0 时是否返回 null，默认 false（返回 0） */
+  readonly divisionByZeroAsNull?: boolean;
 }
 
 function isTruthy(value: unknown): boolean {
@@ -26,7 +28,8 @@ function toNumber(val: unknown, nullAsZero: boolean): number {
   if (val === null || val === undefined || val === '') {
     return nullAsZero ? 0 : NaN;
   }
-  const parsed = Number(val);
+  // 字符串剥离千分位分隔符后再解析，与聚合层数值判定保持一致
+  const parsed = typeof val === 'string' ? Number(val.replace(/,/g, '')) : Number(val);
   return Number.isFinite(parsed) ? parsed : (nullAsZero ? 0 : NaN);
 }
 
@@ -181,12 +184,12 @@ export function evaluateAST(
           return toNumber(leftVal, nullAsZero) * toNumber(rightVal, nullAsZero);
         case '/': {
           const divisor = toNumber(rightVal, nullAsZero);
-          if (divisor === 0) return 0; // 防除以 0 容错
+          if (divisor === 0) return options?.divisionByZeroAsNull ? null : 0; // 防除以 0 容错
           return toNumber(leftVal, nullAsZero) / divisor;
         }
         case '%': {
           const divisor = toNumber(rightVal, nullAsZero);
-          if (divisor === 0) return 0;
+          if (divisor === 0) return options?.divisionByZeroAsNull ? null : 0;
           return toNumber(leftVal, nullAsZero) % divisor;
         }
         case '==':

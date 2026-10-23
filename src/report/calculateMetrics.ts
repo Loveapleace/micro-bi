@@ -9,6 +9,7 @@
 import type { DataRecord } from '../engine/types.js';
 import type { NormalizedMetric } from './normalizeAxes.js';
 import { roundTo } from '../engine/summary.js';
+import { toAggregableNumber } from '../engine/aggregation.js';
 import { evaluateFormula } from '../engine/formula/evaluator.js';
 
 export interface EvaluatedMetricResult {
@@ -52,7 +53,7 @@ export function enhanceRecordsWithRowComputed(
             ? rawVal
             : rawVal === null || rawVal === undefined || rawVal === ''
             ? 0
-            : Number(rawVal);
+            : toAggregableNumber(rawVal);
         const valToSet = Number.isFinite(numVal) ? numVal : rawVal;
         const keyUpper = `${m.agg?.toUpperCase()}(${m.field})`;
         const keyLower = `${m.agg?.toLowerCase()}(${m.field})`;
@@ -113,7 +114,7 @@ export function evaluateMetricsForBucket(
   // 预先执行行级增强 (MBI-08)
   const enhancedRecords = enhanceRecordsWithRowComputed(records, metrics, rawHeaders);
 
-  // 1. 统计所有字段的聚合量（sum, numericCount, nonNullCount, min, max）
+  // 1. 统计所有字段的聚合量（sum, numericCount, nonNullCount, min, max, firstValue）
   const fieldStats = new Map<
     string,
     {
@@ -122,13 +123,14 @@ export function evaluateMetricsForBucket(
       nonNullCount: number;
       min: number;
       max: number;
+      firstValue: unknown;
     }
   >();
 
   const getStats = (field: string) => {
     let s = fieldStats.get(field);
     if (!s) {
-      s = { sum: 0, numericCount: 0, nonNullCount: 0, min: Infinity, max: -Infinity };
+      s = { sum: 0, numericCount: 0, nonNullCount: 0, min: Infinity, max: -Infinity, firstValue: undefined };
       fieldStats.set(field, s);
     }
     return s;
@@ -140,7 +142,8 @@ export function evaluateMetricsForBucket(
       const s = getStats(key);
       if (val !== null && val !== undefined && val !== '') {
         s.nonNullCount += 1;
-        const num = Number(val);
+        if (s.firstValue === undefined) s.firstValue = val;
+        const num = toAggregableNumber(val);
         if (Number.isFinite(num)) {
           s.sum += num;
           s.numericCount += 1;
@@ -158,7 +161,12 @@ export function evaluateMetricsForBucket(
     const min = s.min === Infinity ? 0 : s.min;
     const max = s.max === -Infinity ? 0 : s.max;
 
-    evalContext[field] = s.sum;
+    // 纯文本字段（无数值样本）保留首条记录原值，供 IF([status]=='OK') 等条件公式引用；
+    // 数值字段维持汇总语义（[field] 解析为 SUM）。
+    const isTextOnly = s.numericCount === 0 && s.nonNullCount > 0;
+    const baseValue = isTextOnly ? s.firstValue : s.sum;
+
+    evalContext[field] = baseValue;
     evalContext[`SUM(${field})`] = s.sum;
     evalContext[`sum(${field})`] = s.sum;
     evalContext[`AVG(${field})`] = avg;
@@ -172,7 +180,7 @@ export function evaluateMetricsForBucket(
 
     const label = rawHeaders[field];
     if (label) {
-      evalContext[label] = s.sum;
+      evalContext[label] = baseValue;
       evalContext[`SUM(${label})`] = s.sum;
       evalContext[`sum(${label})`] = s.sum;
       evalContext[`AVG(${label})`] = avg;
@@ -266,7 +274,9 @@ export function evaluateMetricsForBucket(
       let displayText = val !== null ? String(val) : '';
       if (typeof val === 'number') {
         if (isRatio) {
-          if (m.expression && m.expression.includes('* 100')) {
+          // 百分比展示启发式：表达式显式乘以 100（含 *100、* 100、×100）说明已是百分比数值；
+          // 否则 0~1 之间视为小数比率（×100 转百分比），其余视为百分比数值直接展示。
+          if (m.expression && /[*×]\s*100/.test(m.expression)) {
             displayText = `${val.toFixed(m.precision ?? 2)}%`;
           } else if (val <= 1 && val >= 0) {
             displayText = `${(val * 100).toFixed(m.precision ?? 2)}%`;

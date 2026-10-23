@@ -97,6 +97,7 @@ export interface PublishedCell {
   styleId?: string | undefined;
   bindingId?: BindingId | undefined;
   role?: BindingRole | undefined;
+  tooltip?: string | undefined;
 }
 
 export interface PublishedSheet {
@@ -186,10 +187,11 @@ export interface BiGridCell {
   agg?: string | undefined;
   field?: string | undefined;
   style?: PublishedCellStyle | undefined;
+  tooltip?: string | undefined;
 }
 
 export interface BiGridModel {
-  type: 'grouped' | 'pivot';
+  type: 'grouped' | 'pivot' | 'detail';
   rowCount: number;
   colCount: number;
   cells: BiGridCell[];
@@ -197,4 +199,11 @@ export interface BiGridModel {
   bindings: ReportBinding[];
   colWidths?: Record<number, number> | undefined;
   rowHeights?: Record<number, number> | undefined;
+  mergeOrigins?: {
+    ruleId: string;
+    origin: 'static-layout' | 'manual-instance' | 'group-span' | 'adjacent-equal';
+    targetCellId?: string | undefined;
+    groupContextKey?: string | undefined;
+    range: ReportCellMerge;
+  }[] | undefined;
 }

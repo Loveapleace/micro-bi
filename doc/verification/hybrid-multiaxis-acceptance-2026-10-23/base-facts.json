@@ -1,0 +1,145 @@
+[
+  {
+    "order_code": "WO-202608-01",
+    "part_name": "航空钛合金压气机叶片",
+    "workshop": "1号五轴切削车间",
+    "plan_start_time": "2026-08-01 08:30:00",
+    "finish_time": "2026-08-03 16:45:00",
+    "duration_hours": 56.25,
+    "output_qty": 600,
+    "yield_rate": 99.2,
+    "defect_count": 5
+  },
+  {
+    "order_code": "WO-202608-02",
+    "part_name": "机器人精密RV减速机齿轮",
+    "workshop": "2号重型冲压车间",
+    "plan_start_time": "2026-08-01 10:00:00",
+    "finish_time": "2026-08-05 17:20:00",
+    "duration_hours": 104.33,
+    "output_qty": 1200,
+    "yield_rate": 98.4,
+    "defect_count": 19
+  },
+  {
+    "order_code": "WO-202608-03",
+    "part_name": "重载行星减速齿圈",
+    "workshop": "3号智能装配车间",
+    "plan_start_time": "2026-08-01 14:30:00",
+    "finish_time": "2026-08-04 18:00:00",
+    "duration_hours": 74.5,
+    "output_qty": 800,
+    "yield_rate": 99.5,
+    "defect_count": 4
+  },
+  {
+    "order_code": "WO-202608-04",
+    "part_name": "新能源扁线电驱主轴",
+    "workshop": "1号五轴切削车间",
+    "plan_start_time": "2026-08-02 09:00:00",
+    "finish_time": "2026-08-05 18:00:00",
+    "duration_hours": 79.5,
+    "output_qty": 450,
+    "yield_rate": 96.5,
+    "defect_count": 16
+  },
+  {
+    "order_code": "WO-202608-05",
+    "part_name": "超高压共轨喷油器阀体",
+    "workshop": "2号重型冲压车间",
+    "plan_start_time": "2026-08-02 13:00:00",
+    "finish_time": "2026-08-06 16:00:00",
+    "duration_hours": 80,
+    "output_qty": 1500,
+    "yield_rate": 95.8,
+    "defect_count": 63
+  },
+  {
+    "order_code": "WO-202608-06",
+    "part_name": "航空钛合金压气机叶片",
+    "workshop": "1号五轴切削车间",
+    "plan_start_time": "2026-08-02 16:30:00",
+    "finish_time": "2026-08-06 18:10:00",
+    "duration_hours": 99.8,
+    "output_qty": 300,
+    "yield_rate": 98.8,
+    "defect_count": 4
+  },
+  {
+    "order_code": "WO-202608-07",
+    "part_name": "新能源扁线电驱主轴",
+    "workshop": "1号五轴切削车间",
+    "plan_start_time": "2026-08-03 08:30:00",
+    "finish_time": "2026-08-06 17:00:00",
+    "duration_hours": 79.5,
+    "output_qty": 900,
+    "yield_rate": 97.9,
+    "defect_count": 19
+  },
+  {
+    "order_code": "WO-202608-08",
+    "part_name": "机器人精密RV减速机齿轮",
+    "workshop": "2号重型冲压车间",
+    "plan_start_time": "2026-08-03 11:00:00",
+    "finish_time": "2026-08-06 16:30:00",
+    "duration_hours": 80.5,
+    "output_qty": 700,
+    "yield_rate": 99,
+    "defect_count": 7
+  },
+  {
+    "order_code": "WO-202608-09",
+    "part_name": "超高压共轨喷油器阀体",
+    "workshop": "3号智能装配车间",
+    "plan_start_time": "2026-08-03 15:00:00",
+    "finish_time": "2026-08-07 17:00:00",
+    "duration_hours": 96,
+    "output_qty": 1100,
+    "yield_rate": 97.4,
+    "defect_count": 29
+  },
+  {
+    "order_code": "WO-202608-10",
+    "part_name": "重载行星减速齿圈",
+    "workshop": "2号重型冲压车间",
+    "plan_start_time": "2026-08-04 09:30:00",
+    "finish_time": "2026-08-07 18:40:00",
+    "duration_hours": 77.16,
+    "output_qty": 500,
+    "yield_rate": 99.3,
+    "defect_count": 3
+  },
+  {
+    "order_code": "WO-202608-11",
+    "part_name": "航空钛合金压气机叶片",
+    "workshop": "1号五轴切削车间",
+    "plan_start_time": "2026-08-04 14:00:00",
+    "finish_time": "2026-08-07 16:20:00",
+    "duration_hours": 79.33,
+    "output_qty": 850,
+    "yield_rate": 98.6,
+    "defect_count": 12
+  },
+  {
+    "order_code": "WO-202608-12",
+    "part_name": "新能源扁线电驱主轴",
+    "workshop": "1号五轴切削车间",
+    "plan_start_time": "2026-08-05 10:00:00",
+    "finish_time": "2026-08-08 17:50:00",
+    "duration_hours": 78.83,
+    "output_qty": 1300,
+    "yield_rate": 96.2,
+    "defect_count": 49
+  },
+  {
+    "order_code": "WO-202608-13",
+    "part_name": "机器人精密RV减速机齿轮",
+    "workshop": "2号重型冲压车间",
+    "plan_start_time": "2026-08-05 14:30:00",
+    "finish_time": "2026-08-08 18:00:00",
+    "duration_hours": 76,
+    "output_qty": 650,
+    "yield_rate": 98.9,
+    "defect_count": 7
+  }
+]

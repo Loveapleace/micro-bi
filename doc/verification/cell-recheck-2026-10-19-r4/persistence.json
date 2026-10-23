@@ -1,0 +1,57 @@
+{
+  "timestamp": "2026-10-21T01:20:18.669Z",
+  "scope": "真实展开器、快照适配器、编译器与JSON保存边界；历史键按R3实际编码构造",
+  "total": 8,
+  "passed": 8,
+  "failed": 0,
+  "results": [
+    {
+      "id": "R4-01",
+      "requirement": "DCR-01",
+      "name": "已保存业务合并经过设计态快照后仍保留原语义选择器",
+      "passed": true
+    },
+    {
+      "id": "R4-02",
+      "requirement": "DCR-01",
+      "name": "设计态数据变动后回预览不按旧坐标重新绑定新成员",
+      "passed": true
+    },
+    {
+      "id": "R4-03",
+      "requirement": "DCR-02",
+      "name": "新版本键连续人工编辑只保留1条覆盖且基线仍为600",
+      "passed": true
+    },
+    {
+      "id": "R4-04",
+      "requirement": "DCR-02",
+      "name": "新版本带字段键支持成员文字中的等号",
+      "passed": true
+    },
+    {
+      "id": "R4-05",
+      "requirement": "DCR-02/兼容",
+      "name": "R3存量键再次编辑后升级去重而非保留新旧两条覆盖",
+      "passed": true
+    },
+    {
+      "id": "R4-06",
+      "requirement": "DCR-02/兼容",
+      "name": "存量键再次编辑且事实未变时不产生伪冲突",
+      "passed": true
+    },
+    {
+      "id": "R4-07",
+      "requirement": "DCR-02/兼容",
+      "name": "R3合法成员值A=B的旧覆盖仍能识别或正确迁移",
+      "passed": true
+    },
+    {
+      "id": "R4-08",
+      "requirement": "DCR-02/兼容",
+      "name": "旧成员键换分组字段后不再按同名值静默继承",
+      "passed": true
+    }
+  ]
+}

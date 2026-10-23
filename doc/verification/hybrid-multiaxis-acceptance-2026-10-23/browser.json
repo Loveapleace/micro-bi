@@ -1,0 +1,83 @@
+{
+  "date": "2026-10-23",
+  "url": "http://localhost:5174/",
+  "isolation": "Independent Playwright Chromium context; user browser storage and source facts unchanged",
+  "checks": [
+    {
+      "id": "MX-01",
+      "status": "pass",
+      "detail": "原入口配置三层行轴及三层列轴，模板/预览完整；交付行总计之和10850；单位、加粗与备注迁移"
+    },
+    {
+      "id": "MX-02",
+      "status": "pass",
+      "detail": "保存刷新重开，行时间和两行分类、列时间和两列分类均完整回显"
+    },
+    {
+      "id": "MX-03",
+      "status": "pass",
+      "detail": "原C5指标迁移至E6后重开，高级单位件和加粗仍保留"
+    },
+    {
+      "id": "MX-04",
+      "status": "pass",
+      "detail": "三层报表关闭同类项合并→设计/预览切换→保存重开，开关保持关闭"
+    },
+    {
+      "id": "MX-05",
+      "status": "pass",
+      "detail": "隔离数据源新增记录/车间/产品/月份，不打开编辑器，已保存VTable自动新增行列并将总交付更新为10973，格式备注保留"
+    },
+    {
+      "id": "MX-06",
+      "status": "pass",
+      "detail": "新增数据输入逆序后，VTable二维文本逐字一致，完整分组/透视路径稳定"
+    },
+    {
+      "id": "MX-07",
+      "status": "pass",
+      "detail": "删除一个车间全部事实后，VTable对应行与透视列消失，总交付6450，备注和单位保留"
+    },
+    {
+      "id": "MX-08",
+      "status": "pass",
+      "detail": "恢复13条原事实后，VTable二维文本与基线逐字一致，无旧成员残留"
+    },
+    {
+      "id": "MX-09",
+      "status": "pass",
+      "detail": "分类顺序改为产品/车间，清空列轴切换时间+两级分类的分组报表，格式备注保留、交付10850，保存重开顺序完整"
+    },
+    {
+      "id": "MX-10",
+      "status": "pass",
+      "detail": "恢复三层列轴及默认分组合并后保存刷新，全部维度/备注/格式正常；系统首行标题设置居中后重开保持"
+    },
+    {
+      "id": "MX-11",
+      "status": "pass",
+      "detail": "通过原生合并菜单执行取消月份合并，切换设计/预览并保存重开，月份保持取消，其他分组规则继续生效；见native-unmerge-reopened.png"
+    },
+    {
+      "id": "MX-12",
+      "status": "pass",
+      "detail": "设计态F2:G2原生全部合并保留备注，展开后备注与合并区共同迁移，保存重开仍保留；位移边界另有HDIM-16/17专项"
+    }
+  ],
+  "pageErrors": [],
+  "dataFixtureMethod": "Intercept only this browser context request /src/mockData.ts, replace exported array before registry registration, reload same saved dashboard; do not open editor or resave in MX-05..08. This validates source-version refresh, not an actual server push API.",
+  "fixtureRequests": [
+    "http://localhost:5174/src/mockData.ts",
+    "http://localhost:5174/src/mockData.ts",
+    "http://localhost:5174/src/mockData.ts",
+    "http://localhost:5174/src/mockData.ts",
+    "http://localhost:5174/src/mockData.ts",
+    "http://localhost:5174/src/mockData.ts"
+  ],
+  "sourceRestored": true,
+  "notes": [
+    "Univer clipboard writes are asynchronous; final captures poll until actual TSV is available.",
+    "Range copies stay inside actual worksheet bounds.",
+    "Failed locator/VM realm assertions were corrected before the corresponding case was recorded as passed."
+  ]
+}

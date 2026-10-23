@@ -1,0 +1,502 @@
+{
+  "timestamp": "2026-10-21T01:20:11.715Z",
+  "target": "Cell Template Dynamic Merge (DM-01 ~ DM-11)",
+  "schemaVersion": "1.1",
+  "capability": "template-merge-v1",
+  "total": 39,
+  "passed": 39,
+  "failed": 0,
+  "results": [
+    {
+      "id": "CFG-01",
+      "suite": "CFG",
+      "name": "v1.0 模板在无 mergeConfig 时保持原有行为，校验通过",
+      "passed": true,
+      "evidence": {
+        "valid": true,
+        "schemaVersion": "1.0"
+      }
+    },
+    {
+      "id": "CFG-02",
+      "suite": "CFG",
+      "name": "migrateCellTemplateToV1_1 升级为 1.1，初始化 mergeConfig",
+      "passed": true,
+      "evidence": {
+        "schemaVersion": "1.1",
+        "capability": "template-merge-v1"
+      }
+    },
+    {
+      "id": "CFG-03",
+      "suite": "CFG",
+      "name": "1.1 模板在包含 policies 与 suppressions 时序列化/反序列化无损",
+      "passed": true,
+      "evidence": {
+        "policyCount": 2
+      }
+    },
+    {
+      "id": "CFG-04",
+      "suite": "CFG",
+      "name": "未知 capability 触发 ERR_UNSUPPORTED_MERGE_CAPABILITY 校验错误",
+      "passed": true,
+      "evidence": {
+        "diagnosticCodes": [
+          "ERR_UNSUPPORTED_MERGE_CAPABILITY"
+        ]
+      }
+    },
+    {
+      "id": "CFG-05",
+      "suite": "CFG",
+      "name": "策略引用不存在的 templateCellId 产生 ERR_POLICY_TARGET_CELL_NOT_FOUND",
+      "passed": true,
+      "evidence": {
+        "valid": false,
+        "code": "ERR_POLICY_TARGET_CELL_NOT_FOUND"
+      }
+    },
+    {
+      "id": "CFG-06",
+      "suite": "CFG",
+      "name": "策略重复 ID 产生 ERR_DUPLICATE_POLICY_ID 校验错误",
+      "passed": true,
+      "evidence": {
+        "valid": false,
+        "code": "ERR_DUPLICATE_POLICY_ID"
+      }
+    },
+    {
+      "id": "CFG-07",
+      "suite": "CFG",
+      "name": "encodeMemberValue / decodeMemberValue 严格区分类型",
+      "passed": true,
+      "evidence": {
+        "roundtrip": true
+      }
+    },
+    {
+      "id": "CFG-08",
+      "suite": "CFG",
+      "name": "buildGroupContextKey / parseGroupContextKey 往返一致",
+      "passed": true,
+      "evidence": {
+        "key": "grp::reg-1::row::workshop::s:W1",
+        "parsed": {
+          "regionId": "reg-1",
+          "axis": "row",
+          "fieldId": "workshop",
+          "memberPath": "s:W1"
+        }
+      }
+    },
+    {
+      "id": "CFG-09",
+      "suite": "CFG",
+      "name": "孤立 suppression 报告警告 WARN_SUPPRESSION_ORPHANED_POLICY",
+      "passed": true,
+      "evidence": {
+        "warningPresent": true
+      }
+    },
+    {
+      "id": "CFG-10",
+      "suite": "CFG",
+      "name": "migrateCellTemplateToV1_1 具有严格幂等性",
+      "passed": true,
+      "evidence": {
+        "idempotent": true
+      }
+    },
+    {
+      "id": "GSP-01",
+      "suite": "GSP",
+      "name": "F0 夹具在 metricDirection: rows 时，车间行标签自动覆盖所属度量行",
+      "passed": true,
+      "evidence": {
+        "workshopMerges": [
+          {
+            "startRow": 3,
+            "endRow": 4,
+            "startCol": 0,
+            "endCol": 0
+          },
+          {
+            "startRow": 5,
+            "endRow": 6,
+            "startCol": 0,
+            "endCol": 0
+          }
+        ]
+      }
+    },
+    {
+      "id": "GSP-02",
+      "suite": "GSP",
+      "name": "F0 夹具在 metricDirection: columns 时，车间行标签为单格，不生成多余合并",
+      "passed": true,
+      "evidence": {
+        "count": 0
+      }
+    },
+    {
+      "id": "GSP-03",
+      "suite": "GSP",
+      "name": "F0 夹具在 metricDirection: columns 时，日期列标签自动横向覆盖所属度量列",
+      "passed": true,
+      "evidence": {
+        "dateMerges": [
+          {
+            "startRow": 2,
+            "endRow": 2,
+            "startCol": 1,
+            "endCol": 2
+          },
+          {
+            "startRow": 2,
+            "endRow": 2,
+            "startCol": 3,
+            "endCol": 4
+          }
+        ]
+      }
+    },
+    {
+      "id": "GSP-04",
+      "suite": "GSP",
+      "name": "F0 夹具在 metricDirection: rows 时，日期列标签为单列，不生成多余合并",
+      "passed": true,
+      "evidence": {
+        "count": 0
+      }
+    },
+    {
+      "id": "GSP-05",
+      "suite": "GSP",
+      "name": "增加第 3 个度量指标时，车间跨度自动自适应从 2 行增至 3 行",
+      "passed": true,
+      "evidence": {
+        "workshopMerges": [
+          {
+            "startRow": 3,
+            "endRow": 5,
+            "startCol": 0,
+            "endCol": 0
+          },
+          {
+            "startRow": 6,
+            "endRow": 8,
+            "startCol": 0,
+            "endCol": 0
+          }
+        ]
+      }
+    },
+    {
+      "id": "GSP-06",
+      "suite": "GSP",
+      "name": "总计标签独立策略可独立覆盖",
+      "passed": true,
+      "evidence": {
+        "totalMerges": 4
+      }
+    },
+    {
+      "id": "GSP-07",
+      "suite": "GSP",
+      "name": "单指标场景下（span=1），单格不输出 merge 但策略保持 enabled",
+      "passed": true,
+      "evidence": {
+        "singleSpanSkipped": true,
+        "policyEnabled": true
+      }
+    },
+    {
+      "id": "GSP-08",
+      "suite": "GSP",
+      "name": "成员级取消例外 (group-context suppression)：W1 取消，W2 保持合并",
+      "passed": true,
+      "evidence": {
+        "remainingWorkshopMerge": {
+          "startRow": 5,
+          "endRow": 6,
+          "startCol": 0,
+          "endCol": 0
+        }
+      }
+    },
+    {
+      "id": "GSP-09",
+      "suite": "GSP",
+      "name": "数据增删与重排后，合并跟随业务成员移动",
+      "passed": true,
+      "evidence": {
+        "workshopMerges": [
+          {
+            "startRow": 3,
+            "endRow": 4,
+            "startCol": 0,
+            "endCol": 0
+          },
+          {
+            "startRow": 5,
+            "endRow": 6,
+            "startCol": 0,
+            "endCol": 0
+          }
+        ]
+      }
+    },
+    {
+      "id": "GSP-10",
+      "suite": "GSP",
+      "name": "策略整体关闭 (enabled: false) 时不生成任何合并",
+      "passed": true,
+      "evidence": {
+        "count": 0
+      }
+    },
+    {
+      "id": "GSP-11",
+      "suite": "GSP",
+      "name": "自由区静态合并 (A1:F1 标题) 与业务动态分组覆盖共存且互不冲突",
+      "passed": true,
+      "evidence": {
+        "titleMerge": {
+          "startRow": 0,
+          "endRow": 0,
+          "startCol": 0,
+          "endCol": 5
+        },
+        "workshopMergeCount": 2
+      }
+    },
+    {
+      "id": "GSP-12",
+      "suite": "GSP",
+      "name": "compileCellReport 端到端发布模型中完整包含动态合并范围 (零 Univer 依赖)",
+      "passed": true,
+      "evidence": {
+        "publicationMerges": [
+          {
+            "startRow": 0,
+            "endRow": 0,
+            "startCol": 0,
+            "endCol": 5,
+            "text": "标题报表"
+          },
+          {
+            "startRow": 3,
+            "endRow": 4,
+            "startCol": 0,
+            "endCol": 0,
+            "text": "W1"
+          },
+          {
+            "startRow": 5,
+            "endRow": 6,
+            "startCol": 0,
+            "endCol": 0,
+            "text": "W2"
+          }
+        ]
+      }
+    },
+    {
+      "id": "EQ-01",
+      "suite": "EQ",
+      "name": "FV 原顺序纵向同值：r1/r2 以及 r5/r6 各合并一段，r4/r5 不跨父组 F1/F2 合并",
+      "passed": true,
+      "evidence": {
+        "flagMerges": [
+          {
+            "startRow": 2,
+            "endRow": 3,
+            "startCol": 1,
+            "endCol": 1
+          },
+          {
+            "startRow": 6,
+            "endRow": 7,
+            "startCol": 1,
+            "endCol": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "EQ-02",
+      "suite": "EQ",
+      "name": "FH 横向度量指标连续同值：在开启 allowMeasures 时正确横向合并",
+      "passed": true,
+      "evidence": {
+        "qtyMerge": {
+          "startRow": 3,
+          "endRow": 3,
+          "startCol": 2,
+          "endCol": 3
+        }
+      }
+    },
+    {
+      "id": "EQ-03",
+      "suite": "EQ",
+      "name": "输入 A / B / A 保持原序，不跨 B 合并，不跳格",
+      "passed": true,
+      "evidence": {
+        "count": 0
+      }
+    },
+    {
+      "id": "EQ-04",
+      "suite": "EQ",
+      "name": "相同值之间物理不相邻时禁止跳格合并",
+      "passed": true,
+      "evidence": {
+        "flagMerge": {
+          "startRow": 2,
+          "endRow": 3,
+          "startCol": 1,
+          "endCol": 1
+        }
+      }
+    },
+    {
+      "id": "EQ-05",
+      "suite": "EQ",
+      "name": "数字 1、字符串 \"1\"、布尔 true 相邻类型不同不合并",
+      "passed": true,
+      "evidence": {
+        "count": 0
+      }
+    },
+    {
+      "id": "EQ-06",
+      "suite": "EQ",
+      "name": "null、undefined、空串连续且默认空值选项关闭时均不合并",
+      "passed": true,
+      "evidence": {
+        "count": 0
+      }
+    },
+    {
+      "id": "EQ-07",
+      "suite": "EQ",
+      "name": "显式开启 mergeNulls / mergeEmptyStrings 时同类连续空值独立合并，互不混合",
+      "passed": true,
+      "evidence": {
+        "flagMerges": [
+          {
+            "startRow": 2,
+            "endRow": 3,
+            "startCol": 1,
+            "endCol": 1
+          },
+          {
+            "startRow": 4,
+            "endRow": 5,
+            "startCol": 1,
+            "endCol": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "EQ-08",
+      "suite": "EQ",
+      "name": "实际值不同时不合并 (1.001 vs 1.004)",
+      "passed": true,
+      "evidence": {
+        "count": 0
+      }
+    },
+    {
+      "id": "EQ-09",
+      "suite": "EQ",
+      "name": "\"A\"、\" A\"、\"a\" 区分大小写与空格，不伪相等",
+      "passed": true,
+      "evidence": {
+        "count": 0
+      }
+    },
+    {
+      "id": "EQ-10",
+      "suite": "EQ",
+      "name": "NaN 与 Infinity 不参与合并",
+      "passed": true,
+      "evidence": {
+        "count": 0
+      }
+    },
+    {
+      "id": "EQ-11",
+      "suite": "EQ",
+      "name": "未开启 allowMeasures 时度量指标即使数值相同也不合并",
+      "passed": true,
+      "evidence": {
+        "count": 0
+      }
+    },
+    {
+      "id": "EQ-12",
+      "suite": "EQ",
+      "name": "boundary 为 none 时允许跨越父组连续合并",
+      "passed": true,
+      "evidence": {
+        "flagMerge": {
+          "startRow": 2,
+          "endRow": 3,
+          "startCol": 1,
+          "endCol": 1
+        }
+      }
+    },
+    {
+      "id": "EQ-13",
+      "suite": "EQ",
+      "name": "条件格式背景色不同时在样式边界分段，避免掩盖条件格式",
+      "passed": true,
+      "evidence": {
+        "valMergeCount": 1
+      }
+    },
+    {
+      "id": "EQ-14",
+      "suite": "EQ",
+      "name": "目标连续段中单格被 suppression 排除时打断合并",
+      "passed": true,
+      "evidence": {
+        "count": 0
+      }
+    },
+    {
+      "id": "ISO-01",
+      "suite": "ISO",
+      "name": "跨工作表隔离：sheet-2 上的合并策略不作用于 sheet-1",
+      "passed": true,
+      "evidence": {
+        "isolated": true
+      }
+    },
+    {
+      "id": "EXP-01",
+      "suite": "EXP",
+      "name": "全部数据为空时，业务动态合并安全清空，静态标题合并保持保留",
+      "passed": true,
+      "evidence": {
+        "workshopMergesEmpty": true,
+        "titleMergeKept": true
+      }
+    },
+    {
+      "id": "EXP-02",
+      "suite": "EXP",
+      "name": "单格范围 (1x1) 在任何策略下均不向网格输出冗余 merge 对象",
+      "passed": true,
+      "evidence": {
+        "noSingleCellMerge": true
+      }
+    }
+  ]
+}

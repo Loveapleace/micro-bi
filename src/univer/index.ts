@@ -5,5 +5,7 @@
 export * from './adapter.js';
 export * from './BiBindingPlugin.js';
 export * from './compileReport.js';
+export * from './gridSync.js';
 export * from './UniverPreview.js';
 export * from './ReportConfigPanel.js';
+export * from '../cell-designer/index.js';

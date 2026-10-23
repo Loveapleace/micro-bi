@@ -19,6 +19,7 @@ import type {
 } from './types.js';
 import type { NormalizedAxes, NormalizedDimension } from './normalizeAxes.js';
 import { formatTimeBucket } from '../engine/bucketing.js';
+import { compareWithSortRules } from '../engine/comparison.js';
 import { createReportBinding } from './bindings.js';
 import { evaluateMetricsForBucket, enhanceRecordsWithRowComputed } from './calculateMetrics.js';
 
@@ -112,18 +113,9 @@ export function projectGroupedReport(
       // RT-05 / RX-05: 明细模式消费 options.sort
       if (axes.options?.sort && axes.options.sort.length > 0) {
         const sorts = axes.options.sort;
-        enhancedRecords = [...enhancedRecords].sort((a, b) => {
-          for (const s of sorts) {
-            const valA = (a as any)[s.field];
-            const valB = (b as any)[s.field];
-            if (valA === valB) continue;
-            if (valA === null || valA === undefined) return 1;
-            if (valB === null || valB === undefined) return -1;
-            const comp = valA > valB ? 1 : -1;
-            return s.order === 'desc' ? -comp : comp;
-          }
-          return 0;
-        });
+        enhancedRecords = [...enhancedRecords].sort((a, b) =>
+          compareWithSortRules(a as Record<string, unknown>, b as Record<string, unknown>, sorts)
+        );
       }
 
       for (let rIdx = 0; rIdx < enhancedRecords.length; rIdx++) {

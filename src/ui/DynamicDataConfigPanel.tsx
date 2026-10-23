@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, useImperativeHandle } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useImperativeHandle, useDeferredValue } from 'react';
 import { Row, Col, Space, Button, message, Tooltip, Tag, Divider, Select, Spin, Alert } from 'antd';
 import {
   CopyOutlined,
@@ -66,6 +66,7 @@ export const DynamicDataConfigPanel = React.forwardRef<
     showQuickPresets = true,
     showDslTools = false,
     showFieldKeys = false,
+    preserveConfigOnDatasetSwitch = true,
     renderPreview,
   },
   ref
@@ -254,11 +255,21 @@ export const DynamicDataConfigPanel = React.forwardRef<
   });
 
   const activeConfig = value || internalConfig;
+  // 延迟配置快照：重型 transformData 计算使用延迟值，避免每次按键都阻塞渲染
+  const deferredConfig = useDeferredValue(activeConfig);
   const hasInitializedRef = React.useRef(false);
 
-  // 当外部 data 传入且 columns 为空时，智能初始化若干固定列 (仅初始化一次，避免死循环)
+  // 智能初始化：仅当面板从未出现过列配置时自动补列（仅一次，避免死循环）。
+  // 关键：若面板挂载时即携带列配置（默认模板 / defaultConfig / 已保存报表），
+  // 必须视为"已完成初始化"——否则用户此后主动清空全部列时会被再次自动补列，
+  // 导致"删除最后一列后列自动恢复、无法得到空表格"的异常。
   useEffect(() => {
-    if (!hasInitializedRef.current && activeConfig.columns.length === 0 && fields.length > 0) {
+    if (hasInitializedRef.current) return;
+    if (activeConfig.columns.length > 0) {
+      hasInitializedRef.current = true;
+      return;
+    }
+    if (fields.length > 0) {
       hasInitializedRef.current = true;
       const initialCols: ColumnConfig[] = fields.slice(0, 5).map((f) => ({
         type: 'fixed',
@@ -409,9 +420,9 @@ export const DynamicDataConfigPanel = React.forwardRef<
   const transformResult: TransformResult = useMemo(() => {
     try {
       const runConfig: DynamicTransformConfig =
-        effectiveHeaders && !activeConfig.headers
-          ? { ...activeConfig, headers: effectiveHeaders }
-          : activeConfig;
+        effectiveHeaders && !deferredConfig.headers
+          ? { ...deferredConfig, headers: effectiveHeaders }
+          : deferredConfig;
       return transformData(effectiveData, runConfig);
     } catch {
       return {
@@ -424,7 +435,7 @@ export const DynamicDataConfigPanel = React.forwardRef<
         },
       };
     }
-  }, [effectiveData, activeConfig, effectiveHeaders]);
+  }, [effectiveData, deferredConfig, effectiveHeaders]);
 
   const onTransformResultRef = React.useRef(onTransformResult);
   onTransformResultRef.current = onTransformResult;
@@ -447,6 +458,18 @@ export const DynamicDataConfigPanel = React.forwardRef<
         message.success(t('已切换至数据源: {name}', { name: targetDs.name }));
       }
       setFieldOverrides({});
+
+      // 非破坏性切换：仅更新 datasetId 与 headers，保留维度/列/公式原样；
+      // 失效字段交由实时校验与保存校验诊断提示，数据加载由 loadActiveDataset 统一处理。
+      if (preserveConfigOnDatasetSwitch) {
+        const targetHeaders = targetDs?.headers as Record<string, string> | undefined;
+        updateConfig({
+          ...activeConfig,
+          datasetId: newId,
+          headers: targetHeaders || activeConfig.headers,
+        });
+        return;
+      }
 
       // 切换数据源时进行配置自适应流转：
       if (targetDs?.defaultConfig) {
@@ -574,6 +597,20 @@ export const DynamicDataConfigPanel = React.forwardRef<
   const handleValidateAndGetConfig = useCallback((): ConfigValidationResult => {
     const current = getEffectiveConfig();
     return validateTransformConfig(current, fields);
+  }, [getEffectiveConfig, fields]);
+
+  // 实时校验（防抖 300ms）：编辑过程中即时提示配置错误，而非仅在保存时
+  const [liveErrors, setLiveErrors] = useState<string[]>([]);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const res = validateTransformConfig(getEffectiveConfig(), fields);
+      setLiveErrors(
+        res.issues
+          .filter((i) => i.severity === 'error')
+          .map((i) => i.message)
+      );
+    }, 300);
+    return () => clearTimeout(timer);
   }, [getEffectiveConfig, fields]);
 
   const handleGetTransformResult = useCallback((): TransformResult => {
@@ -791,6 +828,22 @@ export const DynamicDataConfigPanel = React.forwardRef<
   return (
     <DynamicDataLocaleContext.Provider value={t.locale}>
       <div className={className} style={{ position: 'relative', ...style }}>
+        {/* 实时校验错误横幅（编辑过程中即时提示） */}
+        {liveErrors.length > 0 && (
+          <Alert
+            type="error"
+            showIcon
+            style={{ marginBottom: 12 }}
+            message={t('配置存在错误')}
+            description={
+              <ul style={{ margin: 0, paddingLeft: 18 }}>
+                {liveErrors.map((m, i) => (
+                  <li key={i}>{m}</li>
+                ))}
+              </ul>
+            }
+          />
+        )}
         {/* 数据源选择与模式栏 (支持直接代码传入 + 注册制多数据源动态切换) */}
         {showDatasetSelector !== false && (
           <div

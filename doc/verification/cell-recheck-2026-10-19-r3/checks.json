@@ -1,0 +1,70 @@
+{
+  "timestamp": "2026-10-19T06:42:12.083858+00:00",
+  "phase": "R3 focused dynamic-report acceptance",
+  "gitHead": "e8eb3b453f03ea3d9473ac846e2c858eb7e2909d",
+  "unit": {
+    "command": "npm test",
+    "tests": 155,
+    "pass": 155,
+    "fail": 0
+  },
+  "hostBuild": {
+    "command": "npm run build -- --manifest",
+    "passed": true,
+    "manifestSha256": "0dc815e48cdd077555686a58f0073574dfc2fef951965a33c8ad9057b3c2a787"
+  },
+  "suites": {
+    "baseline": {
+      "total": 15,
+      "passed": 15,
+      "failed": 0
+    },
+    "extended": {
+      "total": 25,
+      "passed": 25,
+      "failed": 0
+    },
+    "focused": {
+      "total": 12,
+      "passed": 5,
+      "failed": 7
+    },
+    "browser": {
+      "total": 12,
+      "passed": 10,
+      "failed": 2
+    }
+  },
+  "legacyTemplate": {
+    "total": 20,
+    "passed": 20,
+    "failed": 0
+  },
+  "legacyRegression": {
+    "total": 19,
+    "passed": 19,
+    "failed": 0
+  },
+  "mockSha256": "7ae500177b538d96817ecb646f80804965e0ed2c85f21a7a11d7aa13f59ba125",
+  "sources": {
+    "micro-bi/src/report-template/compileCellReport.ts": "b7bd773552fc0a1401108e28b51c751f492cf879ef9e2cf849d15aa0ab0b4b8e",
+    "micro-bi/src/report-template/expandTemplate.ts": "549aacb00a5464f9f02b065d24c2c4e65ef1dd14858164b53989e04eb9a756d9",
+    "micro-bi/src/report-template/identity.ts": "ca19d7f32f509181120d43041556cd5a2199f0484815b44abf8826289b3912f4",
+    "micro-bi/src/report-template/index.ts": "02ab3365d6947d85e94299beae8577967d7a2028619ba487979727c05a726177",
+    "micro-bi/src/report-template/normalizeCellTemplate.ts": "dbcd03aafdabde4de711cd96ee8c5908ecaacfa030099d545962e962d3e9a19e",
+    "micro-bi/src/report-template/types.ts": "86719000b4ae61ecf9e7757bb536d9b8e555226eaea963ef496a0a34dd1184b7",
+    "micro-bi/src/report-template/validator.ts": "bd3998155ff72df7718b6e0b59076ec387093743ae962ffb4f9ab7a18910e17a",
+    "micro-bi/src/cell-designer/designerReducer.ts": "7771baf44678121825b641b85126c16849deba2e83d856b34737cf5f758c2bc1",
+    "micro-bi/src/cell-designer/index.ts": "3f3b2bf087f77223f629c32b6acc72412c96c2edb7f08137c589a4365891a503",
+    "micro-bi/src/cell-designer/syncWorkbookToTemplate.ts": "a806a7f1f2ed6fae1c0eab6bcac5f85757c56195b707a5a2e4d245371254c668",
+    "micro-bi/src/cell-designer/univerEvents.ts": "fb1045c1d488f5a2a95b7417c36a0b3d0e9e5486854b94543fe502c8af1ac0c0",
+    "micro-bi/src/cell-designer/CellAdvancedSettings.tsx": "7c380fa1b5d77b959c89773eb6e5967dc83c66cfe55efbec584663855a728ec3",
+    "micro-bi/src/cell-designer/CellInspector.tsx": "ec62da18e603aebd1dd76fb6b9e3bc995fe30182262c7a3acbfc03c637378ad0",
+    "micro-bi/src/cell-designer/CellReportDesigner.tsx": "fcb189ffeb6677e4c043529640d269a5f719c4f3bd70491ef9ee14a107aacbbc",
+    "micro-bi/src/univer/UniverPreview.tsx": "69c1951046d500550c774cd06072a1f1f9caa1b60041fb3554100ddecf520136",
+    "dynamic-data-test/src/App.tsx": "c382aed83a040c8b8308da837d82176c3f3f096ed3dc4a4f98c7e454ab571211",
+    "dynamic-data-test/src/components/CellReportEditModal.tsx": "9760cfcda41f0ecd772247b02bcb41229711540963f55ca1a4efe2ae25e4db00",
+    "dynamic-data-test/src/components/DashboardEditModal.tsx": "430fdc9cda0a664ceb4b271d9cfb5501bf49263f7ed533c87c1df4e8e4ac6ecf",
+    "micro-bi/scripts/verify-cell-dynamic-roundtrip.mjs": "07d8b7675725a9321fb9e4d8d094b07b85ce5788f01bcab4aea2de2ebaad2a0d"
+  }
+}

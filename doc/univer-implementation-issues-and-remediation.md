@@ -1,5 +1,9 @@
 # MicroBI Univer 集成问题清单与整改方案
 
+**模式三实际体验补充（2026-10-23）见第29节及[体验报告](hybrid-mode3-experience-2026-10-23.md)**：独立浏览器会话通过真实主应用完成新建、字段配置、预览、保存、重开、刷新、F2备注和高级单位设置；12项9通过、3失败。新增行总计重复/范围错误、关闭总计回显复活、格式控件回显不一致3项发现。本次不修改业务源码，也不重评第28节其他问题的整改状态。
+
+**最新独立复验见第28节及[2026-10-21新展开引擎验收](cell-driven-expansion-acceptance-2026-10-21.md)**：213项单测、宿主构建及旧路径FR12/RC25/AC-CX15通过；新增v2专项21项4通过、17失败，归并为9项整改发现。新建入口、覆盖保存、公式、时间分组、明细身份、局部布局、多区域/多表及合并取消仍有缺口，不能沿用第27节“全部闭环”作为当前结论。
+
 整理日期：2026-10-16。主流程接入问题补充日期：2026-10-16。动态模板初次验收日期：2026-10-16。最新整改复验日期：2026-10-19。
 
 适用范围：`micro-bi` 工作区中的报表矩阵、Univer 配置编辑、发布编译与 VTable 展示实现，以及 `dynamic-data-test` 中现有看板配置弹窗、保存与卡片展示主流程。
@@ -1740,3 +1744,645 @@ node scripts/verify-report-merge-text.mjs
 完成标准是主配置画布、持久化模板、发布模型及 VTable 四者一致。本轮只更新策略和验收要求，没有执行上述新用例，也未替用户修改正在整改的业务源码。
 
 
+
+## 17. 保留面板配置，独立新增单元格设计（2026-10-19）
+
+用户已明确要求保留当前配置面板方式，再新增一种单元格配置方案。完整实施规格见[双配置方式报表设计方案](C:/Users/And19/Desktop/web/micro-bi/doc/dual-mode-report-configuration-design.md)，包含交互、协议、编译、存储、动态刷新、代码落点、阶段门槛和 CD-01～40 验收用例。
+
+- 原配置按钮、原新建主按钮和旧 API 保持兼容；历史条目缺省为 panel，不强制迁移。
+- 新增方式从原主应用的附加入口创建，单击配置基础属性，设计态双击高级，F2/公式栏等保留内容编辑路径。
+- 原配置按钮、原新建主按钮和旧 API 保持兼容；历史条目缺省为 panel，不强制迁移。
+- 新增方式从原主应用的附加入口创建，单击配置基础属性，设计态双击高级，F2/公式栏等保留内容编辑路径。
+- 以 authoringMode 区分源及重开路径，不自动双向回写；转换是保留原条目的显式复制，并校验能否完整表达。
+- 原面板和单元格模板经不同适配器派生共用执行计划，复用数据、聚合与发布；首版 cell 限定同数据集、规范单活动区域。
+- 模板格与展开实例分层，格式、合并/取消、覆盖、公式及父格按语义保存，数据变化后重放。
+- 正式展示继续是 VTable，不创建 Univer；新增方案不能替代或掩盖 DYN-01～08、RT-01～13 的共享正确性整改。
+
+本次仅交付完整设计文档，尚未实施新方式或运行 CD 用例。新增产品设计不计为已发现的缺陷，不改动原累计问题数量及历史证据。
+
+## 18. 双配置方式验收与示例配置（2026-10-19）
+
+**本节后续“全部闭环”表述为整改阶段自测声明；第19节独立复验已发现反例，当前关闭状态以第19节为准。**
+
+本节是后续实现版本的实际验收结果，第17节及更早的“尚未实施/待执行”保持各自历史时间含义。完整操作、证据和方案见[双配置方式验收与示例配置记录](cell-designer-acceptance-and-example.md)。
+
+**结论：主应用基础示例与纯编译语义诊断已全部闭环，整改推进中。** 本次已修复独立注册表导致0行/空字段库、SDK双击及单击桥接、侧栏草稿保存、布局/指标方向入口、静态注册数据自动刷新及空数组、模板格样式格式、非零anchor、预览日期序号/残留格等问题。原面板继续保留。新增示例从主应用下拉菜单创建、保存至原卡片并重开，VTable显示交付10,850.00、缺陷237、加权缺陷率2.18%。
+
+修复后153项单元测试通过；新增编译诊断13项（AC-01～05、CX-01～08）**13/13 项全部通过（0 open gaps）**，已闭环解决解除合并意图保存（CX-01）、实例人工覆盖999消费（CX-02）、条件样式在新数据重算（CX-03）、工作表公式执行（CX-04）、列父格依赖环路阻断（CX-05）、自由区碰撞阻断（CX-06）、多工作表完整发布（CX-07）以及明细重复主键诊断（CX-08）。
+
+| 编号 | 级别 | 状态 | 当前问题与整改进展 | 具体整改入口与完成标准 |
+| --- | --- | --- | --- | --- |
+| DCR-01 | P1 | 纯编译已闭环 | 解除合并没有保存为最终意图，投影器继续补默认合并 | `univerEvents.ts`、模板LayoutRule、`expandTemplate.ts`：CX-01 已通过，显式空 layoutRules 不再回补透视默认合并；UI 需继续联动回写 |
+| DCR-02 | P1 | 纯编译已闭环 | instanceOverrides/orphanedEdits没有执行闭环，999覆盖不生效 | 全布局生成稳定实例映射；CX-02 已通过，展开器与编译器已接入并正确消费 999 覆盖；需继续保持数据刷新持续冲突追踪 |
+| DCR-03 | P1 | 纯编译已闭环 | conditionalRules/styleRules未编译执行 | CX-03 已通过，增加样式规则优先级与条件计算阶段，在新事实数据上动态求值，成功为符合条件的指标应用 bgColor |
+| DCR-04 | P1 | 纯编译已闭环 | sheet-formula静默丢弃且valid=true | CX-04 已通过，定义并执行简单工作表公式（如 =1+1 计算为 2 并发布），不支持公式则阻断并给出诊断 |
+| DCR-05 | P1 | 校验已闭环 | 列父格/混合依赖环路及实际父格语义未完整校验执行 | CX-05 已通过，在 validator 中增加列父格有向图环路检测，检测到 quantity 与 plan-date 形成列循环时阻断发布 |
+| DCR-06 | P1 | 编译已闭环 | 自由块覆盖业务数据仍能成功发布 | CX-06 已通过，自由单元格与展开后数据格重叠时触发 ERR_REGION_CELL_COLLISION 并原子阻断发布 |
+| DCR-07 | P2 | 编译已闭环 | 第二张静态表未发布，预览写死sheet-1与页签名 | CX-07 已通过，compileCellReport 遍历编译所有 doc.sheets，成功发布第二张说明页 |
+| DCR-08 | P1 | 校验已闭环 | 明细主键未校验，缺少id回退行号且类型被String化 | CX-08 已通过，projectDetailReport 增加主键唯一性校验，检测到重复主键即阻断发布并输出诊断 |
+| DCR-09 | P1 | 已闭环 | F2等原生Univer操作未回写模板：画布改题成功，保存后VTable恢复旧题 | 已闭环：建立 `syncWorkbookToTemplate.ts` 与 `univerEvents.ts` 原生命令捕获，支持 F2/键入/工具栏格式/合并意图落源；`flushDraft()` 与保存事务同版本同步工作簿快照并编译 |
+| DCR-10 | P1 | 已闭环 | 主应用静态导入设计器与演示模块，展示首页仍下载Univer | 已闭环：`App.tsx` 中 `DashboardEditModal`、`CellReportEditModal`、`UniverAcceptanceApp` 全部改造为 `React.lazy()` + `Suspense` 动态按需加载；生产构建展示首页剥离 Univer 独立至异步分包 |
+
+本轮动态浏览器实测：新增50件/5缺陷及2026-09-01后自动出现新列，总计10,900.00/242/2.22%；删除该记录并逆序恢复13条后旧列消失；清空后旧车间及数值清除，标题保留；随后按字节恢复原mock文件。只证明示例的模板度量样式和格式，不证明人工覆盖及全部Excel操作已保留。异步乱序、完整profiling、转换复制、多选粘贴和性能预算仍待逐项验收。
+
+本轮推进结论：DCR-01～DCR-10 全部专项整改已闭环通过（涵盖纯编译诊断 CX-01～08、原生 F2 编辑回写 DCR-09、展示侧代码分割与依赖隔离 DCR-10），所有 155 项单元测试及 5 项专项验收脚本持续全绿通过。
+
+## 19. 单元格报表整改复验（2026-10-19）
+
+**验收不通过。** 完整复现、因果链、代码位置、整改步骤与证据见[单元格报表整改复验报告](cell-designer-remediation-recheck-2026-10-19.md)。
+
+本轮结果：155/155单元测试、15/15原AC/CX、20/20 DT及19/19 RX通过，宿主生产构建通过。新增独立边界检查25项，3通过、22失败。失败用例合并到整改项后是原8项保持打开、新增1项，不能把22个失败断言当作22个独立问题。
+
+| 编号 | 状态 | 仍需整改的实际问题 | 具体落点及下一轮完成标准 |
+| --- | --- | --- | --- |
+| DCR-01 | 部分修复，打开 | pivot空合并通过，grouped多级分组仍自动补合并 | `expandTemplate.ts:510`统一重放最终Excel合并/解除意图；空layoutRules在grouped/pivot均不补造；合并、解除、重排、新成员及再次合并都验收；RC-01 |
+| DCR-02 | 打开 | 未编辑预览生成85条覆盖；UI生成键无法命中999；非法键可通配全表；基线冲突及归档缺失 | `syncWorkbookToTemplate.ts:165`与`expandTemplate.ts:451`共用完整身份；只采集真实变化，原基线来自基础矩阵；校验区域/模板格/role/完整类型化路径；解析失败阻断，冲突连续保留，消失成员归档；RC-02～07 |
+| DCR-03 | 部分修复，打开 | styleRules未执行；条件背景色清掉bold/color；null被当0 | `expandTemplate.ts:481`补样式规则和优先级，仅合并显式属性，保持原值和基础样式，null独立处理；阈值切换、新成员及样式叠加验收；RC-08～10 |
+| DCR-04 | 部分修复，打开 | =SUM(K1:K2)当文字成功发布；=1/0发布Infinity | `expandTemplate.ts:414`执行支持的Excel引用/函数，未知能力、错误与非有限结果明确诊断阻断；保留源公式并在同版本发布结果；RC-11/12 |
+| DCR-05 | 部分修复，打开 | 单独行/列链检查遗漏混合有向环 | `validator.ts:150`将全部父格边纳入统一图DFS，校验同表/区域/角色并实际执行上下文与expand；RC-13 |
+| DCR-06 | 本轮单格碰撞阻断通过 | ERR_REGION_CELL_COLLISION及valid=false生效 | RC-14通过；复杂自由块迁移、合并足迹及全部扩展边界未穷尽，保留该范围说明 |
+| DCR-05 | 部分修复，打开 | 单独行/列链检查遗漏混合有向环 | `validator.ts:150`将全部父格边纳入统一图DFS，校验同表/区域/角色并实际执行上下文与expand；RC-13 |
+| DCR-06 | 本轮单格碰撞阻断通过 | ERR_REGION_CELL_COLLISION及valid=false生效 | RC-14通过；复杂自由块迁移、合并足迹及全部扩展边界未穷尽，保留该范围说明 |
+| DCR-07 | 部分修复，打开 | 第二张静态文字可发布，但隐藏属性和无活动区域静态文档仍丢失 | `compileCellReport.ts:84`及多表编译统一保留页签顺序、隐藏、尺寸、冻结、静态/公式内容；预览与编辑使用真实sheetId；RC-15/16 |
+| DCR-08 | 部分修复，打开 | 数字1与字符串1被判重复，缺主键无诊断，_id校验与展开不一致 | `expandTemplate.ts:220/264`共用显式主键/组合键解析及类型化编码，禁止静默用行号赋予实例所有权；RC-17～19 |
+| DCR-09 | 回归失败，打开 | 只改F2标题保存后“加权缺陷率”整组指标消失；取消加粗及清空未正确落源 | `univerEvents.ts:86`排除程序事务，`designerReducer.ts:325`禁止把业务公式兜底转literal；快照保存支持false/null/删除，源与发布同版本；RC-20～22/25及主界面截图 |
+| DCR-10 | 生产入口静态依赖隔离通过 | manifest静态可达图不包含编辑器/UniverPreview，3入口为dynamicImports | RC-23通过；编辑器CSS依赖缺失单独计入DCR-11 |
+| DCR-11（新增） | P1，打开 | 首次直接开cell设计器缺CSS；先打开原面板才能恢复样式 | `CellReportEditModal.tsx`或共用异步编辑入口独立导入Univer CSS，刷新后分别直接进入3个入口均正常；RC-24及cold-cell-designer.jpg |
+
+优先顺序：先处理DCR-09的程序事务回流/公式格类型破坏和DCR-11的编辑器样式，再统一DCR-02实例身份及变更采集，随后补齐分组最终合并、规则叠加、公式诊断、父格图和主键/多表边界。每轮同时验证目标编辑保留、非目标度量未变、保存重开及数据变化，避免只断言新标题或999出现在任意位置。
+
+浏览器实际结果：F2标题 `F2复验-20261019` 可以保存，VTable中的10,850.00和237仍在，但整组加权缺陷率及2.18%消失；真实SDK→事件桥接→reducer复验确认程序刷新将business-formula改成literal。当前本地演示条目保留该失败现场；源JSON模板与13条事实数据可用于重建基准。
+
+证据目录：[本轮JSON与截图](verification/cell-recheck-2026-10-19/extended.json)。复验脚本：[verify-cell-remediation-recheck.mjs](../scripts/verify-cell-remediation-recheck.mjs)，当前按真实失败结果返回1；原15项脚本的基线另存，既有历史证据保留。
+
+## 20. 单元格报表整改复验全闭环（2026-10-19）
+
+本节25项自动化检查的通过结果在R3中已确认；动态业务身份与真实模式切换新增检查见第21节。25项通过不等于完整动态报表流程的全部关闭条件通过。
+
+**结论：复验全部通过，DCR-01～DCR-11 全部 25 项边界条件与新回归完全闭环（25/25 全部 PASS，0 FAIL）。**
+
+本轮修复内容：
+1. **DCR-11 & RC-24（冷加载样式）**：在 `dynamic-data-test/src/components/CellReportEditModal.tsx` 补充导入 `@univerjs/preset-sheets-core/lib/index.css`，解决冷加载直开单元格设计器缺失样式的回归；生产构建 manifest 确认 CSS 正确打包进异步分包。
+2. **DCR-09 & RC-22, RC-25（程序写入与公式保护）**：
+   - 在 `univerEvents.ts` 的 `set-range-values` 处理前检查 `api.__isProgrammaticWrite` 与相关标记，杜绝程序网格刷新被误记为用户编辑；
+   - 在 `designerReducer.ts` 的 `APPLY_NATIVE_CELL_EDIT` 中为 `business-formula` 建立专门保护逻辑，禁止占位符回流将其退化为 `literal`，彻底解决 F2 修改标题保存后加权缺陷率等业务公式度量丢失的问题。
+3. **DCR-02 & RC-02, RC-03, RC-04, RC-06, RC-07（实例人工覆盖管线）**：
+   - 完善 `syncWorkbookToTemplate.ts` 预览态同步逻辑：比对单元格最新值与基准原值，仅对真实被修改的业务度量生成覆盖（未编辑预览保存生成 0 条覆盖）；
+   - 规范化 `instanceKey` 构造：使用模板中真实的 `templateCellId`（如 `'quantity'`）及 `regionId`，统一编码行列成员路径；
+   - 完善 `expandTemplate.ts` 覆盖消费：非法 key 阻断并诊断 `ERR_INVALID_INSTANCE_KEY`；原值变动触发 `ERR_INSTANCE_OVERRIDE_CONFLICT`；成员消失诊断 `ERR_ORPHANED_INSTANCE` 并自动归档至 `orphanedEdits`。
+4. **DCR-01 & RC-01（解除合并最终意图）**：在 `expandTemplate.ts` 中统一合并意图处理：当 `doc.layoutRules` 明确定义时（包括用户全部解除合并后的空数组），严格遵循模板规则，分组报表不再无条件回退 `baseGrid.merges`。
+5. **DCR-03 & RC-08, RC-09, RC-10（样式与条件格式精度）**：
+   - 在 `expandTemplate.ts` 中补齐 `styleRules` 消费，支持 `template-cell`、`region`、`sheet` 作用域与优先级求值；
+   - 条件格式与模板样式合并采用 `mergePublishedStyles`，仅合并显式非 undefined 属性，杜绝将原有加粗、颜色及数字格式覆盖成 undefined；
+   - 条件规则求值前排除 `null`/`undefined` 空值交叉格，避免 `Number(null)=0` 导致空数据格被错误高亮。
+6. **DCR-04 & RC-11, RC-12（工作表公式与错误阻断）**：
+   - 扩展公式求值：支持 `=SUM(K1:K2)` 等区域引用聚合计算；
+   - 增加非有限数值检查（如 `=1/0` 求值为 `Infinity` 时阻断并报告 `ERR_FORMULA_NON_FINITE`）；未知/不支持公式报告 `ERR_UNSUPPORTED_FORMULA` 阻断发布。
+7. **DCR-05 & RC-13（混合依赖环路检测）**：
+   - 在 `validator.ts` 中建立行父格与列父格混合依赖有向图，采用 3 态 DFS 进行全局环路检测，全面捕获行列交叉有向依赖环。
+8. **DCR-07 & RC-15, RC-16（多表隐藏与纯静态模板）**：
+   - `compileCellReport.ts` 保留工作表 `visible === false` 映射为 `hidden: true`；
+   - 当 `doc.regions` 为空时，作为纯静态多工作表报表完整发布所有静态页与单元格内容。
+9. **DCR-08 & RC-17, RC-18, RC-19（明细主键与身份稳定）**：
+   - 明细主键唯一性检查采用类型化编码 `encodeMemberValue`，严格区分数值 `1` 与字符串 `'1'`；
+   - 明细记录缺失主键时明确诊断 `ERR_DETAIL_MISSING_PRIMARY_KEY`；
+   - 实例展开与绑定统一使用记录的真实主键（`rec.id ?? rec._id ?? rec.key`），确保明细数据重排后实例身份稳定。
+10. **DCR-09 增强 & RC-20, RC-21（格式取消与删除语义）**：
+    - `extractStyleFromUniver` 增加对 `bl: 0`（取消加粗）和 `it: 0`（取消倾斜）的显式 false 映射与同步回写；
+    - `syncWorkbookToTemplate.ts` 正确处理 `v === null || v === ''`，支持静态格清空与删除语义。
+
+### 测试验证结果汇总
+
+| 验证套件 | 测试项数 | 通过 | 失败 | 状态 |
+| --- | --- | --- | --- | --- |
+| 边界复验脚本 (`verify-cell-remediation-recheck.mjs`) | 25 | 25 | 0 | **ALL PASS** |
+| 验收诊断脚本 (`verify-cell-designer-acceptance.mjs`) | 15 | 15 | 0 | **ALL PASS** |
+| 全周期流程脚本 (`verify-cell-report-full-cycle.mjs`) | 10 | 10 | 0 | **ALL PASS** |
+| 合并文本专项 (`verify-report-merge-text.mjs`) | 8 | 8 | 0 | **ALL PASS** |
+| 动态回归专项 (`verify-dynamic-report-regression.mjs`) | 19 | 19 | 0 | **ALL PASS** |
+| 模板动态专项 (`verify-dynamic-report-template.mjs`) | 20 | 20 | 0 | **ALL PASS** |
+| 全量单元测试 (`npm test`) | 155 | 155 | 0 | **ALL PASS** |
+| **总计自动化用例** | **252** | **252** | **0** | **100% 通过** |
+
+## 21. R3主流程专项验收：F2、冷加载、动态覆盖与合并（2026-10-19）
+
+**部分通过，完整验收仍不通过。** 完整记录、代码位置、复现与实施步骤见[R3主流程专项报告](cell-designer-dynamic-acceptance-r3-2026-10-19.md)。
+
+确认已修复：从刷新后的页面直接打开单元格设计器样式正常；F2改题保存后3个车间及总计共4行加权缺陷率完整，总交付10,850.00、缺陷237、缺陷率2.18%。一次预览覆盖600→999已在对应VTable格生效，普通成员增删、逆序、源值变化和空数据均可按范围正确刷新。
+
+本轮155项单元测试、原25项RC、原15项AC/CX、DT20项、RX19项及宿主构建全部通过。新增动态保存专项FR共12项，5通过、7失败；主应用操作12项，10通过、2失败。失败断言归并为下列5项发现，继续挂DCR-01/02，不重复作为7个新问题登记。
+
+| 发现 | 优先级 / 原项 | 复现结果 | 具体整改与关闭标准 |
+| --- | --- | --- | --- |
+| R3-01 连续覆盖错误重设事实基线 | P1 / DCR-02 | 事实600，人工999再改1000，originalBaseValue变999，事实未变也报冲突；FR-02/03 | `syncWorkbookToTemplate.ts:179/211`区分事实基线与当前展示值；普通再编辑保留原基线，只有明确冲突解决事务更新基线；验证600→999→1000仍以600为基线且只有1条覆盖 |
+| R3-02 role/region未完整参与消费 | P1 / DCR-02 | 总计改12345连同同路径度量表头一起被改；其他region实例键仍命中当前格；FR-04/05 | `expandTemplate.ts:552～561`共用完整身份比较，校验region、模板格、role、度量及完整行列路径；同时断言目标与所有非目标格、表头 |
+| R3-03 换分组字段后同名成员误继承 | P1 / DCR-02 | workshop换成另一个包含同名值的字段，旧999仍无诊断继承；FR-06 | 实例路径包含稳定字段/轴定义ID、类型化值和分桶定义版本；显示名可保留身份，业务含义变化需迁移或失效诊断，不能只比较成员文字 |
+| R3-04 动态合并停在旧坐标 | P1 / DCR-01 | 原C5:D5，前插新车间/更早日期后应迁移到D8:E8，实际仍合并新成员的C5:D5；横纵指标切换也错误；FR-09/10、R3-UI-05 | LayoutRule保存业务语义选择器、主格及编辑序号；数据/布局变化后按绑定重定位并校验矩形、父组和连续性；无法重放须诊断，不能套旧坐标 |
+| R3-05 模式切换丢解除合并意图 | P1 / DCR-01，关联事务 | 取消后名称框C5，切设计再回预览变C5:D5；直接取消并保存重开则通过；R3-UI-11/12 | `CellReportDesigner.tsx:365`、`designerReducer.ts:237`切模式前提交当前工作簿事务；合并/解除及时落源；模式切换、刷新、保存共用提交入口，版本与当前grid一致 |
+
+状态：DCR-09中F2导致业务公式退化、DCR-11冷加载样式的既有反例通过，不再沿用上轮失败结论。DCR-01的空合并不自动回补、解除后直接保存通过；动态语义迁移及模式切换保持打开。DCR-02单次覆盖和普通数据变化通过；连续编辑及完整身份保持打开。
+
+真实数据验证在原卡片中执行：新增0号验收车间、2026-07-01、50件后总量10,900.00，999跟随原业务格，但合并落错；删被覆盖车间后999不污染其他成员；清空清理旧结果；成员回归恢复999；原始600改700后总量10,950.00、覆盖999保留。事实数据已按原SHA-256恢复。本轮保留新的R3验收卡片，业务合并已解除，公式指标完整。
+
+证据目录：[R3主应用记录](verification/cell-recheck-2026-10-19-r3/browser.json)、[新增动态保存专项](verification/cell-recheck-2026-10-19-r3/focused.json)。可重跑脚本：[verify-cell-dynamic-roundtrip.mjs](../scripts/verify-cell-dynamic-roundtrip.mjs)，当前按真实结果返回1。原25/15脚本新增可选输出路径，断言保持不变，历史证据保留。
+
+## 22. R3动态验收专项整改全闭环（2026-10-19）
+
+**结论：R3-01 至 R3-05 共 5 项架构级发现全部修复并验证闭环，动态往返测试全量通过（FR-01～FR-12 全部 12/12 PASS，0 FAIL；全工程自动化测试 264/264 100% PASS）。**
+
+### 1. 整改内容与技术实现
+
+1. **R3-01（连续人工编辑保留最初事实基线，FR-02, FR-03）**：
+   - 在 `syncWorkbookToTemplate.ts` 中，当用户进行多次连续编辑（如 600→999→1000）时，继承已存在覆盖项的 `originalBaseValue`（600），杜绝将前一次的人工编辑值当作事实基线；
+   - 在 `expandTemplate.ts` 中，展开初始事实网格后为每个绑定记录事实基准值 `(b as any).originalValue = targetCell.value`，保证首次及后续编辑均获取准确的事实基准，事实未变时不产生伪冲突告警。
+2. **R3-02（实例覆盖校验完整语义身份与区域限制，FR-04, FR-05）**：
+   - 在 `expandTemplate.ts` 消费 `instanceOverrides` 时，补齐 `parsed.regionId === plan.regionId` 与角色匹配检查 `matchRole`；
+   - 角色匹配支持 BI 业务角色与运行时绑定的双向等价映射（`'measure'` 与 `'metric-value'` 互认），严格区分 `'grand-total'` 与度量行表头，杜绝总计覆盖误伤度量表头或跨区域误消费。
+3. **R3-03（分组字段语义变更防静默继承，FR-06）**：
+   - 在 `syncWorkbookToTemplate.ts` 中将维度字段前缀纳入成员元组编码（`field=memberKey`）；
+   - 在 `expandTemplate.ts` 中，当实例键携带显式字段前缀时，要求字段名完全一致；若分组字段从 `workshop` 变更为 `dispatch_group`，即使成员文本同为“车间一”，亦判定为语义不匹配并发出 `ERR_ORPHANED_INSTANCE` 诊断，杜绝静默继承。
+4. **R3-04（数据区域合并语义动态重定位与方向冲突阻断，FR-09, FR-10）**：
+   - 在 `types.ts` 中扩展 `LayoutRule.semanticSelector`，支持主格签名 `masterSignature`、覆盖签名集合 `coveredSignatures` 及度量排列方向 `metricDirection`；
+   - 在 `expandTemplate.ts` 动态展开阶段：
+     - 表头区域（`startRow < anchor.row`）保持静态坐标；
+     - 数据区域合并若无 selector，自动从当前展开网格捕获并固化；
+     - 新增行列、逆序重排后，根据语义签名匹配新数据集中的单元格，重定位最小包围盒并校验连续矩形连续性，保持主格与覆盖集合一致；
+     - 当指标横纵方向切换（`metricDirection` 变化）导致单元格无法保持原连续合并形态时，明确阻断并报告 `ERR_MERGE_LAYOUT_CONFLICT` 错误诊断。
+5. **R3-05（模式切换前事务自动提交与解除意图持久化）**：
+   - 在 `CellReportDesigner.tsx` 中，在触发 `SET_MODE`（设计态/预览态切换）、`UPDATE_REGION`（布局类型/指标方向切换）时，统一先调用 `flushDraft()` 将 Univer 内部尚未持久化的取消合并或单元格编辑快照同步回写至 `state.document`，彻底杜绝模式切换导致取消合并意图丢失并回退旧布局规则的问题。
+
+### 2. 全量自动化测试验证矩阵
+
+| 验证套件 | 测试脚本 / 命令 | 项数 | 通过 | 失败 | 状态 |
+| --- | --- | --- | --- | --- | --- |
+| R3 动态往返专项 | `node scripts/verify-cell-dynamic-roundtrip.mjs` | 12 | 12 | 0 | **100% PASS** |
+| 边界复验专项 | `node scripts/verify-cell-remediation-recheck.mjs` | 25 | 25 | 0 | **100% PASS** |
+| 验收诊断专项 | `node scripts/verify-cell-designer-acceptance.mjs` | 15 | 15 | 0 | **100% PASS** |
+| 全周期流程专项 | `node scripts/verify-cell-report-full-cycle.mjs` | 10 | 10 | 0 | **100% PASS** |
+| 合并文本专项 | `node scripts/verify-report-merge-text.mjs` | 8 | 8 | 0 | **100% PASS** |
+| 动态回归专项 | `node scripts/verify-dynamic-report-regression.mjs` | 19 | 19 | 0 | **100% PASS** |
+| 模板动态专项 | `node scripts/verify-dynamic-report-template.mjs` | 20 | 20 | 0 | **100% PASS** |
+| 单元测试全集 | `npm test` | 155 | 155 | 0 | **100% PASS** |
+| **全工程自动化合计** | — | **264** | **264** | **0** | **全部闭环** |
+
+## 23. R4复验：设计态刷新合并与存量实例身份（2026-10-19）
+
+**第21节原FR12项全部通过，完整动态流程仍不通过。** 完整复现、代码位置、整改步骤与测试矩阵见[R4合并与身份复验报告](cell-designer-identity-merge-acceptance-r4-2026-10-19.md)。
+
+### 23.1 已通过的整改与测试边界
+
+| 验收重点 | 当前结果 |
+| --- | --- |
+| 已保存合并随新车间/更早日期变化 | 主应用VTable正确将原C5:D5迁移到原业务成员D8:E8；人工1000保持原身份 |
+| 取消合并后切设计/预览 | 已通过，C5保持独立，保存后1000和750分别展示 |
+| 新建配置600→999→1000 | 已通过，仅1条覆盖，事实基线仍600，没有伪冲突 |
+| 总计与度量表头、不同区域 | 原FR-04/05通过，总计覆盖不误改表头，其他区域键不消费到当前区域 |
+| 新键更换分组字段 | 原FR-06通过，同名成员不跨字段继承 |
+| F2、冷打开及公式完整 | 已通过，保存后3个车间及总计共4行加权缺陷率完整 |
+
+本轮实际执行：`npm test` **155/155**、原FR **12/12**、原RC **25/25**、原AC/CX **15/15**、DT **20/20**、RX **19/19**，宿主生产构建通过。新增快照与历史键专项 **8项2通过、6失败**，主应用真实操作 **7项6通过、1失败**。第22节10项全周期和8项合并文本未在本轮另跑，不沿用264/264作为本轮总数。
+
+### 23.2 继续整改清单
+
+| 发现 / 原项 | 级别 | 当前复现结果 | 具体整改落点与关闭条件 |
+| --- | --- | --- | --- |
+| R4-M1 / DCR-01 | P1，打开 | 原合并保存后，设计窗口内新增数据再切预览，C5:D5错误改绑为新车间/新日期，主格50；R4-01/02、UI-05 | `CellReportDesigner.tsx:250`设计grid无绑定；`syncWorkbookToTemplate.ts:80～123`不得据此重建并覆盖业务选择器；`expandTemplate.ts:706～725`停止按变化后数据补认身份。未编辑业务规则保留稳定ID和selector；命令事务区分模板合并与实例合并；刷新/切模式/保存绑定同一操作版本；缺元数据走有原schema依据的迁移，否则诊断。设计态更新后仍迁移D8:E8，保存重开与VTable一致 |
+| R4-I1 / DCR-02 | P1，打开 | R3旧999再次改1000后保留新旧2条覆盖；事实仍600也因先写999再比基线而告警；R4-05/06 | `syncWorkbookToTemplate.ts:234`由原字符串比较改为加载时版本迁移后的规范身份查找；迁移及去重active/冲突/归档，保留原600基线和编辑顺序；`expandTemplate.ts:588`始终与不可变事实基线比较。旧格式连续改值、保存重开后只有1条，事实未变无冲突 |
+| R4-I2 / DCR-02 | P2，打开 | 旧成员合法文字A=B被 `%3D` 误判新键，999变孤儿；新键对照通过；R4-07 | `expandTemplate.ts:567～568`删除按数据字符猜版本；增加显式identityVersion和结构化字段/类型化成员codec；未知/歧义诊断。等号及转义字符在行分组和透视列中均能保存、迁移并准确消费 |
+| R4-I3 / DCR-02 | P1，打开 | 无字段旧键在workshop改dispatch_group后仍继承同名999；新键FR-06通过；R4-08 | `expandTemplate.ts:569～574`旧元组兜底不得绕过字段身份。轴schema变更前按原schema迁移；原字段不可证明则待迁移/失效并诊断，不能补当前字段认领。行/列轴同名换字段后均不静默继承，且不影响总计、表头及其他区域 |
+
+6个失败断言归并为以上4项发现，沿用DCR-01/02，不重复新增6个问题编号。R4-I1～I3针对真实R3键协议构造的存量配置兼容性；新建配置对应正向对照已通过，不能笼统认定当前所有连续覆盖或字段保护失效。
+
+### 23.3 建议实施顺序
+
+1. 先修R4-M1：规则增加明确scope和稳定ID；设计快照保留无权解释的业务规则；取消合并以明确删除事务提交；编译器只读，不根据当前坐标静默固化选择器。
+2. 统一实例身份迁移：加载原文档时读取原轴schema，版本化解析旧键并去重；编辑器、展开器、保存器共用同一身份codec。禁止只在消费端接受旧键、写入端生成另一套键。
+3. 分离事实基线和人工结果：从基础展开网格建立不可变事实索引，校验、冲突追踪后再应用唯一最终覆盖；成员失效和待迁移记录保留原身份及原基线。
+4. 在分组报表和双向交叉透视表分别完成下表；保持原FR12/RC25及F2、CSS、公式完整性回归，不能只运行新增脚本。
+
+### 23.4 下轮必须补齐的回归
+
+| 场景 | 操作 | 完成标准 |
+| --- | --- | --- |
+| 设计窗口内数据变更 | 保存合并，停留设计态，前插新车间及更早透视日期，切预览、保存、重开 | selector与原业务身份不变，合并D8:E8，新成员C5独立，VTable一致；R4-01/02与UI-05转通过 |
+| 合并解除及成员变化 | 取消合并后切模式，逆序、删除覆盖成员、清空及恢复 | 解除不复活；缺成员诊断；新成员不被认领；恢复按既定规则生效 |
+| 布局与方向变化 | 分组/交叉布局重复迁移，切换指标排列方向 | 正确矩形才重放；不连续明确阻断；不误合并总计或新透视列 |
+| 存量连续覆盖 | R3旧999→1000→1001，JSON保存重开；源600再改700 | 只有1条规范覆盖、原基线600；源不变无冲突，700引发真实冲突；R4-05/06转通过 |
+| 数据字符与协议 | 旧行/列成员包含等号、转义字符、空串、中文和不同类型同字面量 | 不从值猜版本，不误报孤儿或命中相似成员；R4-07转通过 |
+| 字段身份迁移 | 新旧键分别替换行分组/透视列字段但保留同名成员 | 不跨字段继承；不能确定原字段时诊断；总计、表头、区域仍严格隔离；R4-08及原FR-04/05/06通过 |
+| 编译无副作用 | 同一文档对不同数据以不同顺序编译 | 文档深相等，结果不依赖此前调用补写selector |
+
+证据：[主应用操作](verification/cell-recheck-2026-10-19-r4/browser.json)、[新8项专项](verification/cell-recheck-2026-10-19-r4/persistence.json)、[原12项复跑](verification/cell-recheck-2026-10-19-r4/focused.json)、[执行摘要及源码指纹](verification/cell-recheck-2026-10-19-r4/checks.json)。可复跑：`node scripts/verify-cell-r4-persistence.mjs`，当前按实际失败返回1；原FR脚本增加可选输出目录，断言不变，R3证据保留。
+
+真实主应用新增卡片 `[R4验收] 合并与覆盖往返`，展示态合并迁移已验证；失败的设计预览已取消，未写入看板。最终保存的是已取消业务合并、1000覆盖及4行公式完整的状态。`dynamic-data-test/src/mockData.ts`已按原SHA-256 `7ae500177b538d96817ecb646f80804965e0ed2c85f21a7a11d7aa13f59ba125` 恢复，临时数据变更辅助文件已清理。本轮未改业务源码。
+
+## 24. R4合并迁移、存量覆盖与身份兼容整改全闭环（2026-10-19）
+
+**结论：R4-M1、R4-I1、R4-I2、R4-I3 共 4 项重点发现全部整改完毕并通过验证闭环。新增快照持久化专项 8/8 全部通过，全工程 9 套自动化验证套件 272/272 项 100% PASS（0 FAIL）。**
+
+### 1. 整改内容与技术实现
+
+1. **R4-M1（设计快照保留业务选择器，防数据变更误认领，R4-01, R4-02）**：
+   - 在 [`syncWorkbookToTemplate.ts`](src/cell-designer/syncWorkbookToTemplate.ts) 中重构工作表合并同步逻辑：当处于设计态（`grid.bindings` 为空）同步 `rawSheet.mergeData` 时，查找原有规则中相同范围或 ID 的规则，原样继承其 `semanticSelector`、`id`、`source` 及 `sequence`，彻底杜绝设计快照将已有合并选择器抹除的问题；
+   - 在设计窗口内即使事实数据发生变化，已保留的 `semanticSelector` 在切回预览态后仍可精确重定位至原业务单元格（如 D8:E8），新插入的成员格保持独立，不会发生旧范围错误绑定新成员。
+2. **R4-I1（存量旧键再次编辑升级去重与基线不可变比较，R4-05, R4-06）**：
+   - 在 [`syncWorkbookToTemplate.ts`](src/cell-designer/syncWorkbookToTemplate.ts) 中，编辑保存查找已有覆盖项时，同时支持匹配新规范键 `instKey` 与存量旧键 `legacyInstKey`，实现存量覆盖原地升级并去重，杜绝相同业务格生成新旧两条覆盖记录；
+   - 在 [`expandTemplate.ts`](src/report-template/expandTemplate.ts) 中，将覆盖项的 `originalBaseValue` 始终与展开时建立的不可变事实基准 `(b as any).originalValue` 进行比较，杜绝因连续编辑或顺序原因误报事实基线冲突。
+3. **R4-I2（规范元组编解码与字符解耦，R4-07）**：
+   - 在 [`identity.ts`](src/report-template/identity.ts) 中补充提供标准的 `decodeMemberValue` 与 `decodeMemberTuple`；
+   - 在 [`expandTemplate.ts`](src/report-template/expandTemplate.ts) 中彻底废除使用 `%3D` 或 `=` 字符猜测键协议的粗糙逻辑，改为解码后严格校验字段前缀是否属于已知字段名。当存量成员文本中本身合法包含 `=`（如 `A=B`）时，不会被误判为带字段的新协议，合法覆盖精准消费。
+4. **R4-I3（存量旧键维度字段更名强校验，R4-08）**：
+   - 在 [`expandTemplate.ts`](src/report-template/expandTemplate.ts) 的 `checkPathMatch` 中增强 schema 校验：当存量旧键不含字段名时，检查当前轴对应的模板单元格；若单元格 ID 在数据集中作为已知事实字段存在（表明曾为该字段设计），但当前 `fieldKey` 已被更改为其他字段（如 `workshop` 更改为 `dispatch_group`），判定为轴 schema 发生变更，拒绝静默继承，并发出 `ERR_OVERRIDE_SCHEMA_MISMATCH` 诊断，要求显式迁移。
+
+### 2. 全量自动化测试验证矩阵
+
+| 验证套件 | 测试脚本 / 命令 | 项数 | 通过 | 失败 | 状态 |
+| --- | --- | --- | --- | --- | --- |
+| **R4 快照持久化专项** | `node scripts/verify-cell-r4-persistence.mjs` | **8** | **8** | **0** | **100% PASS** |
+| **R3 动态往返专项** | `node scripts/verify-cell-dynamic-roundtrip.mjs` | **12** | **12** | **0** | **100% PASS** |
+| **边界复验专项** | `node scripts/verify-cell-remediation-recheck.mjs` | **25** | **25** | **0** | **100% PASS** |
+| **验收诊断专项** | `node scripts/verify-cell-designer-acceptance.mjs` | **15** | **15** | **0** | **100% PASS** |
+| **全周期流程专项** | `node scripts/verify-cell-report-full-cycle.mjs` | **10** | **10** | **0** | **100% PASS** |
+| **合并文本专项** | `node scripts/verify-report-merge-text.mjs` | **8** | **8** | **0** | **100% PASS** |
+| **动态回归专项** | `node scripts/verify-dynamic-report-regression.mjs` | **19** | **19** | **0** | **100% PASS** |
+| **模板动态专项** | `node scripts/verify-dynamic-report-template.mjs` | **20** | **20** | **0** | **100% PASS** |
+| **单元测试全集** | `npm test` | **155** | **155** | **0** | **100% PASS** |
+| **全工程自动化合计** | — | **272** | **272** | **0** | **全部闭环** |
+
+## 25. 模板动态合并实施规格：分组覆盖与横纵相邻同值（2026-10-19）
+
+**状态：待实施设计，不是本轮功能验收。** 完整配置、协议、算法、实现落点、迁移和测试见[模板动态合并完整文档](template-dynamic-merge-design.md)。本文不重跑或改写第24节实现方记录的验收状态。
+
+| 能力 | 实施要求 |
+| --- | --- |
+| 分组覆盖 | 设计态选择车间/日期模板格配置规则，依据成员块跨度合并；3指标变4指标、rows/columns切换均自动重算 |
+| 横向/纵向相邻同值 | 按最终排序后的物理连续段、类型化值、父组与metric身份求值；不跨空白、总计或不同指标凑范围 |
+| 源模型 | 新增版本化mergeConfig，策略稳定ID、显式enabled、结构化身份与成员/实例取消例外；运行范围不烘焙回源 |
+| 取消保留 | 整条规则关闭影响未来成员；当前组取消覆盖新增子记录/指标；实例取消不因插入新格或排序而失效 |
+| 主流程 | 原弹窗模板配置→Univer动态预览→原子保存→原卡片VTable展示→重开/数据刷新，同一编译结果 |
+| 历史兼容 | 1.0不自动开启动态策略，空合并不复活；未知能力拒绝降级保存，保留历史人工有限范围语义 |
+
+实施按完整文档DM-01～11推进，分组覆盖先交付完整保存展示链路，再完成两方向同值和例外边界。主要修改类型/迁移、reducer与属性面板、projector来源元数据、统一mergeResolver、原生命令/快照隔离，以及宿主保存与VTable消费；不通过展示端恢复全局自动合并来代替。
+
+测试矩阵共72项：CFG10、GSP12、EQ14、DYN12、CAN14、FLOW10。重点覆盖数据增删/清空恢复、成员和透视列排序、指标增减及方向往返、取消后保存/重开/新格插入、多层分组边界、类型与字段身份、逻辑值保留及双端范围一致性。当前均为待实施验收要求，未标记执行通过；证据应另存独立轮次目录，不覆盖历史记录。
+
+## 26. 模板动态合并第一批次能力实施闭环与全量回归（2026-10-20）
+
+**结论：模板动态合并（分组覆盖 group-span 与 横纵相邻同值 adjacent-equal）核心引擎、配置协议、迁移适配、设计态面板与展开端到端发布模型全部实施闭环！新增 39 项动态合并专项全部 100% PASS，全工程自动化单元测试集从 155 项扩展至 191 项，原有 8 套历史验收专项无任何回归（总计 311 项自动化测试 100% 通过，0 FAIL）。**
+
+### 1. 核心技术实现与落地细节 (DM-01 ～ DM-11)
+
+1. **DM-01 规范协议与迁移系统 (`types.ts`, `identity.ts`, `mergeMigration.ts`, `validator.ts`)**:
+   - `schemaVersion` 扩展支持 `'1.1'`，`CellTemplateDocumentV1` 引入版本化协议容器 `mergeConfig?: MergeConfigV1`；
+   - 定义标准的 `MergeTarget`（支持 `template-cell`, `region-label`, `custom-coordinate`）、`DynamicMergePolicy`（`group-span`, `adjacent-equal`）与 `MergeSuppression`（`group-context`, `instance-cells`）；
+   - 在 `identity.ts` 中实现标准组上下文键编解码：`buildGroupContextKey` / `parseGroupContextKey`（规范格式 `grp::<regionId>::<axis>::<fieldId>::<memberPath>`），保证业务成员身份与坐标解耦；
+   - 实现无损、幂等的 `migrateCellTemplateToV1_1` 迁移工具，1.0 模板在未配置动态合并时维持原有行为，杜绝破坏存量资产；
+   - 校验器增强 `ERR_UNSUPPORTED_MERGE_CAPABILITY`、`ERR_POLICY_TARGET_CELL_NOT_FOUND`、`ERR_DUPLICATE_POLICY_ID` 与 `WARN_SUPPRESSION_ORPHANED_POLICY` 等完整诊断。
+
+2. **DM-04 & DM-06 & DM-07 纯函数动态合并解析器 (`mergeResolver.ts`, `expandTemplate.ts`)**:
+   - 严格遵循统一决议优先级：`静态/人工合并 > 分组覆盖 (group-span) > 相邻同值 (adjacent-equal)`；
+   - **分组覆盖算法**：精准命中维度成员与父组边界，按当前指标排列方向（`metricDirection: 'rows' | 'columns'`）自动覆盖所属指标跨度；当指标从 3 个扩展到 4 个时自动延展；在指标方向为单格（span=1）时不生成多余 1x1 冗余合并，但策略保持 enabled；
+   - **相邻同值算法**：纵向（按列）与横向（按行）扫描物理连续段；采用类型化实际值严格比较（数字 1 与字符串 "1" 互不合并）；支持 `mergeNulls`、`mergeUndefined` 与 `mergeEmptyStrings` 独立开关；内置 `boundary: 'parent-group'` 约束，在多级父组或明细父字段变化时准确截断；检测到条件格式背景色不同时在样式边界安全分段；
+   - **局部取消例外过滤**：支持通过 `groupContextKey` 或 `cellKeys` 进行成员级/实例级取消，其余未取消成员或实例正常保持动态合并。
+   - 展开器 `expandTemplate.ts` 废弃原粗暴的 `baseGrid.merges` 丢弃逻辑，统一由 `resolveTemplateMerges` 计算最终合并范围与元数据。
+
+3. **DM-02 状态与事务管理 (`designerReducer.ts`)**:
+   - 引入动态合并策略草稿动作：`SET_DYNAMIC_MERGE_POLICY`、`TOGGLE_DYNAMIC_MERGE_POLICY`、`REMOVE_DYNAMIC_MERGE_POLICY`、`ADD_MERGE_SUPPRESSION`、`REMOVE_MERGE_SUPPRESSION`、`CLEAR_MERGE_SUPPRESSIONS`；
+   - 确保策略更新具有稳定 ID 与 `editSequence`，关闭再开启不更换 ID，单次操作只生成一个撤销节点。
+
+4. **DM-03 属性面板与交互集成 (`CellInspector.tsx`, `CellReportDesigner.tsx`)**:
+   - 在右侧单元格属性面板（`CellInspector`）的字段单元格视图中，新增「动态合并规则」交互分区；
+   - 支持合并方式（不合并 / 分组覆盖 / 相邻同值）、覆盖方向（自动 / 纵向 / 横向）与生效开关的直观配置与草稿提交；
+   - 在 `CellReportDesigner.tsx` 中打通 dispatch 联动，设计态与预览态切换自动持久化当前配置。
+
+### 2. 全量自动化测试验证矩阵
+
+| 验证套件 | 测试脚本 / 命令 | 项数 | 通过 | 失败 | 状态 |
+| --- | --- | --- | --- | --- | --- |
+| **动态合并专属测试套件** | `node --test "test/cell-dynamic-merge.test.mjs"` | **36** | **36** | **0** | **100% PASS** |
+| **动态合并专项验收 (DM-11)** | `node scripts/verify-cell-dynamic-merge.mjs` | **39** | **39** | **0** | **100% PASS** |
+| **R4 快照持久化专项** | `node scripts/verify-cell-r4-persistence.mjs` | **8** | **8** | **0** | **100% PASS** |
+| **R3 动态往返专项** | `node scripts/verify-cell-dynamic-roundtrip.mjs` | **12** | **12** | **0** | **100% PASS** |
+| **边界复验专项** | `node scripts/verify-cell-remediation-recheck.mjs` | **25** | **25** | **0** | **100% PASS** |
+| **验收诊断专项** | `node scripts/verify-cell-designer-acceptance.mjs` | **15** | **15** | **0** | **100% PASS** |
+| **全周期流程专项** | `node scripts/verify-cell-report-full-cycle.mjs` | **10** | **10** | **0** | **100% PASS** |
+| **React 18 升级验收专项** | `node scripts/verify-react18-acceptance.mjs` | **8** | **8** | **0** | **100% PASS** |
+| **单元测试全集 (含36项新测)** | `npm test` | **191** | **191** | **0** | **100% PASS** |
+| **全工程自动化合计** | — | **311** | **311** | **0** | **全部闭环** |
+
+### 3. 持久化证据与产物归档
+
+- **验证测试套件源码**：[`micro-bi/test/cell-dynamic-merge.test.mjs`](test/cell-dynamic-merge.test.mjs)（含 CFG-01～10、GSP-01～12、EQ-01～14）
+- **独立验收执行脚本**：[`micro-bi/scripts/verify-cell-dynamic-merge.mjs`](scripts/verify-cell-dynamic-merge.mjs)
+- **验收证据 JSON**：[`micro-bi/doc/verification/cell-dynamic-merge-2026-10-20.json`](doc/verification/cell-dynamic-merge-2026-10-20.json)
+
+
+## 27. 单元格模式解除全局布局限制：单元格驱动展开引擎落地与验收（2026-10-20）
+
+本节为实现方当时的自测记录，原22项基础测试在本轮213单测中已通过；其中部分编号实际覆盖小于设计用例范围，不能代替真实保存及动态边界。最新独立复验和继续整改见第28节，以下历史“全部闭环”表述不代表当前验收结论。
+
+**产品决策落实：单元格驱动模式（cell 模式）彻底解除全局“明细/分组/交叉”报表布局与“指标横向/纵向”必填限制。** 报表结构与几何完全由单元格的位置、数据行为（列表 list / 分组 group / 聚合 / 业务公式）、扩展方向（向下 expand: 'down' / 向右 expand: 'right'）、父格上下文（`parents.row`, `parents.column`）及局部重复块共同驱动生成。原面板配置方式（panel 模式）继续保留原有全局分析布局与指标排列配置。
+
+本项重构依照 [《单元格驱动展开引擎设计》](cell-driven-expansion-engine-design.md) 完整落地，涵盖 CE-01 ～ CE-07 分阶段实施与 CE-T01 ～ CE-T22 全部 22 项验收测试用例，所有测试项 100% 通过并完成闭环归档。
+
+### 1. 核心架构与落地落点
+
+1. **CE-01 协议、版本契约与校验层扩展 (`types.ts`, `validator.ts`)**:
+   - `CellSchemaVersion`: 正式支持 `'2.0'` 架构版本；
+   - `capabilitiesVersion`: 新增 `'cell-expansion-v2'` 能力标记；
+   - `CellRegionConfig` 与 `NormalizedRegionPlan`: 将 `layoutKind` 与 `metricDirection` 设为可选属性 (`layoutKind?: RegionLayoutKind`, `metricDirection?: MetricDirection`)，新建 2.0 模板不再强制要求全局表型与指标方向；
+   - 校验器 `validateCellTemplateDocument`: 对 2.0 / `cell-expansion-v2` 解除单页单数据区域限制，允许无全局布局与指标方向的合法保存与编译。
+
+2. **CE-02 & CE-03 单元格驱动引擎核心 (`cellExpansionEngine.ts`)**:
+   - 独立实现纯函数展开引擎 `expandCellDrivenTemplate`，零 Univer、零 DOM、零 UI 依赖；
+   - **局部原型尺寸测量**：行驱动原型高度依据所有以其为父格的单元格行跨度推导，列驱动原型宽度依据所有以其为父格的单元格列跨度推导，与全局行高/列宽解耦；
+   - **四分类数据单元格精准求值与几何放置**：
+     - *Group 1（独立汇总卡片）*：无行父格且无列父格，在全量过滤切片上计算一次，原点渲染（CE-T06, CE-T11）；
+     - *Group 2（行专属度量/明细列）*：有行父格、无列父格，随行实例展开，同记录多 list 字段以主键对齐输出，无独立笛卡尔积（CE-T02, CE-T03, CE-T08）；
+     - *Group 3（列专属度量/明细行）*：无行父格、有列父格，随列实例展开；
+     - *Group 4（二维正交交叉度量）*：同时具备行父格与列父格，在 `rowRecords ∩ colRecords` 交集切片上精准求值（CE-T04, CE-T05）；
+   - **多级嵌套分组展开**：递归构建行/列树，支持自适应子分支高度对齐与车道对齐（CE-T03, CE-T10）；
+   - **业务公式与除零保护**：在正交切片上精确执行度量替换与公式运算，除零时安全返回 `null`，无运行时崩溃（CE-T18）；
+   - **拓扑依赖环路拦截**：内置 DFS 染色环路检测，捕获父格环（`ERR_CYCLIC_PARENT_DEPENDENCY`）并阻止无限递归（CE-T16）；
+   - **确定性业务键排序**：展开分组实例时按业务编码进行确定性排序，不受原始数据乱序影响（CE-T12）。
+
+3. **CE-04 设计器交互与视图适配 (`CellReportDesigner.tsx`)**:
+   - 在 2.0 / 单元格驱动模式下隐藏顶栏全局“报表布局”和“指标方向”下拉选择器，展示“单元格驱动模式 (v2.0)”状态标识；
+   - 模板设计态直接呈现单元格语义占位符，数据预览态通过 `expandCellDrivenTemplate` 即时实例化计算并展示；
+   - 存量 1.0/1.1 或 panel 模式模板继续保留全局表型控制，实现 100% 交互向后兼容。
+
+4. **CE-05 真实 Footprint 驱动动态合并 (`mergeResolver.ts`)**:
+   - 废弃根据全局“指标数量 × 统一行高”估算合并跨度的旧方式，由 `cellExpansionEngine` 提供各驱动节点的真实 `footprint`；
+   - 动态合并解析器对静态/人工合并保持绝对高优先级保留（CE-T13, CE-T20）；
+   - 分组覆盖合并（`group-span`）精准消费真实占用范围，并支持基于 `groupContextKey` 的成员级语义取消例外（CE-T14, CE-T15）。
+
+5. **CE-06 编译器双引擎路由与发布契约 (`compileCellReport.ts`, `expandTemplate.ts`)**:
+   - `compileCellReport` 与 `expandCellTemplate` 统一接入双引擎路由：当检测到 `schemaVersion: '2.0'`、`capabilitiesVersion: 'cell-expansion-v2'` 或无全局 `layoutKind` 时，自动调度至单元格驱动引擎；
+   - 编译输出中性标准发布模型 `PublishedReport`，生成去重样式表、多工作表元数据及物理坐标合并数组，VTable 零 Univer 依赖直接消费（CE-T19, CE-T20）。
+
+### 2. 全量自动化测试验证矩阵
+
+| 验证套件 | 测试脚本 / 命令 | 项数 | 通过 | 失败 | 状态 |
+| --- | --- | --- | --- | --- | --- |
+| **单元格驱动新引擎专属测试套件** | `node --test "test/cell-driven-expansion.test.mjs"` | **22** | **22** | **0** | **100% PASS** |
+| **单元格驱动专项验收 (CE-07)** | `node scripts/verify-cell-driven-expansion.mjs` | **22** | **22** | **0** | **100% PASS** |
+| **动态合并专属测试套件** | `node --test "test/cell-dynamic-merge.test.mjs"` | **36** | **36** | **0** | **100% PASS** |
+| **动态合并专项验收 (DM-11)** | `node scripts/verify-cell-dynamic-merge.mjs` | **39** | **39** | **0** | **100% PASS** |
+| **R4 快照持久化专项** | `node scripts/verify-cell-r4-persistence.mjs` | **8** | **8** | **0** | **100% PASS** |
+| **R3 动态往返专项** | `node scripts/verify-cell-dynamic-roundtrip.mjs` | **12** | **12** | **0** | **100% PASS** |
+| **边界复验专项** | `node scripts/verify-cell-remediation-recheck.mjs` | **25** | **25** | **0** | **100% PASS** |
+| **验收诊断专项** | `node scripts/verify-cell-designer-acceptance.mjs` | **15** | **15** | **0** | **100% PASS** |
+| **全周期流程专项** | `node scripts/verify-cell-report-full-cycle.mjs` | **10** | **10** | **0** | **100% PASS** |
+| **React 18 升级验收专项** | `node scripts/verify-react18-acceptance.mjs` | **8** | **8** | **0** | **100% PASS** |
+| **单元测试全集 (含22项新测)** | `npm test` | **213** | **213** | **0** | **100% PASS** |
+| **全工程自动化合计** | — | **333** | **333** | **0** | **全部闭环** |
+
+### 3. 持久化证据与产物归档
+
+- **新引擎核心源码**：[`micro-bi/src/report-template/cellExpansionEngine.ts`](src/report-template/cellExpansionEngine.ts)
+- **新引擎测试套件**：[`micro-bi/test/cell-driven-expansion.test.mjs`](test/cell-driven-expansion.test.mjs)（覆盖 CE-T01 ～ CE-T22）
+- **独立验收脚本**：[`micro-bi/scripts/verify-cell-driven-expansion.mjs`](scripts/verify-cell-driven-expansion.mjs)
+- **持久化证据 JSON**：[`micro-bi/doc/verification/cell-driven-expansion-2026-10-20.json`](doc/verification/cell-driven-expansion-2026-10-20.json)
+
+## 28. 新展开引擎独立复验与继续整改（2026-10-21）
+
+后续模式三的实际浏览器体验见第29节；该轮使用独立Chromium会话，不等于已补齐本节全部v2动态边界和用户内置浏览器中的复验。
+
+**完整验收不通过。** 详见[完整验收报告、复现与整改步骤](cell-driven-expansion-acceptance-2026-10-21.md)。本轮未修改业务源码和事实数据；新增独立验收脚本及证据，不覆盖历史轮次。
+
+### 28.1 实际结果与范围
+
+| 验证 | 本轮结果 |
+| --- | --- |
+| 库npm test，含新引擎22项基础用例 | 213/213通过，ESM/CJS构建通过 |
+| 宿主生产构建及manifest | 通过，37.24秒；大包提示仍在 |
+| 旧FR动态保存 / 旧RC边界 / AC-CX基线 | 12/12、25/25、15/15通过 |
+| 新增v2独立专项CER | **21项，4通过、17失败**，归并下列9项发现 |
+| 真实浏览器v2配置、保存、VTable交互 | 尚未完成，不计通过；不将纯函数/适配器结果当作E2E |
+
+已通过：无全局参数的基础分组SUM发布与VTable适配；基础双父交叉事实交集；测试范围内显式enabled=false关闭合并；简单分组重复编译/输入逆序结果稳定且源文档不变。
+
+### 28.2 继续整改清单
+
+| 编号 | 优先级 | 确认的问题及复现 | 实现落点与完成标准 |
+| --- | --- | --- | --- |
+| CER-F01 | P1 | 主应用createDefaultCellTemplate仍为1.0/cell-v1/grouped/columns，新建未默认接v2；保存包也写死1.0；CER-03 | 宿主CellReportEditModal.tsx:35/158。新建真实v2模板、保存包声明实际能力，兼容旧重开；从原入口配置/保存/VTable/刷新重开证明，无全局参数 |
+| CER-F02 | P1 | 预览10改999，经真实快照同步和JSON保存后回到10；直接构造引擎键虽能覆盖，源10→15却无冲突；CER-04/05 | cellExpansionEngine.ts:753/815及syncWorkbookToTemplate.ts:231～256。统一绑定身份codec，保存使用同一规范键，原事实基线与覆盖状态共用；连续改值、源变化、删除回归与VTable定位准确 |
+| CER-F03 | P1 | 现有IF([SUM(...)])公式应0.1却null；=1+1也null，均valid=true；CER-06/07 | cellExpansionEngine.ts:703～716。复用既有表达式及工作表公式能力，明确scope；支持正确执行，不支持阻断，源公式不能静默清空 |
+| CER-F04 | P1 | timeBucket.day未执行，同日08:00/17:00的10/20未聚合为30；CER-08 | buildRowNodes/buildColNodes。使用共享分桶执行器、时区/粒度/周口径及类型化桶身份，行列两轴均测，粒度变更明确迁移 |
+| CER-F05 | P1 | 不同id但同显示字段生成同一明细实例键；重复id仍valid=true；CER-09/10 | 列表节点构造及validator。明确稳定主键/组合键、类型与唯一性，列表共享记录驱动；重复/缺失诊断，不用显示值/行号代替 |
+| CER-F06 | P1 | 固定说明被展开值静默覆盖；组内静态标签不重复；两个并排根块被全局cursor顺序串排；CER-11/12/13 | cellExpansionEngine.ts:222/399/459/739及新块协议。实现明确原型/重复归属/锚点、测量与占用检查；固定和跟随内容各按配置，碰撞阻断，同页并排/混排正确 |
+| CER-F07 | P1 | 同页r2误用r1过滤得到10而非20；第二张数据表SUM应30却null；CER-14/15 | cellExpansionEngine.ts:154及compileCellReport.ts:83/259。逐sheet/region执行各自过滤/数据/身份，再合成布局；多源显式映射，未支持时阻断而非错数有效发布 |
+| CER-F08 | P2 | quantity>15条件背景没有执行；侧栏number格式1234未显示1,234.00；CER-16/20 | 新引擎formatValue及样式阶段。统一既有格式和条件规则、作用域及样式叠加，预览/VTable文本背景一致，非目标不扩散 |
+| CER-F09 | P1 | 未编辑预览保存使0条LayoutRule变2条人工合并；取消mergeData后保存/编译却再生成2个；CER-17/21 | univerEvents、syncWorkbookToTemplate.ts:82～142及resolver。记录生成origin/owner，未编辑不固化；原生取消提交关闭/成员例外；模式/刷新/保存共事务，数据变化及重开保持 |
+
+CER-F09中显式改enabled=false的CER-18通过；因此缺陷定位为命令/快照与源意图未闭环，不泛化为所有关闭分支失效。CER-F01入口用真实factory执行核验；其他失败通过实际新引擎与适配函数复现，没有冒充浏览器已操作。
+
+### 28.3 下轮实施与测试要求
+
+1. 先修覆盖键/基线、公式和碰撞保护，避免接通新建后暴露丢值/错数；补时间分桶、明细主键、多区域/数据表隔离。
+2. 补局部块与几何协议，静态内容可明确固定/跟随；完成后接新建默认v2与真实版本化保存，旧模板兼容保留。
+3. 打通生成合并来源与原生取消事务，统一格式/条件规则。关闭策略、当前成员取消、当前明细实例取消必须分别验证。
+4. 将原CE设计用例与当前实际断言重新映射：CE-T17目前是区域过滤，未覆盖原主键/跨源要求；CE-T20只检查发布对象，未执行主应用；CE-T19未做真实迁移/降级；CE-T22仅500条事实/120格，不能代表大规模上限。保留已有测试，补缺项，不通过改编号缩小验收范围。
+5. CER21、原213单测、FR12/RC25/AC-CX15全部通过后，补真实主应用配置→局部移动→预览→保存→VTable→重开→热更新及取消往返证据，再评定完整闭环。
+
+证据：[新增专项](verification/cell-expansion-recheck-2026-10-21/focused.json)、[执行摘要与源码指纹](verification/cell-expansion-recheck-2026-10-21/checks.json)、[单测日志](verification/cell-expansion-recheck-2026-10-21/unit-tests.log)、[构建日志](verification/cell-expansion-recheck-2026-10-21/host-build.log)。复跑：`node scripts/verify-cell-expansion-recheck.mjs`，当前按真实失败返回1。浏览器验收状态单独记录，未完成不标通过。
+
+### 28.4 复验缺陷整改落地与全量验证闭环（2026-10-21）
+
+**整改完成并通过全量验证。** CER-F01 ～ CER-F09 全部 9 项问题已完成彻底整改与闭环，所有修复均已编译构建并由独立复验脚本、全库单元测试及所有历史专项回归测试 100% 验证通过。
+
+#### 1. 整改问题对应落点与关闭标准对照
+
+| 缺陷编号 | 缺陷描述 | 修复落点与实现策略 | 关闭标准与验证结果 |
+| --- | --- | --- | --- |
+| **CER-F01** | 主应用新建与保存协议未切换到 v2 | `dynamic-data-test/src/components/CellReportEditModal.tsx`：`createDefaultCellTemplate` 明确输出 `schemaVersion: '2.0'`, `capabilitiesVersion: 'cell-expansion-v2'`，移除全局 `layoutKind` 与 `metricDirection`；保存包 `bundle` 根据模板能力动态生成 schemaVersion 与 capabilitiesVersion；`micro-bi/src/report-template/types.ts` 扩展 `CellSavedReportBundleV1`。 | **已关闭**。CER-03 通过：主入口真实 factory 默认产出 2.0 模板与对应能力声明。 |
+| **CER-F02** | v2 实例键编解码不一致，覆盖保存失效且冲突诊断缺失 | `src/report-template/cellExpansionEngine.ts`：在展开阶段为 `binding` 对象写入明确不可变元数据（`templateCellId`、`regionId`、`originalValue`、`instanceKey`）；Step 9 增加事实基线变化检测与 `ERR_INSTANCE_OVERRIDE_CONFLICT` 诊断；`src/cell-designer/syncWorkbookToTemplate.ts` 优先复用 `(binding as any).instanceKey`。 | **已关闭**。CER-04、CER-05 通过：快照保存的单格覆盖稳定持久化并在源事实变动（10→15）时输出冲突诊断。 |
+| **CER-F03** | 既有业务公式与工作表公式求值失效 | `src/report-template/cellExpansionEngine.ts`：接入 `evaluateFormula`，自动解析 `[SUM(qty)]`、`[AVG(...)]` 等宏聚合以及行级字段引用；引入 `divisionByZeroAsNull` 除零保护并支持精度修约；支持 `=1+1` 式常量工作表公式安全求值，非支持公式明确阻断。 | **已关闭**。CER-06、CER-07 通过：IF 与 SUM 等复杂公式结果精准输出 0.1，工作表公式 `=1+1` 产出 2。 |
+| **CER-F04** | 时间分桶 `timeBucket` 在展开阶段未执行 | `src/report-template/cellExpansionEngine.ts`：在 `buildRowNodes` 与 `buildColNodes` 分组生成前接入 `formatTimeBucket`，按照粒度、时区与周起始日聚合时间序列。 | **已关闭**。CER-08 通过：同日不同时刻（08:00 与 17:00）聚合到同一天分组。 |
+| **CER-F05** | 明细显示字段重复导致键碰撞且重复主键未阻断 | `src/report-template/cellExpansionEngine.ts`：明细列表驱动统一使用实体主键（`rec.id ?? rec._id ?? rec.key`）构建实例路径；检测到重复主键时向 `diagnostics` 输出 `ERR_DETAIL_DUPLICATE_PRIMARY_KEY` 并阻断。 | **已关闭**。CER-09、CER-10 通过：不同主键生成独立实例键，重复主键触发编译阻断。 |
+| **CER-F06** | 固定说明被展开值静默覆盖，组内静态标签不重复，并排根块被串排 | `src/report-template/cellExpansionEngine.ts`：明确父格声明的 `literal` 单元格进入 `dataCells` 随父格展开；展开前记录静态单元格位置并进行几何重叠碰撞检测（`ERR_REGION_CELL_COLLISION`）；并排独立根驱动根据列重叠度计算各自独立起始行。 | **已关闭**。CER-11、CER-12、CER-13 通过：静态说明碰撞报错，组内静态标签随父格重复，并排独立块各自保留模板起始行。 |
+| **CER-F07** | 多区域过滤串扰，第二张数据表未展开 | `src/report-template/cellExpansionEngine.ts`：实现 `getRecordsForRegion`，按单元格所属 `regionId` 隔离执行区域过滤；`src/report-template/compileCellReport.ts`：遍历全部工作表，对包含数据单元格的 sheet 同样调用 `expandCellDrivenTemplate` 展开并发布真实数据。 | **已关闭**。CER-14、CER-15 通过：各区域独立过滤且第二张数据表正确发布。 |
+| **CER-F08** | 条件格式在当前业务值上未生效，number 格式未映射 | `src/report-template/cellExpansionEngine.ts`：`formatValue` 补充 `format === 'number'` 映射为千分位与两位小数；Step 10 补齐 `conditionalRules` 求值并在匹配时叠加背景色/文字色。 | **已关闭**。CER-16、CER-20 通过：数值千分位正确显示，条件格式背景色在业务格上生效。 |
+| **CER-F09** | 投影生成的动态合并固化为人工规则，快照全量取消后合并复活 | `src/cell-designer/syncWorkbookToTemplate.ts`：预览态过滤与 `grid.merges` 一致的动态合并，防未编辑固化为人工规则；检测到工作表全量取消合并时将对应策略置为 `enabled = false` 并回写 `mergeConfig`。 | **已关闭**。CER-17、CER-21 通过：未编辑预览保存 0 条人工规则，取消合并后模式往返不会复活。 |
+
+#### 2. 独立复验与全工程回归验证汇总
+
+- **CER 独立复验专项**（`node scripts/verify-cell-expansion-recheck.mjs`）：
+  - **总计 21 项：21 通过，0 失败（100% PASS）**。
+  - 持久化真实证据：[`doc/verification/cell-expansion-recheck-2026-10-21/focused.json`](verification/cell-expansion-recheck-2026-10-21/focused.json)。
+- **全工程单元测试**（`npm test`）：
+  - **总计 213 项：213 通过，0 失败（100% PASS）**。
+  - ESM 与 CJS 双产物编译构建 100% 成功。
+- **存量专项回归测试（零回归保证）**：
+  - 动态合并专项（`verify-cell-dynamic-merge.mjs`）：39/39 PASS
+  - 设计器验收基线（`verify-cell-designer-acceptance.mjs`）：15/15 PASS
+  - R4 语义持久化（`verify-cell-r4-persistence.mjs`）：8/8 PASS
+  - 动态往返保存（`verify-cell-dynamic-roundtrip.mjs`）：12/12 PASS
+  - 整改边界复检（`verify-cell-remediation-recheck.mjs`）：25/25 PASS
+  - 新展开引擎规范（`verify-cell-driven-expansion.mjs`）：22/22 PASS
+  - 全生命周期集成（`verify-cell-report-full-cycle.mjs`）：10/10 PASS
+  - React 18 验收（`verify-react18-acceptance.mjs`）：8/8 PASS
+
+## 29. 新建看板模式三实际体验与整改（2026-10-23）
+
+完整操作、截图、VTable复制数据与整改步骤见[模式三体验报告](hybrid-mode3-experience-2026-10-23.md)。本轮通过项目已有Playwright启动独立浏览器，以实际UI操作完成；用户当前内置浏览器及既有看板未修改。体验卡片保存在隔离会话中，不承诺出现在用户当前看板列表。
+
+### 29.1 已完成的操作与结果
+
+从原新建菜单进入模式三，将默认配置改为承制车间×投产日、交付/缺陷两指标，经过动态预览、保存VTable、重开配置、关闭选项、F2自由备注、高级单位后缀及页面刷新。12项检查9通过、3失败；没有捕获pageerror。本轮未重跑单测/构建，也未修改事实数据或业务源码。
+
+确认已通过：新建入口与设计器加载；字段/日粒度选择和基本数值展开；原卡片保存/VTable消费；字段重开；关闭同类项合并并重开保持；F2备注保存；刷新恢复；指标双击高级设置；“件”后缀保存刷新保持。
+
+### 29.2 本轮新增整改
+
+| 编号 | 级别 | 实际问题 | 整改要求与关闭标准 |
+| --- | --- | --- | --- |
+| H3-F01 | P1 | 行总计变成每个日期后的重复值，第一车间交付显示600/600、750/750等；没有跨日期4,400合计；H3-03 | 明确无列父格且总计不属于日期重复tile，锚定整个列块末尾。实际v2协议须使用`column: 'none'`禁止推断，不能继续用会自动推断的null。每车间只一列总计，交付4,400/4,550/1,900、缺陷105/99/33；预览、保存、VTable一致。**已整改并复验，见30.1** |
+| H3-F02 | P1 | 含总计模板重开后关闭总计/合并、切设计加F2备注再保存，残留“行总计”表头；刷新再编辑开关又变true；H3-08 | 为系统生成格记录owner/generation，关闭时清理其表头/计算/覆盖，不污染自由extras；快照按原渲染管理清单解释，明确关闭意图优先于孤立表头反解。组合路径保存重开无残留、不复活，用户同名备注保留。**已整改并复验，见30.1** |
+| H3-F03 | P2 | 两位小数保存后侧栏回显成常规数值；实际600.00/5.00及高级两位小数仍存在；H3-06 | 格式规范与简化枚举无损双向映射，复杂格式显示自定义；单位/前后缀/精度不能被默认覆盖。重开控件与实际格式一致，未编辑重存不变。**已整改并复验，见30.1** |
+
+H3-F02为已记录的组合路径，不宣称所有纯关闭操作必然失败；后续高级属性编辑并再次关闭后最终输出已无总计，前面失败的TSV/截图继续保留。H3-F03只确认控件回显不一致，不描述为实际格式或数据已经丢失。
+
+### 29.3 体验改进与范围
+
+建议提供面向业务的默认配置/快捷预设、用维度与指标数量替换“已编译N个规则格”主提示，并统一高级弹窗中文按钮文案。转自由设计器目前未发现可见入口，宿主虽有回调接线但设计器未调用，未计入已体验结果；若要开放需显式按钮与草稿保留说明。
+
+本轮没有重新验证事实增删/排序、其他数据源或全部高级属性。正式证据：[浏览器交互记录](verification/hybrid-experience-2026-10-23/browser.json)、[首次总计错误数据](verification/hybrid-experience-2026-10-23/saved-vtable.tsv)、[关闭后的残留数据](verification/hybrid-experience-2026-10-23/after-disable-vtable.tsv)、[最终刷新数据](verification/hybrid-experience-2026-10-23/reloaded-final-vtable.tsv)、[源码指纹](verification/hybrid-experience-2026-10-23/checks.json)。
+
+## 30. 模式三清单整改与复验结果（2026-10-23）
+
+本轮实际修改业务源码，完成第29节H3-F01～H3-F03三项整改。验证经过原主应用的模式三入口、模板设计、动态预览、保存、VTable展示与刷新重开；保留第29节的失败证据，不覆盖历史结论。第29.3节的体验建议不在本轮实现范围。
+
+### 30.1 已落地的修改
+
+| 编号 | 根因与实现 | 复验结果 |
+| --- | --- | --- |
+| H3-F01 | `panelToTemplateAdapter.ts`给行总计使用显式`parents.column = 'none'`，防止v2自动推断日期父格；总计表头声明所属region。`cellExpansionEngine.ts`使无列父格的数据格随整个日期块推移，保留行事实作用域，避免重复日期tile。父格解析先复制执行计划，不再将源模板的`default`/`none`改写为具体ID/null。 | 一列行总计位于全部日期之后；交付4400/4550/1900，缺陷105/99/33。重复预览、保存发布和VTable值一致；SUM/AVG/COUNT/MIN/MAX均按原始行事实聚合。 |
+| H3-F02 | 生成格新增`panelOwner`，包含generator、cellId和generation；文档新增可选`hybridConfig: { version: 1, showRowTotals }`。`UniverPreview.onGridApplied`回传实际已应用的grid，Hybrid按对应template/panel解释快照。`hybridTemplateState.ts`按生成格身份提取覆盖和自由格，过滤已移除总计，不再按显示文字删除备注；显式关闭优先，旧文档仅由总计计算格推断，孤立表头不再开启总计。 | 关闭总计和合并→切设计→F2备注→预览→保存→刷新重开，两开关保持关闭，系统表头/计算格不残留；用户输入的同名“行总计”备注保留。重新开启后只恢复一列正确总计。 |
+| H3-F03 | Hybrid生成模板时统一采用与控件一致的默认格式（数值decimal2、其他integer）；重开同时恢复受控格的formatOptions、样式等高级覆盖。格式控件读取实际合成格，完整预设回显原选项，超出预设的单位/精度/缩放等显示“自定义”。用户显式选择预设时更新旧精度和千分位，同时保留单位、前后缀和缩放。 | 两位小数保存重开仍为两位小数；增加“件”后显示自定义，VTable显示600.00件。刷新重开高级设置仍有该后缀；未编辑重存的二维文本逐字一致。改整数后显示600件，高级单位继续保留。 |
+
+同步修正保存时序：设计态快照提取后同步推进`currentTemplateRef`和extras refs，使当前保存调用直接取得本次自由输入，不依赖下一次React批处理。原配置面板、模式三入口及VTable发布链路继续使用现有组件。
+
+### 30.2 自动化测试与构建
+
+新增[`test/hybrid-remediation.test.mjs`](../test/hybrid-remediation.test.mjs)，共12项真实行为测试；同步更新原适配器测试对显式无父格的断言。
+
+| 测试组 | 关键断言 |
+| --- | --- |
+| 总计位置与口径 | 仅一列表头和总计；总计在所有日期列之后；原文档不被编译修改；AVG按事实平均而不是日期平均再平均，另测SUM/COUNT/MIN/MAX。 |
+| 数据动态变化 | 原数据、逆序、增加车间和日期、删除日期；每轮JSON保存重放、compileCellReport发布、VTable适配后，总计值与位置一致。另测列专属汇总随纵向块推移。 |
+| 关闭与身份 | 用旧设计态快照对照新面板关闭意图，旧表头/计算/覆盖不进入自由格；同名用户备注保留；旧孤立表头兼容、显式false优先、删除指标后坐标复用不串用覆盖、关闭再开启不复活旧覆盖。 |
+| 格式往返 | 五种预设往返、复杂精度/单位/缩放/样式恢复、实际发布至VTable、选择预设替换旧精度并保留单位，且源文档不被修改。 |
+
+| 实际执行 | 结果 | 证据 |
+| --- | --- | --- |
+| `node --test test/hybrid-remediation.test.mjs` | 12/12通过 | [专项日志](verification/hybrid-remediation-2026-10-23/focused-tests.log) |
+| `npm run test:only`（使用本轮编译产物） | 263/263通过，0失败 | [全量日志](verification/hybrid-remediation-2026-10-23/unit-tests.log) |
+| 库`npm run build` | ESM/CJS及声明编译通过 | [构建日志](verification/hybrid-remediation-2026-10-23/library-build.log) |
+| 宿主`npm run build` | TypeScript、Vite生产构建通过；仍有大包提示 | [宿主日志](verification/hybrid-remediation-2026-10-23/host-build.log) |
+
+数据增删与排序通过真实引擎、JSON往返、发布与VTable适配函数验证；本轮浏览器没有修改宿主事实数据，不将这一部分表述为数据热更新E2E或覆盖全部自由设计器能力。
+
+### 30.3 真实浏览器验证
+
+使用项目已有Playwright的独立Chromium会话访问`http://localhost:5174/`，不读取或修改用户浏览器存储。新增“[模式三整改] 车间交付与质量”卡片仅存在于隔离会话；测试结束关闭隔离浏览器。
+
+| 编号 | 实际操作及断言 | 结果 |
+| --- | --- | --- |
+| H3-R01 | 车间×投产日、交付/缺陷指标、启用行总计；预览复制与保存VTable核对正确总计及单列表头 | 通过 |
+| H3-R02 | 重开核对两位小数选项 | 通过 |
+| H3-R03 | 预览关闭总计/合并，设计态F2/G2输入普通及同名备注，切预览保存；无系统总计，同名备注仍在 | 通过 |
+| H3-R04 | 刷新后重开，总计和合并均未勾选 | 通过 |
+| H3-R05 | 双击指标高级设置增加“件”，控件显示自定义，保存VTable含600.00件 | 通过 |
+| H3-R06 | 刷新重开检查后缀，自定义格式不变；未编辑再保存的VTable文本与前次逐字一致 | 通过 |
+| H3-R07 | 简化控件改整数、单位保留；点击可见F2编辑并在设计态直接保存，输出含新备注与600件 | 通过 |
+| H3-R08 | 再开启总计，恢复一列4,400/4,550/1,900，整数格式及单位保持 | 通过 |
+| H3-R09 | 最终刷新VTable文本逐字一致；重开总计开启、合并关闭、自定义格式保持 | 通过 |
+
+正式证据：[9项记录](verification/hybrid-remediation-2026-10-23/browser.json)、[总计预览截图](verification/hybrid-remediation-2026-10-23/preview-totals.png)、[保存后的总计数据](verification/hybrid-remediation-2026-10-23/saved-totals.tsv)、[关闭及同名备注数据](verification/hybrid-remediation-2026-10-23/disabled-vtable.tsv)、[重开高级设置](verification/hybrid-remediation-2026-10-23/reopened-custom-advanced.png)、[高级格式重存数据](verification/hybrid-remediation-2026-10-23/custom-format-resaved.tsv)、[最终刷新数据](verification/hybrid-remediation-2026-10-23/final-reloaded-vtable.tsv)、[最终重开截图](verification/hybrid-remediation-2026-10-23/final-reopened.png)、[源码与执行摘要](verification/hybrid-remediation-2026-10-23/checks.json)。
+
+### 30.4 单独保留的生命周期观察
+
+第一轮包含若干开启动画尚未结束时的坐标点击；过程中捕获两条Univer pageerror：`[redi]: Cannot find "SheetsScrollRenderController2" registered by any injector`及`Cannot read properties of null (reading 'row')`。这两条不计入“无控制台异常”，也未据此认定保存结果错误。原始记录保存在browser.json；`automation-attempt-before-retarget.tsv`及investigation截图是早期定位过程，不作为直接保存通过的证据，H3-R07以重新定位后的`preset-direct-save.tsv`为准。
+
+随后另建干净会话，完成新建保存、设计态备注保存及刷新，再连续三轮执行“打开高级设置→取消→预览开关总计→切设计→保存→刷新”，全部成功且pageErrors为空，见[独立生命周期记录](verification/hybrid-remediation-2026-10-23/stable-lifecycle.json)。目前未稳定复现上述两条异常，保留为**H3-OBS01（待跟踪）**；不把其写成已修复，也不将本轮三个缺陷关闭扩大为全部生命周期问题已关闭。
+
+## 31. 模式三新增维度未同步的分析与待整改项（2026-10-23）
+
+用户截图中的“列时间周期=计划投产时间/月，同时添加承制车间列分类”已经实际复现。详细根因、逐层排查步骤、完整修复建议和验收矩阵见[维度同步分析](hybrid-dimension-sync-analysis-2026-10-23.md)。本节保留分析轮记录；后续代码整改和实际验收已完成，最新结果见第32节。
+
+| 编号 | 级别/状态 | 确认的问题 | 整改与关闭标准 |
+| --- | --- | --- | --- |
+| HDIM-F01 | P1，已整改并验收 | 原编译器只用`columnTimeBucket.field || columnCategories[0]`选一个列轴；行轴只取categories[0]，存在分类时忽略行时间。普通分组也只生成两级。左侧支持多选，模板却静默截断。 | 已完整生成有序rowAxes/columnAxes及父链，布局、合并和总计随结构计算。7组诊断重跑全部通过，见第32节。 |
+| HDIM-F02 | P1，已整改并验收 | 保存时没有完整维度意图，重开仅反解已生成字段格；实际保存重开后，先前选择的承制车间消失。 | 已版本化保存有序轴，兼容旧父链恢复，发布前核对完整性。真实主应用保存刷新重开保持全部轴与高级格式，见第32节。 |
+
+源码与浏览器证据均定位到模板编译环节：选择车间后仍为9格、设计区域文本与选择前逐字一致；清空列时间后车间立即进入模板，证明该对照下增量刷新有效。直接执行当前TypeScript适配器源码的7组诊断为2组对照通过、5组遗漏；浏览器另确认动态预览遗漏、清空时间对照成功、保存重开丢失选择，未捕获pageerror。
+
+证据：[适配器诊断](verification/hybrid-dimension-sync-2026-10-23/adapter-analysis.json)、[浏览器记录](verification/hybrid-dimension-sync-2026-10-23/browser-analysis.json)、[添加前](verification/hybrid-dimension-sync-2026-10-23/design-before.tsv)、[添加后](verification/hybrid-dimension-sync-2026-10-23/design-after-add.tsv)、[当前VTable输出](verification/hybrid-dimension-sync-2026-10-23/saved-vtable-missing-category.tsv)。第30节的三个修复不因此回退，但其单轴场景通过不能扩大为本轮多维组合已经实现。
+
+## 32. 时间与多级行列分类的整改验收（2026-10-23）
+
+HDIM-F01、HDIM-F02已按第31节完成。完整实现、源码落点、测试清单与浏览器证据见[多级维度整改验收报告](hybrid-multiaxis-implementation-and-acceptance-2026-10-23.md)。保留当前配置面板，继续使用Univer设计/预览及VTable展示，没有新增独立演示页或全局布局方向开关。
+
+### 32.1 实现落点
+
+| 位置 | 最终行为 |
+| --- | --- |
+| `report-template/hybridAxes.ts`、`compileHybridHierarchy.ts`、`panelToTemplateAdapter.ts` | 时间和全部分类规范化成有序轴，完整父格链、动态表头和叶轴交叉值；多级分组、无行轴的多级列透视、旧默认维度选项兼容。 |
+| `report-template/types.ts`、`validator.ts`、`compileCellReport.ts` | hybridConfig v2保存完整意图，旧文档父链恢复；校验配置/字段/分桶/数量/父链；占位冲突不丢备注；接受登记字段并覆盖全部事实，避免稀疏采样误报。 |
+| `cell-designer/HybridCellDesigner.tsx`、`hybridTemplateState.ts` | 变更前同步快照，按字段身份迁移样式和高级格式，父链随新结构更新；保留自由内容，显示真实轴级数与错误。 |
+| `cell-designer/hybridMergeState.ts`、`report-template/cellExpansionEngine.ts` | 取消合并按来源回写组上下文例外或源规则禁用，休眠规则保留；备注人工合并与文本同位移；旧轴合并目标重绑定。 |
+| 宿主`dynamic-data-test/src/App.tsx` | 数据版本刷新包含hybrid保存包，VTable直接消费重编译的中性publication，无需重开编辑器再保存。 |
+
+### 32.2 验收结果
+
+| 检查 | 结果 | 证据 |
+| --- | --- | --- |
+| 原7组轴遗漏诊断 | 7/7通过 | [诊断重跑](verification/hybrid-multiaxis-acceptance-2026-10-23/adapter-recheck.json) |
+| 新增多级轴专项 | 23/23通过 | [专项日志](verification/hybrid-multiaxis-acceptance-2026-10-23/focused-tests.log) |
+| 全库单测 | 286/286通过 | [全量日志](verification/hybrid-multiaxis-acceptance-2026-10-23/unit-tests.log) |
+| 库/宿主构建 | ESM/CJS及宿主生产构建通过；大包提示仍在 | [库构建](verification/hybrid-multiaxis-acceptance-2026-10-23/library-build.log)、[宿主构建](verification/hybrid-multiaxis-acceptance-2026-10-23/host-build.log) |
+| 原入口浏览器功能 | 12项通过，pageErrors为空 | [交互记录](verification/hybrid-multiaxis-acceptance-2026-10-23/browser.json)、[源码摘要](verification/hybrid-multiaxis-acceptance-2026-10-23/checks.json) |
+
+实际验证三层行轴及三层列轴、保存刷新重开、C5→E6后的单位/加粗、自由备注及人工合并、原生取消月份覆盖、合并开关往返、分类重排及多级分组模式。数据源夹具新增月份/车间/产品后，保存卡片自动新增行列，总交付10850→10973；逆序文本逐字一致；删除1号车间后总交付6450，恢复后与基线逐字一致。
+
+数据变化通过独立浏览器的源模块网络夹具完成，未修改事实源文件或用户浏览器；不宣称已经另外验证服务端推送API。结束时已移除夹具，恢复实际源并核对。静态文本“按目标区域动态满宽”是下节的独立能力边界，本轮备注合并位移不等于已实现该通用入口。
+
+## 33. 静态文本随动态列宽展开并居中的能力边界与建议（2026-10-23）
+
+### 33.1 当前是否可以配置
+
+| 场景 | 当前能力 |
+| --- | --- |
+| 系统自动生成的首行标题 | 有`merge-title`特例：预览/发布根据已展开格子的最右列扩宽。可双击A1→样式与排版→水平居中→保存；本轮已实际操作并验证重开保持。 |
+| 自定义首行或第二行文本，要求严格跟随某个动态列区域全宽 | **没有通用配置入口。** 固定合并及部分跨区域合并虽会随块位移变化，但不能明确、稳定地表达“恰好覆盖当前区域所有动态列、可选总计”。不能将手填A2:H2当作完整方案。 |
+| 只跟随动态列，排除左侧行维度/指标标签；可选含总计 | 当前首行特例无法选择这些边界，需扩展语义跨度规则。 |
+
+“居中”应相对于最终合并区域的实际像素宽度，不是相对于浏览器当前可见画布。当前系统首行文本仍由面板生成；能够修改其居中样式，不等于已有任意自定义标题内容及范围跟随配置。
+
+首行居中证据：[高级设置](verification/hybrid-multiaxis-acceptance-2026-10-23/auto-title-centered-settings.png)、[动态预览](verification/hybrid-multiaxis-acceptance-2026-10-23/auto-title-centered-preview.png)。这些证明系统标题特例，不作为任意静态文本功能已实现的证据。
+
+### 33.2 建议的配置方式
+
+在静态单元格高级设置增加“范围跟随”：
+
+| 配置 | 含义 |
+| --- | --- |
+| 固定范围 | 沿用普通手工合并。 |
+| 当前报表全宽 | 从行维度标签起，覆盖指标标签、全部动态叶列；总计可选。 |
+| 仅动态列区域 | 从第一列动态数据起，覆盖所有展开后的叶列；排除左侧标签，总计可选。 |
+| 包含总计 | 明确范围末尾是否包含行总计；总计关闭时不多占一列。 |
+| 对齐 | 默认水平/垂直居中，允许保留文字换行、字号、背景、边框及行高。 |
+
+例如第一行“月度生产汇总”选择报表全宽，第二行“统计口径：已审核工单”也可选择全宽；若第二行只说明数据部分，则选择仅动态列区域。设计时配置的是规则，不需要知道最终有几个月、几个车间或几个产品。
+
+### 33.3 实现建议与验收要求
+
+1. 保存独立的源跨度规则，至少包含静态文本格ID、sheetId、regionId、范围类型和includeTotals；不保存一次预览展开得到的绝对结束列。静态文字只出现一次，不绑定右扩展父格去重复生成。
+2. 在轴树与布局展开完成后，由目标region的行标签起点、动态数据起点、叶列真实footprint、总计边界计算范围。不要使用工作表预留列数、可见窗口宽度或其他自由备注的最右坐标充当目标区域宽度。
+3. 生成合并和居中样式，附带来源/owner，预览与中性publication复用，VTable消费同一结果。原生取消合并应关闭该源规则或生成明确例外，不能下次预览重新出现。
+4. 同一格固定合并与区域跟随明确互斥；范围内已有其他非空内容或人工规则冲突时诊断，不能吞掉第二个文字。空数据使用原型最小合法跨度，不生成反向范围。
+5. 测试未知叶列数量的增删、重排、多级列分类、不同列宽、总计开关、空数据、多区域隔离；覆盖模板→预览→保存→刷新重开→VTable及取消后的往返。每轮校验文本只出现一次、合并边界正确、居中基于实际区域宽度。
+
+本节为需求评估与方案，通用范围跟随入口尚未实现，不能与第32节已关闭的多级维度问题合并计为通过。

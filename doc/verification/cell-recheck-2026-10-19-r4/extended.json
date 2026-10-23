@@ -1,0 +1,174 @@
+{
+  "timestamp": "2026-10-19T07:12:00.586Z",
+  "scope": "实际编译器/快照/已安装SDK/生产manifest；浏览器证据另存",
+  "total": 25,
+  "passed": 25,
+  "failed": 0,
+  "results": [
+    {
+      "id": "RC-01",
+      "requirement": "DCR-01",
+      "name": "分组多层成员解除全部合并后不自动合并",
+      "passed": true
+    },
+    {
+      "id": "RC-02",
+      "requirement": "DCR-02/09",
+      "name": "未编辑的展开预览保存不生成任何人工覆盖",
+      "passed": true
+    },
+    {
+      "id": "RC-03",
+      "requirement": "DCR-02/09",
+      "name": "预览编辑600为999后保存能命中同一业务格",
+      "passed": true
+    },
+    {
+      "id": "RC-04",
+      "requirement": "DCR-02",
+      "name": "非法实例键不能将同一度量全表改成999",
+      "passed": true
+    },
+    {
+      "id": "RC-05",
+      "requirement": "DCR-02",
+      "name": "正确实例键仅影响目标业务格",
+      "passed": true,
+      "evidence": {
+        "row": 4,
+        "column": 2
+      }
+    },
+    {
+      "id": "RC-06",
+      "requirement": "DCR-02",
+      "name": "源值变化连续刷新仍报告未解决的覆盖冲突",
+      "passed": true
+    },
+    {
+      "id": "RC-07",
+      "requirement": "DCR-02",
+      "name": "被编辑成员删除后产生归档或失效诊断",
+      "passed": true
+    },
+    {
+      "id": "RC-08",
+      "requirement": "DCR-03",
+      "name": "模板格styleRules实际作用于展开度量",
+      "passed": true
+    },
+    {
+      "id": "RC-09",
+      "requirement": "DCR-03",
+      "name": "条件背景色不清掉原有加粗、字体色和数字格式",
+      "passed": true
+    },
+    {
+      "id": "RC-10",
+      "requirement": "DCR-03",
+      "name": "缺失事实的null交叉格不被条件规则当作数值0",
+      "passed": true
+    },
+    {
+      "id": "RC-11",
+      "requirement": "DCR-04",
+      "name": "Excel引用公式SUM(K1:K2)应计算或明确阻断",
+      "passed": true
+    },
+    {
+      "id": "RC-12",
+      "requirement": "DCR-04",
+      "name": "除零不能以Infinity成功发布",
+      "passed": true
+    },
+    {
+      "id": "RC-13",
+      "requirement": "DCR-05",
+      "name": "行父格和列父格混合环路应被阻断",
+      "passed": true
+    },
+    {
+      "id": "RC-14",
+      "requirement": "DCR-06",
+      "name": "自由区与业务格碰撞返回错误而非覆盖",
+      "passed": true
+    },
+    {
+      "id": "RC-15",
+      "requirement": "DCR-07",
+      "name": "第二张静态表保留隐藏属性",
+      "passed": true
+    },
+    {
+      "id": "RC-16",
+      "requirement": "DCR-07",
+      "name": "无活动数据区域的静态工作表仍完整发布",
+      "passed": true
+    },
+    {
+      "id": "RC-17",
+      "requirement": "DCR-08",
+      "name": "数字1和字符串1为不同主键",
+      "passed": true
+    },
+    {
+      "id": "RC-18",
+      "requirement": "DCR-08",
+      "name": "主键缺失必须明确诊断而非静默退回行号",
+      "passed": true
+    },
+    {
+      "id": "RC-19",
+      "requirement": "DCR-08",
+      "name": "已接受的_id主键在明细重排后仍为同一实例",
+      "passed": true
+    },
+    {
+      "id": "RC-20",
+      "requirement": "DCR-09",
+      "name": "工具栏取消加粗能从工作簿落回源模板",
+      "passed": true
+    },
+    {
+      "id": "RC-21",
+      "requirement": "DCR-09",
+      "name": "工作簿清空静态格不会在保存后复活旧值",
+      "passed": true
+    },
+    {
+      "id": "RC-22",
+      "requirement": "DCR-09",
+      "name": "真实SDK程序网格写入不应登记成用户编辑",
+      "passed": true
+    },
+    {
+      "id": "RC-23",
+      "requirement": "DCR-10",
+      "name": "生产入口静态依赖图不包含Univer预览及设计器",
+      "passed": true,
+      "evidence": {
+        "entry": "index.html",
+        "staticImports": [
+          "assets/index-Bxu_euH7.js"
+        ],
+        "dynamicImports": [
+          "src/components/DashboardEditModal.tsx",
+          "src/components/CellReportEditModal.tsx",
+          "src/univerAcceptance.tsx"
+        ]
+      }
+    },
+    {
+      "id": "RC-24",
+      "requirement": "DCR-10/新回归",
+      "name": "单元格编辑入口独立加载Univer CSS",
+      "passed": true
+    },
+    {
+      "id": "RC-25",
+      "requirement": "DCR-09",
+      "name": "真实SDK刷新占位符不能把业务公式格转成literal",
+      "passed": true
+    }
+  ]
+}

@@ -13,8 +13,9 @@ import type { IWorkbookData } from '@univerjs/core';
 import { isBrowser, initUniver, waitForFormulaSettled, type FUniver } from './adapter.js';
 import { BiBindingManager } from './BiBindingPlugin.js';
 import { compileReport, type CompileReportResult } from './compileReport.js';
+import { collectStaleCells } from './gridSync.js';
 import type { BiGridModel, ReportBinding } from '../report/types.js';
-import { biGridToUniverWorksheetData } from '../report/buildBiGrid.js';
+import { biGridToUniverWorksheetData, publishedStyleToUniver, toExcelPattern } from '../report/buildBiGrid.js';
 
 export interface UniverPreviewRef {
   getWorkbookSnapshot: () => any;
@@ -28,10 +29,13 @@ export interface UniverPreviewProps {
   revision?: number | undefined;
   initialSnapshot?: Partial<IWorkbookData> | undefined;
   initialGrid?: BiGridModel | undefined;
+  syncGridStyles?: boolean | undefined;
   bindings?: ReportBinding[] | undefined;
   manualOverrides?: Record<string, { v?: unknown; f?: string }> | undefined;
   onBindingsChange?: ((bindings: ReportBinding[]) => void) | undefined;
   onManualOverride?: ((bindingId: string, override: { v?: unknown; f?: string }) => void) | undefined;
+  onReady?: ((api: FUniver) => void) | undefined;
+  onGridApplied?: ((grid: BiGridModel) => void) | undefined;
   height?: number | string | undefined;
   className?: string | undefined;
   style?: React.CSSProperties | undefined;
@@ -43,10 +47,13 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
       documentId,
       initialSnapshot,
       initialGrid,
+      syncGridStyles = false,
       bindings = [],
       manualOverrides,
       onBindingsChange,
       onManualOverride,
+      onReady,
+      onGridApplied,
       height = '100%',
       className,
       style,
@@ -59,6 +66,15 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
     const bindingManagerRef = useRef<BiBindingManager | null>(null);
     const [isInitialized, setIsInitialized] = useState(false);
     const lastGridRef = useRef<BiGridModel | undefined>(initialGrid);
+
+    const onBindingsChangeRef = useRef(onBindingsChange);
+    onBindingsChangeRef.current = onBindingsChange;
+    const onManualOverrideRef = useRef(onManualOverride);
+    onManualOverrideRef.current = onManualOverride;
+    const onReadyRef = useRef(onReady);
+    onReadyRef.current = onReady;
+    const onGridAppliedRef = useRef(onGridApplied);
+    onGridAppliedRef.current = onGridApplied;
 
     // MBI-05: 若外部 bindings 尚未持久化，自动采用 initialGrid 生成的基础矩阵绑定
     const effectiveBindings = useMemo(() => {
@@ -111,21 +127,26 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
       univerAPIRef.current = bundle.univerAPI;
       disposeFnRef.current = bundle.dispose;
 
-      // 初始化业务绑定管理器 (MBI-04, MBI-05)
+      // 初始化业务绑定管理器 (MBI-04, MBI-05, R18-05: 闭包代理保障最新引用)
       const bm = new BiBindingManager({
         bindings: effectiveBindings,
-        ...(onBindingsChange !== undefined ? { onBindingsChange } : {}),
-        ...(onManualOverride !== undefined ? { onManualOverride } : {}),
+        onBindingsChange: (b) => onBindingsChangeRef.current?.(b),
+        onManualOverride: (id, ov) => onManualOverrideRef.current?.(id, ov),
       });
       bm.attach(bundle.univerAPI);
       bindingManagerRef.current = bm;
 
       // 若首次生成了有效绑定且外部尚无绑定，通知外部持久化
       if (bindings.length === 0 && effectiveBindings.length > 0) {
-        onBindingsChange?.(effectiveBindings);
+        onBindingsChangeRef.current?.(effectiveBindings);
       }
 
       setIsInitialized(true);
+      if (typeof window !== 'undefined') {
+        (window as any).__UNIVER_API__ = bundle.univerAPI;
+      }
+      onReadyRef.current?.(bundle.univerAPI);
+      if (initialGrid && !initialSnapshot) onGridAppliedRef.current?.(initialGrid);
 
       const localBundle = bundle;
       const localBm = bm;
@@ -171,18 +192,28 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
       if (!isInitialized || !univerAPIRef.current || !initialGrid) return;
       const oldGrid = lastGridRef.current;
       if (oldGrid === initialGrid) return;
-      lastGridRef.current = initialGrid;
 
       try {
+        const txn = {
+          id: ((globalThis as any).__biTxnSeq = ((globalThis as any).__biTxnSeq || 0) + 1),
+          ts: Date.now(),
+        };
         if (typeof BiBindingManager !== 'undefined') {
           BiBindingManager.isProgrammaticWrite = true;
+          BiBindingManager.__biTransaction = txn;
         }
         if (univerAPIRef.current) {
           (univerAPIRef.current as any).__isProgrammaticWrite = true;
+          (univerAPIRef.current as any).__biTransaction = txn;
         }
         const activeWorkbook = univerAPIRef.current.getActiveWorkbook();
         const worksheet = activeWorkbook ? activeWorkbook.getActiveSheet() : null;
-        if (!worksheet || !activeWorkbook) return;
+        if (!worksheet || !activeWorkbook) {
+          // GRID-SYNC-02: worksheet 未就绪时不推进游标，保留差集待下次刷新重试，
+          // 否则本次网格变更将被永久跳过、旧内容失去被清理的机会。
+          return;
+        }
+        lastGridRef.current = initialGrid;
 
         const wsInternal = (worksheet as any)._worksheet;
         const matrix = wsInternal?.getCellMatrix?.();
@@ -191,14 +222,17 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
         const oldCellData = (oldSnapshot.sheets as any)?.[sheetId]?.cellData || {};
 
         // RT-03 / RX-09 / RX-10: 扩充工作表行数和列数
+        // GRID-SYNC-03: 需同时覆盖旧网格尺寸，保证后续越界条带清理的范围在工作表边界内
         if (wsInternal) {
+          const targetRows = Math.max(initialGrid.rowCount, oldGrid?.rowCount ?? 0);
+          const targetCols = Math.max(initialGrid.colCount, oldGrid?.colCount ?? 0);
           const currentRows = typeof wsInternal.getMaxRows === 'function' ? wsInternal.getMaxRows() : 0;
           const currentCols = typeof wsInternal.getMaxColumns === 'function' ? wsInternal.getMaxColumns() : 0;
-          if (currentRows < initialGrid.rowCount) {
-            wsInternal.setRowCount?.(initialGrid.rowCount);
+          if (currentRows < targetRows) {
+            wsInternal.setRowCount?.(targetRows);
           }
-          if (currentCols < initialGrid.colCount) {
-            wsInternal.setColumnCount?.(initialGrid.colCount);
+          if (currentCols < targetCols) {
+            wsInternal.setColumnCount?.(targetCols);
           }
         }
 
@@ -246,15 +280,47 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
         }
 
         // 2. 清理旧区域超出新网格范围的单元格，防止删除成员或透视列时残留旧表格残影 (DT-14, DT-17)
-        if (oldGrid && matrix) {
-          for (let r = 0; r < oldGrid.rowCount; r++) {
-            for (let c = 0; c < oldGrid.colCount; c++) {
-              if (r >= initialGrid.rowCount || c >= initialGrid.colCount) {
-                try {
-                  matrix.realDeleteValue(r, c);
-                } catch {}
-              }
-            }
+        // GRID-SYNC-04: 所有"可见内容"的清除必须走 Facade Range API（命令系统），
+        // 不能用 matrix.realDeleteValue 直接改内部矩阵——后者不经过命令派发，
+        // 模型虽被修改但画布不会失效重绘，宏观表现为"删除配置后预览表残留旧表头/旧数据"
+        // （公式栏显示新值而单元格仍渲染旧值，即模型与视图脱节）。
+        if (oldGrid && worksheet) {
+          // 2a. 越界区域：按矩形条带批量清除（rows 超界条带 + cols 超界条带），避免逐格派发命令
+          const strips: { r1: number; c1: number; r2: number; c2: number }[] = [];
+          if (initialGrid.rowCount < oldGrid.rowCount) {
+            strips.push({
+              r1: initialGrid.rowCount,
+              c1: 0,
+              r2: oldGrid.rowCount - 1,
+              c2: oldGrid.colCount - 1,
+            });
+          }
+          if (initialGrid.colCount < oldGrid.colCount) {
+            strips.push({
+              r1: 0,
+              c1: initialGrid.colCount,
+              r2: oldGrid.rowCount - 1,
+              c2: oldGrid.colCount - 1,
+            });
+          }
+          for (const s of strips) {
+            if (s.r2 < s.r1 || s.c2 < s.c1) continue;
+            try {
+              worksheet
+                .getRange(s.r1, s.c1, s.r2 - s.r1 + 1, s.c2 - s.c1 + 1)
+                .clear();
+            } catch {}
+          }
+
+          // GRID-SYNC-01: 凡旧网格业务单元格在新网格中已不存在的坐标一律无条件清除。
+          // 不能只依赖越界清理：空配置网格的 colCount/rowCount 仍被钳制为 ≥1
+          // （groupedProjector 的 Math.max(totalCols, 1)），删除全部列配置后，
+          // 旧表头位于新边界内，若仅按越界清理会永久残留（A1 表头不清空）。
+          const staleCells = collectStaleCells(oldGrid, initialGrid);
+          for (const sc of staleCells) {
+            try {
+              worksheet.getRange(sc.row, sc.col).clear();
+            } catch {}
           }
         }
 
@@ -279,12 +345,62 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
 
           try {
             const range = (worksheet as any).getRange?.(cell.row, cell.col);
+            const pat = toExcelPattern(cell.style?.format);
+            let displayVal = val;
+
+            if (val === null || val === undefined) {
+              displayVal = cell.displayText !== undefined && cell.displayText !== '' ? cell.displayText : null;
+            } else if (typeof val === 'number') {
+              if ((cell as any).hasAdvancedFormat && cell.displayText !== undefined) {
+                displayVal = cell.displayText;
+              } else if (!pat && cell.displayText !== undefined && cell.displayText !== String(val)) {
+                displayVal = cell.displayText;
+              }
+            } else {
+              if (cell.displayText !== undefined && cell.displayText !== String(val)) {
+                displayVal = cell.displayText;
+              }
+            }
+
             if (formula) {
               range?.setFormula?.(formula);
-            } else if (val !== null && val !== undefined) {
-              range?.setValue?.(val);
-            } else if (matrix) {
-              matrix.realDeleteValue(cell.row, cell.col);
+            } else if (displayVal !== null && displayVal !== undefined && displayVal !== '') {
+              // 模板文本保持原始类型，避免 YYYY-MM-DD 表头被自动解析为日期序号。
+              const cellType = typeof displayVal === 'number' ? 2 : typeof displayVal === 'boolean' ? 3 : 1;
+              range?.setValue?.({ v: displayVal, t: cellType });
+            } else {
+              // GRID-SYNC-04: 业务单元格值变为空时同样走 Facade 清除，确保画布重绘
+              range?.clear?.();
+            }
+
+            if (pat && typeof range?.setNumberFormat === 'function') {
+              try {
+                range.setNumberFormat(pat);
+              } catch {}
+            }
+
+            if (syncGridStyles && cell.style) {
+              if (cell.style.bgColor && typeof range?.setBackgroundColor === 'function') {
+                try { range.setBackgroundColor(cell.style.bgColor); } catch {}
+              }
+              if (cell.style.color && typeof range?.setFontColor === 'function') {
+                try { range.setFontColor(cell.style.color); } catch {}
+              }
+              if (cell.style.bold !== undefined && typeof range?.setFontWeight === 'function') {
+                try { range.setFontWeight(cell.style.bold ? 'bold' : 'normal'); } catch {}
+              }
+              if (cell.style.align && typeof range?.setHorizontalAlignment === 'function') {
+                try { range.setHorizontalAlignment(cell.style.align); } catch {}
+              }
+              if (cell.style.verticalAlign && typeof range?.setVerticalAlignment === 'function') {
+                try { range.setVerticalAlignment(cell.style.verticalAlign); } catch {}
+              }
+              if (cell.style.wrapText !== undefined && typeof range?.setWrap === 'function') {
+                try { range.setWrap(cell.style.wrapText); } catch {}
+              }
+              if (cell.style.fontSize && typeof range?.setFontSize === 'function') {
+                try { range.setFontSize(cell.style.fontSize); } catch {}
+              }
             }
           } catch {}
 
@@ -299,12 +415,15 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
                 agg: cell.agg,
                 displayText: cell.displayText,
                 originalValue: cell.value,
+                tooltip: cell.tooltip,
               };
               const nextCell = {
                 ...cur,
                 custom: nextCustom,
               };
-              if (styleId) {
+              if (syncGridStyles && cell.style) {
+                nextCell.s = publishedStyleToUniver(cell.style);
+              } else if (styleId) {
                 nextCell.s = styleId;
               } else if (nextCell.s) {
                 delete nextCell.s;
@@ -328,6 +447,28 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
           wsInternal?.setMergeData?.(expectedMerges);
         } catch {}
 
+        // 4.5 同步列宽与行高预设 (DT-18, MBI-20)
+        if (initialGrid.colWidths && worksheet) {
+          for (const [colIdxStr, width] of Object.entries(initialGrid.colWidths)) {
+            const colIdx = Number(colIdxStr);
+            try {
+              if (typeof (worksheet as any).setColumnWidth === 'function') {
+                (worksheet as any).setColumnWidth(colIdx, width);
+              }
+            } catch {}
+          }
+        }
+        if (initialGrid.rowHeights && worksheet) {
+          for (const [rowIdxStr, height] of Object.entries(initialGrid.rowHeights)) {
+            const rowIdx = Number(rowIdxStr);
+            try {
+              if (typeof (worksheet as any).setRowHeight === 'function') {
+                (worksheet as any).setRowHeight(rowIdx, height);
+              }
+            } catch {}
+          }
+        }
+
         // 5. 同步最新绑定基线至管理器 (RT-04 / RX-11)
         const bm = typeof bindingManagerRef !== 'undefined' ? bindingManagerRef.current : null;
         if (bm && initialGrid.bindings) {
@@ -342,17 +483,20 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
           const syncMethod = 'set' + 'Bindings';
           (bm as any)[syncMethod]?.(updatedBindings);
         }
+        onGridAppliedRef.current?.(initialGrid);
       } catch (err) {
         console.warn('[UniverPreview] 增量数据刷新异常:', err);
       } finally {
         if (typeof BiBindingManager !== 'undefined') {
           BiBindingManager.isProgrammaticWrite = false;
+          BiBindingManager.__biTransaction = null;
         }
         if (univerAPIRef.current) {
           (univerAPIRef.current as any).__isProgrammaticWrite = false;
+          (univerAPIRef.current as any).__biTransaction = null;
         }
       }
-    }, [isInitialized, initialGrid, effectiveBindings, manualOverrides]);
+    }, [isInitialized, initialGrid, effectiveBindings, manualOverrides, syncGridStyles]);
 
     useImperativeHandle(
       ref,

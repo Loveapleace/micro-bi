@@ -15,6 +15,7 @@ import {
   createMetricAccumulator,
   getAggregatedValue,
   mergeMetricAccumulator,
+  toAggregableNumber,
   type MetricAccumulator,
 } from './aggregation.js';
 import { getRecordAggregates } from './recordMetadata.js';
@@ -100,18 +101,30 @@ export function computeSummaryValues(
 
   const aggregates = collectAggregates(rows);
   for (const [field, acc] of aggregates) {
-    summary[field] = acc.sum;
-    for (const agg of ['sum', 'avg', 'min', 'max', 'count'] as const) {
-      const value = getAggregatedValue(acc, agg);
-      summary[`${agg.toUpperCase()}(${field})`] = value;
-      summary[`${agg}(${field})`] = value;
-      const label = rawHeaders?.[field];
-      if (label) {
-        summary[`${agg.toUpperCase()}(${label})`] = value;
-        summary[`${agg}(${label})`] = value;
-      }
+    // COUNT 宏对任何字段都有效（非空计数），始终生成；
+    // 数值类宏（SUM/AVG/MIN/MAX）仅对含有效数值样本的字段生成，
+    // 避免把纯文本维度字段以 SUM=0 污染总计上下文。
+    const countValue = getAggregatedValue(acc, 'count');
+    summary[`COUNT(${field})`] = countValue;
+    summary[`count(${field})`] = countValue;
+    const countLabel = rawHeaders?.[field];
+    if (countLabel) {
+      summary[`COUNT(${countLabel})`] = countValue;
+      summary[`count(${countLabel})`] = countValue;
     }
-    if (rawHeaders?.[field]) summary[rawHeaders[field]!] = acc.sum;
+    if (acc.numericCount > 0) {
+      summary[field] = acc.sum;
+      for (const agg of ['sum', 'avg', 'min', 'max'] as const) {
+        const value = getAggregatedValue(acc, agg);
+        summary[`${agg.toUpperCase()}(${field})`] = value;
+        summary[`${agg}(${field})`] = value;
+        if (countLabel) {
+          summary[`${agg.toUpperCase()}(${countLabel})`] = value;
+          summary[`${agg}(${countLabel})`] = value;
+        }
+      }
+      if (countLabel) summary[countLabel] = acc.sum;
+    }
   }
 
   // 1. 搜集底层真实原始流水记录（如果由管道分组挂载）
@@ -145,7 +158,7 @@ export function computeSummaryValues(
       }
 
       if (aggType === 'sum') {
-        const sum = rows.reduce((acc, r) => acc + (Number(r[col.key]) || 0), 0);
+        const sum = rows.reduce((acc, r) => acc + (toAggregableNumber(r[col.key]) || 0), 0);
         summary[col.key] = sum;
         if (col.field) {
           summary[col.field] = sum;
@@ -166,7 +179,7 @@ export function computeSummaryValues(
           for (const raw of allRawRows) {
             const v = raw[col.field];
             if (v !== null && v !== undefined && v !== '') {
-              const num = Number(v);
+              const num = toAggregableNumber(v);
               if (Number.isFinite(num)) {
                 total += num;
                 count += 1;
@@ -180,7 +193,7 @@ export function computeSummaryValues(
           for (const r of rows) {
             const v = r[col.key];
             if (v !== null && v !== undefined && v !== '') {
-              const num = Number(v);
+              const num = toAggregableNumber(v);
               if (Number.isFinite(num)) {
                 total += num;
                 count += 1;
@@ -240,7 +253,9 @@ export function computeSummaryValues(
           : rows.reduce((total, row) => {
               const value = row[col.key];
               if (value === null || value === undefined || value === '') return total;
-              const number = Number(value);
+              const number = toAggregableNumber(value);
+              // 回退语义：此分支仅处理“无底层流水/聚合元数据”的展示行（其单元格值已是预聚合结果），
+              // 因此数值单元按“计数之和”累加（如 3 + 5 = 8 才是正确总数）；非数值单元按 1 次非空出现计。
               return total + (Number.isFinite(number) ? number : 1);
             }, 0);
         summary[col.key] = count;
@@ -258,7 +273,7 @@ export function computeSummaryValues(
     if (col.kind === 'computed' || col.expression) {
       if (col.scope === 'row') {
         const acc = aggregates.get(col.key);
-        const value = acc ? acc.sum : rows.reduce((total, row) => total + (Number(row[col.key]) || 0), 0);
+        const value = acc ? acc.sum : rows.reduce((total, row) => total + (toAggregableNumber(row[col.key]) || 0), 0);
         summary[col.key] = roundTo(value, col.precision);
         summary[col.title] = summary[col.key];
         continue;
@@ -283,7 +298,7 @@ export function computeSummaryValues(
             let total = 0;
             let count = 0;
             for (const r of rows) {
-              const v = Number(r[col.key]);
+              const v = toAggregableNumber(r[col.key]);
               if (Number.isFinite(v)) {
                 total += v;
                 count += 1;
@@ -292,7 +307,7 @@ export function computeSummaryValues(
             const avg = count > 0 ? roundTo(total / count, col.precision ?? 2) : 0;
             summary[col.key] = avg;
           } else {
-            summary[col.key] = rows.reduce((acc, r) => acc + (Number(r[col.key]) || 0), 0);
+            summary[col.key] = rows.reduce((acc, r) => acc + (toAggregableNumber(r[col.key]) || 0), 0);
           }
         }
       } else {
@@ -306,14 +321,15 @@ export function computeSummaryValues(
           let total = 0;
           let count = 0;
           for (const r of rows) {
-            const v = Number(r[col.key]);
+            const v = toAggregableNumber(r[col.key]);
             if (Number.isFinite(v)) {
               total += v;
+              count += 1;
             }
           }
           summary[col.key] = count > 0 ? roundTo(total / count, col.precision ?? 2) : 0;
         } else {
-          summary[col.key] = rows.reduce((acc, r) => acc + (Number(r[col.key]) || 0), 0);
+          summary[col.key] = rows.reduce((acc, r) => acc + (toAggregableNumber(r[col.key]) || 0), 0);
         }
       }
     }

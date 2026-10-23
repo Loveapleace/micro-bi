@@ -1,0 +1,81 @@
+{
+  "date": "2026-10-23",
+  "scope": "第31节多级时间/行列分类整改",
+  "focusedTests": {
+    "passed": 23,
+    "failed": 0
+  },
+  "unitTests": {
+    "passed": 286,
+    "failed": 0
+  },
+  "adapterRecheck": {
+    "passed": 7,
+    "failed": 0
+  },
+  "browser": {
+    "sourceFixture": "isolated browser network interception, not server push API",
+    "failed": 0,
+    "pageErrors": 0,
+    "passed": 12
+  },
+  "builds": {
+    "library": "ESM/CJS passed",
+    "host": "passed; existing chunk-size warning"
+  },
+  "followUp": "第33节任意静态文本的区域满宽规则尚未实现，系统首行标题居中已验证",
+  "sourceHashes": [
+    {
+      "path": "src/report-template/types.ts",
+      "sha256": "ceef99e7566d6aeb31c4950b1725f6758b59659ba09bcc8d02c0064fe6a21cac"
+    },
+    {
+      "path": "src/report-template/hybridAxes.ts",
+      "sha256": "2a0195189382fe549baa4a97b5eb8c8b80d10c67c36b2d474e647f8262373224"
+    },
+    {
+      "path": "src/report-template/compileHybridHierarchy.ts",
+      "sha256": "f23ac9803857e0262405d119c23fe22b865b3f1dd291c8d0fa518abfdb5b2525"
+    },
+    {
+      "path": "src/report-template/panelToTemplateAdapter.ts",
+      "sha256": "778f1c65381e7d8796867f146e04a6fda4e7e199d7f8ae8b3a4aca901e4e4627"
+    },
+    {
+      "path": "src/report-template/cellExpansionEngine.ts",
+      "sha256": "9ab6d6bb93da6075afffd8c6a4f3bd41b8f82c1414bda892c86c6210cd28ad06"
+    },
+    {
+      "path": "src/report-template/validator.ts",
+      "sha256": "ac43925737c67b79c39890531d77f213c2bfa53d5af4c354cf3ec5dcc6183a22"
+    },
+    {
+      "path": "src/report-template/compileCellReport.ts",
+      "sha256": "1dcdc0425c767f03cf89110c97b5556f5a0c1c36134d04d4a54e5d181eba9069"
+    },
+    {
+      "path": "src/cell-designer/HybridCellDesigner.tsx",
+      "sha256": "14888620f085349f7ef3c877f7b64e1a7e8c8d100dc96969c60e0a78173e1302"
+    },
+    {
+      "path": "src/cell-designer/hybridTemplateState.ts",
+      "sha256": "0ce8041fa5a5497c5a9820857cf3353c0289ef637a85bee9be41b3b16e616d6f"
+    },
+    {
+      "path": "src/cell-designer/hybridMergeState.ts",
+      "sha256": "010abe47cb04ef10d84671e9746c65947a3fe4555714a3df6fe1bc8dfc3e1b24"
+    },
+    {
+      "path": "src/report/types.ts",
+      "sha256": "ffab6728722f53c7c60abfb66b2cd25032119b1d069ec7bbf72b074cc9556afa"
+    },
+    {
+      "path": "../dynamic-data-test/src/App.tsx",
+      "sha256": "81c0f4c57e79614d5b3c32778abd2291ca523df9c18c8cb1b3a2e19e1ea73679"
+    },
+    {
+      "path": "test/hybrid-multiaxis.test.mjs",
+      "sha256": "26df096d0add215d7e5ce3f273f768ed3868083fbd54c9cbb5559f9f816f8bae"
+    }
+  ]
+}

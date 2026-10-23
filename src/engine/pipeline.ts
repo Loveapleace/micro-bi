@@ -23,7 +23,8 @@ import { evaluateAST } from './formula/evaluator.js';
 import { parseFormula, extractReferencedFields } from './formula/parser.js';
 import { isLikelyDateValue, isLikelyNumericValue } from './profiler.js';
 
-import { accumulateMetric, createMetricAccumulator, getAggregatedValue, type MetricAccumulator } from './aggregation.js';
+import { accumulateMetric, createMetricAccumulator, getAggregatedValue, toAggregableNumber, type MetricAccumulator } from './aggregation.js';
+import { compareWithSortRules } from './comparison.js';
 import { getRecordKey, getSourceRowKey, setRecordMetadata } from './recordMetadata.js';
 
 export interface TransformExecutionOptions {
@@ -44,17 +45,9 @@ function isRowLevelComputed(col: ComputedColumnConfig, shouldAggregate: boolean)
   if (!shouldAggregate) return true;
   if (col.scope === 'row') return true;
   if (col.scope === 'summary') return false;
-  // auto: 若包含聚合宏函数，或者进入了聚合模式，归入汇总阶段执行
-  const exprUpper = col.expression.toUpperCase();
-  if (
-    exprUpper.includes('SUM(') ||
-    exprUpper.includes('AVG(') ||
-    exprUpper.includes('COUNT(') ||
-    exprUpper.includes('MIN(') ||
-    exprUpper.includes('MAX(')
-  ) {
-    return false;
-  }
+  // auto：进入聚合模式后统一在汇总阶段执行。
+  // 说明：无论表达式是否显式包含聚合宏（[SUM(x)] 等），分组后的行上下文即汇总上下文，
+  // 原值字段引用（[x]）在汇总行上会解析为该组的聚合值，因此在汇总阶段求值语义一致。
   return false;
 }
 
@@ -169,7 +162,7 @@ export function transformData(
           ? nullAsZero
             ? 0
             : NaN
-          : Number(rawVal);
+          : toAggregableNumber(rawVal);
       const valToSet = Number.isFinite(numVal) ? numVal : rawVal;
 
       const key = `${aggCol.agg.toUpperCase()}(${aggCol.field})`;
@@ -243,7 +236,6 @@ export function transformData(
     outputRows = enhancedRows;
   } else {
     // 场景 B & C: 分组折叠透视汇总 (Pivot) 或 全局单行汇总 (Summary)
-    const sampleRecord = effectiveRecords[0] || {};
     const metricFieldsToTrack = new Set<string>();
     for (const aggCol of aggCols) {
       metricFieldsToTrack.add(aggCol.field);
@@ -262,9 +254,16 @@ export function transformData(
         }
       }
     }
-    for (const [k, v] of Object.entries(sampleRecord)) {
-      if (typeof v === 'number' || (typeof v === 'string' && !Number.isNaN(Number(v)) && v.trim() !== '')) {
-        metricFieldsToTrack.add(k);
+    // 全量扫描所有记录识别数值字段（不再仅采样首行，避免首行 null/缺失导致字段漏跟踪，
+    // 从而使 [SUM(field)] 公式宏在汇总行上取不到值而被 nullAsZero 静默归零）
+    for (const rec of effectiveRecords) {
+      for (const [k, v] of Object.entries(rec)) {
+        if (metricFieldsToTrack.has(k)) continue;
+        const numeric =
+          typeof v === 'number'
+            ? Number.isFinite(v)
+            : typeof v === 'string' && v.trim() !== '' && Number.isFinite(toAggregableNumber(v));
+        if (numeric) metricFieldsToTrack.add(k);
       }
     }
 
@@ -448,18 +447,7 @@ export function transformData(
   // =========================================================================
   if (config.options?.sort && config.options.sort.length > 0) {
     const sorts = config.options.sort;
-    outputRows.sort((a, b) => {
-      for (const s of sorts) {
-        const valA = a[s.field];
-        const valB = b[s.field];
-        if (valA === valB) continue;
-        if (valA === null || valA === undefined) return 1;
-        if (valB === null || valB === undefined) return -1;
-        const comp = valA > valB ? 1 : -1;
-        return s.order === 'desc' ? -comp : comp;
-      }
-      return 0;
-    });
+    outputRows.sort((a, b) => compareWithSortRules(a, b, sorts));
   }
 
   // =========================================================================

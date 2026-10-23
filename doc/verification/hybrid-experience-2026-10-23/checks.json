@@ -1,0 +1,61 @@
+{
+  "timestamp": "2026-10-23T06:15:08.835918+00:00",
+  "clientDate": "2026-10-23",
+  "kind": "Actual UI experience in independent browser context",
+  "url": "http://localhost:5174/",
+  "tool": "installed Playwright 1.60.0 Chromium, fresh context, 1600x1000",
+  "gitHead": "e8eb3b453f03ea3d9473ac846e2c858eb7e2909d",
+  "includesUncommittedImplementation": true,
+  "results": {
+    "total": 12,
+    "passed": 9,
+    "failed": 3
+  },
+  "businessSourceModified": false,
+  "userExistingBrowserModified": false,
+  "testContextClosed": true,
+  "testsAndBuildRerun": false,
+  "mock": {
+    "path": "dynamic-data-test/src/mockData.ts",
+    "sha256": "7ae500177b538d96817ecb646f80804965e0ed2c85f21a7a11d7aa13f59ba125",
+    "modified": false
+  },
+  "browserDataUsed": "Real rendered UI, native keyboard input, canvas screenshot and VTable UI copy. No React state or application-storage injection.",
+  "artifactSha256": {
+    "advanced-settings.png": "a543d3423afbf9de07c552d90b2e529221b9679dc8e8122f2a819d1a8b9f4972",
+    "after-disable-saved.png": "9b1fc7efe14bf7a6c5dd655a90276ed0b81d0ff5767ab6ec76240229b05efddf",
+    "after-disable-vtable.tsv": "1a37a31fc85ae1d1fb2fd93aea8d29e97613ad2b01317049d44ed89f1fca89d4",
+    "after-reload.png": "1c0fedc41c4e914a2071601f4c706a536da0d3d5b0c25d40c0d5b26ae21811a8",
+    "browser.json": "58c380057d470fa57239bd968d87118af9b15d345f28deab0043947e6aaf9db9",
+    "configured-preview.png": "edd9ea5616a860d7339f2cb67652920fba91ae559fb07a527e3069028a38e50d",
+    "final-card.png": "8c61a0a3b2e1cd2d97e6bb46977243b9249b91f722dcf431e310f1c2f31e21a2",
+    "final-vtable.tsv": "abf4d680f056444748d502cf1de6577d9aecfa00c804f0a01dff6122f90e9fdf",
+    "home.png": "f0739d7b4f31adf5fc594686e252e8070c4ec6172d26e8f53bdc17b0a2fdf32a",
+    "new-designer.png": "1424d7ba9dd5a464bef5e199572969dbceff4ad02ab38192ad135c6df4a1e984",
+    "preview-with-totals.png": "f2cd525973903c2db886d7d3850caaf0d0959d82f6a6aa30aae4fb07f0db72f4",
+    "reloaded-final-vtable.tsv": "abf4d680f056444748d502cf1de6577d9aecfa00c804f0a01dff6122f90e9fdf",
+    "reopened-disabled-options.png": "1310ab02e1ee13321bd41d8cc7b77d6ebea720006a948e378a34890dd413157c",
+    "reopened-preview.png": "e9b6e3ac28a8cf0937c0b846507d8856c347f5b91e29044e4a2cfe2addc2e723",
+    "saved-card.png": "881d80a22e6954840d0e1435bad37ec27b782d6d92d8d18b2d670ba9c666b467",
+    "saved-vtable.tsv": "114c7a6e7821959983e410bc469ab29813eda6a59e2ba95f9cea89407594c3e1",
+    "totals-disabled-preview.png": "bed307105dd49369e4982c1b708155e0184eb9043a0108a52c524068d5c9d7f4",
+    "unmerged-design.png": "ffca8d47ab8fcf699473ef195211bde7101b3d597e3fd843f0d66276e197bb0f"
+  },
+  "sourceSha256": {
+    "micro-bi/src/cell-designer/HybridCellDesigner.tsx": "75c7edb6bc3b17ef2235fe390ae40874fca76e7a88183cd371fbdb2759d3d9a7",
+    "micro-bi/src/cell-designer/CellAdvancedSettings.tsx": "d6a7ae7cfbb58e4b79c8f824caab8b4d085b43a4e6aa6e096a324ef466156a06",
+    "micro-bi/src/report-template/panelToTemplateAdapter.ts": "9037e421191c4ebed61d593403eb6af6b6c9682aa13c750270141c25f2512d6c",
+    "micro-bi/src/report-template/cellExpansionEngine.ts": "c39bffe3f25abefdf7314d33f210b1d61a002f444c85cd884e35dfb839885d16",
+    "micro-bi/src/report-template/compileCellReport.ts": "b0ce9cdc76e0dbd9f24b0e811e0f1b4e9775cb2552f2ed62973e4ae9b1e25abe",
+    "micro-bi/src/univer/UniverPreview.tsx": "4bd92f81e75b743accd48f07b48527870971b8102b5579a4a2fa7a5f62ea0cfc",
+    "micro-bi/src/ui/presentation/report/gridAdapter.ts": "7edbff3b645217af5464e17900b46b6cf68b4516f84de042fd16c8e2123306fd",
+    "micro-bi/package.json": "fa3f6744cde08255d7cf1dee807b67ca3c73d864a2ac2437aa9fb7e6406d2d73",
+    "micro-bi/package-lock.json": "7de63d6b31948ecb9c1cc020111d76074b320458f4e15e578c8c05f4df43c5ef",
+    "dynamic-data-test/src/App.tsx": "fbb2523291f2ddbc9fa5c78a7a80c4c0fe315a399c3b19e0015984874c198deb",
+    "dynamic-data-test/src/components/HeaderBar.tsx": "fa4b79fec30881bd52b3ca8e3ad34f957abc9b28c3c7a4771b1b6a66a748c263",
+    "dynamic-data-test/src/components/HybridReportEditModal.tsx": "0b0c1a6600490adf7442ce150073cc12b00deb1c07178c291468b12ac549a626",
+    "dynamic-data-test/src/components/DashboardCard.tsx": "da37d55e5bf0ebe595c6766d18a3a7a4e86cfc0ef4532583ea009f44d01b9855",
+    "dynamic-data-test/package.json": "297942f660651c61ac5d7d1e0ac8b7515ce31c9fc1c0c027353e04d963563451",
+    "dynamic-data-test/package-lock.json": "4f2274d733c6c8dab83cf56dad1d87b34cbc042c786b85792ac8491879238bed"
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "timestamp": "2026-10-19T05:54:19.940374+00:00",
+  "gitHead": "e8eb3b453f03ea3d9473ac846e2c858eb7e2909d",
+  "scope": "当前未提交工作区；业务实现复验，新增脚本/证据/文档",
+  "unit": {
+    "command": "npm test",
+    "tests": 155,
+    "pass": 155,
+    "fail": 0
+  },
+  "hostBuild": {
+    "command": "npm run build -- --manifest",
+    "passed": true,
+    "manifestSha256": "5853ddb58f7958c27905e531f6c629f428b9d9168fa0a6070ebba7c962ce5114"
+  },
+  "baseline": {
+    "total": 15,
+    "passed": 15,
+    "failed": 0
+  },
+  "extended": {
+    "total": 25,
+    "passed": 3,
+    "failed": 22
+  },
+  "legacyTemplate": {
+    "total": 20,
+    "passed": 20,
+    "failed": 0
+  },
+  "legacyRegression": {
+    "total": 19,
+    "passed": 19,
+    "failed": 0
+  },
+  "browser": {
+    "total": 4,
+    "passed": 2,
+    "failed": 2
+  },
+  "mockSha256": "7ae500177b538d96817ecb646f80804965e0ed2c85f21a7a11d7aa13f59ba125",
+  "sources": {
+    "micro-bi/src/report-template/compileCellReport.ts": "339843b44996e20b4a4445c4b6fcb3327c04ac857c1059a37c251816a578d370",
+    "micro-bi/src/report-template/expandTemplate.ts": "c763e99de7184be236cccc5b9021ae25f413ded8597d3f38ea24743b94edcb0b",
+    "micro-bi/src/report-template/identity.ts": "ca19d7f32f509181120d43041556cd5a2199f0484815b44abf8826289b3912f4",
+    "micro-bi/src/report-template/index.ts": "02ab3365d6947d85e94299beae8577967d7a2028619ba487979727c05a726177",
+    "micro-bi/src/report-template/normalizeCellTemplate.ts": "dbcd03aafdabde4de711cd96ee8c5908ecaacfa030099d545962e962d3e9a19e",
+    "micro-bi/src/report-template/types.ts": "86719000b4ae61ecf9e7757bb536d9b8e555226eaea963ef496a0a34dd1184b7",
+    "micro-bi/src/report-template/validator.ts": "14768ed9f4ce57d67e7f6f833b9ba8a9b2ccbb2743c53f6308e329b91ad1a701",
+    "micro-bi/src/cell-designer/designerReducer.ts": "366d8490846e3e123ae5d0c5f4466bc24e024cf14e2149168a6f9787890bd5fb",
+    "micro-bi/src/cell-designer/index.ts": "3f3b2bf087f77223f629c32b6acc72412c96c2edb7f08137c589a4365891a503",
+    "micro-bi/src/cell-designer/syncWorkbookToTemplate.ts": "56a93f3817d71260098388adcb85ed163743d0e8b701355900aa915c1ed17835",
+    "micro-bi/src/cell-designer/univerEvents.ts": "95b7ebcd9c2da69bcfef6e8060b0424c3a7b9481c0a223536f4d5b10f78eeaa5",
+    "micro-bi/src/cell-designer/CellAdvancedSettings.tsx": "7c380fa1b5d77b959c89773eb6e5967dc83c66cfe55efbec584663855a728ec3",
+    "micro-bi/src/cell-designer/CellInspector.tsx": "ec62da18e603aebd1dd76fb6b9e3bc995fe30182262c7a3acbfc03c637378ad0",
+    "micro-bi/src/cell-designer/CellReportDesigner.tsx": "fcb189ffeb6677e4c043529640d269a5f719c4f3bd70491ef9ee14a107aacbbc",
+    "micro-bi/src/univer/UniverPreview.tsx": "69c1951046d500550c774cd06072a1f1f9caa1b60041fb3554100ddecf520136",
+    "dynamic-data-test/src/App.tsx": "c382aed83a040c8b8308da837d82176c3f3f096ed3dc4a4f98c7e454ab571211",
+    "dynamic-data-test/src/components/CellReportEditModal.tsx": "b3a57bc22771b10955221a031ec7a1c30be7f3356bd7e1110e275ece0d927f46",
+    "dynamic-data-test/src/components/DashboardEditModal.tsx": "430fdc9cda0a664ceb4b271d9cfb5501bf49263f7ed533c87c1df4e8e4ac6ecf"
+  }
+}

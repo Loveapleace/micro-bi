@@ -96,16 +96,30 @@ export async function waitForFormulaSettled(
         }, timeoutMs);
 
         try {
-          const dispose = formulaApi.onCalculationResultApplied(() => {
+          const res = formulaApi.onCalculationResultApplied(() => {
             if (!resolved) {
               resolved = true;
               clearTimeout(timer);
-              if (typeof dispose === 'function') {
-                try { dispose(); } catch {}
-              }
               resolve();
             }
           });
+          if (res && typeof res.then === 'function') {
+            res
+              .then(() => {
+                if (!resolved) {
+                  resolved = true;
+                  clearTimeout(timer);
+                  resolve();
+                }
+              })
+              .catch(() => {
+                if (!resolved) {
+                  resolved = true;
+                  clearTimeout(timer);
+                  resolve();
+                }
+              });
+          }
         } catch {
           // 若注册失败直接回退定时器
         }

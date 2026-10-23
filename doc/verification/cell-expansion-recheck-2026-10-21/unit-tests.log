@@ -1,0 +1,1316 @@
+
+> micro-bi@0.1.0 test
+> npm run build && npm run test:only
+
+
+> micro-bi@0.1.0 build
+> npm run clean && npm run build:esm && npm run build:cjs && node scripts/postbuild.mjs
+
+
+> micro-bi@0.1.0 clean
+> node scripts/clean.mjs
+
+[clean] 已清理 dist/
+
+> micro-bi@0.1.0 build:esm
+> tsc -p tsconfig.json
+
+
+> micro-bi@0.1.0 build:cjs
+> tsc -p tsconfig.cjs.json
+
+[postbuild] dist/cjs/package.json -> { "type": "commonjs" }
+[postbuild] 构建完成
+
+> micro-bi@0.1.0 test:only
+> node --test "test/**/*.test.mjs"
+
+TAP version 13
+# Subtest: bucketing: 小时、日、月、季度、年分桶
+ok 1 - bucketing: 小时、日、月、季度、年分桶
+  ---
+  duration_ms: 2.0875
+  type: 'test'
+  ...
+# Subtest: bucketing: 自然周分桶 (周一为起始日)
+ok 2 - bucketing: 自然周分桶 (周一为起始日)
+  ---
+  duration_ms: 0.4001
+  type: 'test'
+  ...
+# Subtest: bucketing: 自定义区间天数分桶
+ok 3 - bucketing: 自定义区间天数分桶
+  ---
+  duration_ms: 0.3347
+  type: 'test'
+  ...
+# Subtest: bucketing: 容错无效时间
+ok 4 - bucketing: 容错无效时间
+  ---
+  duration_ms: 0.1289
+  type: 'test'
+  ...
+# Subtest: cell designer: save commits a focused inspector draft before reading the template
+ok 5 - cell designer: save commits a focused inspector draft before reading the template
+  ---
+  duration_ms: 2.427
+  type: 'test'
+  ...
+# Subtest: cell designer: changing selection commits to the previous cell and undo restores it
+ok 6 - cell designer: changing selection commits to the previous cell and undo restores it
+  ---
+  duration_ms: 0.3079
+  type: 'test'
+  ...
+# Subtest: cell designer: region layout and metric direction remain in the source document
+ok 7 - cell designer: region layout and metric direction remain in the source document
+  ---
+  duration_ms: 0.1791
+  type: 'test'
+  ...
+# Subtest: cell designer: SDK double click cancels native editing, F2 remains available, events dispose
+ok 8 - cell designer: SDK double click cancels native editing, F2 remains available, events dispose
+  ---
+  duration_ms: 0.91
+  type: 'test'
+  ...
+# Subtest: cell template example: both pivot directions preserve D0 intersections and weighted totals
+ok 9 - cell template example: both pivot directions preserve D0 intersections and weighted totals
+  ---
+  duration_ms: 26.711
+  type: 'test'
+  ...
+# Subtest: cell template example: new earlier/later pivot members and row removal preserve metric formatting
+ok 10 - cell template example: new earlier/later pivot members and row removal preserve metric formatting
+  ---
+  duration_ms: 17.2372
+  type: 'test'
+  ...
+# Subtest: cell template example: grouped report and changed grouping retain numeric and percentage formats
+ok 11 - cell template example: grouped report and changed grouping retain numeric and percentage formats
+  ---
+  duration_ms: 2.2881
+  type: 'test'
+  ...
+# Subtest: cell template example: nonzero anchor reserves title and merges retain visible text in VTable
+ok 12 - cell template example: nonzero anchor reserves title and merges retain visible text in VTable
+  ---
+  duration_ms: 2.3708
+  type: 'test'
+  ...
+# Subtest: cell template example: template numeric values and styles transfer into the Univer grid
+ok 13 - cell template example: template numeric values and styles transfer into the Univer grid
+  ---
+  duration_ms: 2.9549
+  type: 'test'
+  ...
+# Subtest: DCR-09: CommandExecuted set-range-values captures native F2 cell edits and dispatches to template
+ok 14 - DCR-09: CommandExecuted set-range-values captures native F2 cell edits and dispatches to template
+  ---
+  duration_ms: 1.1108
+  type: 'test'
+  ...
+# Subtest: DCR-09: syncDocumentFromWorkbookSnapshot accurately syncs canvas edits, merges, and styles back into template
+ok 15 - DCR-09: syncDocumentFromWorkbookSnapshot accurately syncs canvas edits, merges, and styles back into template
+  ---
+  duration_ms: 4.6744
+  type: 'test'
+  ...
+# Subtest: CE-T01: 新建纯格驱动模板，不填写 layoutKind/metricDirection
+ok 16 - CE-T01: 新建纯格驱动模板，不填写 layoutKind/metricDirection
+  ---
+  duration_ms: 7.1953
+  type: 'test'
+  ...
+# Subtest: CE-T02: 同一记录块绑定订单号、日期、数量三个 list 格，主键对齐无笛卡尔积
+ok 17 - CE-T02: 同一记录块绑定订单号、日期、数量三个 list 格，主键对齐无笛卡尔积
+  ---
+  duration_ms: 0.7858
+  type: 'test'
+  ...
+# Subtest: CE-T03: 工厂→车间→明细嵌套，多级父格自适应高度展开，不互相覆盖
+ok 18 - CE-T03: 工厂→车间→明细嵌套，多级父格自适应高度展开，不互相覆盖
+  ---
+  duration_ms: 8.5997
+  type: 'test'
+  ...
+# Subtest: CE-T04: 车间向下、日期向右，三个指标配置双父，正交切片计算精准
+ok 19 - CE-T04: 车间向下、日期向右，三个指标配置双父，正交切片计算精准
+  ---
+  duration_ms: 1.8656
+  type: 'test'
+  ...
+# Subtest: CE-T05: 将三个指标从三行移动到三列，保存再移回，相对位置自然决定几何
+ok 20 - CE-T05: 将三个指标从三行移动到三列，保存再移回，相对位置自然决定几何
+  ---
+  duration_ms: 0.9601
+  type: 'test'
+  ...
+# Subtest: CE-T06: 同页放横排汇总、纵排明细及日期交叉块，三者和平共存无干扰
+ok 21 - CE-T06: 同页放横排汇总、纵排明细及日期交叉块，三者和平共存无干扰
+  ---
+  duration_ms: 0.3649
+  type: 'test'
+  ...
+# Subtest: CE-T07: 改列表为分组或改 SUM 为 AVG，统计行为随单格定义实时变化
+ok 22 - CE-T07: 改列表为分组或改 SUM 为 AVG，统计行为随单格定义实时变化
+  ---
+  duration_ms: 0.2739
+  type: 'test'
+  ...
+# Subtest: CE-T08: 保持几何位置不变，更换父格上下文，切片范围准确转移
+ok 23 - CE-T08: 保持几何位置不变，更换父格上下文，切片范围准确转移
+  ---
+  duration_ms: 0.2512
+  type: 'test'
+  ...
+# Subtest: CE-T09: 移动模板格物理列位置，父格与数据切片逻辑完全保持
+ok 24 - CE-T09: 移动模板格物理列位置，父格与数据切片逻辑完全保持
+  ---
+  duration_ms: 0.471
+  type: 'test'
+  ...
+# Subtest: CE-T10: 多个子块不同高度自适应扩展，车道对齐无漂移
+ok 25 - CE-T10: 多个子块不同高度自适应扩展，车道对齐无漂移
+  ---
+  duration_ms: 0.4208
+  type: 'test'
+  ...
+# Subtest: CE-T11: 固定标题、旁边独立摘要与全量汇总，计算范围严密清晰
+ok 26 - CE-T11: 固定标题、旁边独立摘要与全量汇总，计算范围严密清晰
+  ---
+  duration_ms: 0.2537
+  type: 'test'
+  ...
+# Subtest: CE-T12: 数据乱序输入，引擎生成稳定确定的身份和有序结果
+ok 27 - CE-T12: 数据乱序输入，引擎生成稳定确定的身份和有序结果
+  ---
+  duration_ms: 0.2354
+  type: 'test'
+  ...
+# Subtest: CE-T13: 数据清空再恢复，静态模板、样式与合并策略完好无损
+ok 28 - CE-T13: 数据清空再恢复，静态模板、样式与合并策略完好无损
+  ---
+  duration_ms: 0.2998
+  type: 'test'
+  ...
+# Subtest: CE-T14: 分组覆盖动态合并基于真实 Footprint 驱动
+ok 29 - CE-T14: 分组覆盖动态合并基于真实 Footprint 驱动
+  ---
+  duration_ms: 0.6526
+  type: 'test'
+  ...
+# Subtest: CE-T15: 成员级取消例外 (Suppression) 精准匹配语义上下文
+ok 30 - CE-T15: 成员级取消例外 (Suppression) 精准匹配语义上下文
+  ---
+  duration_ms: 0.3461
+  type: 'test'
+  ...
+# Subtest: CE-T16: 检测并拦截父格依赖环路，不发生栈溢出或无限循环
+ok 31 - CE-T16: 检测并拦截父格依赖环路，不发生栈溢出或无限循环
+  ---
+  duration_ms: 0.1937
+  type: 'test'
+  ...
+# Subtest: CE-T17: 区域过滤条件在数据事实切片上严格生效
+ok 32 - CE-T17: 区域过滤条件在数据事实切片上严格生效
+  ---
+  duration_ms: 0.2185
+  type: 'test'
+  ...
+# Subtest: CE-T18: 业务公式在正交切片上精准求值，支持除零保护
+ok 33 - CE-T18: 业务公式在正交切片上精准求值，支持除零保护
+  ---
+  duration_ms: 0.9662
+  type: 'test'
+  ...
+# Subtest: CE-T19: 存量 1.0/1.1 模板由旧投影器正常解释，2.0 模板由新展开引擎驱动
+ok 34 - CE-T19: 存量 1.0/1.1 模板由旧投影器正常解释，2.0 模板由新展开引擎驱动
+  ---
+  duration_ms: 2.6693
+  type: 'test'
+  ...
+# Subtest: CE-T20: compileCellReport 输出标准 PublishedReport，包含正确样式、文本与合并
+ok 35 - CE-T20: compileCellReport 输出标准 PublishedReport，包含正确样式、文本与合并
+  ---
+  duration_ms: 0.7314
+  type: 'test'
+  ...
+# Subtest: CE-T21: 深冻结输入重复编译，执行具备严格纯函数性与确定性
+ok 36 - CE-T21: 深冻结输入重复编译，执行具备严格纯函数性与确定性
+  ---
+  duration_ms: 1.4648
+  type: 'test'
+  ...
+# Subtest: CE-T22: 大数据量与两轴乘积展开性能与稳定性验证
+ok 37 - CE-T22: 大数据量与两轴乘积展开性能与稳定性验证
+  ---
+  duration_ms: 1.7028
+  type: 'test'
+  ...
+# Subtest: CFG-01: v1.0 模板在无 mergeConfig 时保持原有行为，校验通过
+ok 38 - CFG-01: v1.0 模板在无 mergeConfig 时保持原有行为，校验通过
+  ---
+  duration_ms: 1.8771
+  type: 'test'
+  ...
+# Subtest: CFG-02: migrateCellTemplateToV1_1 升级为 1.1，初始化 mergeConfig
+ok 39 - CFG-02: migrateCellTemplateToV1_1 升级为 1.1，初始化 mergeConfig
+  ---
+  duration_ms: 0.5042
+  type: 'test'
+  ...
+# Subtest: CFG-03: 1.1 模板在包含 policies 与 suppressions 时序列化/反序列化无损
+ok 40 - CFG-03: 1.1 模板在包含 policies 与 suppressions 时序列化/反序列化无损
+  ---
+  duration_ms: 0.6168
+  type: 'test'
+  ...
+# Subtest: CFG-04: 未知 capability 触发 ERR_UNSUPPORTED_MERGE_CAPABILITY 校验错误
+ok 41 - CFG-04: 未知 capability 触发 ERR_UNSUPPORTED_MERGE_CAPABILITY 校验错误
+  ---
+  duration_ms: 0.2467
+  type: 'test'
+  ...
+# Subtest: CFG-05: 策略引用不存在的 templateCellId 产生 ERR_POLICY_TARGET_CELL_NOT_FOUND
+ok 42 - CFG-05: 策略引用不存在的 templateCellId 产生 ERR_POLICY_TARGET_CELL_NOT_FOUND
+  ---
+  duration_ms: 0.3355
+  type: 'test'
+  ...
+# Subtest: CFG-06: 策略重复 ID 产生 ERR_DUPLICATE_POLICY_ID 校验错误
+ok 43 - CFG-06: 策略重复 ID 产生 ERR_DUPLICATE_POLICY_ID 校验错误
+  ---
+  duration_ms: 0.181
+  type: 'test'
+  ...
+# Subtest: CFG-07: encodeMemberValue / decodeMemberValue 严格区分类型
+ok 44 - CFG-07: encodeMemberValue / decodeMemberValue 严格区分类型
+  ---
+  duration_ms: 0.1871
+  type: 'test'
+  ...
+# Subtest: CFG-08: buildGroupContextKey / parseGroupContextKey 往返一致
+ok 45 - CFG-08: buildGroupContextKey / parseGroupContextKey 往返一致
+  ---
+  duration_ms: 0.1368
+  type: 'test'
+  ...
+# Subtest: CFG-09: 孤立 suppression 报告警告 WARN_SUPPRESSION_ORPHANED_POLICY
+ok 46 - CFG-09: 孤立 suppression 报告警告 WARN_SUPPRESSION_ORPHANED_POLICY
+  ---
+  duration_ms: 0.3573
+  type: 'test'
+  ...
+# Subtest: CFG-10: migrateCellTemplateToV1_1 具有严格幂等性
+ok 47 - CFG-10: migrateCellTemplateToV1_1 具有严格幂等性
+  ---
+  duration_ms: 0.3721
+  type: 'test'
+  ...
+# Subtest: GSP-01: F0 夹具在 metricDirection: rows 时，车间行标签自动覆盖所属度量行
+ok 48 - GSP-01: F0 夹具在 metricDirection: rows 时，车间行标签自动覆盖所属度量行
+  ---
+  duration_ms: 14.4616
+  type: 'test'
+  ...
+# Subtest: GSP-02: F0 夹具在 metricDirection: columns 时，车间行标签为单格，不生成多余合并
+ok 49 - GSP-02: F0 夹具在 metricDirection: columns 时，车间行标签为单格，不生成多余合并
+  ---
+  duration_ms: 2.4085
+  type: 'test'
+  ...
+# Subtest: GSP-03: F0 夹具在 metricDirection: columns 时，日期列标签自动横向覆盖所属度量列
+ok 50 - GSP-03: F0 夹具在 metricDirection: columns 时，日期列标签自动横向覆盖所属度量列
+  ---
+  duration_ms: 1.1807
+  type: 'test'
+  ...
+# Subtest: GSP-04: F0 夹具在 metricDirection: rows 时，日期列标签为单列，不生成多余合并
+ok 51 - GSP-04: F0 夹具在 metricDirection: rows 时，日期列标签为单列，不生成多余合并
+  ---
+  duration_ms: 1.1857
+  type: 'test'
+  ...
+# Subtest: GSP-05: 增加第 3 个度量指标时，车间跨度自动自适应从 2 行增至 3 行
+ok 52 - GSP-05: 增加第 3 个度量指标时，车间跨度自动自适应从 2 行增至 3 行
+  ---
+  duration_ms: 1.0397
+  type: 'test'
+  ...
+# Subtest: GSP-06: 总计标签独立策略可独立覆盖
+ok 53 - GSP-06: 总计标签独立策略可独立覆盖
+  ---
+  duration_ms: 1.2748
+  type: 'test'
+  ...
+# Subtest: GSP-07: 单指标场景下（span=1），单格不输出 merge 但策略保持 enabled
+ok 54 - GSP-07: 单指标场景下（span=1），单格不输出 merge 但策略保持 enabled
+  ---
+  duration_ms: 0.5319
+  type: 'test'
+  ...
+# Subtest: GSP-08: 成员级取消例外 (group-context suppression)：W1 取消，W2 保持合并
+ok 55 - GSP-08: 成员级取消例外 (group-context suppression)：W1 取消，W2 保持合并
+  ---
+  duration_ms: 0.4728
+  type: 'test'
+  ...
+# Subtest: GSP-09: 数据增删与重排后，合并跟随业务成员移动
+ok 56 - GSP-09: 数据增删与重排后，合并跟随业务成员移动
+  ---
+  duration_ms: 0.4645
+  type: 'test'
+  ...
+# Subtest: GSP-10: 策略整体关闭 (enabled: false) 时不生成任何合并
+ok 57 - GSP-10: 策略整体关闭 (enabled: false) 时不生成任何合并
+  ---
+  duration_ms: 0.4214
+  type: 'test'
+  ...
+# Subtest: GSP-11: 自由区静态合并 (A1:F1 标题) 与业务动态分组覆盖共存且互不冲突
+ok 58 - GSP-11: 自由区静态合并 (A1:F1 标题) 与业务动态分组覆盖共存且互不冲突
+  ---
+  duration_ms: 0.6667
+  type: 'test'
+  ...
+# Subtest: GSP-12: compileCellReport 端到端发布模型中完整包含动态合并范围 (零 Univer 依赖)
+ok 59 - GSP-12: compileCellReport 端到端发布模型中完整包含动态合并范围 (零 Univer 依赖)
+  ---
+  duration_ms: 1.8656
+  type: 'test'
+  ...
+# Subtest: EQ-01: FV 原顺序纵向同值：r1/r2 以及 r5/r6 各合并一段，r4/r5 不跨父组 F1/F2 合并
+ok 60 - EQ-01: FV 原顺序纵向同值：r1/r2 以及 r5/r6 各合并一段，r4/r5 不跨父组 F1/F2 合并
+  ---
+  duration_ms: 1.567
+  type: 'test'
+  ...
+# Subtest: EQ-02: FH 横向度量指标连续同值：在开启 allowMeasures 时正确横向合并
+ok 61 - EQ-02: FH 横向度量指标连续同值：在开启 allowMeasures 时正确横向合并
+  ---
+  duration_ms: 0.7968
+  type: 'test'
+  ...
+# Subtest: EQ-03: 输入 A / B / A 保持原序，不跨 B 合并，不跳格
+ok 62 - EQ-03: 输入 A / B / A 保持原序，不跨 B 合并，不跳格
+  ---
+  duration_ms: 0.2567
+  type: 'test'
+  ...
+# Subtest: EQ-04: 相同值之间物理不相邻时禁止跳格合并
+ok 63 - EQ-04: 相同值之间物理不相邻时禁止跳格合并
+  ---
+  duration_ms: 0.3412
+  type: 'test'
+  ...
+# Subtest: EQ-05: 数字 1、字符串 "1"、布尔 true 相邻类型不同不合并
+ok 64 - EQ-05: 数字 1、字符串 "1"、布尔 true 相邻类型不同不合并
+  ---
+  duration_ms: 0.2226
+  type: 'test'
+  ...
+# Subtest: EQ-06: null、undefined、空串连续且默认空值选项关闭时均不合并
+ok 65 - EQ-06: null、undefined、空串连续且默认空值选项关闭时均不合并
+  ---
+  duration_ms: 0.1945
+  type: 'test'
+  ...
+# Subtest: EQ-07: 显式开启 mergeNulls / mergeEmptyStrings 时同类连续空值独立合并，互不混合
+ok 66 - EQ-07: 显式开启 mergeNulls / mergeEmptyStrings 时同类连续空值独立合并，互不混合
+  ---
+  duration_ms: 0.246
+  type: 'test'
+  ...
+# Subtest: EQ-08: 实际值不同时不合并 (1.001 vs 1.004)
+ok 67 - EQ-08: 实际值不同时不合并 (1.001 vs 1.004)
+  ---
+  duration_ms: 0.236
+  type: 'test'
+  ...
+# Subtest: EQ-09: "A"、" A"、"a" 区分大小写与空格，不伪相等
+ok 68 - EQ-09: "A"、" A"、"a" 区分大小写与空格，不伪相等
+  ---
+  duration_ms: 0.2864
+  type: 'test'
+  ...
+# Subtest: EQ-10: NaN 与 Infinity 不参与合并
+ok 69 - EQ-10: NaN 与 Infinity 不参与合并
+  ---
+  duration_ms: 0.3778
+  type: 'test'
+  ...
+# Subtest: EQ-11: 未开启 allowMeasures 时度量指标即使数值相同也不合并
+ok 70 - EQ-11: 未开启 allowMeasures 时度量指标即使数值相同也不合并
+  ---
+  duration_ms: 0.6276
+  type: 'test'
+  ...
+# Subtest: EQ-12: boundary 为 none 时允许跨越父组连续合并
+ok 71 - EQ-12: boundary 为 none 时允许跨越父组连续合并
+  ---
+  duration_ms: 0.2904
+  type: 'test'
+  ...
+# Subtest: EQ-13: 条件格式背景色不同时在样式边界分段，避免掩盖条件格式
+ok 72 - EQ-13: 条件格式背景色不同时在样式边界分段，避免掩盖条件格式
+  ---
+  duration_ms: 0.29
+  type: 'test'
+  ...
+# Subtest: EQ-14: 目标连续段中单格被 suppression 排除时打断合并
+ok 73 - EQ-14: 目标连续段中单格被 suppression 排除时打断合并
+  ---
+  duration_ms: 0.602
+  type: 'test'
+  ...
+# Subtest: Identity: encodeMemberValue distinguishes types
+ok 74 - Identity: encodeMemberValue distinguishes types
+  ---
+  duration_ms: 0.8989
+  type: 'test'
+  ...
+# Subtest: Validator: catches schema and constraint violations
+ok 75 - Validator: catches schema and constraint violations
+  ---
+  duration_ms: 0.6649
+  type: 'test'
+  ...
+# Subtest: D0 Detail Template: expands to 5 records with accurate projection
+ok 76 - D0 Detail Template: expands to 5 records with accurate projection
+  ---
+  duration_ms: 5.3154
+  type: 'test'
+  ...
+# Subtest: D0 Grouped Template: computes SUM=200, AVG=40, A=60, B=140
+ok 77 - D0 Grouped Template: computes SUM=200, AVG=40, A=60, B=140
+  ---
+  duration_ms: 3.2327
+  type: 'test'
+  ...
+# Subtest: D0 Pivot Template: computes Workshop x Month cross-tabulation
+ok 78 - D0 Pivot Template: computes Workshop x Month cross-tabulation
+  ---
+  duration_ms: 12.7904
+  type: 'test'
+  ...
+# Subtest: createDatasetRegistry: 独立实例支持 register/get/has/list/ids
+ok 79 - createDatasetRegistry: 独立实例支持 register/get/has/list/ids
+  ---
+  duration_ms: 2.4899
+  type: 'test'
+  ...
+# Subtest: createDatasetRegistry: 监听器订阅与取消订阅
+ok 80 - createDatasetRegistry: 监听器订阅与取消订阅
+  ---
+  duration_ms: 0.4234
+  type: 'test'
+  ...
+# Subtest: globalDatasetRegistry & 快捷函数
+ok 81 - globalDatasetRegistry & 快捷函数
+  ---
+  duration_ms: 0.5769
+  type: 'test'
+  ...
+# Subtest: createDatasetRegistry: 校验空或非法 id 与非法 data
+ok 82 - createDatasetRegistry: 校验空或非法 id 与非法 data
+  ---
+  duration_ms: 0.3484
+  type: 'test'
+  ...
+# Subtest: createDatasetRegistry: 注册 async 函数数据源与 resolveData 异步解析
+ok 83 - createDatasetRegistry: 注册 async 函数数据源与 resolveData 异步解析
+  ---
+  duration_ms: 0.5642
+  type: 'test'
+  ...
+# Subtest: createDatasetRegistry: 并发请求去重防重 (In-Flight Deduplication)
+ok 84 - createDatasetRegistry: 并发请求去重防重 (In-Flight Deduplication)
+  ---
+  duration_ms: 36.5331
+  type: 'test'
+  ...
+# Subtest: createDatasetRegistry: 兼容返回复合对象 { data, headers }
+ok 85 - createDatasetRegistry: 兼容返回复合对象 { data, headers }
+  ---
+  duration_ms: 0.5943
+  type: 'test'
+  ...
+# Subtest: resolveDatasetData: 支持直接传入 Loader 函数作为数据源 (Direct Code Async Loader)
+ok 86 - resolveDatasetData: 支持直接传入 Loader 函数作为数据源 (Direct Code Async Loader)
+  ---
+  duration_ms: 0.3358
+  type: 'test'
+  ...
+# Subtest: createDatasetRegistry: 加载异常时抛出错误且清理 pending 状态可重新尝试
+ok 87 - createDatasetRegistry: 加载异常时抛出错误且清理 pending 状态可重新尝试
+  ---
+  duration_ms: 0.752
+  type: 'test'
+  ...
+# Subtest: dataset race: replacing an in-flight loader preserves the new request and cache
+ok 88 - dataset race: replacing an in-flight loader preserves the new request and cache
+  ---
+  duration_ms: 0.6195
+  type: 'test'
+  ...
+# Subtest: dataset race: force refresh supersedes an older request even when the older one finishes last
+ok 89 - dataset race: force refresh supersedes an older request even when the older one finishes last
+  ---
+  duration_ms: 0.2574
+  type: 'test'
+  ...
+# Subtest: dataset race: unregister, clear and clearCache prevent old responses from restoring cache
+ok 90 - dataset race: unregister, clear and clearCache prevent old responses from restoring cache
+  ---
+  duration_ms: 0.2067
+  type: 'test'
+  ...
+# Subtest: dataset race: replacing an async source with static data keeps the static cache
+ok 91 - dataset race: replacing an async source with static data keeps the static cache
+  ---
+  duration_ms: 0.2765
+  type: 'test'
+  ...
+# Subtest: dataset race: synchronous loader exceptions can be retried without stale pending promises
+ok 92 - dataset race: synchronous loader exceptions can be retried without stale pending promises
+  ---
+  duration_ms: 0.2596
+  type: 'test'
+  ...
+# Subtest: dataset registration: invalid batches leave both registry and caches untouched
+ok 93 - dataset registration: invalid batches leave both registry and caches untouched
+  ---
+  duration_ms: 0.2631
+  type: 'test'
+  ...
+# Subtest: dataset resolution: explicit local loaders override a global source with the same ID
+ok 94 - dataset resolution: explicit local loaders override a global source with the same ID
+  ---
+  duration_ms: 0.2343
+  type: 'test'
+  ...
+# Subtest: formula: 基础四则运算与括号优先级
+ok 95 - formula: 基础四则运算与括号优先级
+  ---
+  duration_ms: 2.9089
+  type: 'test'
+  ...
+# Subtest: formula: 除以 0 容错处理
+ok 96 - formula: 除以 0 容错处理
+  ---
+  duration_ms: 0.2865
+  type: 'test'
+  ...
+# Subtest: formula: IF 条件判断返回数字与文本
+ok 97 - formula: IF 条件判断返回数字与文本
+  ---
+  duration_ms: 0.7072
+  type: 'test'
+  ...
+# Subtest: formula: 嵌套 IF 与比较运算符
+ok 98 - formula: 嵌套 IF 与比较运算符
+  ---
+  duration_ms: 0.2968
+  type: 'test'
+  ...
+# Subtest: formula: 内置函数 ROUND, ABS, COALESCE
+ok 99 - formula: 内置函数 ROUND, ABS, COALESCE
+  ---
+  duration_ms: 0.2929
+  type: 'test'
+  ...
+# Subtest: formula: 静态提取依赖字段
+ok 100 - formula: 静态提取依赖字段
+  ---
+  duration_ms: 0.9343
+  type: 'test'
+  ...
+# Subtest: formula: 日期与时间字符串大小比对
+ok 101 - formula: 日期与时间字符串大小比对
+  ---
+  duration_ms: 0.4581
+  type: 'test'
+  ...
+# Subtest: formula: 文本评级与数字字符串比较
+ok 102 - formula: 文本评级与数字字符串比较
+  ---
+  duration_ms: 0.2733
+  type: 'test'
+  ...
+# Subtest: formula: SQL 风格 <> 不等于运算符
+ok 103 - formula: SQL 风格 <> 不等于运算符
+  ---
+  duration_ms: 0.3941
+  type: 'test'
+  ...
+# Subtest: formula: 字段引用大小写不敏感容错
+ok 104 - formula: 字段引用大小写不敏感容错
+  ---
+  duration_ms: 0.6139
+  type: 'test'
+  ...
+# Subtest: formula: AST 解析内存缓存与 clearAstCache 机制
+ok 105 - formula: AST 解析内存缓存与 clearAstCache 机制
+  ---
+  duration_ms: 0.2476
+  type: 'test'
+  ...
+# Subtest: formula: 明细行公式支持按需解析 SUM/COUNT/AVG 等聚合宏
+ok 106 - formula: 明细行公式支持按需解析 SUM/COUNT/AVG 等聚合宏
+  ---
+  duration_ms: 0.1641
+  type: 'test'
+  ...
+# Subtest: locale: zh_CN 零维护成本（空字典，代码直接使用中文为 Key）
+ok 107 - locale: zh_CN 零维护成本（空字典，代码直接使用中文为 Key）
+  ---
+  duration_ms: 1.7426
+  type: 'test'
+  ...
+# Subtest: locale: en_US 扁平字典，以中文为 Key，英文为 Value
+ok 108 - locale: en_US 扁平字典，以中文为 Key，英文为 Value
+  ---
+  duration_ms: 0.2407
+  type: 'test'
+  ...
+# Subtest: locale: 根模块统一导出一致性
+ok 109 - locale: 根模块统一导出一致性
+  ---
+  duration_ms: 0.1299
+  type: 'test'
+  ...
+# Subtest: locale: 翻译与优雅回退机制 (Fallback)
+ok 110 - locale: 翻译与优雅回退机制 (Fallback)
+  ---
+  duration_ms: 0.3416
+  type: 'test'
+  ...
+# Subtest: locale: formatMessage 插值模版替换
+ok 111 - locale: formatMessage 插值模版替换
+  ---
+  duration_ms: 0.2103
+  type: 'test'
+  ...
+# Subtest: package.json: 关键字段符合预期
+ok 112 - package.json: 关键字段符合预期
+  ---
+  duration_ms: 0.8895
+  type: 'test'
+  ...
+# Subtest: package.json: 已声明发布白名单与发布配置
+ok 113 - package.json: 已声明发布白名单与发布配置
+  ---
+  duration_ms: 0.1128
+  type: 'test'
+  ...
+# Subtest: package.json: main / module / types 指向真实文件
+ok 114 - package.json: main / module / types 指向真实文件
+  ---
+  duration_ms: 0.4696
+  type: 'test'
+  ...
+# Subtest: package.json: exports 中每个目标都真实存在
+ok 115 - package.json: exports 中每个目标都真实存在
+  ---
+  duration_ms: 1.7568
+  type: 'test'
+  ...
+# Subtest: 包可被自引用解析：ESM 入口
+ok 116 - 包可被自引用解析：ESM 入口
+  ---
+  duration_ms: 69.5405
+  type: 'test'
+  ...
+# Subtest: 包可被自引用解析：CJS 入口
+ok 117 - 包可被自引用解析：CJS 入口
+  ---
+  duration_ms: 34.9924
+  type: 'test'
+  ...
+# Subtest: 包可被自引用解析：/core 子路径
+ok 118 - 包可被自引用解析：/core 子路径
+  ---
+  duration_ms: 0.7244
+  type: 'test'
+  ...
+# Subtest: ESM 与 CJS 两套产物版本一致
+ok 119 - ESM 与 CJS 两套产物版本一致
+  ---
+  duration_ms: 0.2573
+  type: 'test'
+  ...
+# Warning: [antd: Card] `bodyStyle` is deprecated. Please use `styles.body` instead.
+# Subtest: pivot optimization: native VTable cells and totals agree with facts (columns)
+ok 120 - pivot optimization: native VTable cells and totals agree with facts (columns)
+  ---
+  duration_ms: 7.7104
+  type: 'test'
+  ...
+# Subtest: pivot optimization: native VTable cells and totals agree with facts (rows)
+ok 121 - pivot optimization: native VTable cells and totals agree with facts (rows)
+  ---
+  duration_ms: 0.9426
+  type: 'test'
+  ...
+# Subtest: summary optimization: implicit formula dependencies and explicit row calculations survive totals
+ok 122 - summary optimization: implicit formula dependencies and explicit row calculations survive totals
+  ---
+  duration_ms: 0.3638
+  type: 'test'
+  ...
+# Subtest: summary optimization: zero counts and nonnumeric AVG inputs retain their own semantics
+ok 123 - summary optimization: zero counts and nonnumeric AVG inputs retain their own semantics
+  ---
+  duration_ms: 0.3068
+  type: 'test'
+  ...
+# Subtest: preview optimization: rendered pivot totals use weighted AVG and fact COUNT (true)
+ok 124 - preview optimization: rendered pivot totals use weighted AVG and fact COUNT (true)
+  ---
+  duration_ms: 42.1929
+  type: 'test'
+  ...
+# Subtest: preview optimization: rendered pivot totals use weighted AVG and fact COUNT (false)
+ok 125 - preview optimization: rendered pivot totals use weighted AVG and fact COUNT (false)
+  ---
+  duration_ms: 2.1895
+  type: 'test'
+  ...
+# Subtest: data identity: JSON group keys do not collide on delimiter characters
+ok 126 - data identity: JSON group keys do not collide on delimiter characters
+  ---
+  duration_ms: 0.2345
+  type: 'test'
+  ...
+# Subtest: empty results: pivot schema and transform metadata survive zero matching records
+ok 127 - empty results: pivot schema and transform metadata survive zero matching records
+  ---
+  duration_ms: 0.1161
+  type: 'test'
+  ...
+# Subtest: time buckets: natural weeks share keys across month/year boundaries and match both week starts
+ok 128 - time buckets: natural weeks share keys across month/year boundaries and match both week starts
+  ---
+  duration_ms: 2.1109
+  type: 'test'
+  ...
+# Subtest: profiler: 智能推断字段类型
+ok 129 - profiler: 智能推断字段类型
+  ---
+  duration_ms: 2.7446
+  type: 'test'
+  ...
+# Subtest: pipeline: 无维度时自动作为全量明细输出与逐行计算
+ok 130 - pipeline: 无维度时自动作为全量明细输出与逐行计算
+  ---
+  duration_ms: 3.4138
+  type: 'test'
+  ...
+# Subtest: pipeline: 配置维度时自动执行分组透视汇总
+ok 131 - pipeline: 配置维度时自动执行分组透视汇总
+  ---
+  duration_ms: 3.5669
+  type: 'test'
+  ...
+# Subtest: pipeline: 未配置维度但配置度量时自动折叠为全局汇总单行
+ok 132 - pipeline: 未配置维度但配置度量时自动折叠为全局汇总单行
+  ---
+  duration_ms: 1.0144
+  type: 'test'
+  ...
+# Subtest: template: 行业指标模板热插拔应用
+ok 133 - template: 行业指标模板热插拔应用
+  ---
+  duration_ms: 0.9603
+  type: 'test'
+  ...
+# Subtest: headers: 传递表头映射与未传递时降级回退
+ok 134 - headers: 传递表头映射与未传递时降级回退
+  ---
+  duration_ms: 0.5623
+  type: 'test'
+  ...
+# Subtest: pipeline: 参与计算的字段未在表格列中展示时，计算仍能正常取值
+ok 135 - pipeline: 参与计算的字段未在表格列中展示时，计算仍能正常取值
+  ---
+  duration_ms: 1.4556
+  type: 'test'
+  ...
+# Subtest: pipeline: 聚合累加器中 NULL 值严格跳过，绝不污染 MIN、COUNT、AVG
+ok 136 - pipeline: 聚合累加器中 NULL 值严格跳过，绝不污染 MIN、COUNT、AVG
+  ---
+  duration_ms: 0.3498
+  type: 'test'
+  ...
+# Subtest: pipeline: 仅配置时间分桶且单桶多条记录时，SUM/AVG/MIN/MAX/COUNT 计算精准且互不相同
+ok 137 - pipeline: 仅配置时间分桶且单桶多条记录时，SUM/AVG/MIN/MAX/COUNT 计算精准且互不相同
+  ---
+  duration_ms: 0.7204
+  type: 'test'
+  ...
+# Subtest: pipeline: summaryRow[aggCol.label] 正确赋值为用户选定的聚合函数值，不被 finalSum 锁定
+ok 138 - pipeline: summaryRow[aggCol.label] 正确赋值为用户选定的聚合函数值，不被 finalSum 锁定
+  ---
+  duration_ms: 0.7386
+  type: 'test'
+  ...
+# Subtest: pivot: validateTransformConfig 支持透视列维度与总计配置
+ok 139 - pivot: validateTransformConfig 支持透视列维度与总计配置
+  ---
+  duration_ms: 2.266
+  type: 'test'
+  ...
+# Subtest: pivot: validateTransformConfig 拦截非法的 columnCategories 与 indicatorsAsCol
+ok 140 - pivot: validateTransformConfig 拦截非法的 columnCategories 与 indicatorsAsCol
+  ---
+  duration_ms: 0.2688
+  type: 'test'
+  ...
+# Subtest: pivot: transformData 正确进行双向多维交叉分组透视与指标聚合
+ok 141 - pivot: transformData 正确进行双向多维交叉分组透视与指标聚合
+  ---
+  duration_ms: 4.3865
+  type: 'test'
+  ...
+# Subtest: pivot: 仅配置行维度时向后兼容 (isCrossTab 为 false)
+ok 142 - pivot: 仅配置行维度时向后兼容 (isCrossTab 为 false)
+  ---
+  duration_ms: 0.845
+  type: 'test'
+  ...
+# Subtest: pivot: 支持 columnTimeBucket 列时间周期分桶透视
+ok 143 - pivot: 支持 columnTimeBucket 列时间周期分桶透视
+  ---
+  duration_ms: 2.9922
+  type: 'test'
+  ...
+# Subtest: pivot: generateTableInstanceCsv 提取 2D 矩阵并正确注入 UTF-8 BOM
+ok 144 - pivot: generateTableInstanceCsv 提取 2D 矩阵并正确注入 UTF-8 BOM
+  ---
+  duration_ms: 4024.0401
+  type: 'test'
+  ...
+# Subtest: pivot: LivePreviewTable 组件导出且支持透视配置 props 传递
+ok 145 - pivot: LivePreviewTable 组件导出且支持透视配置 props 传递
+  ---
+  duration_ms: 0.1878
+  type: 'test'
+  ...
+# Subtest: createRegistry: 初始实现会被立即注册
+ok 146 - createRegistry: 初始实现会被立即注册
+  ---
+  duration_ms: 2.2033
+  type: 'test'
+  ...
+# Subtest: createRegistry: register 支持链式调用并保持注册顺序
+ok 147 - createRegistry: register 支持链式调用并保持注册顺序
+  ---
+  duration_ms: 0.1962
+  type: 'test'
+  ...
+# Subtest: createRegistry: 同 id 重复注册会覆盖旧值且不改变顺序
+ok 148 - createRegistry: 同 id 重复注册会覆盖旧值且不改变顺序
+  ---
+  duration_ms: 0.2192
+  type: 'test'
+  ...
+# Subtest: createRegistry: has / get 对未注册 id 的表现
+ok 149 - createRegistry: has / get 对未注册 id 的表现
+  ---
+  duration_ms: 0.1399
+  type: 'test'
+  ...
+# Subtest: createRegistry: require 命中时返回实现，未命中时抛出
+ok 150 - createRegistry: require 命中时返回实现，未命中时抛出
+  ---
+  duration_ms: 0.4683
+  type: 'test'
+  ...
+# Subtest: createRegistry: unregister / clear 正确反映数量
+ok 151 - createRegistry: unregister / clear 正确反映数量
+  ---
+  duration_ms: 0.1802
+  type: 'test'
+  ...
+# Subtest: createRegistry: 空 id 会被拒绝
+ok 152 - createRegistry: 空 id 会被拒绝
+  ---
+  duration_ms: 0.2214
+  type: 'test'
+  ...
+# Subtest: createRegistry: list() 返回快照，不影响内部状态
+ok 153 - createRegistry: list() 返回快照，不影响内部状态
+  ---
+  duration_ms: 0.1486
+  type: 'test'
+  ...
+# Subtest: reportBinding: 业务语义唯一身份与索引构建
+ok 154 - reportBinding: 业务语义唯一身份与索引构建
+  ---
+  duration_ms: 1.2123
+  type: 'test'
+  ...
+# Subtest: reportBinding: 自动区域扩展冲突检测 (detectRegionCollision)
+ok 155 - reportBinding: 自动区域扩展冲突检测 (detectRegionCollision)
+  ---
+  duration_ms: 0.2372
+  type: 'test'
+  ...
+# Subtest: reportBinding: 数据刷新、人工覆盖保留与失效诊断 (refreshAnalysisRegion)
+ok 156 - reportBinding: 数据刷新、人工覆盖保留与失效诊断 (refreshAnalysisRegion)
+  ---
+  duration_ms: 4.7867
+  type: 'test'
+  ...
+# Subtest: reportBinding: 文档与发布模型校验 (validateReportDocument / validatePublishedReport)
+ok 157 - reportBinding: 文档与发布模型校验 (validateReportDocument / validatePublishedReport)
+  ---
+  duration_ms: 1.4227
+  type: 'test'
+  ...
+# Subtest: reportCompiler: 将 Univer 快照规范化编译为 PublishedReport 并生成样式字典
+ok 158 - reportCompiler: 将 Univer 快照规范化编译为 PublishedReport 并生成样式字典
+  ---
+  duration_ms: 2.1614
+  type: 'test'
+  ...
+# Subtest: reportCompiler: 纯端到端报表管道贯通 (BI矩阵 -> Univer数据 -> 编译发布 -> VTable展示适配)
+ok 159 - reportCompiler: 纯端到端报表管道贯通 (BI矩阵 -> Univer数据 -> 编译发布 -> VTable展示适配)
+  ---
+  duration_ms: 3.4935
+  type: 'test'
+  ...
+# Subtest: reportGrid: 分组报表多级层级合并与固定数据验收 (总计200, COUNT 5, 加权AVG 40, 不良数40, 不良率20%)
+ok 160 - reportGrid: 分组报表多级层级合并与固定数据验收 (总计200, COUNT 5, 加权AVG 40, 不良数40, 不良率20%)
+  ---
+  duration_ms: 9.5267
+  type: 'test'
+  ...
+# Subtest: reportGrid: 双向交叉透视表 (指标横向 indicatorsAsCol: true) 验收
+ok 161 - reportGrid: 双向交叉透视表 (指标横向 indicatorsAsCol: true) 验收
+  ---
+  duration_ms: 18.4065
+  type: 'test'
+  ...
+# Subtest: reportGrid: 双向交叉透视表 (指标纵向 indicatorsAsCol: false) 验收
+ok 162 - reportGrid: 双向交叉透视表 (指标纵向 indicatorsAsCol: false) 验收
+  ---
+  duration_ms: 2.3006
+  type: 'test'
+  ...
+# Subtest: reportGrid: 空数据保护与结构完整性
+ok 163 - reportGrid: 空数据保护与结构完整性
+  ---
+  duration_ms: 0.7276
+  type: 'test'
+  ...
+# Subtest: MBI-06: 指标身份与显示名称分离，同名标题互不覆盖且重命名保持指标ID稳定
+ok 164 - MBI-06: 指标身份与显示名称分离，同名标题互不覆盖且重命名保持指标ID稳定
+  ---
+  duration_ms: 0.6773
+  type: 'test'
+  ...
+# Subtest: MBI-07: 无维度但包含 fixed 列时进入明细模式，输出全量事实行而非被折叠为单行
+ok 165 - MBI-07: 无维度但包含 fixed 列时进入明细模式，输出全量事实行而非被折叠为单行
+  ---
+  duration_ms: 0.43
+  type: 'test'
+  ...
+# Subtest: MBI-08: 行级计算列依赖链顺序传递 (twice=[qty]*2, four=[twice]*2)
+ok 166 - MBI-08: 行级计算列依赖链顺序传递 (twice=[qty]*2, four=[twice]*2)
+  ---
+  duration_ms: 0.7316
+  type: 'test'
+  ...
+# Subtest: MBI-13: 包含斜杠与冒号等分隔符时绝不发生维度路径碰撞合并
+ok 167 - MBI-13: 包含斜杠与冒号等分隔符时绝不发生维度路径碰撞合并
+  ---
+  duration_ms: 1.4561
+  type: 'test'
+  ...
+# Subtest: MBI-14: 双向透视多级行轴与多级列轴在 showSubTotals 开关开启后生成层级小计节点与正确数值
+ok 168 - MBI-14: 双向透视多级行轴与多级列轴在 showSubTotals 开关开启后生成层级小计节点与正确数值
+  ---
+  duration_ms: 5.4102
+  type: 'test'
+  ...
+# Subtest: slotMatcher: 能够识别典型业务字段的语义角色与置信度
+ok 169 - slotMatcher: 能够识别典型业务字段的语义角色与置信度
+  ---
+  duration_ms: 1.5281
+  type: 'test'
+  ...
+# Subtest: slotMatcher: matchSlot 自动选出最高置信度候选字段
+ok 170 - slotMatcher: matchSlot 自动选出最高置信度候选字段
+  ---
+  duration_ms: 0.4424
+  type: 'test'
+  ...
+# Subtest: slotMatcher: inferSlotsForTemplate 为月度趋势透视模板推断完整槽位
+ok 171 - slotMatcher: inferSlotsForTemplate 为月度趋势透视模板推断完整槽位
+  ---
+  duration_ms: 2.6143
+  type: 'test'
+  ...
+# Subtest: slotMatcher: 多指标体检透视模板默认纵向行展开 (indicatorsAsCol: false)
+ok 172 - slotMatcher: 多指标体检透视模板默认纵向行展开 (indicatorsAsCol: false)
+  ---
+  duration_ms: 0.3246
+  type: 'test'
+  ...
+# Subtest: tableExport: 导出模块与 VTableView 组件导出完整性
+ok 173 - tableExport: 导出模块与 VTableView 组件导出完整性
+  ---
+  duration_ms: 0.7159
+  type: 'test'
+  ...
+# Subtest: tableExport: generateCsvContent 自动注入 UTF-8 BOM 并准确转义特殊字符
+ok 174 - tableExport: generateCsvContent 自动注入 UTF-8 BOM 并准确转义特殊字符
+  ---
+  duration_ms: 0.2868
+  type: 'test'
+  ...
+# Subtest: tableExport: generateTsvContent 正确生成 Tab 分隔符与回车处理
+ok 175 - tableExport: generateTsvContent 正确生成 Tab 分隔符与回车处理
+  ---
+  duration_ms: 0.199
+  type: 'test'
+  ...
+# Subtest: table: 底部汇总统计算法根据统计口径正确求值 (SUM求和, AVG求均值, COMPUTED按公式求值)
+ok 176 - table: 底部汇总统计算法根据统计口径正确求值 (SUM求和, AVG求均值, COMPUTED按公式求值)
+  ---
+  duration_ms: 1.3187
+  type: 'test'
+  ...
+# Subtest: table: 聚合数据行底层原始流水精确挂载 (_rawRows)
+ok 177 - table: 聚合数据行底层原始流水精确挂载 (_rawRows)
+  ---
+  duration_ms: 0.9996
+  type: 'test'
+  ...
+# Subtest: table: 总计行在 VTable 列排序 (ASC/DESC/数值/文本) 中严格被排除且永久固定置底
+ok 178 - table: 总计行在 VTable 列排序 (ASC/DESC/数值/文本) 中严格被排除且永久固定置底
+  ---
+  duration_ms: 8.4424
+  type: 'test'
+  ...
+# Subtest: table: 维度列相邻同类单元格纵向合并逻辑验证 (时间分桶/分类合并、总计行隔离与上级维度保护)
+ok 179 - table: 维度列相邻同类单元格纵向合并逻辑验证 (时间分桶/分类合并、总计行隔离与上级维度保护)
+  ---
+  duration_ms: 0.3076
+  type: 'test'
+  ...
+# Subtest: table: 列设置支持靠右冻结 (rightFrozenColumnKeys) 并保证 [左冻结列 -> 中间流动列 -> 右冻结列] 组织顺序
+ok 180 - table: 列设置支持靠右冻结 (rightFrozenColumnKeys) 并保证 [左冻结列 -> 中间流动列 -> 右冻结列] 组织顺序
+  ---
+  duration_ms: 0.1454
+  type: 'test'
+  ...
+# Subtest: table: 靠左固定与靠右固定具有互斥性，且重置能一键清空双向冻结与排序
+ok 181 - table: 靠左固定与靠右固定具有互斥性，且重置能一键清空双向冻结与排序
+  ---
+  duration_ms: 0.2998
+  type: 'test'
+  ...
+# Subtest: table: VTable rightFrozenColCount 计算逻辑 (与用户自定义右冻结列平滑联动)
+ok 182 - table: VTable rightFrozenColCount 计算逻辑 (与用户自定义右冻结列平滑联动)
+  ---
+  duration_ms: 0.285
+  type: 'test'
+  ...
+# Subtest: table: 表头筛选图标使用与列设置弹层一致的 Ant Design FilterOutlined / FilterFilled 矢量规范
+ok 183 - table: 表头筛选图标使用与列设置弹层一致的 Ant Design FilterOutlined / FilterFilled 矢量规范
+  ---
+  duration_ms: 0.1671
+  type: 'test'
+  ...
+# Subtest: table: 总计行标签在多维表格视图下始终固定在第一列 (首列)，杜绝因图表透视维度切换导致各看板总计行错位
+ok 184 - table: 总计行标签在多维表格视图下始终固定在第一列 (首列)，杜绝因图表透视维度切换导致各看板总计行错位
+  ---
+  duration_ms: 0.1319
+  type: 'test'
+  ...
+# Subtest: tableExport: CSV 公式注入 (CWE-1236) 防范与 HTML 实体安全转义
+ok 185 - tableExport: CSV 公式注入 (CWE-1236) 防范与 HTML 实体安全转义
+  ---
+  duration_ms: 0.1444
+  type: 'test'
+  ...
+# Subtest: tableFilter: 列筛选全取消勾选时 (0项已选) 精确触发空数据状态而非回退全量数据
+ok 186 - tableFilter: 列筛选全取消勾选时 (0项已选) 精确触发空数据状态而非回退全量数据
+  ---
+  duration_ms: 0.1727
+  type: 'test'
+  ...
+# Subtest: table: columnResize 与 dragOrder 特性开关与 VTable 配置及位置变更协同逻辑
+ok 187 - table: columnResize 与 dragOrder 特性开关与 VTable 配置及位置变更协同逻辑
+  ---
+  duration_ms: 0.2066
+  type: 'test'
+  ...
+# Subtest: ui: 配置层与展示层组件正常暴露与加载
+ok 188 - ui: 配置层与展示层组件正常暴露与加载
+  ---
+  duration_ms: 0.7098
+  type: 'test'
+  ...
+# Subtest: theme: resolveThemeConfig 与 deepMerge 深度覆盖机制
+ok 189 - theme: resolveThemeConfig 与 deepMerge 深度覆盖机制
+  ---
+  duration_ms: 0.5942
+  type: 'test'
+  ...
+# Subtest: ui: 维度切换器严格受限只允许切换已配置的时间聚合与分组聚合维度
+ok 190 - ui: 维度切换器严格受限只允许切换已配置的时间聚合与分组聚合维度
+  ---
+  duration_ms: 0.1657
+  type: 'test'
+  ...
+# Subtest: ui: VisActor 图表与联动数据结构索引安全映射
+ok 191 - ui: VisActor 图表与联动数据结构索引安全映射
+  ---
+  duration_ms: 0.1313
+  type: 'test'
+  ...
+# Subtest: charts: 比率/百分比/千分比型度量与绝对数值型度量精确判别
+ok 192 - charts: 比率/百分比/千分比型度量与绝对数值型度量精确判别
+  ---
+  duration_ms: 0.4805
+  type: 'test'
+  ...
+# Subtest: charts: 单分组维度且无时间维度时，双 Y 轴左右轴与柱线复合图映射精准
+ok 193 - charts: 单分组维度且无时间维度时，双 Y 轴左右轴与柱线复合图映射精准
+  ---
+  duration_ms: 0.1923
+  type: 'test'
+  ...
+# Subtest: vchart: 双 Y 轴 Pareto 复合图与分组柱状图 Long/Tidy 数据投影精确性
+ok 194 - vchart: 双 Y 轴 Pareto 复合图与分组柱状图 Long/Tidy 数据投影精确性
+  ---
+  duration_ms: 0.2495
+  type: 'test'
+  ...
+# Subtest: vtable: 聚合行底层原始流水隔离与列显隐过滤完整性
+ok 195 - vtable: 聚合行底层原始流水隔离与列显隐过滤完整性
+  ---
+  duration_ms: 0.194
+  type: 'test'
+  ...
+# Subtest: charts: 饼图不分 XY 轴，按分类维度进行唯一分组汇总 (SUM/比率)，避免多维数据产生重复扇区且占比达 100%
+ok 196 - charts: 饼图不分 XY 轴，按分类维度进行唯一分组汇总 (SUM/比率)，避免多维数据产生重复扇区且占比达 100%
+  ---
+  duration_ms: 0.4057
+  type: 'test'
+  ...
+# Subtest: charts: 饼图模式下度量指标严格限制为单选 (effectiveActiveMetrics 强制单指标)
+ok 197 - charts: 饼图模式下度量指标严格限制为单选 (effectiveActiveMetrics 强制单指标)
+  ---
+  duration_ms: 0.3256
+  type: 'test'
+  ...
+# Subtest: ui: DynamicDataView 维度切换在非受控模式下稳定保持用户选择，绝不被 autoDimensionField 错误重置
+ok 198 - ui: DynamicDataView 维度切换在非受控模式下稳定保持用户选择，绝不被 autoDimensionField 错误重置
+  ---
+  duration_ms: 0.1566
+  type: 'test'
+  ...
+# Subtest: formulaHelper: unwrapAggregateFormulas 正确还原行级公式
+ok 199 - formulaHelper: unwrapAggregateFormulas 正确还原行级公式
+  ---
+  duration_ms: 0.8277
+  type: 'test'
+  ...
+# Subtest: formulaHelper: wrapAggregateFormulas 正确包装聚合公式
+ok 200 - formulaHelper: wrapAggregateFormulas 正确包装聚合公式
+  ---
+  duration_ms: 0.2619
+  type: 'test'
+  ...
+# Subtest: unified: 同一公式 [sales] - [cost] 在明细与透视中均可无缝执行
+ok 201 - unified: 同一公式 [sales] - [cost] 在明细与透视中均可无缝执行
+  ---
+  duration_ms: 3.0184
+  type: 'test'
+  ...
+# Subtest: unified: 行业模板无 mode 约束，一键应用
+ok 202 - unified: 行业模板无 mode 约束，一键应用
+  ---
+  duration_ms: 1.0573
+  type: 'test'
+  ...
+# Subtest: unified: 截图场景实测：无维度但包含固定列与度量时，智能裁定为明细表（保留全量行，固定列不为空，度量降级为行原值）
+ok 203 - unified: 截图场景实测：无维度但包含固定列与度量时，智能裁定为明细表（保留全量行，固定列不为空，度量降级为行原值）
+  ---
+  duration_ms: 1.1171
+  type: 'test'
+  ...
+# Subtest: conversion: cleanAggregatedLabel 与 formatAggregatedLabel 标签前缀处理
+ok 204 - conversion: cleanAggregatedLabel 与 formatAggregatedLabel 标签前缀处理
+  ---
+  duration_ms: 0.5728
+  type: 'test'
+  ...
+# Subtest: conversion: convertColumnsToAggregated 无维度固定列自动转换为聚合度量
+ok 205 - conversion: convertColumnsToAggregated 无维度固定列自动转换为聚合度量
+  ---
+  duration_ms: 0.5961
+  type: 'test'
+  ...
+# Subtest: conversion: convertColumnsToFixed 聚合度量自动还原为固定原值
+ok 206 - conversion: convertColumnsToFixed 聚合度量自动还原为固定原值
+  ---
+  duration_ms: 0.3661
+  type: 'test'
+  ...
+# Subtest: conversion: 双向往返转换具备对称幂等性 (Round-trip Idempotence)
+ok 207 - conversion: 双向往返转换具备对称幂等性 (Round-trip Idempotence)
+  ---
+  duration_ms: 1.0485
+  type: 'test'
+  ...
+# Subtest: validator: 空输入或非对象输入被拒绝
+ok 208 - validator: 空输入或非对象输入被拒绝
+  ---
+  duration_ms: 1.8595
+  type: 'test'
+  ...
+# Subtest: validator: 畸形 JSON 字符串报错精确捕获
+ok 209 - validator: 畸形 JSON 字符串报错精确捕获
+  ---
+  duration_ms: 0.2465
+  type: 'test'
+  ...
+# Subtest: validator: columns 结构完整性校验
+ok 210 - validator: columns 结构完整性校验
+  ---
+  duration_ms: 0.4422
+  type: 'test'
+  ...
+# Subtest: validator: 计算列公式语法 AST 校验
+ok 211 - validator: 计算列公式语法 AST 校验
+  ---
+  duration_ms: 1.2668
+  type: 'test'
+  ...
+# Subtest: validator: 维度切片合法性校验
+ok 212 - validator: 维度切片合法性校验
+  ---
+  duration_ms: 0.3338
+  type: 'test'
+  ...
+# Subtest: validator: 数据集字段兼容性比对警示
+ok 213 - validator: 数据集字段兼容性比对警示
+  ---
+  duration_ms: 0.3007
+  type: 'test'
+  ...
+1..213
+# tests 213
+# suites 0
+# pass 213
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4321.6753

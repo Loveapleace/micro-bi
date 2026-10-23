@@ -1,0 +1,186 @@
+{
+  "executedAt": "2026-10-19T03:37:51.368Z",
+  "nodeVersion": "v22.22.0",
+  "scope": "Pure report + installed headless Univer SDK + actual isolated data-refresh effect + publication/VTable inputs; not a React/browser E2E suite.",
+  "source": {
+    "path": "src/univer/UniverPreview.tsx",
+    "sha256": "69c1951046d500550c774cd06072a1f1f9caa1b60041fb3554100ddecf520136"
+  },
+  "summary": {
+    "total": 20,
+    "passed": 20,
+    "failed": 0
+  },
+  "results": [
+    {
+      "id": "DT-01",
+      "title": "值变化后基础矩阵重新聚合",
+      "layer": "pure-report",
+      "status": "passed",
+      "evidence": {
+        "A": 120,
+        "B": 280
+      }
+    },
+    {
+      "id": "DT-02",
+      "title": "分组成员重排后语义 ID 不变且坐标更新",
+      "layer": "pure-report",
+      "status": "passed",
+      "evidence": {
+        "before": {
+          "sheetId": "s1",
+          "row": 1,
+          "column": 1
+        },
+        "after": {
+          "sheetId": "s1",
+          "row": 2,
+          "column": 1
+        }
+      }
+    },
+    {
+      "id": "DT-03",
+      "title": "新增十二月透视列（指标横向）",
+      "layer": "pure-report",
+      "status": "passed",
+      "evidence": {
+        "beforeColumns": 7,
+        "afterColumns": 9
+      }
+    },
+    {
+      "id": "DT-04",
+      "title": "新增十二月透视列（指标纵向）",
+      "layer": "pure-report",
+      "status": "passed",
+      "evidence": {
+        "beforeColumns": 5,
+        "afterColumns": 6
+      }
+    },
+    {
+      "id": "DT-05",
+      "title": "切换指标横纵方向仍能找到相同业务单元格",
+      "layer": "pure-report",
+      "status": "passed",
+      "evidence": {
+        "horizontal": {
+          "sheetId": "s1",
+          "row": 2,
+          "column": 1
+        },
+        "vertical": {
+          "sheetId": "s1",
+          "row": 1,
+          "column": 2
+        }
+      }
+    },
+    {
+      "id": "DT-06",
+      "title": "同一成员覆盖元数据可迁移到新坐标",
+      "layer": "refresh-metadata",
+      "status": "passed",
+      "evidence": {
+        "override": {
+          "v": 999
+        },
+        "note": "Metadata only; this API does not write cells."
+      }
+    },
+    {
+      "id": "DT-07",
+      "title": "明细主键对应编辑身份在重排后保持稳定",
+      "layer": "pure-report",
+      "status": "passed"
+    },
+    {
+      "id": "DT-08",
+      "title": "报表矩阵消费配置中的指标降序排序",
+      "layer": "pure-report",
+      "status": "passed"
+    },
+    {
+      "id": "DT-09",
+      "title": "成员删除后归档编辑，成员重新出现时可恢复",
+      "layer": "refresh-metadata",
+      "status": "passed"
+    },
+    {
+      "id": "DT-10",
+      "title": "源值变更时人工数值覆盖产生冲突诊断",
+      "layer": "refresh-metadata",
+      "status": "passed"
+    },
+    {
+      "id": "DT-11",
+      "title": "同结构刷新经真实 SDK、编译器、VTable 适配显示新值",
+      "layer": "actual-effect+facade+publication",
+      "status": "passed",
+      "evidence": {
+        "SDK": 120,
+        "VTableInput": "120"
+      }
+    },
+    {
+      "id": "DT-12",
+      "title": "分组重排后单元格样式跟随成员",
+      "layer": "actual-effect+facade",
+      "status": "passed"
+    },
+    {
+      "id": "DT-13",
+      "title": "前插成员后人工值跟随原成员，不污染新成员",
+      "layer": "actual-effect+facade",
+      "status": "passed"
+    },
+    {
+      "id": "DT-14",
+      "title": "删除分组成员后清除旧区域尾部单元格",
+      "layer": "actual-effect+facade+publication",
+      "status": "passed"
+    },
+    {
+      "id": "DT-15",
+      "title": "分组结构改变后合并范围与新矩阵一致",
+      "layer": "actual-effect+facade",
+      "status": "passed"
+    },
+    {
+      "id": "DT-16",
+      "title": "新增透视成员后原总计列样式仍属于总计",
+      "layer": "actual-effect+facade",
+      "status": "passed"
+    },
+    {
+      "id": "DT-17",
+      "title": "删除透视月份后清除旧列",
+      "layer": "actual-effect+facade+publication",
+      "status": "passed"
+    },
+    {
+      "id": "DT-18",
+      "title": "监听捕获真实编辑且能排除程序刷新",
+      "layer": "actual-effect+facade+binding-manager",
+      "status": "passed"
+    },
+    {
+      "id": "DT-19",
+      "title": "保存的发布模型使用当前值而不是旧 displayText",
+      "layer": "facade+compiler+vtable-adapter",
+      "status": "passed",
+      "evidence": {
+        "actualFacadeDisplay": "999",
+        "note": "Does not cover React state updates during Save."
+      }
+    },
+    {
+      "id": "DT-20",
+      "title": "工作表快照离线编译也不能回显旧 displayText",
+      "layer": "snapshot+compiler+vtable-adapter",
+      "status": "passed"
+    }
+  ]
+}

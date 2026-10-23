@@ -64,7 +64,7 @@ function open(g, { padded = true } = {}) {
   return { univer, api, workbook, sheet: workbook.getActiveSheet(), lastGridRef: { current: g }, close: () => univer.dispose() };
 }
 function refresh(ctx, newGrid, { bindings = ctx.lastGridRef.current.bindings, overrides, manager } = {}) {
-  const scope = vm.createContext({ console, BiBindingManager, isInitialized: true,
+  const scope = vm.createContext({ console, BiBindingManager, isInitialized: true, syncGridStyles: false,
     univerAPIRef: { current: ctx.api }, lastGridRef: ctx.lastGridRef, initialGrid: newGrid,
     effectiveBindings: bindings, manualOverrides: overrides, bindingManagerRef: { current: manager } });
   if (manager) vm.runInContext(bindingCode, scope)();

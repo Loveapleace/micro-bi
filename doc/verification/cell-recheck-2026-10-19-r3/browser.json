@@ -1,0 +1,87 @@
+{
+  "timestamp": "2026-10-19T06:28:41.593Z",
+  "scope": "主应用真实UI、原卡片VTable复制与本地注册数据热更新；原mock已按字节恢复",
+  "total": 12,
+  "passed": 10,
+  "failed": 2,
+  "results": [
+    {
+      "id": "R3-UI-01",
+      "name": "刷新后直接创建单元格示例，Univer样式完整",
+      "passed": true,
+      "evidence": "cold-designer.jpg"
+    },
+    {
+      "id": "R3-UI-02",
+      "name": "F2改标题保存后三车间与总计共4行公式指标完整",
+      "passed": true,
+      "evidence": "f2-complete.tsv"
+    },
+    {
+      "id": "R3-UI-03",
+      "name": "真实预览600改999后保存到对应VTable卡片",
+      "passed": true,
+      "evidence": "override-999.tsv"
+    },
+    {
+      "id": "R3-UI-04",
+      "name": "前插新车间和更早日期后999仍属于原成员",
+      "passed": true,
+      "evidence": "added.tsv"
+    },
+    {
+      "id": "R3-UI-05",
+      "name": "前插新行新列后用户业务合并随原成员迁移",
+      "passed": false,
+      "actual": "保存的C5:D5仍在旧坐标，落到0号验收车间/2026-07-01；原意图应移至D8:E8",
+      "evidence": "added-merge.jpg"
+    },
+    {
+      "id": "R3-UI-06",
+      "name": "删除新增成员并逆序源记录后覆盖仍保留",
+      "passed": true,
+      "evidence": "reverse.tsv"
+    },
+    {
+      "id": "R3-UI-07",
+      "name": "删除被覆盖车间，999不污染其他成员",
+      "passed": true,
+      "evidence": "deleted.tsv"
+    },
+    {
+      "id": "R3-UI-08",
+      "name": "空数据清除旧数据及覆盖，标题保留",
+      "passed": true,
+      "evidence": "empty.tsv"
+    },
+    {
+      "id": "R3-UI-09",
+      "name": "成员回归后999及完整公式指标恢复",
+      "passed": true,
+      "evidence": "restored.tsv"
+    },
+    {
+      "id": "R3-UI-10",
+      "name": "源值600变700时覆盖保留、事实总计更新",
+      "passed": true,
+      "evidence": "source-changed.tsv",
+      "scope": "主界面数值；持续冲突诊断由FR-08验证"
+    },
+    {
+      "id": "R3-UI-11",
+      "name": "取消合并后切换设计/预览仍保留解除意图",
+      "passed": false,
+      "actual": "取消后名称框C5；切换设计再回预览后变C5:D5",
+      "evidence": [
+        "unmerged-before-switch.jpg",
+        "unmerge-lost-after-switch.jpg"
+      ]
+    },
+    {
+      "id": "R3-UI-12",
+      "name": "取消合并后直接保存并重开保持独立C5",
+      "passed": true,
+      "evidence": "unmerge-reopened.jpg"
+    }
+  ]
+}

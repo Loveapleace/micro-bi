@@ -98,7 +98,7 @@ function open(g) {
   return { univer, api, workbook, sheet: workbook.getActiveSheet(), close: () => univer.dispose() };
 }
 function refreshEffect(ctx, oldGrid, newGrid, bindings = oldGrid.bindings, manualOverrides) {
-  const scope = vm.createContext({ console, isInitialized: true, univerAPIRef: { current: ctx.api },
+  const scope = vm.createContext({ console, isInitialized: true, syncGridStyles: false, univerAPIRef: { current: ctx.api },
     lastGridRef: { current: oldGrid }, initialGrid: newGrid, effectiveBindings: bindings, manualOverrides });
   vm.runInContext(effectJS, scope, { filename: previewPath })();
 }

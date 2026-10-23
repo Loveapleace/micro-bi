@@ -1,0 +1,53 @@
+{
+  "timestamp": "2026-10-19T07:22:24.974Z",
+  "scope": "真实主应用、原卡片VTable、窗口内注册数据热更新；存量键兼容另由persistence脚本验证",
+  "total": 7,
+  "passed": 6,
+  "failed": 1,
+  "results": [
+    {
+      "id": "R4-UI-01",
+      "name": "刷新后直接打开新设计器样式正常",
+      "passed": true,
+      "evidence": "cold-designer.jpg"
+    },
+    {
+      "id": "R4-UI-02",
+      "name": "首次600改999并保存",
+      "passed": true,
+      "evidence": "override-999.tsv"
+    },
+    {
+      "id": "R4-UI-03",
+      "name": "重开连续改999到1000，目标值更新且指标完整",
+      "passed": true,
+      "evidence": "override-1000.tsv"
+    },
+    {
+      "id": "R4-UI-04",
+      "name": "保存业务合并后展示态数据前插，合并与覆盖正确迁移",
+      "passed": true,
+      "actual": "主卡片合并从C5:D5迁移至原业务成员D8:E8",
+      "evidence": "merge-relocated.jpg"
+    },
+    {
+      "id": "R4-UI-05",
+      "name": "设计窗口内数据更新后切预览，原业务合并保持",
+      "passed": false,
+      "actual": "回预览丢掉原selector，合并重新捕获为0号车间C5:D5，主格50；该错误草稿已取消",
+      "evidence": "design-refresh-selection.jpg"
+    },
+    {
+      "id": "R4-UI-06",
+      "name": "取消合并后设计/预览往返保持独立C5",
+      "passed": true,
+      "evidence": "unmerge-switch.jpg"
+    },
+    {
+      "id": "R4-UI-07",
+      "name": "保存最终解除状态后保留1000覆盖及完整公式，事实已恢复",
+      "passed": true,
+      "evidence": "final.tsv"
+    }
+  ]
+}
