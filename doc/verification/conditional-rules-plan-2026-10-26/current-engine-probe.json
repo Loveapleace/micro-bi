@@ -1,0 +1,28 @@
+{
+  "date": "2026-10-26",
+  "method": "Read-only source-built compiler -> neutral publication -> VTable adapter; no business source edits, not a browser repaint test",
+  "results": [
+    {
+      "threshold": 90,
+      "valid": true,
+      "sourceRole": "detail-column",
+      "rows": 13,
+      "min": 300,
+      "max": 1500,
+      "matchedFacts": 0,
+      "redPublished": 0,
+      "redVTable": 0
+    },
+    {
+      "threshold": 1000,
+      "valid": true,
+      "sourceRole": "detail-column",
+      "rows": 13,
+      "min": 300,
+      "max": 1500,
+      "matchedFacts": 9,
+      "redPublished": 9,
+      "redVTable": 9
+    }
+  ]
+}

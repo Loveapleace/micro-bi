@@ -30,7 +30,6 @@ import type {
   TemplateDiagnostic,
   CellStyleDefinition,
   CellFormatOptions,
-  ConditionalRule,
 } from './types.js';
 import {
   buildInstanceKey,
@@ -45,6 +44,8 @@ import { resolveTemplateMerges, isRangeOverlapping } from './mergeResolver.js';
 import { applyRegionFilters } from './regionFilter.js';
 import { evaluateArithmetic } from './arithmeticEval.js';
 import { evaluateSheetFormula as evaluateSheetFormulaEngine } from './sheetFormulaEvaluator.js';
+import { applyPresentationRules } from './presentationRules.js';
+import { activeStaticSpans, applyStaticSpans, prepareStaticSpanTemplate, type SpanDriverInstance } from './staticSpans.js';
 
 export interface CellExpansionResult {
   grid: BiGridModel;
@@ -262,6 +263,8 @@ export function expandCellDrivenTemplate(
   rawDataset: readonly DataRecord[],
   options: { sheetId?: string } = {}
 ): CellExpansionResult {
+  const sourceDocument = doc;
+  doc = prepareStaticSpanTemplate(doc);
   const diagnostics: TemplateDiagnostic[] = [];
   const sheetId = options.sheetId || doc.sheets?.[0]?.id || 'sheet-1';
 
@@ -998,6 +1001,8 @@ export function expandCellDrivenTemplate(
         }
       }
       if (cell.position.column > zone.endCol) {
+        // 显式属于另一独立区域的格，不因共享表头行被横向推移。
+        if (cell.regionId && zone.regionId && cell.regionId !== zone.regionId) continue;
         const inRowScope =
           (cell.regionId && zone.regionId && cell.regionId === zone.regionId) ||
           (cell.position.row >= zone.startRow && cell.position.row <= zone.endRow) ||
@@ -1027,6 +1032,7 @@ export function expandCellDrivenTemplate(
       row: r,
       col: c,
       value: rawVal,
+      sourceCellId: sc.id, regionId: sc.regionId,
       displayText: formatValue(rawVal, formatOpts.format, formatOpts),
       role: 'custom',
       style: cellStyle,
@@ -1125,6 +1131,7 @@ export function expandCellDrivenTemplate(
         row: r,
         col: c,
         value: n.memberValue,
+        sourceCellId: driver.id, regionId: driver.regionId, ruleFacts: n.records,
         displayText: dispText,
         role: 'dimension-member',
         rowPath: axis === 'row' ? axisRefPath : undefined,
@@ -1434,6 +1441,8 @@ export function expandCellDrivenTemplate(
       row: r,
       col: c,
       value: computedValue,
+      sourceCellId: dc.id, regionId: dc.regionId, ruleFacts: records,
+      ...(fc.kind === 'sheet-formula' ? { formula: fc.formula } : {}),
       displayText: formatValue(computedValue, formatOpts.format, formatOpts),
       role: role as any,
       rowPath: rowRefPath,
@@ -1604,80 +1613,28 @@ export function expandCellDrivenTemplate(
   }
 
   // 10. 消费样式与条件格式 (CER-16)
-  const sortedStyleRules = [...(doc.styleRules || [])].sort((a, b) => (a.priority ?? 0) - (b.priority ?? 0));
-  for (const rule of sortedStyleRules) {
-    if (rule.sheetId && rule.sheetId !== sheetId) continue;
-    const pubStyle = toPublishedStyle(rule.style);
-    if (!pubStyle || Object.keys(pubStyle).length === 0) continue;
-
-    for (const b of bindings) {
-      const instKey = (b as any).instanceKey;
-      const parsed = instKey ? parseInstanceKey(instKey) : null;
-      if (rule.scope === 'template-cell' && parsed?.templateCellId === rule.targetId) {
-        const cell = cellsMap.get(`${b.target.row}:${b.target.column}`);
-        if (cell) {
-          cell.style = mergePublishedStyles(cell.style, pubStyle);
-        }
-      }
-    }
+  // 跟随文字的源样本复用相同格式/条件管道，不参与数据布局，且不泄漏到发布坐标。
+  const spanSources = activeStaticSpans(sourceDocument, sheetId);
+  const spanSamples = new Map<string, BiGridCell>();
+  const sampleKeys: string[] = [];
+  const bindingCount = bindings.length;
+  for (let i = 0; i < spanSources.length; i++) {
+    const source = spanSources[i]!;
+    const value = source.content.kind === 'literal' ? source.content.value : '';
+    const fmt = resolveCellFormatOptions(source);
+    const style = toPublishedStyle(source.style);
+    if (fmt.format) style.format = fmt.format;
+    if (Number(value) < 0 && (fmt.negativeFormat === 'red_minus' || fmt.negativeFormat === 'red_bracket')) style.color = '#cf1322';
+    const row = -1 - i, key = `${row}:0`;
+    const sample: BiGridCell = { row, col: 0, value, displayText: formatValue(value, fmt.format, fmt), role: 'custom', style, tooltip: fmt.tooltip };
+    cellsMap.set(key, sample); cellTemplateIdMap.set(key, source.id); sampleKeys.push(key); spanSamples.set(source.id, sample);
+    const binding = createReportBinding({ analysisId: `analysis-${source.staticSpan!.regionId}`, sheetId, row, column: 0, role: 'custom' });
+    (binding as any).instanceKey = buildInstanceKey({ templateCellId: source.id, regionId: source.staticSpan!.regionId, rowPath: '__NONE__', columnPath: '__NONE__', metricId: '__NONE__', role: 'static' });
+    bindings.push(binding);
   }
-
-  // 消费条件格式 (CER-16)
-  const templateCellConditionRules: ConditionalRule[] = [];
-  for (const tc of doc.cells || []) {
-    const crs = (tc as any).conditionRules || (tc.content as any)?.conditionRules;
-    if (crs && Array.isArray(crs)) {
-      for (const cr of crs) {
-        const metricId = (tc.content as any).metricId || (tc.content as any).fieldKey;
-        templateCellConditionRules.push({
-          ...cr,
-          sheetId: cr.sheetId || tc.sheetId,
-          targetMetricId: cr.targetMetricId || metricId,
-          targetCellId: tc.id,
-        } as any);
-      }
-    }
-  }
-
-  const allConditions = [...(doc.conditionalRules || []), ...templateCellConditionRules];
-  const sortedConditions = allConditions.sort((a, b) => (a.priority ?? 0) - (b.priority ?? 0));
-  for (const rule of sortedConditions) {
-    if (rule.sheetId && rule.sheetId !== sheetId) continue;
-    const ruleTargetCellId = (rule as any).targetCellId;
-
-    for (const c of cellsMap.values()) {
-      if (ruleTargetCellId) {
-        const originTemplateId = cellTemplateIdMap.get(`${c.row}:${c.col}`);
-        if (originTemplateId !== ruleTargetCellId) continue;
-      } else if (rule.targetMetricId) {
-        if (!c.metricId || c.metricId !== rule.targetMetricId) continue;
-      }
-
-      if (c.value === null || c.value === undefined || c.value === '') continue;
-
-      const num = typeof c.value === 'number' ? c.value : Number(c.value);
-      if (isNaN(num)) continue;
-
-      let matched = false;
-      const { operator, values } = rule.condition;
-      const v0 = values?.[0] ?? 0;
-      const v1 = values?.[1] ?? 0;
-      switch (operator) {
-        case 'gt': matched = num > v0; break;
-        case 'gte': matched = num >= v0; break;
-        case 'lt': matched = num < v0; break;
-        case 'lte': matched = num <= v0; break;
-        case 'eq': matched = num === v0; break;
-        case 'between': matched = num >= v0 && num <= v1; break;
-      }
-
-      if (matched) {
-        c.style = mergePublishedStyles(c.style, toPublishedStyle(rule.style));
-      }
-    }
-  }
-
   // 11. 组装初始网格模型
+  for (const key of sampleKeys) { cellsMap.delete(key); cellTemplateIdMap.delete(key); }
+  bindings.length = bindingCount;
   const allPlacedCells = Array.from(cellsMap.values());
   const maxRow = allPlacedCells.reduce((max, c) => Math.max(max, c.row), 0);
   const maxCol = allPlacedCells.reduce((max, c) => Math.max(max, c.col), 0);
@@ -1687,7 +1644,7 @@ export function expandCellDrivenTemplate(
   for (const lr of doc.layoutRules || []) {
     if (lr.sheetId === sheetId && lr.kind === 'merge' && lr.range) {
       let endCol = lr.range.endColumn;
-      if (lr.id === 'merge-title' && maxCol > 0) {
+      if (lr.id === 'merge-title' && maxCol > 0 && !sourceDocument.cells.some((c) => c.sheetId === sheetId && c.position.row === lr.range!.startRow && c.position.column === lr.range!.startColumn && c.staticSpan)) {
         endCol = maxCol;
       }
       initialMerges.push({
@@ -1824,8 +1781,17 @@ export function expandCellDrivenTemplate(
     mergeOrigins: resolved.resolvedDetails,
   };
 
+  const spanDrivers: SpanDriverInstance[] = [
+    ...rowDrivers.flatMap((d) => collectDriverInstances(d.id, expandedRowTrees).map((i) => ({ templateCellId: d.id, regionId: d.regionId || primaryRegion?.id || '',
+      axis: 'row' as const, start: i.startCoord, end: i.startCoord + i.span - 1, path: i.path }))),
+    ...colDrivers.flatMap((d) => collectDriverInstances(d.id, expandedColTrees).map((i) => ({ templateCellId: d.id, regionId: d.regionId || primaryRegion?.id || '',
+      axis: 'column' as const, start: i.startCoord, end: i.startCoord + i.span - 1, path: i.path }))),
+  ];
+  const spanned = applyStaticSpans(sourceDocument, finalGrid, { sheetId, drivers: spanDrivers, position: displacedPosition, renderLiteral: (c) => spanSamples.get(c.id) });
+  const presentation = applyPresentationRules(sourceDocument, spanned.grid, rawDataset, { sheetId });
+  diagnostics.push(...spanned.diagnostics, ...presentation.diagnostics);
   return {
-    grid: finalGrid,
+    grid: presentation.grid,
     recordCount: rawDataset.length,
     filteredCount: filteredRecords.length,
     diagnostics,

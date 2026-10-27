@@ -28,6 +28,7 @@ export interface PanelToTemplateOptions {
   anchorRow?: number | undefined;
   anchorCol?: number | undefined;
   includeTitle?: boolean | undefined;
+  titlePosition?: { row: number; column: number } | undefined;
   rowAxes?: HybridAxisDefinition[] | undefined;
   columnAxes?: HybridAxisDefinition[] | undefined;
 }
@@ -82,10 +83,25 @@ export function compilePanelToCellTemplate(
   } else {
     doc = compileDetailTemplate(config, datasetId, regionId, sheetId, datasetName, headers, options);
   }
+  const title = doc.cells.find((c) => c.id === 'title');
+  if (title && options.titlePosition) {
+    const delta = options.titlePosition.column - title.position.column;
+    title.position = { ...options.titlePosition };
+    doc.layoutRules = doc.layoutRules.map((r) => r.id === 'merge-title' && r.range ? { ...r,
+      range: { ...r.range, startRow: title.position.row, endRow: title.position.row,
+        startColumn: r.range.startColumn + delta, endColumn: r.range.endColumn + delta } } : r);
+  }
   const signature = JSON.stringify(doc.cells.map((c) => [c.id, c.position.row, c.position.column]));
   let generationHash = 2166136261;
   for (let i = 0; i < signature.length; i++) generationHash = Math.imul(generationHash ^ signature.charCodeAt(i), 16777619);
   const generation = `panel-${(generationHash >>> 0).toString(16)}`;
+  const semanticKey = (cell: CellDefinition): string | undefined => {
+    if (cell.content.kind !== 'literal') return undefined;
+    if (cell.id.startsWith('hdr-m-')) return `label:metric:${cell.id.slice('hdr-m-'.length)}`;
+    if (cell.id.startsWith('lbl-metric-')) return `label:metric:${cell.id.slice('lbl-metric-'.length)}`;
+    const driver = doc.cells.find((d) => d.content.kind === 'field' && d.content.role === 'row-dimension' && d.position.column === cell.position.column && d.content.displayName === (cell.content as any).value);
+    return driver?.content.kind === 'field' ? `label:row:${driver.content.fieldKey}:${driver.content.timeBucket ? 'time' : 'category'}` : undefined;
+  };
   return {
     ...doc,
     hybridConfig: { version: 2, ...((archetype === 'grouped' && rowAxes.length <= 2 && !config.dimensions?.timeBucket?.field && !options.rowAxes)
@@ -93,7 +109,10 @@ export function compilePanelToCellTemplate(
       enableGroupMerge: options.enableGroupMerge !== false, configurationErrors: normalized.errors },
     cells: doc.cells.map((c) => ({
       ...c,
-      panelOwner: { generator: 'hybrid-panel', cellId: c.id, generation },
+      panelOwner: { generator: 'hybrid-panel', cellId: c.id, generation, semanticKey: semanticKey(c) },
+      ...(c.id === 'title' && c.content.kind === 'literal' ? { staticSpan: { id: `span-${c.id}`, enabled: true, regionId,
+        scope: 'report' as const, placement: 'template' as const, repeat: 'once' as const, rowOffset: 0, height: 1,
+        includeTotals: true, merge: true, suppressions: [] } } : {}),
     })),
   };
 }
@@ -135,7 +154,7 @@ function compileGroupedTemplate(
   const anchorR = options.anchorRow !== undefined ? Math.max(0, options.anchorRow) : 2;
   const anchorC = options.anchorCol !== undefined ? Math.max(0, options.anchorCol) : 0;
   const withTitle = options.includeTitle !== undefined ? options.includeTitle : (anchorR >= 2);
-  const shouldIncludeTitle = withTitle && anchorR > 0;
+  const shouldIncludeTitle = withTitle && (anchorR > 0 || options.titlePosition !== undefined);
   const titleRow = anchorR >= 2 ? anchorR - 2 : (anchorR >= 1 ? anchorR - 1 : 0);
 
   const cells: CellDefinition[] = [];
@@ -361,7 +380,7 @@ function compileGroupedTemplate(
       suppressions: [],
     },
     styleRules: [],
-    conditionalRules: [],
+    presentationRules: { version: 1, revision: 0, ruleSets: [] },
     instanceOverrides: [],
     orphanedEdits: [],
   };
@@ -379,7 +398,7 @@ function compileDetailTemplate(
   const anchorR = options.anchorRow !== undefined ? Math.max(0, options.anchorRow) : 2;
   const anchorC = options.anchorCol !== undefined ? Math.max(0, options.anchorCol) : 0;
   const withTitle = options.includeTitle !== undefined ? options.includeTitle : (anchorR >= 2);
-  const shouldIncludeTitle = withTitle && anchorR > 0;
+  const shouldIncludeTitle = withTitle && (anchorR > 0 || options.titlePosition !== undefined);
   const titleRow = anchorR >= 2 ? anchorR - 2 : (anchorR >= 1 ? anchorR - 1 : 0);
 
   const cols = config.columns.length > 0 ? config.columns : [{ type: 'fixed' as const, field: 'id', label: 'ID' }];
@@ -489,7 +508,7 @@ function compileDetailTemplate(
       suppressions: [],
     },
     styleRules: [],
-    conditionalRules: [],
+    presentationRules: { version: 1, revision: 0, ruleSets: [] },
     instanceOverrides: [],
     orphanedEdits: [],
   };

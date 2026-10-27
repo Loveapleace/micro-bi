@@ -1,0 +1,712 @@
+{
+  "documentType": "cell-template",
+  "schemaVersion": "2.0",
+  "capabilitiesVersion": "cell-expansion-v2",
+  "id": "template-detail-1793011538576",
+  "title": "[第37节验收] 多条件交付状态",
+  "templateRevision": 2,
+  "sheets": [
+    {
+      "id": "sheet-1",
+      "name": "明细清单",
+      "rowCount": 25,
+      "columnCount": 15
+    }
+  ],
+  "regions": [
+    {
+      "id": "region-1",
+      "datasetId": "industrial_lifecycle_orders",
+      "sheetId": "sheet-1",
+      "anchor": {
+        "row": 2,
+        "column": 0
+      },
+      "filters": []
+    }
+  ],
+  "cells": [
+    {
+      "id": "title",
+      "sheetId": "sheet-1",
+      "position": {
+        "row": 0,
+        "column": 0
+      },
+      "content": {
+        "kind": "literal",
+        "value": "工单生命周期交付与质检流水 (2时间维度) 业务明细流水清单"
+      },
+      "parents": {
+        "row": null,
+        "column": null
+      },
+      "style": {
+        "bold": true,
+        "fontSize": 14,
+        "color": "#1677ff"
+      },
+      "panelOwner": {
+        "generator": "hybrid-panel",
+        "cellId": "title",
+        "generation": "panel-c70e1393"
+      },
+      "staticSpan": {
+        "id": "span-title",
+        "enabled": true,
+        "regionId": "region-1",
+        "scope": "report",
+        "placement": "template",
+        "repeat": "once",
+        "rowOffset": 0,
+        "height": 1,
+        "includeTotals": true,
+        "merge": true,
+        "suppressions": []
+      }
+    },
+    {
+      "id": "hdr-order_code",
+      "sheetId": "sheet-1",
+      "position": {
+        "row": 2,
+        "column": 0
+      },
+      "content": {
+        "kind": "literal",
+        "value": "工单流水号"
+      },
+      "parents": {
+        "row": null,
+        "column": null
+      },
+      "style": {
+        "bold": true,
+        "backgroundColor": "#fafafa",
+        "textAlign": "right"
+      },
+      "panelOwner": {
+        "generator": "hybrid-panel",
+        "cellId": "hdr-order_code",
+        "generation": "panel-c70e1393"
+      }
+    },
+    {
+      "id": "cell-detail-order_code",
+      "sheetId": "sheet-1",
+      "regionId": "region-1",
+      "position": {
+        "row": 3,
+        "column": 0
+      },
+      "content": {
+        "kind": "field",
+        "fieldId": "order_code",
+        "fieldKey": "order_code",
+        "displayName": "工单流水号",
+        "role": "detail-column",
+        "operation": "list",
+        "expand": "down",
+        "format": "integer"
+      },
+      "parents": {
+        "row": "none",
+        "column": "none"
+      },
+      "style": {
+        "textAlign": "right",
+        "verticalAlign": "middle"
+      },
+      "panelOwner": {
+        "generator": "hybrid-panel",
+        "cellId": "cell-detail-order_code",
+        "generation": "panel-c70e1393"
+      }
+    },
+    {
+      "id": "hdr-part_name",
+      "sheetId": "sheet-1",
+      "position": {
+        "row": 2,
+        "column": 1
+      },
+      "content": {
+        "kind": "literal",
+        "value": "加工工件名称"
+      },
+      "parents": {
+        "row": null,
+        "column": null
+      },
+      "style": {
+        "bold": true,
+        "backgroundColor": "#fafafa",
+        "textAlign": "right"
+      },
+      "panelOwner": {
+        "generator": "hybrid-panel",
+        "cellId": "hdr-part_name",
+        "generation": "panel-c70e1393"
+      }
+    },
+    {
+      "id": "cell-detail-part_name",
+      "sheetId": "sheet-1",
+      "regionId": "region-1",
+      "position": {
+        "row": 3,
+        "column": 1
+      },
+      "content": {
+        "kind": "field",
+        "fieldId": "part_name",
+        "fieldKey": "part_name",
+        "displayName": "加工工件名称",
+        "role": "detail-column",
+        "operation": "list",
+        "expand": "down",
+        "format": "integer"
+      },
+      "parents": {
+        "row": "cell-detail-order_code",
+        "column": "none"
+      },
+      "style": {
+        "textAlign": "right",
+        "verticalAlign": "middle"
+      },
+      "panelOwner": {
+        "generator": "hybrid-panel",
+        "cellId": "cell-detail-part_name",
+        "generation": "panel-c70e1393"
+      }
+    },
+    {
+      "id": "hdr-workshop",
+      "sheetId": "sheet-1",
+      "position": {
+        "row": 2,
+        "column": 2
+      },
+      "content": {
+        "kind": "literal",
+        "value": "承制车间"
+      },
+      "parents": {
+        "row": null,
+        "column": null
+      },
+      "style": {
+        "bold": true,
+        "backgroundColor": "#fafafa",
+        "textAlign": "right"
+      },
+      "panelOwner": {
+        "generator": "hybrid-panel",
+        "cellId": "hdr-workshop",
+        "generation": "panel-c70e1393"
+      }
+    },
+    {
+      "id": "cell-detail-workshop",
+      "sheetId": "sheet-1",
+      "regionId": "region-1",
+      "position": {
+        "row": 3,
+        "column": 2
+      },
+      "content": {
+        "kind": "field",
+        "fieldId": "workshop",
+        "fieldKey": "workshop",
+        "displayName": "承制车间",
+        "role": "detail-column",
+        "operation": "list",
+        "expand": "down",
+        "format": "integer"
+      },
+      "parents": {
+        "row": "cell-detail-order_code",
+        "column": "none"
+      },
+      "style": {
+        "textAlign": "right",
+        "verticalAlign": "middle"
+      },
+      "panelOwner": {
+        "generator": "hybrid-panel",
+        "cellId": "cell-detail-workshop",
+        "generation": "panel-c70e1393"
+      }
+    },
+    {
+      "id": "hdr-output_qty",
+      "sheetId": "sheet-1",
+      "position": {
+        "row": 2,
+        "column": 3
+      },
+      "content": {
+        "kind": "literal",
+        "value": "交付件数"
+      },
+      "parents": {
+        "row": null,
+        "column": null
+      },
+      "style": {
+        "bold": true,
+        "backgroundColor": "#fafafa",
+        "textAlign": "right"
+      },
+      "panelOwner": {
+        "generator": "hybrid-panel",
+        "cellId": "hdr-output_qty",
+        "generation": "panel-c70e1393"
+      }
+    },
+    {
+      "id": "cell-detail-output_qty",
+      "sheetId": "sheet-1",
+      "regionId": "region-1",
+      "position": {
+        "row": 3,
+        "column": 3
+      },
+      "content": {
+        "kind": "field",
+        "fieldId": "output_qty",
+        "fieldKey": "output_qty",
+        "displayName": "交付件数",
+        "role": "detail-column",
+        "operation": "list",
+        "expand": "down",
+        "format": "decimal2",
+        "formatOptions": {
+          "format": "decimal2",
+          "precision": 2,
+          "useGrouping": true,
+          "scale": 1,
+          "negativeFormat": "minus",
+          "zeroDisplay": "zero",
+          "mergePolicy": "default"
+        },
+        "mergePolicy": "default"
+      },
+      "parents": {
+        "row": "cell-detail-order_code",
+        "column": "none"
+      },
+      "style": {
+        "textAlign": "right",
+        "verticalAlign": "middle"
+      },
+      "panelOwner": {
+        "generator": "hybrid-panel",
+        "cellId": "cell-detail-output_qty",
+        "generation": "panel-c70e1393"
+      },
+      "formatOptions": {
+        "format": "decimal2",
+        "precision": 2,
+        "useGrouping": true,
+        "scale": 1,
+        "negativeFormat": "minus",
+        "zeroDisplay": "zero",
+        "mergePolicy": "default"
+      },
+      "mergePolicy": "default"
+    },
+    {
+      "id": "c-sheet-1-6-9-mvp4snqc-6",
+      "sheetId": "sheet-1",
+      "position": {
+        "row": 6,
+        "column": 9
+      },
+      "content": {
+        "kind": "sheet-formula",
+        "formula": "=SUM(D4:D16)"
+      },
+      "parents": {
+        "row": "none",
+        "column": "none"
+      },
+      "regionId": "region-1"
+    }
+  ],
+  "layoutRules": [
+    {
+      "id": "merge-title",
+      "kind": "merge",
+      "sheetId": "sheet-1",
+      "range": {
+        "startRow": 0,
+        "endRow": 0,
+        "startColumn": 0,
+        "endColumn": 3
+      },
+      "source": "user",
+      "sequence": 1
+    }
+  ],
+  "mergeConfig": {
+    "capability": "template-merge-v1",
+    "identityVersion": 1,
+    "legacyFallback": "explicit-only",
+    "policies": [],
+    "suppressions": []
+  },
+  "styleRules": [
+    {
+      "id": "visual-cell-detail-output_qty",
+      "sheetId": "sheet-1",
+      "targetId": "cell-detail-output_qty",
+      "target": {
+        "sheetId": "sheet-1",
+        "regionId": "region-1",
+        "cellId": "cell-detail-output_qty",
+        "contentKind": "field",
+        "roles": [
+          "data"
+        ],
+        "field": "output_qty",
+        "role": "detail-column",
+        "operation": "list"
+      },
+      "scope": "template-cell",
+      "style": {},
+      "priority": 0,
+      "regionId": "region-1"
+    }
+  ],
+  "presentationRules": {
+    "version": 1,
+    "revision": 1,
+    "ruleSets": [
+      {
+        "id": "rule-set-mvp4q3cq-2",
+        "order": 0,
+        "target": {
+          "sheetId": "sheet-1",
+          "regionId": "region-1",
+          "cellId": "cell-detail-output_qty",
+          "contentKind": "field",
+          "roles": [
+            "data"
+          ],
+          "field": "output_qty",
+          "role": "detail-column",
+          "operation": "list"
+        },
+        "rules": [
+          {
+            "id": "rule-mvp4q3o6-3",
+            "name": "低产",
+            "enabled": true,
+            "order": 0,
+            "predicate": {
+              "kind": "group",
+              "mode": "and",
+              "children": [
+                {
+                  "kind": "comparison",
+                  "left": {
+                    "kind": "current"
+                  },
+                  "operator": "lt",
+                  "right": {
+                    "kind": "literal",
+                    "value": 700
+                  }
+                }
+              ]
+            },
+            "style": {
+              "scope": "row",
+              "style": {
+                "color": "#CF1322",
+                "backgroundColor": "#FFE6E6",
+                "bold": true
+              },
+              "noFill": false
+            },
+            "stopIfTrue": true,
+            "text": "低产"
+          },
+          {
+            "id": "rule-mvp4r2sl-4",
+            "name": "关注",
+            "enabled": true,
+            "order": 1,
+            "predicate": {
+              "kind": "group",
+              "mode": "and",
+              "children": [
+                {
+                  "kind": "comparison",
+                  "left": {
+                    "kind": "current"
+                  },
+                  "operator": "gte",
+                  "right": {
+                    "kind": "literal",
+                    "value": 700
+                  }
+                },
+                {
+                  "kind": "comparison",
+                  "left": {
+                    "kind": "current"
+                  },
+                  "operator": "lt",
+                  "right": {
+                    "kind": "literal",
+                    "value": 1000
+                  }
+                }
+              ]
+            },
+            "style": {
+              "scope": "cell",
+              "style": {
+                "color": "#D46B08",
+                "backgroundColor": "#FFFBE6",
+                "bold": true
+              },
+              "noFill": false,
+              "reset": []
+            },
+            "stopIfTrue": true,
+            "text": "关注"
+          },
+          {
+            "id": "rule-mvp4rwm8-5",
+            "name": "正常",
+            "enabled": true,
+            "order": 2,
+            "predicate": {
+              "kind": "group",
+              "mode": "and",
+              "children": [
+                {
+                  "kind": "comparison",
+                  "left": {
+                    "kind": "current"
+                  },
+                  "operator": "gte",
+                  "right": {
+                    "kind": "literal",
+                    "value": 1000
+                  }
+                }
+              ]
+            },
+            "style": {
+              "scope": "cell",
+              "style": {
+                "color": "#389E0D",
+                "backgroundColor": "#F6FFED",
+                "bold": true
+              },
+              "noFill": false,
+              "reset": []
+            },
+            "stopIfTrue": true,
+            "text": "正常"
+          }
+        ]
+      }
+    ]
+  },
+  "instanceOverrides": [],
+  "orphanedEdits": [],
+  "hybridConfig": {
+    "version": 2,
+    "rowAxes": [],
+    "columnAxes": [],
+    "showRowTotals": false,
+    "enableGroupMerge": true,
+    "configurationErrors": [],
+    "retainedMergeConfig": {
+      "capability": "template-merge-v1",
+      "identityVersion": 1,
+      "legacyFallback": "explicit-only",
+      "policies": [],
+      "suppressions": []
+    },
+    "disabledLayoutRuleIds": [],
+    "retainedCells": [
+      {
+        "id": "cell-detail-duration_hours",
+        "sheetId": "sheet-1",
+        "regionId": "region-1",
+        "position": {
+          "row": 3,
+          "column": 0
+        },
+        "content": {
+          "kind": "field",
+          "fieldId": "duration_hours",
+          "fieldKey": "duration_hours",
+          "displayName": "生产耗时(h)",
+          "role": "detail-column",
+          "operation": "list",
+          "expand": "down",
+          "format": "decimal2"
+        },
+        "parents": {
+          "row": "none",
+          "column": "none"
+        },
+        "style": {
+          "textAlign": "right",
+          "verticalAlign": "middle"
+        },
+        "panelOwner": {
+          "generator": "hybrid-panel",
+          "cellId": "cell-detail-duration_hours",
+          "generation": "panel-4cdc5a97"
+        }
+      },
+      {
+        "id": "cell-col-plan_start_time",
+        "sheetId": "sheet-1",
+        "regionId": "region-1",
+        "position": {
+          "row": 2,
+          "column": 1
+        },
+        "content": {
+          "kind": "field",
+          "fieldId": "plan_start_time",
+          "fieldKey": "plan_start_time",
+          "role": "column-dimension",
+          "operation": "group",
+          "expand": "right",
+          "displayName": "计划投产时间",
+          "timeBucket": {
+            "granularity": "month"
+          }
+        },
+        "parents": {
+          "row": "none",
+          "column": "none"
+        },
+        "style": {
+          "bold": true,
+          "color": "#531dab",
+          "backgroundColor": "#f9f0ff",
+          "textAlign": "center",
+          "verticalAlign": "middle"
+        },
+        "panelOwner": {
+          "generator": "hybrid-panel",
+          "cellId": "cell-col-plan_start_time",
+          "generation": "panel-c133b223"
+        }
+      },
+      {
+        "id": "meas-duration_hours",
+        "sheetId": "sheet-1",
+        "regionId": "region-1",
+        "position": {
+          "row": 3,
+          "column": 1
+        },
+        "content": {
+          "kind": "field",
+          "fieldId": "duration_hours",
+          "fieldKey": "duration_hours",
+          "metricId": "metric-duration_hours",
+          "role": "measure",
+          "operation": "sum",
+          "expand": "inherit",
+          "displayName": "生产耗时(h)",
+          "format": "decimal2"
+        },
+        "parents": {
+          "row": "none",
+          "column": "cell-col-plan_start_time"
+        },
+        "style": {
+          "textAlign": "right",
+          "color": "#d46b08",
+          "backgroundColor": "#fff7e6"
+        },
+        "panelOwner": {
+          "generator": "hybrid-panel",
+          "cellId": "meas-duration_hours",
+          "generation": "panel-c133b223"
+        }
+      },
+      {
+        "id": "meas-output_qty",
+        "sheetId": "sheet-1",
+        "regionId": "region-1",
+        "position": {
+          "row": 4,
+          "column": 1
+        },
+        "content": {
+          "kind": "field",
+          "fieldId": "output_qty",
+          "fieldKey": "output_qty",
+          "metricId": "metric-output_qty",
+          "role": "measure",
+          "operation": "sum",
+          "expand": "inherit",
+          "displayName": "交付件数",
+          "format": "decimal2"
+        },
+        "parents": {
+          "row": "none",
+          "column": "cell-col-plan_start_time"
+        },
+        "style": {
+          "textAlign": "right",
+          "color": "#d46b08",
+          "backgroundColor": "#fff7e6"
+        },
+        "panelOwner": {
+          "generator": "hybrid-panel",
+          "cellId": "meas-output_qty",
+          "generation": "panel-c133b223"
+        }
+      },
+      {
+        "id": "cell-row-order_code",
+        "sheetId": "sheet-1",
+        "regionId": "region-1",
+        "position": {
+          "row": 3,
+          "column": 0
+        },
+        "content": {
+          "kind": "field",
+          "fieldId": "order_code",
+          "fieldKey": "order_code",
+          "role": "row-dimension",
+          "operation": "group",
+          "expand": "down",
+          "displayName": "工单流水号"
+        },
+        "parents": {
+          "row": "none",
+          "column": "none"
+        },
+        "style": {
+          "bold": true,
+          "color": "#0958d9",
+          "backgroundColor": "#e6f7ff",
+          "verticalAlign": "top"
+        },
+        "panelOwner": {
+          "generator": "hybrid-panel",
+          "cellId": "cell-row-order_code",
+          "generation": "panel-6ad2b29b"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,125 @@
+{
+  "date": "2026-10-26",
+  "scope": "第33节任意静态单元格/区域范围跟随",
+  "baseRevision": "2a138f070e465bf5d70ae17d82c8846758fed529",
+  "focusedTests": {
+    "passed": 35,
+    "failed": 0,
+    "evidence": "focused-tests.log"
+  },
+  "unitTests": {
+    "passed": 321,
+    "failed": 0,
+    "evidence": "unit-tests.log"
+  },
+  "browser": {
+    "passed": 12,
+    "failed": 0,
+    "pageErrors": 0,
+    "evidence": "browser.json",
+    "finalSmoke": "pass",
+    "finalSmokeEvidence": "final-smoke.json"
+  },
+  "builds": {
+    "library": "ESM/CJS and declarations passed",
+    "libraryEvidence": "library-build.log",
+    "host": "TypeScript/Vite passed; existing chunk-size warning",
+    "hostEvidence": "host-build.log"
+  },
+  "dataFixtureMethod": "Independent browser context replaces only /src/mockData.ts response array before registry registration; reloads existing saved card. This verifies consumption of a new source version, not a real server push API.",
+  "sourceFactsUnmodified": true,
+  "userBrowserStorageUnmodified": true,
+  "sourceRestored": true,
+  "sourceHashes": [
+    {
+      "path": "src/cell-designer/CellAdvancedSettings.tsx",
+      "sha256": "876f03f1b2f7ffa08c36a6e24ece3534bd3f8dec33cdac9331fd49b85a666218"
+    },
+    {
+      "path": "src/cell-designer/CellReportDesigner.tsx",
+      "sha256": "84d0af8421f8d6d38f13d24a31bb0d79693b7f66e16153785ff9494df8b3143a"
+    },
+    {
+      "path": "src/cell-designer/designerReducer.ts",
+      "sha256": "3d37f8f78a80945c9c1011da257d065d187fbfe3e09fac8bb91fc0e0adc233b4"
+    },
+    {
+      "path": "src/cell-designer/HybridCellDesigner.tsx",
+      "sha256": "e1baa5eb493306c810b75032d91ee250891b4bf67a3d20ecad1292aa6d6b53af"
+    },
+    {
+      "path": "src/cell-designer/hybridMergeState.ts",
+      "sha256": "5b80375da173510c69b172e409bce96d5afa52f6320557f02e048a0fd3dee01f"
+    },
+    {
+      "path": "src/cell-designer/hybridTemplateState.ts",
+      "sha256": "96da014eeffde436cd01811d37c265035a38d082198b4b07187fe7721f6c3db7"
+    },
+    {
+      "path": "src/cell-designer/staticSpanIntent.ts",
+      "sha256": "7a1fe0af0ced3ba7a2985a7b213083115761516459ad5ca926ba91cd5f941abf"
+    },
+    {
+      "path": "src/cell-designer/StaticSpanSettings.tsx",
+      "sha256": "475b0b499dd8bcb4da70c28cf53b1e53304bb1c616499761280ed93c20649c0a"
+    },
+    {
+      "path": "src/cell-designer/syncWorkbookToTemplate.ts",
+      "sha256": "d80771004aa173783fa70c36609e1fbf37d0902ee486e245313d6c4fdac4416a"
+    },
+    {
+      "path": "src/report-template/cellExpansionEngine.ts",
+      "sha256": "bbd2eddb5c77febd96669ed5290d2c223045952d538fece122c83793f67c50d8"
+    },
+    {
+      "path": "src/report-template/compileCellReport.ts",
+      "sha256": "7ee30a1a76281cab9b540c70188f72636c5172bba9e0f664252f89ed753b9148"
+    },
+    {
+      "path": "src/report-template/expandTemplate.ts",
+      "sha256": "e638119babc9f55587d11d5df5e7e581de64017d508e48be89177f3c35a08d5b"
+    },
+    {
+      "path": "src/report-template/mergeResolver.ts",
+      "sha256": "84f15b43a4a059783ba7c5ab55214307b2201f251c9259b1afd203b5410f19a7"
+    },
+    {
+      "path": "src/report-template/panelToTemplateAdapter.ts",
+      "sha256": "47e0a2246f161224c5b04899c9c6b095176b58f7b27fdf00e584d8a7d5d70ce0"
+    },
+    {
+      "path": "src/report-template/staticSpans.ts",
+      "sha256": "396ab9b0c7b6304cc11d22a74581091a530ea33113bee0b094e7bc9949eaae14"
+    },
+    {
+      "path": "src/report-template/types.ts",
+      "sha256": "25fa68ab743bd754edf9b864853a59eb8fccf3e950dd8135bf4c0a2d248c7315"
+    },
+    {
+      "path": "src/report-template/validator.ts",
+      "sha256": "d77a06f61abef18a5a5dcb32f8c561ac0682302e72bc8da20fa16aed2379552a"
+    },
+    {
+      "path": "src/report/types.ts",
+      "sha256": "31a216aa4fb2c28bd8f15d97d3c462a9b441650e60196754cfb21871a02ba102"
+    },
+    {
+      "path": "test/static-span.test.mjs",
+      "sha256": "3d07ff54c393ec41d7991f43f8bd167e2014f8177b578ebefb5b31298d32a8de"
+    }
+  ],
+  "hostHashes": [
+    {
+      "path": "../dynamic-data-test/package.json",
+      "sha256": "297942f660651c61ac5d7d1e0ac8b7515ce31c9fc1c0c027353e04d963563451"
+    },
+    {
+      "path": "../dynamic-data-test/src/App.tsx",
+      "sha256": "81c0f4c57e79614d5b3c32778abd2291ca523df9c18c8cb1b3a2e19e1ea73679"
+    },
+    {
+      "path": "../dynamic-data-test/src/mockData.ts",
+      "sha256": "7ae500177b538d96817ecb646f80804965e0ed2c85f21a7a11d7aa13f59ba125"
+    }
+  ]
+}

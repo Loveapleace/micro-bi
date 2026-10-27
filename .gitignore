@@ -15,6 +15,13 @@ npm-debug.log*
 .eslintcache
 tsconfig.tsbuildinfo
 
+# 本地临时目录与测试工具输出
+.cache/
+.tmp/
+coverage/
+playwright-report/
+test-results/
+
 # 编辑器 / 系统
 .idea/
 .vscode/

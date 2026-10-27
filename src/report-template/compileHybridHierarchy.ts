@@ -36,7 +36,7 @@ export function compileHybridHierarchy(config: DynamicTransformConfig, datasetId
     position: { row, column }, content: { kind: 'literal', value }, parents: { row: 'none', column: 'none' },
     style: { bold: true, backgroundColor: '#fafafa' } });
 
-  if ((options.includeTitle ?? r0 >= 2) && r0 > 0) {
+  if ((options.includeTitle ?? r0 >= 2) && (r0 > 0 || options.titlePosition !== undefined)) {
     const row = r0 >= 2 ? r0 - 2 : r0 - 1;
     literal('title', row, c0, title);
     cells[0]!.style = { bold: true, fontSize: 14, color: '#1677ff' };
@@ -97,6 +97,6 @@ export function compileHybridHierarchy(config: DynamicTransformConfig, datasetId
     id: `template-${pivot ? 'pivot' : 'grouped'}-${Date.now()}`, title, templateRevision: 1,
     sheets: [{ id: sheetId, name: options.sheetName || (pivot ? '交叉分析' : '分组统计') }],
     regions: [{ id: regionId, datasetId, sheetId, anchor: { row: r0, column: c0 }, filters: [] }],
-    cells, layoutRules, styleRules: [], conditionalRules: [], instanceOverrides: [], orphanedEdits: [],
+    cells, layoutRules, styleRules: [], presentationRules: { version: 1, revision: 0, ruleSets: [] }, instanceOverrides: [], orphanedEdits: [],
     mergeConfig: { capability: 'template-merge-v1', identityVersion: 1, legacyFallback: 'explicit-only', policies, suppressions: [] } };
 }

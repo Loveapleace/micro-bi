@@ -83,43 +83,17 @@ export function biGridToUniverWorksheetData(
       cellData[cell.row] = {};
     }
 
-    let cellType = 1; // 1: String, 2: Number, 3: Boolean
-    let val: unknown = cell.value;
-    const pat = toExcelPattern(cell.style?.format);
-
-    if (val === null || val === undefined) {
-      if (cell.displayText !== undefined && cell.displayText !== '') {
-        val = cell.displayText;
-      } else {
-        val = '';
-      }
-      cellType = 1;
-    } else if (typeof val === 'number') {
-      if ((cell as any).hasAdvancedFormat && cell.displayText !== undefined) {
-        val = cell.displayText;
-        cellType = 1;
-      } else if (!pat && cell.displayText !== undefined && cell.displayText !== String(val)) {
-        val = cell.displayText;
-        cellType = 1;
-      } else {
-        cellType = 2;
-      }
-    } else if (typeof val === 'boolean') {
-      cellType = 3;
-    } else {
-      if (cell.displayText !== undefined && cell.displayText !== String(val)) {
-        val = cell.displayText;
-      } else {
-        val = String(val);
-      }
-      cellType = 1;
-    }
+    const val = cell.value ?? null;
+    const cellType = typeof val === 'number' ? 2 : typeof val === 'boolean' ? 3 : 1;
 
     cellData[cell.row]![cell.col] = {
       v: val,
       t: cellType,
+      ...(cell.formula ? { f: cell.formula } : {}),
       ...(cell.style ? { s: publishedStyleToUniver(cell.style) } : {}),
       custom: {
+        biProjection: true,
+        displaySource: cell.displaySource,
         role: cell.role,
         metricId: cell.metricId,
         field: cell.field,
@@ -143,6 +117,8 @@ export function biGridToUniverWorksheetData(
     name,
     rowCount: grid.rowCount,
     columnCount: grid.colCount,
+    defaultRowHeight: grid.defaultRowHeight ?? 24,
+    defaultColumnWidth: 100,
     cellData,
     mergeData,
     ...(grid.colWidths ? { columnData: Object.fromEntries(Object.entries(grid.colWidths).map(([i, w]) => [i, { w }])) } : {}),

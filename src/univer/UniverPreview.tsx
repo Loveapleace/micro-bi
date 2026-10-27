@@ -30,6 +30,8 @@ export interface UniverPreviewProps {
   initialSnapshot?: Partial<IWorkbookData> | undefined;
   initialGrid?: BiGridModel | undefined;
   syncGridStyles?: boolean | undefined;
+  /** 源模板完整管理画布时，清理旧范围后同步真实行列边界。普通预览默认保留额外工作区。 */
+  fitGridSize?: boolean | undefined;
   bindings?: ReportBinding[] | undefined;
   manualOverrides?: Record<string, { v?: unknown; f?: string }> | undefined;
   onBindingsChange?: ((bindings: ReportBinding[]) => void) | undefined;
@@ -48,6 +50,7 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
       initialSnapshot,
       initialGrid,
       syncGridStyles = false,
+      fitGridSize = false,
       bindings = [],
       manualOverrides,
       onBindingsChange,
@@ -331,7 +334,7 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
           );
 
           let val = cell.value;
-          let formula: string | undefined = undefined;
+          let formula: string | undefined = cell.formula;
 
           if (newB && manualOverrides && manualOverrides[newB.id]) {
             const override = manualOverrides[newB.id];
@@ -362,12 +365,15 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
               }
             }
 
+            // 显示文本由只读CELL_CONTENT投影处理；这里始终写原值供原生公式使用。
+            displayVal = val ?? null;
+
             if (formula) {
               range?.setFormula?.(formula);
             } else if (displayVal !== null && displayVal !== undefined && displayVal !== '') {
               // 模板文本保持原始类型，避免 YYYY-MM-DD 表头被自动解析为日期序号。
               const cellType = typeof displayVal === 'number' ? 2 : typeof displayVal === 'boolean' ? 3 : 1;
-              range?.setValue?.({ v: displayVal, t: cellType });
+              range?.setValue?.({ v: displayVal, t: cellType, f: null, p: null });
             } else {
               // GRID-SYNC-04: 业务单元格值变为空时同样走 Facade 清除，确保画布重绘
               range?.clear?.();
@@ -409,6 +415,8 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
               const cur = matrix.getValue(cell.row, cell.col) || {};
               const nextCustom = {
                 ...(cur.custom || {}),
+                biProjection: true,
+                displaySource: cell.displaySource,
                 role: cell.role,
                 metricId: cell.metricId,
                 field: cell.field,
@@ -459,6 +467,9 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
           }
         }
         if (initialGrid.rowHeights && worksheet) {
+          for(const r of Object.keys(oldGrid?.rowHeights||{}))if(initialGrid.rowHeights[Number(r)]===undefined){
+            try{worksheet.setRowHeight(Number(r),initialGrid.defaultRowHeight??24);}catch{}
+          }
           for (const [rowIdxStr, height] of Object.entries(initialGrid.rowHeights)) {
             const rowIdx = Number(rowIdxStr);
             try {
@@ -467,6 +478,11 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
               }
             } catch {}
           }
+        }
+
+        if (fitGridSize && worksheet) {
+          worksheet.setRowCount(Math.max(1, initialGrid.rowCount));
+          worksheet.setColumnCount(Math.max(1, initialGrid.colCount));
         }
 
         // 5. 同步最新绑定基线至管理器 (RT-04 / RX-11)
@@ -496,7 +512,7 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
           (univerAPIRef.current as any).__biTransaction = null;
         }
       }
-    }, [isInitialized, initialGrid, effectiveBindings, manualOverrides, syncGridStyles]);
+    }, [isInitialized, initialGrid, effectiveBindings, manualOverrides, syncGridStyles, fitGridSize]);
 
     useImperativeHandle(
       ref,
@@ -528,16 +544,18 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
 
     return (
       <div
-        ref={containerRef}
         className={className}
         style={{
           width: '100%',
           height,
           position: 'relative',
           overflow: 'hidden',
+          display: 'flex', flexDirection: 'column',
           ...style,
         }}
-      />
+      >
+        <div ref={containerRef} style={{flex:1,minHeight:0,position:'relative',overflow:'hidden'}} />
+      </div>
     );
   }
 );

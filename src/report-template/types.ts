@@ -156,10 +156,32 @@ export interface CellDefinition {
   parents: CellParents;
   style?: CellStyleDefinition | undefined;
   formatOptions?: CellFormatOptions | undefined;
-  conditionRules?: ConditionalRule[] | undefined;
   mergePolicy?: CellMergePolicyKind | undefined;
   /** 混合设计器生成格的身份；画布投影不得将其降为自由单元格。 */
-  panelOwner?: { generator: 'hybrid-panel'; cellId: string; generation: string } | undefined;
+  panelOwner?: { generator: 'hybrid-panel'; cellId: string; generation: string; semanticKey?: string | undefined } | undefined;
+  staticSpan?: StaticSpanConfig | undefined;
+  /** 受面板管理的静态文字被用户显式修改；自动标签快照不视为改名。 */
+  literalOverride?: boolean | undefined;
+}
+
+/** 保存源布局意图；不保存某次数据展开后的结束列。 */
+export interface StaticSpanConfig {
+  id: string;
+  enabled: boolean;
+  regionId: string;
+  scope: 'report' | 'columns' | 'column-group';
+  placement: 'template' | 'before-region' | 'after-region' | 'before-group' | 'after-group';
+  repeat: 'once' | 'row-groups' | 'column-groups';
+  rowParentId?: string | undefined;
+  columnParentId?: string | undefined;
+  rowOffset: number;
+  height: number;
+  includeTotals: boolean;
+  merge: boolean;
+  /** 该源静态区域原有的选择/合并范围，固定模式可继续使用。 */
+  templateRange?: CellMergeRange | undefined;
+  /** 按完整实例身份保存的局部取消。 */
+  suppressions: string[];
 }
 
 export interface TemplateSheet {
@@ -197,25 +219,19 @@ export interface LayoutRule {
 }
 
 export interface StyleRule {
+  presetId?: 'red' | 'orange' | 'green' | undefined;
   id: string;
   sheetId: string;
-  scope: 'template-cell' | 'region' | 'sheet';
+  scope: 'template-cell' | 'row' | 'region' | 'sheet';
   targetId?: string | undefined;
   style: CellStyleDefinition;
   priority: number;
-}
-
-export interface ConditionalRule {
-  id: string;
-  sheetId: string;
+  enabled?: boolean | undefined;
   regionId?: string | undefined;
-  targetMetricId?: string | undefined;
-  condition: {
-    operator: 'gt' | 'gte' | 'lt' | 'lte' | 'between' | 'eq';
-    values: number[];
-  };
-  style: CellStyleDefinition;
-  priority: number;
+  reset?: ('color' | 'backgroundColor' | 'bold' | 'italic')[] | undefined;
+  noFill?: boolean | undefined;
+  rowColumns?: [number, number] | undefined;
+  target?: import('./presentationTypes.js').PresentationTarget | undefined;
 }
 
 export interface InstanceOverride {
@@ -309,13 +325,16 @@ export interface CellTemplateDocumentV1 {
   cells: CellDefinition[];
   layoutRules: LayoutRule[];
   styleRules: StyleRule[];
-  conditionalRules: ConditionalRule[];
+  presentationRules?: import('./presentationTypes.js').PresentationRules | undefined;
   instanceOverrides: InstanceOverride[];
   orphanedEdits: OrphanedEdit[];
   capabilitiesVersion: 'cell-v1' | 'cell-v2' | 'cell-expansion-v2';
   mergeConfig?: MergeConfigV1 | undefined;
   hybridConfig?: HybridConfig | undefined;
 }
+
+export type { PresentationRules, PresentationRuleSet, PresentationRule, PresentationTarget, RulePredicate,
+  RuleOperand, ConditionOperator, VisualStyleAction, AdvancedCellUpdate, RuleStatistics } from './presentationTypes.js';
 
 export interface HybridAxisDefinition {
   id: string;
@@ -333,6 +352,8 @@ export type HybridConfig = { version: 1; showRowTotals: boolean } | {
   configurationErrors?: string[] | undefined;
   retainedMergeConfig?: MergeConfigV1 | undefined;
   disabledLayoutRuleIds?: string[] | undefined;
+  /** 暂时取消选择的指标高级配置，重新选择时按语义身份恢复。 */
+  retainedCells?: CellDefinition[] | undefined;
 };
 
 /** 编译与渲染版本戳 */

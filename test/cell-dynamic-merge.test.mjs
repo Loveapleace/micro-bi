@@ -1,3 +1,4 @@
+import { setPresentation } from './helpers/presentation.mjs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
@@ -172,7 +173,7 @@ function createBasePivotDoc(options = {}) {
       },
     ],
     styleRules: [],
-    conditionalRules: [],
+    presentationRules: { version: 1, revision: 0, ruleSets: [] },
     instanceOverrides: [],
     orphanedEdits: [],
     mergeConfig: {
@@ -572,7 +573,7 @@ function createFVDetailDoc(policyOptions = {}) {
     ],
     layoutRules: [],
     styleRules: [],
-    conditionalRules: [],
+    presentationRules: { version: 1, revision: 0, ruleSets: [] },
     instanceOverrides: [],
     orphanedEdits: [],
     mergeConfig: {
@@ -833,17 +834,7 @@ test('EQ-13: 条件格式背景色不同时在样式边界分段，避免掩盖�
     { factory: 'F1', flag: 'A', val: 20 },
   ];
   // 注入条件规则，使数值格被染色
-  doc.conditionalRules = [
-    {
-      id: 'cond-1',
-      sheetId: 'sheet-1',
-      regionId: 'reg-1',
-      targetMetricId: 'val',
-      condition: { operator: 'gte', values: [20] },
-      style: { backgroundColor: '#ffcccc' },
-      priority: 10,
-    },
-  ];
+  setPresentation(doc,'c-val',{operator:'gte',threshold:20,style:{backgroundColor:'#FFCCCC'}});
   // 针对数值列 c-val 开启同值合并
   doc.mergeConfig.policies = [
     {

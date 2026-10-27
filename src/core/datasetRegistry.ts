@@ -539,11 +539,13 @@ export function useDatasetData(
   const [headers, setHeaders] = useState<HeaderMapping | undefined>(() => cached?.headers || target?.headers);
   const [loading, setLoading] = useState<boolean>(() => Boolean(isAsync && !cached && options?.enabled !== false));
   const [error, setError] = useState<Error | null>(null);
+  const [resolvedTarget, setResolvedTarget] = useState(target);
   const requestRef = useRef(0);
 
   const load = useCallback(
     async (forceRefresh = false) => {
       const request = ++requestRef.current;
+      setResolvedTarget(target);
       if (!target || options?.enabled === false) {
         setData([]);
         setHeaders(undefined);
@@ -596,10 +598,10 @@ export function useDatasetData(
   }, [load]);
 
   return {
-    data,
-    headers,
-    loading,
-    error,
+    data: resolvedTarget === target ? data : cached?.data || [],
+    headers: resolvedTarget === target ? headers : cached?.headers || target?.headers,
+    loading: resolvedTarget === target ? loading : Boolean(isAsync && !cached && options?.enabled !== false),
+    error: resolvedTarget === target ? error : null,
     isAsync,
     refresh,
   };

@@ -1,0 +1,294 @@
+{
+  "url": "http://localhost:5174/?conditional-ui=1",
+  "isolatedPlaywrightContext": true,
+  "configurationViaProductUI": true,
+  "passed": 17,
+  "total": 17,
+  "checks": [
+    {
+      "id": "UI-01",
+      "name": "原模式三入口创建四列明细",
+      "passed": true
+    },
+    {
+      "id": "UI-02",
+      "name": "三规则AND及整行20格统计",
+      "passed": true,
+      "statuses": [
+        5,
+        4,
+        4
+      ]
+    },
+    {
+      "id": "UI-03",
+      "name": "实际RGB调色盘255/230/230",
+      "passed": true,
+      "color": "#FFE6E6"
+    },
+    {
+      "id": "UI-04",
+      "name": "AND切OR再取消",
+      "passed": true,
+      "and": [
+        5,
+        4,
+        4
+      ],
+      "or": [
+        5,
+        8,
+        0
+      ]
+    },
+    {
+      "id": "UI-05",
+      "name": "显示和原值复制",
+      "passed": true,
+      "rawTotal": 10850
+    },
+    {
+      "id": "UI-06",
+      "name": "F2源公式SUM及保存",
+      "passed": true,
+      "formula": "=SUM(D4:D16)",
+      "value": 10850
+    },
+    {
+      "id": "UI-07",
+      "name": "VTable实际Canvas原生复制",
+      "passed": true,
+      "statuses": [
+        5,
+        4,
+        4
+      ]
+    },
+    {
+      "id": "UI-08",
+      "name": "保存重开全部三规则及条件树",
+      "passed": true
+    },
+    {
+      "id": "UI-09",
+      "name": "Ctrl+Z/Y撤销重做规则文字",
+      "passed": true,
+      "undoLow": 5,
+      "redoChangedLow": 5
+    },
+    {
+      "id": "UI-10",
+      "name": "明细新增删除反转恢复",
+      "passed": true
+    },
+    {
+      "id": "UI-11",
+      "name": "两级行分组及时间加分类透视保存",
+      "passed": true
+    },
+    {
+      "id": "UI-12",
+      "name": "透视叶列和分组动态变化",
+      "passed": true,
+      "leaves": [
+        12,
+        13,
+        13,
+        8,
+        12
+      ],
+      "totals": [
+        10850,
+        11171,
+        11171,
+        6771,
+        10850
+      ]
+    },
+    {
+      "id": "UI-13",
+      "name": "规则复制排序删除和取消草稿",
+      "passed": true,
+      "copied": [
+        "低产",
+        "关注",
+        "正常",
+        "低产副本"
+      ],
+      "moved": [
+        "低产",
+        "关注",
+        "低产副本",
+        "正常"
+      ],
+      "removed": [
+        "低产",
+        "关注",
+        "正常"
+      ]
+    },
+    {
+      "id": "UI-14",
+      "name": "普通整行和单格样式及回显",
+      "passed": true,
+      "color": "#DAE8FC"
+    },
+    {
+      "id": "UI-15",
+      "name": "模板态直接保存24号字换行到VTable",
+      "passed": true,
+      "bodyRowHeight": 66
+    },
+    {
+      "id": "SDK-01",
+      "name": "公共SDK呈现低产和空文本，原公式仍601",
+      "passed": true
+    },
+    {
+      "id": "UI-16",
+      "name": "最终源码刷新VTable",
+      "passed": true,
+      "pageErrors": []
+    }
+  ],
+  "dataRuns": [
+    {
+      "scenario": "12-added",
+      "facts": 14,
+      "statuses": [
+        6,
+        4,
+        4
+      ],
+      "rawTotal": 11171,
+      "copiedRawTotal": 11171,
+      "formulaValue": "10850"
+    },
+    {
+      "scenario": "13-deleted-group",
+      "facts": 8,
+      "statuses": [
+        3,
+        2,
+        3
+      ],
+      "rawTotal": 6771,
+      "copiedRawTotal": 6771,
+      "formulaValue": "6771"
+    },
+    {
+      "scenario": "14-reversed",
+      "facts": 8,
+      "statuses": [
+        3,
+        2,
+        3
+      ],
+      "rawTotal": 6771,
+      "copiedRawTotal": 6771,
+      "formulaValue": "6771"
+    },
+    {
+      "scenario": "15-restored",
+      "facts": 13,
+      "statuses": [
+        5,
+        4,
+        4
+      ],
+      "rawTotal": 10850,
+      "copiedRawTotal": 10850,
+      "formulaValue": "10850"
+    }
+  ],
+  "pivotRuns": [
+    {
+      "scenario": "19-pivot-baseline",
+      "facts": 13,
+      "bodyRows": 7,
+      "columnLeaves": 12,
+      "numericTotal": 10850,
+      "statuses": [
+        76,
+        4,
+        4
+      ]
+    },
+    {
+      "scenario": "20-pivot-added-column",
+      "facts": 14,
+      "bodyRows": 8,
+      "columnLeaves": 13,
+      "numericTotal": 11171,
+      "statuses": [
+        96,
+        4,
+        4
+      ]
+    },
+    {
+      "scenario": "21-pivot-reverse",
+      "facts": 14,
+      "bodyRows": 8,
+      "columnLeaves": 13,
+      "numericTotal": 11171,
+      "statuses": [
+        96,
+        4,
+        4
+      ]
+    },
+    {
+      "scenario": "22-pivot-deleted-group",
+      "facts": 8,
+      "bodyRows": 6,
+      "columnLeaves": 8,
+      "numericTotal": 6771,
+      "statuses": [
+        43,
+        2,
+        3
+      ]
+    },
+    {
+      "scenario": "23-pivot-restored",
+      "facts": 13,
+      "bodyRows": 7,
+      "columnLeaves": 12,
+      "numericTotal": 10850,
+      "statuses": [
+        76,
+        4,
+        4
+      ]
+    }
+  ],
+  "nativeFormulaProof": [
+    {
+      "text": "低产",
+      "display": "低产",
+      "raw": 600,
+      "rawType": "number",
+      "formula": "=A1+1",
+      "formulaValue": 601
+    },
+    {
+      "text": "",
+      "display": "",
+      "raw": 600,
+      "rawType": "number",
+      "formula": "=A1+1",
+      "formulaValue": 601
+    },
+    {
+      "restored": "600",
+      "raw": 600
+    }
+  ],
+  "pageErrors": [],
+  "notes": [
+    "SDK-01是独立公共SDK技术实验，其余配置均由原产品入口完成",
+    "原生SUM(D4:D16)保留固定13行引用；新增14行的动态聚合11171单独核对",
+    "透视空交集SUM=0按有效值0参与规则，本例低产包含这些0值"
+  ]
+}

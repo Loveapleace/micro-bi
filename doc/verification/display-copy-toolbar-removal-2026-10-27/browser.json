@@ -1,0 +1,12 @@
+{
+  "displayToolbarButtons": 0,
+  "nativeKeyboardCounts": [
+    5,
+    4,
+    4
+  ],
+  "nativeContextMenuMatchesKeyboard": true,
+  "nativeContextMenuSingleCell": "WO-202608-01",
+  "configurationCopyButtons": 2,
+  "pageErrors": []
+}

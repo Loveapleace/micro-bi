@@ -1,0 +1,103 @@
+{
+  "date": "2026-10-27",
+  "removedCount": 12,
+  "removedBytes": 278803,
+  "removed": [
+    {
+      "file": "doc/cell-designer-acceptance-and-example.md",
+      "bytes": 17060,
+      "sha256": "ba97ab2930fe1ec9cacb048947411b1a90527127b10796b257298f559868132e",
+      "reason": "首次示例和问题状态已被后续复验及整改总表覆盖",
+      "replacement": "doc/univer-implementation-issues-and-remediation.md#18-双配置方式验收与示例配置2026-10-19"
+    },
+    {
+      "file": "doc/cell-designer-dynamic-acceptance-r3-2026-10-19.md",
+      "bytes": 13324,
+      "sha256": "21525869218eb57e33b35f4e99b3cb4a4b9d5f77d2849d6ab82c9350a1e8ada8",
+      "reason": "R3阶段失败结论已被后续整改覆盖",
+      "replacement": "doc/univer-implementation-issues-and-remediation.md#21-r3主流程专项验收f2冷加载动态覆盖与合并2026-10-19"
+    },
+    {
+      "file": "doc/cell-designer-identity-merge-acceptance-r4-2026-10-19.md",
+      "bytes": 14434,
+      "sha256": "3328d75229ec27ef69e056f777bacb0d539e1a558db3b0ed15b81a026c119e7c",
+      "reason": "R4阶段结论已并入总表，当前代码和协议继续演进",
+      "replacement": "doc/univer-implementation-issues-and-remediation.md#23-r4复验设计态刷新合并与存量实例身份2026-10-19"
+    },
+    {
+      "file": "doc/cell-designer-remediation-recheck-2026-10-19.md",
+      "bytes": 13295,
+      "sha256": "23a5fe70e7a308d6eb17a132628a93f95a4de31a8a3b63cf1f0d7f8b46629f3f",
+      "reason": "早期25项失败复验已被后续整改覆盖",
+      "replacement": "doc/univer-implementation-issues-and-remediation.md#19-单元格报表整改复验2026-10-19"
+    },
+    {
+      "file": "doc/cell-driven-expansion-acceptance-2026-10-21.md",
+      "bytes": 16369,
+      "sha256": "46aef95a261860b5bd244015b76014d55aa251097ef919a6e15693aec6d91b8b",
+      "reason": "早期v2入口和保存问题记录已并入总表，避免当成当前验收",
+      "replacement": "doc/univer-implementation-issues-and-remediation.md#28-新展开引擎独立复验与继续整改2026-10-21"
+    },
+    {
+      "file": "doc/cell-driven-report-configuration-feasibility.md",
+      "bytes": 16287,
+      "sha256": "9e2974224b8ff264b4ffa6ee2c9ef2f27f71e1acbfb5f2873466bc87206f5482",
+      "reason": "可行性阶段的固定三表型约束已被单元格驱动产品决策替代",
+      "replacement": "doc/cell-driven-expansion-engine-design.md"
+    },
+    {
+      "file": "doc/dual-mode-report-configuration-design.md",
+      "bytes": 52033,
+      "sha256": "1d5fbb5f2c3b56fd4336f1f9093b77242f80c63c542b0c6cb6610a8d18c6f56d",
+      "reason": "1.0/固定表型实施草案已被v2展开规格和实际入口替代",
+      "replacement": "doc/cell-driven-expansion-engine-design.md"
+    },
+    {
+      "file": "doc/hybrid-dimension-sync-analysis-2026-10-23.md",
+      "bytes": 12601,
+      "sha256": "b21a79252b5fafee182f071910e8901ea86dce2b18e00d70c845f4b57cd2e6e9",
+      "reason": "首次维度遗漏分析已由多轴实施与验收完整覆盖",
+      "replacement": "doc/hybrid-multiaxis-implementation-and-acceptance-2026-10-23.md"
+    },
+    {
+      "file": "doc/hybrid-mode3-deep-experience-2026-10-26.md",
+      "bytes": 20735,
+      "sha256": "7513080d60c5739d12a66419db66f351cb1ec3bc533fdfaf1e6aa96f0d3aac4a",
+      "reason": "7项整改前问题已关闭，保留最新实施验收和总表原问题ID",
+      "replacement": "doc/hybrid-section35-remediation-and-acceptance-2026-10-26.md"
+    },
+    {
+      "file": "doc/hybrid-mode3-experience-2026-10-23.md",
+      "bytes": 11112,
+      "sha256": "39cbcf79fe2b62b0ea1e6ceb660dc3582eea74c8fdb7c05aef11df651873f76d",
+      "reason": "首次3项问题已整改，使用较新的模式三实施验收",
+      "replacement": "doc/hybrid-section35-remediation-and-acceptance-2026-10-26.md"
+    },
+    {
+      "file": "doc/react17-to-react18-upgrade-plan.md",
+      "bytes": 30453,
+      "sha256": "19568dcca6aedd780229ec437dec0f1e06d2df1518ae166a6a3b9646853eb149",
+      "reason": "17/18混合状态的升级前判断过时，有效依赖/API和实施记录整理为现行文档",
+      "replacement": "doc/react18-implementation-and-acceptance.md"
+    },
+    {
+      "file": "doc/univer-preview-vtable-report-design.md",
+      "bytes": 61100,
+      "sha256": "27d2490b1351cca84f7267597ab7aaeb119b9a093bd8293c0ae2ca89b2ddf5fd",
+      "reason": "最早拟议类型与架构草案已被实际取数/模板/发布链路替代",
+      "replacement": "doc/README.md#当前架构"
+    }
+  ],
+  "policy": "Remove superseded phase reports/proposals; retain current specifications, implementation records, original issue IDs and evidence",
+  "validation": {
+    "verifiedAt": "2026-10-27T03:36:10.437Z",
+    "remainingDocMarkdown": 11,
+    "localLinksChecked": 347,
+    "anchorsChecked": 8,
+    "missingLinks": [],
+    "missingAnchors": [],
+    "obsoleteActiveReferences": [],
+    "runtimeOrTestLogicChanged": false,
+    "diffCheck": true
+  }
+}

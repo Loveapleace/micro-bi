@@ -1,0 +1,909 @@
+{
+  "date": "2026-10-27",
+  "scope": "micro-bi",
+  "removedCount": 173,
+  "removedBytes": 10319149,
+  "removed": [
+    {
+      "file": "doc/verification/cell-recheck-2026-10-19-r3/f2-complete.jpg",
+      "bytes": 81696,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/cell-recheck-2026-10-19-r3/legacy-regression.json",
+      "bytes": 4039,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/cell-recheck-2026-10-19-r3/legacy-template.json",
+      "bytes": 4866,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/cell-recheck-2026-10-19-r3/override-999.jpg",
+      "bytes": 81347,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/cell-recheck-2026-10-19-r4/added.tsv",
+      "bytes": 1235,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/cell-recheck-2026-10-19-r4/design-refresh-preview.jpg",
+      "bytes": 125743,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/cell-recheck-2026-10-19-r4/final.jpg",
+      "bytes": 83645,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/cell-recheck-2026-10-19-r4/merge-saved.jpg",
+      "bytes": 83178,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/cell-recheck-2026-10-19-r4/override-1000.jpg",
+      "bytes": 81257,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/01-detail-design.png",
+      "bytes": 168945,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/02-rule-editor.png",
+      "bytes": 164494,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/03-preview.tsv",
+      "bytes": 1156,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/03-three-rules.png",
+      "bytes": 168119,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/04-preview-formula.tsv",
+      "bytes": 1380,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/04-raw-quantity.tsv",
+      "bytes": 67,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/05-final-editor.png",
+      "bytes": 177662,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/08-preview-raw.tsv",
+      "bytes": 67,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/08-preview-whole.tsv",
+      "bytes": 1380,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/10-vtable-display.tsv",
+      "bytes": 1244,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/11-reopen-position.png",
+      "bytes": 149245,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/12-added-display.tsv",
+      "bytes": 1286,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/12-added-raw.tsv",
+      "bytes": 1248,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/13-deleted-group-display.tsv",
+      "bytes": 808,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/13-deleted-group-raw.tsv",
+      "bytes": 787,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/14-reversed-display.tsv",
+      "bytes": 808,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/14-reversed-raw.tsv",
+      "bytes": 787,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/15-restored-display.tsv",
+      "bytes": 1244,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/15-restored-raw.tsv",
+      "bytes": 1209,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/16-grouped-preview.tsv",
+      "bytes": 701,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/17-pivot-preview.tsv",
+      "bytes": 1817,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/18-pivot-vtable.tsv",
+      "bytes": 1583,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/19-pivot-baseline-display.tsv",
+      "bytes": 1583,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/19-pivot-baseline-raw.tsv",
+      "bytes": 1193,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/20-pivot-added-column-display.tsv",
+      "bytes": 1788,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/20-pivot-added-column-raw.tsv",
+      "bytes": 1300,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/21-pivot-reverse-display.tsv",
+      "bytes": 1788,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/21-pivot-reverse-raw.tsv",
+      "bytes": 1300,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/22-pivot-deleted-group-display.tsv",
+      "bytes": 1134,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/22-pivot-deleted-group-raw.tsv",
+      "bytes": 913,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/23-pivot-restored-display.tsv",
+      "bytes": 1583,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/23-pivot-restored-raw.tsv",
+      "bytes": 1193,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/24-pivot-reopened-design.png",
+      "bytes": 154551,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/28-direct-template-save-wrapped-vtable.png",
+      "bytes": 153443,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/29-wrapped-vtable-final.png",
+      "bytes": 142596,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/build-esm.log",
+      "bytes": 56,
+      "reason": "未引用的生成日志"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/build.log",
+      "bytes": 399,
+      "reason": "未引用的生成日志"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/console-notes.json",
+      "bytes": 1161,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/dependency-lock.log",
+      "bytes": 138,
+      "reason": "未引用的生成日志"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/display-poc.json",
+      "bytes": 215,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/focused-tests.log",
+      "bytes": 8764,
+      "reason": "未引用的生成日志"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/host-build.log",
+      "bytes": 7859,
+      "reason": "未引用的生成日志"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/library-build.log",
+      "bytes": 399,
+      "reason": "未引用的生成日志"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/typecheck.log",
+      "bytes": 65,
+      "reason": "未引用的生成日志"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/unit-tests.log",
+      "bytes": 86148,
+      "reason": "未引用的生成日志"
+    },
+    {
+      "file": "doc/verification/conditional-rules-acceptance-2026-10-26/wrapped-direct-save.json",
+      "bytes": 847,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/display-copy-toolbar-removal-2026-10-27/build.log",
+      "bytes": 399,
+      "reason": "未引用的生成日志"
+    },
+    {
+      "file": "doc/verification/display-copy-toolbar-removal-2026-10-27/keyboard-copy.tsv",
+      "bytes": 1244,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/editor-copy-toolbar-removal-2026-10-27/build.log",
+      "bytes": 399,
+      "reason": "未引用的生成日志"
+    },
+    {
+      "file": "doc/verification/hybrid-deep-experience-2026-10-26/01-new-default.png",
+      "bytes": 161038,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-deep-experience-2026-10-26/02-baseline-preview.png",
+      "bytes": 186872,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-deep-experience-2026-10-26/02-baseline-preview.tsv",
+      "bytes": 608,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-deep-experience-2026-10-26/03-avg-preview.tsv",
+      "bytes": 548,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-deep-experience-2026-10-26/05-multiaxis-preview.png",
+      "bytes": 224159,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-deep-experience-2026-10-26/06-multiaxis-vtable.png",
+      "bytes": 71170,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-deep-experience-2026-10-26/08-design-selected.png",
+      "bytes": 154638,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-deep-experience-2026-10-26/09-custom-style-preview.png",
+      "bytes": 221703,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-deep-experience-2026-10-26/09-custom-style-preview.tsv",
+      "bytes": 2440,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-deep-experience-2026-10-26/10-after-measure-change.tsv",
+      "bytes": 1202,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-deep-experience-2026-10-26/13-free-formula-before.tsv",
+      "bytes": 42,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-deep-experience-2026-10-26/13-free-formula-preview.tsv",
+      "bytes": 2573,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-deep-experience-2026-10-26/13-free-formula-redo.tsv",
+      "bytes": 42,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-deep-experience-2026-10-26/13-free-formula-undo.tsv",
+      "bytes": 42,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-deep-experience-2026-10-26/14-free-formula-preview-all.tsv",
+      "bytes": 133,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-deep-experience-2026-10-26/14-free-formula-vtable.png",
+      "bytes": 77735,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-deep-experience-2026-10-26/14-free-formula-vtable.tsv",
+      "bytes": 2704,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-deep-experience-2026-10-26/15-undo-unchanged.png",
+      "bytes": 172014,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-deep-experience-2026-10-26/16-row-insert-undo.png",
+      "bytes": 174049,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-deep-experience-2026-10-26/17-device-default-preview.tsv",
+      "bytes": 532,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-deep-experience-2026-10-26/18-device-grouped-preview.tsv",
+      "bytes": 615,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-deep-experience-2026-10-26/18-device-unmerged-preview.tsv",
+      "bytes": 615,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-deep-experience-2026-10-26/20-device-detail-preview.tsv",
+      "bytes": 425,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-deep-experience-2026-10-26/23-async-saved-card.png",
+      "bytes": 36357,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-deep-experience-2026-10-26/26-protected-field.tsv",
+      "bytes": 86,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-deep-experience-2026-10-26/27-protection-preview.tsv",
+      "bytes": 1168,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-deep-experience-2026-10-26/28-protection-after-preview.png",
+      "bytes": 205008,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-deep-experience-2026-10-26/29-new-span-cell.png",
+      "bytes": 185772,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-deep-experience-2026-10-26/31-span-baseline-vtable.png",
+      "bytes": 76671,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-deep-experience-2026-10-26/32-data-added-vtable.png",
+      "bytes": 77135,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-deep-experience-2026-10-26/35-final-restored-card.png",
+      "bytes": 77132,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-dimension-sync-2026-10-23/category-only-control.tsv",
+      "bytes": 244,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-dimension-sync-2026-10-23/preview-missing-category.png",
+      "bytes": 206169,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-dimension-sync-2026-10-23/preview-missing-category.tsv",
+      "bytes": 635,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-multiaxis-acceptance-2026-10-23/all-groups-disabled-vtable.png",
+      "bytes": 100812,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-multiaxis-acceptance-2026-10-23/base-facts.json",
+      "bytes": 4169,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-multiaxis-acceptance-2026-10-23/column-axes-design.png",
+      "bytes": 158628,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-multiaxis-acceptance-2026-10-23/facts-added-vtable.png",
+      "bytes": 108751,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-multiaxis-acceptance-2026-10-23/final-vtable.png",
+      "bytes": 102784,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-multiaxis-acceptance-2026-10-23/final-vtable.tsv",
+      "bytes": 1908,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-multiaxis-acceptance-2026-10-23/grouped-time-two-categories-preview.png",
+      "bytes": 181494,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-multiaxis-acceptance-2026-10-23/native-merge-and-unmerge-vtable.png",
+      "bytes": 100793,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-multiaxis-acceptance-2026-10-23/native-merge-note-and-unmerge-month.png",
+      "bytes": 213249,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-multiaxis-acceptance-2026-10-23/native-unmerge-month-preview.png",
+      "bytes": 223447,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-multiaxis-acceptance-2026-10-23/native-unmerge-vtable.png",
+      "bytes": 100626,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-multiaxis-acceptance-2026-10-23/reopened-preview-with-note-merge.png",
+      "bytes": 225027,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-multiaxis-acceptance-2026-10-23/reopened-preview-with-note-merge.tsv",
+      "bytes": 1888,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-multiaxis-acceptance-2026-10-23/saved-multiaxis-vtable.png",
+      "bytes": 101289,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-multiaxis-acceptance-2026-10-23/saved-multiaxis-vtable.tsv",
+      "bytes": 1855,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-multiaxis-acceptance-2026-10-23/three-by-three-preview.png",
+      "bytes": 230650,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-remediation-2026-10-23/automation-attempt-before-retarget.tsv",
+      "bytes": 548,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-remediation-2026-10-23/before-direct-save.png",
+      "bytes": 141291,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-remediation-2026-10-23/custom-format-vtable.tsv",
+      "bytes": 631,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-remediation-2026-10-23/direct-save-investigation.png",
+      "bytes": 60503,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-remediation-2026-10-23/disabled-preview.png",
+      "bytes": 153359,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-remediation-2026-10-23/final-reloaded.png",
+      "bytes": 65640,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-remediation-2026-10-23/preview-totals.tsv",
+      "bytes": 0,
+      "reason": "空调试输出"
+    },
+    {
+      "file": "doc/verification/hybrid-remediation-2026-10-23/reenabled-final.png",
+      "bytes": 66426,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-remediation-2026-10-23/reenabled-totals.tsv",
+      "bytes": 629,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-remediation-2026-10-23/reopened-disabled.png",
+      "bytes": 188358,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-remediation-2026-10-23/reopened-presets.png",
+      "bytes": 182390,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-remediation-2026-10-23/saved-totals.png",
+      "bytes": 65509,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-section35-remediation-2026-10-26/01-history-before.tsv",
+      "bytes": 8,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-section35-remediation-2026-10-26/01-history-redo.tsv",
+      "bytes": 8,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-section35-remediation-2026-10-26/02-font-after-measure-add.png",
+      "bytes": 161839,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-section35-remediation-2026-10-26/03-row-redo.tsv",
+      "bytes": 224,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-section35-remediation-2026-10-26/04-before-advanced.png",
+      "bytes": 165992,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-section35-remediation-2026-10-26/05-protection-after.tsv",
+      "bytes": 1054,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-section35-remediation-2026-10-26/05-protection-before.tsv",
+      "bytes": 1054,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-section35-remediation-2026-10-26/06-async-loaded-preview.tsv",
+      "bytes": 381,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-section35-remediation-2026-10-26/07-saved-vtable.tsv",
+      "bytes": 1170,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-section35-remediation-2026-10-26/08-reselected-design.tsv",
+      "bytes": 240,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-section35-remediation-2026-10-26/08-reselected-qty-preview.tsv",
+      "bytes": 1054,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-section35-remediation-2026-10-26/09-merge-after.tsv",
+      "bytes": 1054,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-section35-remediation-2026-10-26/09-merge-before.tsv",
+      "bytes": 1054,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-section35-remediation-2026-10-26/11-multiaxis-design.tsv",
+      "bytes": 470,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-section35-remediation-2026-10-26/11-multiaxis-source.png",
+      "bytes": 186285,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-section35-remediation-2026-10-26/12-cancelled-span-retained.png",
+      "bytes": 243153,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-section35-remediation-2026-10-26/12-complex-preview.tsv",
+      "bytes": 2609,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-section35-remediation-2026-10-26/17-final-vtable.png",
+      "bytes": 78885,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-section35-remediation-2026-10-26/21-final-preview.tsv",
+      "bytes": 1735,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-section35-remediation-2026-10-26/debug-current.png",
+      "bytes": 160690,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/hybrid-section35-remediation-2026-10-26/debug-protect-source.png",
+      "bytes": 159624,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/ignore-legacy-conditional-fields-2026-10-27/01-legacy-fields-preview.png",
+      "bytes": 214170,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/ignore-legacy-conditional-fields-2026-10-27/02-mixed-preview.png",
+      "bytes": 212898,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/ignore-legacy-conditional-fields-2026-10-27/build.log",
+      "bytes": 399,
+      "reason": "未引用的生成日志"
+    },
+    {
+      "file": "doc/verification/ignore-legacy-conditional-fields-2026-10-27/host-build.log",
+      "bytes": 7859,
+      "reason": "未引用的生成日志"
+    },
+    {
+      "file": "doc/verification/ignore-legacy-conditional-fields-2026-10-27/unit-tests.log",
+      "bytes": 86671,
+      "reason": "未引用的生成日志"
+    },
+    {
+      "file": "doc/verification/manual-screenshots-2026-10-23/bottom-of-page.png",
+      "bytes": 71802,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/manual-screenshots-2026-10-23/crosstab_fixed.png",
+      "bytes": 196721,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/manual-screenshots-2026-10-23/README.md",
+      "bytes": 393,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/merged-cells-text-probe-2026-10-19.jpg",
+      "bytes": 112991,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/static-span-acceptance-2026-10-26/after-region-preview.png",
+      "bytes": 184408,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/static-span-acceptance-2026-10-26/after-region-preview.tsv",
+      "bytes": 802,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/static-span-acceptance-2026-10-26/base-facts.json",
+      "bytes": 4169,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/static-span-acceptance-2026-10-26/continuous-edits-vtable.tsv",
+      "bytes": 829,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/static-span-acceptance-2026-10-26/data-added-vtable.png",
+      "bytes": 107012,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/static-span-acceptance-2026-10-26/data-added-vtable.tsv",
+      "bytes": 1074,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/static-span-acceptance-2026-10-26/data-baseline-vtable.tsv",
+      "bytes": 838,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/static-span-acceptance-2026-10-26/data-deleted-vtable.tsv",
+      "bytes": 561,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/static-span-acceptance-2026-10-26/data-restored-vtable.tsv",
+      "bytes": 838,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/static-span-acceptance-2026-10-26/data-reversed-vtable.tsv",
+      "bytes": 1074,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/static-span-acceptance-2026-10-26/native-unmerge-preview.png",
+      "bytes": 195829,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/static-span-acceptance-2026-10-26/native-unmerge-vtable.tsv",
+      "bytes": 829,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/static-span-acceptance-2026-10-26/per-group-preview.png",
+      "bytes": 194190,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/static-span-acceptance-2026-10-26/per-group-preview.tsv",
+      "bytes": 883,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/static-span-acceptance-2026-10-26/reopened-span-settings.png",
+      "bytes": 160368,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/static-span-acceptance-2026-10-26/saved-after-region-vtable.png",
+      "bytes": 84859,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/static-span-acceptance-2026-10-26/saved-after-region-vtable.tsv",
+      "bytes": 730,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/static-span-acceptance-2026-10-26/subgroups-data-deleted-vtable.tsv",
+      "bytes": 985,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/static-span-acceptance-2026-10-26/subgroups-data-empty-vtable.tsv",
+      "bytes": 231,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/static-span-acceptance-2026-10-26/subgroups-data-restored-vtable.tsv",
+      "bytes": 1480,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/static-span-acceptance-2026-10-26/subgroups-preview.png",
+      "bytes": 228312,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "doc/verification/static-span-acceptance-2026-10-26/subgroups-preview.tsv",
+      "bytes": 1490,
+      "reason": "未引用的验收过程截图或中间导出"
+    },
+    {
+      "file": "src/ui/components/common/SimpleDrawer.tsx",
+      "bytes": 4440,
+      "reason": "无导入、无公共入口导出的旧抽屉组件"
+    }
+  ],
+  "retained": "Referenced evidence and final checks/browser summaries; published modules and ambient types; tests/examples; dependencies and build configuration",
+  "moved": [
+    {
+      "from": "doc/verification/ignore-legacy-conditional-fields-2026-10-27/browser-check.mjs",
+      "to": "scripts/verify-legacy-conditional-fields.mjs"
+    },
+    {
+      "from": "doc/verification/ignore-legacy-conditional-fields-2026-10-27/browser-fixture.json",
+      "to": "test/fixtures/legacy-conditional-browser.json"
+    }
+  ],
+  "validation": {
+    "verifiedAt": "2026-10-27T03:28:39.010Z",
+    "libraryBuild": {
+      "esm": true,
+      "cjs": true,
+      "declarations": true
+    },
+    "tests": {
+      "total": 373,
+      "passed": 373,
+      "failed": 0
+    },
+    "hostBuild": true,
+    "browserScenarios": {
+      "total": 2,
+      "passed": 2,
+      "pageErrors": []
+    },
+    "markdownLinksChecked": 498,
+    "missingMarkdownLinks": [],
+    "sourceFiles": 113,
+    "unreachableRuntimeModules": [],
+    "retainedAmbientDeclaration": "src/univer/univer-locales.d.ts",
+    "diffCheck": true
+  }
+}

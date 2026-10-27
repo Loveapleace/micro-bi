@@ -11,6 +11,7 @@ import type {
   CellStyleDefinition,
   LayoutRule,
   InstanceOverride,
+  StyleRule,
 } from '../report-template/types.js';
 import {
   generateTemplateCellId,
@@ -19,6 +20,9 @@ import {
   computeBindingSignature,
 } from '../report-template/identity.js';
 import type { BiGridModel } from '../report/types.js';
+import { captureStaticSpanIntent, omitStaticSpanProjection, restoreStaticSpanSourceMerges } from './staticSpanIntent.js';
+import { publishedStyleToUniver } from '../report/buildBiGrid.js';
+import { targetForCell } from '../report-template/presentationTypes.js';
 
 export function extractStyleFromUniver(
   styleIdOrObj: any,
@@ -61,6 +65,14 @@ export function syncDocumentFromWorkbookSnapshot(
   grid?: BiGridModel,
   dataRevision?: string | number
 ): CellTemplateDocumentV1 {
+  const source = captureStaticSpanIntent(doc, snapshot, grid, mode === 'design');
+  doc = source;
+  snapshot = omitStaticSpanProjection(snapshot, grid);
+  if (grid?.staticSpanInstances?.length) {
+    const key = (m: any) => `${m.startRow}:${m.endRow}:${m.startCol}:${m.endCol}`;
+    const projected = new Set(grid.staticSpanInstances.map((i) => key(i.range)));
+    grid = { ...grid, merges: grid.merges.filter((m) => !projected.has(key(m))) };
+  }
   if (!snapshot || !snapshot.sheets) return doc;
 
   const nextCells: CellDefinition[] = doc.cells.map((c) => ({
@@ -69,6 +81,7 @@ export function syncDocumentFromWorkbookSnapshot(
     style: c.style ? { ...c.style } : undefined,
   }));
   const nextLayoutRules: LayoutRule[] = [...doc.layoutRules];
+  let nextStyleRules: StyleRule[] = [...(doc.styleRules || [])];
   const nextOverrides: InstanceOverride[] = [...(doc.instanceOverrides || [])];
   let nextMergeConfig = doc.mergeConfig ? JSON.parse(JSON.stringify(doc.mergeConfig)) : undefined;
 
@@ -237,7 +250,20 @@ export function syncDocumentFromWorkbookSnapshot(
             }
 
             if (mappedStyle) {
-              existing.style = { ...(existing.style || {}), ...mappedStyle };
+              const projected = grid?.cells.find(t=>t.row===r&&t.col===c);
+              if (cellVal.custom?.biProjection && projected) {
+                const expected=extractStyleFromUniver(publishedStyleToUniver(projected.style||{}))||{};
+                const delta:CellStyleDefinition={};
+                for(const prop of new Set([...Object.keys(mappedStyle),...Object.keys(expected)]))
+                  if(JSON.stringify((mappedStyle as any)[prop])!==JSON.stringify((expected as any)[prop]))(delta as any)[prop]=(mappedStyle as any)[prop];
+                if(Object.keys(delta).length){
+                  const active=nextStyleRules.filter(x=>x.scope==='template-cell'&&x.targetId===existing.id).sort((a,b)=>b.priority-a.priority)[0];
+                  const id=active?.id||`native-style-${sheetId}-${existing.id}`;
+                  const next={...active,id,sheetId,targetId:existing.id,target:targetForCell(existing),scope:'template-cell' as const,presetId:undefined,style:{...active?.style,...delta},priority:active?.priority??nextStyleRules.length};
+                  if('backgroundColor' in delta && delta.backgroundColor===undefined)next.noFill=true;
+                  nextStyleRules=nextStyleRules.filter(x=>x.id!==id);nextStyleRules.push(next);
+                }
+              } else existing.style = { ...(existing.style || {}), ...mappedStyle };
             }
           } else if ((v !== undefined && v !== null && v !== '') || f) {
             // 过滤：绝不将内部渲染的字段占位符 "{...}" 或 "=[...]" 错误固化为普通静态字面量单元格
@@ -332,12 +358,13 @@ export function syncDocumentFromWorkbookSnapshot(
     }
   }
 
-  return {
+  return restoreStaticSpanSourceMerges(source, {
     ...doc,
     templateRevision: (doc.templateRevision || 0) + 1,
     cells: nextCells,
     layoutRules: nextLayoutRules,
+    styleRules: nextStyleRules,
     instanceOverrides: nextOverrides,
     ...(nextMergeConfig ? { mergeConfig: nextMergeConfig } : {}),
-  };
+  });
 }

@@ -332,7 +332,7 @@ export const ReportWizardModal: React.FC<ReportWizardModalProps> = ({
           suppressions: [],
         },
         styleRules: [],
-        conditionalRules: [],
+        presentationRules: { version: 1, revision: 0, ruleSets: [] },
         instanceOverrides: [],
         orphanedEdits: [],
       };
@@ -552,7 +552,7 @@ export const ReportWizardModal: React.FC<ReportWizardModalProps> = ({
           suppressions: [],
         },
         styleRules: [],
-        conditionalRules: [],
+        presentationRules: { version: 1, revision: 0, ruleSets: [] },
         instanceOverrides: [],
         orphanedEdits: [],
       };
@@ -681,7 +681,7 @@ export const ReportWizardModal: React.FC<ReportWizardModalProps> = ({
           suppressions: [],
         },
         styleRules: [],
-        conditionalRules: [],
+        presentationRules: { version: 1, revision: 0, ruleSets: [] },
         instanceOverrides: [],
         orphanedEdits: [],
       };

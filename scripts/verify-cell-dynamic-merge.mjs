@@ -1,3 +1,4 @@
+import { setPresentation } from '../test/helpers/presentation.mjs';
 /**
  * 模板动态合并完整端到端验收与证据生成 (DM-11)
  * 验证：CFG (配置迁移), GSP (分组覆盖), EQ (相邻同值), ISO (隔离性), EXP (边界异常)
@@ -169,7 +170,7 @@ function createBasePivotDoc(options = {}) {
       },
     ],
     styleRules: [],
-    conditionalRules: [],
+    presentationRules: {version:1,revision:0,ruleSets:[]},
     instanceOverrides: [],
     orphanedEdits: [],
     mergeConfig: {
@@ -260,7 +261,7 @@ function createFVDetailDoc(policyOptions = {}) {
     ],
     layoutRules: [],
     styleRules: [],
-    conditionalRules: [],
+    presentationRules: {version:1,revision:0,ruleSets:[]},
     instanceOverrides: [],
     orphanedEdits: [],
     mergeConfig: {
@@ -756,17 +757,7 @@ await check('EQ-12', 'EQ', 'boundary 为 none 时允许跨越父组连续合并'
 
 await check('EQ-13', 'EQ', '条件格式背景色不同时在样式边界分段，避免掩盖条件格式', () => {
   const doc = createFVDetailDoc();
-  doc.conditionalRules = [
-    {
-      id: 'cond-1',
-      sheetId: 'sheet-1',
-      regionId: 'reg-1',
-      targetMetricId: 'val',
-      condition: { operator: 'gte', values: [20] },
-      style: { backgroundColor: '#ffcccc' },
-      priority: 10,
-    },
-  ];
+  setPresentation(doc,'c-val',{operator:'gte',threshold:20,style:{backgroundColor:'#FFCCCC'}});
   doc.mergeConfig.policies = [
     {
       id: 'merge-val-adj',

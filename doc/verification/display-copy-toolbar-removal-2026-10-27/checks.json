@@ -1,0 +1,22 @@
+{
+  "typecheck": true,
+  "libraryBuild": true,
+  "diffCheck": true,
+  "browser": {
+    "displayToolbarButtons": 0,
+    "nativeKeyboardCounts": [
+      5,
+      4,
+      4
+    ],
+    "nativeContextMenuMatchesKeyboard": true,
+    "nativeContextMenuSingleCell": "WO-202608-01",
+    "configurationCopyButtons": 2,
+    "pageErrors": []
+  },
+  "source": {
+    "file": "src/ui/presentation/report/ReportTableView.tsx",
+    "sha256": "5068f2907dfb463e43913f33c957e48a7e13ebd5e3b72a7f8429b35b2dca2c14"
+  },
+  "newUnitTests": false
+}

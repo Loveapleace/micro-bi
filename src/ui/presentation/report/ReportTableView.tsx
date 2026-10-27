@@ -90,7 +90,7 @@ export const ReportTableView: React.FC<ReportTableViewProps> = ({
 
     if (!currentSheet) return;
 
-    const { columns, records, customMergeCell, options } = adaptPublishedSheetToVTable(
+    const { columns, rawRecords, customMergeCell, options } = adaptPublishedSheetToVTable(
       currentSheet,
       report.styles || {}
     );
@@ -99,11 +99,18 @@ export const ReportTableView: React.FC<ReportTableViewProps> = ({
     try {
       const instance = new ListTable(containerRef.current, {
         columns,
-        records,
+        records: rawRecords,
         customMergeCell,
         widthMode: 'standard',
         autoFillWidth: true,
         ...options,
+      });
+      instance.on('dropdown_menu_click', ({ menuKey }: { menuKey: string }) => {
+        if (menuKey === 'copy') {
+          void navigator.clipboard?.writeText(instance.getCopyValue()).catch((error) => {
+            console.warn('[ReportTableView] 复制失败:', error);
+          });
+        }
       });
 
       localInstance = instance;

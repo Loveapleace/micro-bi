@@ -1,0 +1,50 @@
+[
+  {
+    "scenario": "12-added",
+    "facts": 14,
+    "statuses": [
+      6,
+      4,
+      4
+    ],
+    "rawTotal": 11171,
+    "copiedRawTotal": 11171,
+    "formulaValue": "10850"
+  },
+  {
+    "scenario": "13-deleted-group",
+    "facts": 8,
+    "statuses": [
+      3,
+      2,
+      3
+    ],
+    "rawTotal": 6771,
+    "copiedRawTotal": 6771,
+    "formulaValue": "6771"
+  },
+  {
+    "scenario": "14-reversed",
+    "facts": 8,
+    "statuses": [
+      3,
+      2,
+      3
+    ],
+    "rawTotal": 6771,
+    "copiedRawTotal": 6771,
+    "formulaValue": "6771"
+  },
+  {
+    "scenario": "15-restored",
+    "facts": 13,
+    "statuses": [
+      5,
+      4,
+      4
+    ],
+    "rawTotal": 10850,
+    "copiedRawTotal": 10850,
+    "formulaValue": "10850"
+  }
+]

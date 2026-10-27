@@ -97,7 +97,7 @@ export function resolveTemplateMerges(
     if (isHeaderRegion) {
       // 表头固定合并 (如 A1:H1 标题)
       let endCol = range.endColumn;
-      if (rule.id === 'merge-title') {
+      if (rule.id === 'merge-title' && !doc.cells.some((c) => c.sheetId === sheetId && c.position.row === range.startRow && c.position.column === range.startColumn && c.staticSpan)) {
         const gridMaxCol = baseGrid.cells.reduce((m, c) => Math.max(m, c.col), 0);
         if (gridMaxCol > 0) {
           endCol = gridMaxCol;

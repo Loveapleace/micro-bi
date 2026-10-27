@@ -1,0 +1,139 @@
+{
+  "environment": {
+    "node": "v22.22.0",
+    "platform": "win32",
+    "architecture": "x64"
+  },
+  "scope": "pure TypeScript resolver; 10000 records / 40000 cells / 3 rules; no browser capacity claim",
+  "example": {
+    "valid": true,
+    "statuses": [
+      5,
+      4,
+      4
+    ],
+    "numericTotal": 10850
+  },
+  "runs": [
+    {
+      "name": "initial-10000-rows",
+      "elapsedMs": 91.31,
+      "targets": 10000,
+      "statistics": [
+        {
+          "ruleId": "delivery-low",
+          "targets": 10000,
+          "matched": 3846,
+          "applied": 3846,
+          "blocked": 0,
+          "affectedRows": 3846,
+          "affectedCells": 15384,
+          "skippedMerges": 0,
+          "sampleCount": 3
+        },
+        {
+          "ruleId": "delivery-mid",
+          "targets": 10000,
+          "matched": 3077,
+          "applied": 3077,
+          "blocked": 3846,
+          "affectedRows": 3077,
+          "affectedCells": 3077,
+          "skippedMerges": 0,
+          "sampleCount": 3
+        },
+        {
+          "ruleId": "delivery-ok",
+          "targets": 10000,
+          "matched": 3077,
+          "applied": 3077,
+          "blocked": 6923,
+          "affectedRows": 3077,
+          "affectedCells": 3077,
+          "skippedMerges": 0,
+          "sampleCount": 3
+        }
+      ]
+    },
+    {
+      "name": "threshold-only-700-to-500",
+      "elapsedMs": 70.27,
+      "targets": 10000,
+      "statistics": [
+        {
+          "ruleId": "delivery-low",
+          "targets": 10000,
+          "matched": 1538,
+          "applied": 1538,
+          "blocked": 0,
+          "affectedRows": 1538,
+          "affectedCells": 6152,
+          "skippedMerges": 0,
+          "sampleCount": 3
+        },
+        {
+          "ruleId": "delivery-mid",
+          "targets": 10000,
+          "matched": 3077,
+          "applied": 3077,
+          "blocked": 1538,
+          "affectedRows": 3077,
+          "affectedCells": 3077,
+          "skippedMerges": 0,
+          "sampleCount": 3
+        },
+        {
+          "ruleId": "delivery-ok",
+          "targets": 10000,
+          "matched": 3077,
+          "applied": 3077,
+          "blocked": 4615,
+          "affectedRows": 3077,
+          "affectedCells": 3077,
+          "skippedMerges": 0,
+          "sampleCount": 3
+        }
+      ]
+    },
+    {
+      "name": "one-effective-value-update",
+      "elapsedMs": 78.04,
+      "targets": 10000,
+      "statistics": [
+        {
+          "ruleId": "delivery-low",
+          "targets": 10000,
+          "matched": 3845,
+          "applied": 3845,
+          "blocked": 0,
+          "affectedRows": 3845,
+          "affectedCells": 15380,
+          "skippedMerges": 0,
+          "sampleCount": 3
+        },
+        {
+          "ruleId": "delivery-mid",
+          "targets": 10000,
+          "matched": 3077,
+          "applied": 3077,
+          "blocked": 3845,
+          "affectedRows": 3077,
+          "affectedCells": 3077,
+          "skippedMerges": 0,
+          "sampleCount": 3
+        },
+        {
+          "ruleId": "delivery-ok",
+          "targets": 10000,
+          "matched": 3078,
+          "applied": 3078,
+          "blocked": 6922,
+          "affectedRows": 3078,
+          "affectedCells": 3078,
+          "skippedMerges": 0,
+          "sampleCount": 3
+        }
+      ]
+    }
+  ]
+}

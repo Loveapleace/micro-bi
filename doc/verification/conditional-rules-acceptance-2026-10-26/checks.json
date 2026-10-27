@@ -1,0 +1,390 @@
+{
+  "verifiedAt": "2026-10-26T11:11:28.918Z",
+  "baseHead": "2a138f070e465bf5d70ae17d82c8846758fed529",
+  "versions": {
+    "@univerjs/core": "1.1.0",
+    "@univerjs/sheets": "1.1.0",
+    "@univerjs/presets": "1.1.0",
+    "@visactor/vtable": "1.26.8",
+    "antd": "5.24.0",
+    "react": "18.3.1"
+  },
+  "libraryBuild": {
+    "passed": true,
+    "formats": [
+      "ESM",
+      "CJS",
+      "declarations"
+    ]
+  },
+  "hostBuild": {
+    "passed": true,
+    "toolchain": "TypeScript / Vite",
+    "existingLargeChunkWarning": true
+  },
+  "fullSuite": {
+    "tests": 371,
+    "passed": 371,
+    "failed": 0
+  },
+  "focused": {
+    "tests": 40,
+    "passed": 40
+  },
+  "browser": {
+    "tests": 17,
+    "passed": 17,
+    "pageErrors": []
+  },
+  "diffCheck": true,
+  "legacyConditionalPolicy": "explicitly rejected; no migration or readback",
+  "docLinks": [
+    {
+      "file": "doc/conditional-rules-implementation-and-acceptance-2026-10-26.md",
+      "link": "univer-implementation-issues-and-remediation.md",
+      "exists": true
+    },
+    {
+      "file": "doc/conditional-rules-implementation-and-acceptance-2026-10-26.md",
+      "link": "conditional-rules-optimization-plan-2026-10-26.md",
+      "exists": true
+    },
+    {
+      "file": "doc/conditional-rules-implementation-and-acceptance-2026-10-26.md",
+      "link": "../examples/cell-reports/workshop-delivery-status-rules.json",
+      "exists": true
+    },
+    {
+      "file": "doc/conditional-rules-implementation-and-acceptance-2026-10-26.md",
+      "link": "verification/conditional-rules-acceptance-2026-10-26/30-wrapped-vtable-final.png",
+      "exists": true
+    },
+    {
+      "file": "doc/conditional-rules-implementation-and-acceptance-2026-10-26.md",
+      "link": "verification/conditional-rules-acceptance-2026-10-26/checks.json",
+      "exists": true
+    },
+    {
+      "file": "doc/conditional-rules-implementation-and-acceptance-2026-10-26.md",
+      "link": "verification/conditional-rules-acceptance-2026-10-26/browser.json",
+      "exists": true
+    },
+    {
+      "file": "doc/conditional-rules-implementation-and-acceptance-2026-10-26.md",
+      "link": "verification/conditional-rules-acceptance-2026-10-26/performance-and-example.json",
+      "exists": true
+    },
+    {
+      "file": "doc/conditional-rules-implementation-and-acceptance-2026-10-26.md",
+      "link": "verification/conditional-rules-acceptance-2026-10-26/final-native-formula-proof.json",
+      "exists": true
+    },
+    {
+      "file": "doc/conditional-rules-implementation-and-acceptance-2026-10-26.md",
+      "link": "verification/conditional-rules-acceptance-2026-10-26/06-custom-rgb-picker.png",
+      "exists": true
+    },
+    {
+      "file": "doc/conditional-rules-implementation-and-acceptance-2026-10-26.md",
+      "link": "verification/conditional-rules-acceptance-2026-10-26/07-final-preview.png",
+      "exists": true
+    },
+    {
+      "file": "doc/conditional-rules-implementation-and-acceptance-2026-10-26.md",
+      "link": "verification/conditional-rules-acceptance-2026-10-26/09-saved-vtable.png",
+      "exists": true
+    },
+    {
+      "file": "doc/conditional-rules-implementation-and-acceptance-2026-10-26.md",
+      "link": "verification/conditional-rules-acceptance-2026-10-26/11-reopened-rules.png",
+      "exists": true
+    },
+    {
+      "file": "doc/conditional-rules-implementation-and-acceptance-2026-10-26.md",
+      "link": "verification/conditional-rules-acceptance-2026-10-26/10-vtable-native-copy.tsv",
+      "exists": true
+    },
+    {
+      "file": "doc/conditional-rules-implementation-and-acceptance-2026-10-26.md",
+      "link": "verification/conditional-rules-acceptance-2026-10-26/10-vtable-raw.tsv",
+      "exists": true
+    },
+    {
+      "file": "doc/conditional-rules-implementation-and-acceptance-2026-10-26.md",
+      "link": "verification/conditional-rules-acceptance-2026-10-26/26-normal-row-style.png",
+      "exists": true
+    },
+    {
+      "file": "doc/conditional-rules-implementation-and-acceptance-2026-10-26.md",
+      "link": "verification/conditional-rules-acceptance-2026-10-26/27-normal-cell-style.png",
+      "exists": true
+    },
+    {
+      "file": "doc/conditional-rules-implementation-and-acceptance-2026-10-26.md",
+      "link": "verification/conditional-rules-acceptance-2026-10-26/data-changes.json",
+      "exists": true
+    },
+    {
+      "file": "doc/conditional-rules-implementation-and-acceptance-2026-10-26.md",
+      "link": "verification/conditional-rules-acceptance-2026-10-26/pivot-data-changes.json",
+      "exists": true
+    },
+    {
+      "file": "doc/conditional-rules-implementation-and-acceptance-2026-10-26.md",
+      "link": "verification/conditional-rules-acceptance-2026-10-26/16-grouped-preview.png",
+      "exists": true
+    },
+    {
+      "file": "doc/conditional-rules-implementation-and-acceptance-2026-10-26.md",
+      "link": "verification/conditional-rules-acceptance-2026-10-26/17-pivot-preview.png",
+      "exists": true
+    },
+    {
+      "file": "doc/conditional-rules-implementation-and-acceptance-2026-10-26.md",
+      "link": "verification/conditional-rules-acceptance-2026-10-26/saved-detail-template.json",
+      "exists": true
+    },
+    {
+      "file": "doc/conditional-rules-implementation-and-acceptance-2026-10-26.md",
+      "link": "verification/conditional-rules-acceptance-2026-10-26/saved-pivot-template.json",
+      "exists": true
+    },
+    {
+      "file": "doc/conditional-rules-optimization-plan-2026-10-26.md",
+      "link": "conditional-rules-implementation-and-acceptance-2026-10-26.md",
+      "exists": true
+    },
+    {
+      "file": "doc/conditional-rules-optimization-plan-2026-10-26.md",
+      "link": "verification/conditional-rules-plan-2026-10-26/current-engine-probe.json",
+      "exists": true
+    },
+    {
+      "file": "doc/univer-implementation-issues-and-remediation.md",
+      "link": "conditional-rules-implementation-and-acceptance-2026-10-26.md",
+      "exists": true
+    },
+    {
+      "file": "doc/univer-implementation-issues-and-remediation.md",
+      "link": "verification/conditional-rules-acceptance-2026-10-26/browser.json",
+      "exists": true
+    },
+    {
+      "file": "doc/univer-implementation-issues-and-remediation.md",
+      "link": "verification/conditional-rules-acceptance-2026-10-26/checks.json",
+      "exists": true
+    },
+    {
+      "file": "doc/univer-implementation-issues-and-remediation.md",
+      "link": "verification/conditional-rules-acceptance-2026-10-26/final-native-formula-proof.json",
+      "exists": true
+    },
+    {
+      "file": "doc/univer-implementation-issues-and-remediation.md",
+      "link": "verification/conditional-rules-acceptance-2026-10-26/data-changes.json",
+      "exists": true
+    },
+    {
+      "file": "doc/univer-implementation-issues-and-remediation.md",
+      "link": "verification/conditional-rules-acceptance-2026-10-26/pivot-data-changes.json",
+      "exists": true
+    },
+    {
+      "file": "doc/univer-implementation-issues-and-remediation.md",
+      "link": "verification/conditional-rules-acceptance-2026-10-26/30-wrapped-vtable-final.png",
+      "exists": true
+    },
+    {
+      "file": "doc/univer-implementation-issues-and-remediation.md",
+      "link": "../examples/cell-reports/workshop-delivery-status-rules.json",
+      "exists": true
+    },
+    {
+      "file": "doc/univer-implementation-issues-and-remediation.md",
+      "link": "verification/conditional-rules-acceptance-2026-10-26/performance-and-example.json",
+      "exists": true
+    }
+  ],
+  "fingerprints": [
+    {
+      "file": "package.json",
+      "bytes": 5608,
+      "sha256": "3353299b26b30f19f5393b0203ec3f307566cdeca26b37fa7be1392dca139177"
+    },
+    {
+      "file": "package-lock.json",
+      "bytes": 158878,
+      "sha256": "dd421746bd1286d9defa1faa431321dbf0d5a4a28c8ead47ca9cc8f901d99b32"
+    },
+    {
+      "file": "src/report-template/presentationTypes.ts",
+      "bytes": 3844,
+      "sha256": "7873e9730ae26eaf8c7fa714696b53ab71440780864018eb1e482be43d7ce28a"
+    },
+    {
+      "file": "src/report-template/presentationRules.ts",
+      "bytes": 27930,
+      "sha256": "26fbec231b877a3353c93914d9eff4fd389f7b301ed7a627b3f31637f8b2fae0"
+    },
+    {
+      "file": "src/report-template/types.ts",
+      "bytes": 13324,
+      "sha256": "a0d5812295a1bf6cebd7769995ba0dad679b6fbbb585f2e8a40847dd83866dab"
+    },
+    {
+      "file": "src/report-template/validator.ts",
+      "bytes": 16757,
+      "sha256": "032e16f03a484cb99d9fe53fdec1a569a451d1f3c5392fcb521da567ee185839"
+    },
+    {
+      "file": "src/report-template/cellExpansionEngine.ts",
+      "bytes": 72336,
+      "sha256": "e9c5ad8511a58c8f435780a7a578bafc4655e4228340cddeed305b18c21d6058"
+    },
+    {
+      "file": "src/report-template/expandTemplate.ts",
+      "bytes": 25252,
+      "sha256": "e35e9c6a927e14393167c3016e466fd7f839827c3678415482462285f7627e52"
+    },
+    {
+      "file": "src/report-template/compileCellReport.ts",
+      "bytes": 18785,
+      "sha256": "f7e93fafca2e7f574079e9c66a50c07edcd97954e090945a1c0273b348e2e087"
+    },
+    {
+      "file": "src/report-template/panelToTemplateAdapter.ts",
+      "bytes": 18747,
+      "sha256": "f6856c8c475dd5a47c48ec47ca0f017a3ff758b3e344da6e93cf9a191590806c"
+    },
+    {
+      "file": "src/report-template/compileHybridHierarchy.ts",
+      "bytes": 7934,
+      "sha256": "313ac02d280889708391fbcf72b7ddfd09108f65dd62f8de0e99e89492c63c60"
+    },
+    {
+      "file": "src/cell-designer/CellAdvancedSettings.tsx",
+      "bytes": 24196,
+      "sha256": "1f50eb8d32c01e8fcbf41a1a25ea200315fce84e1869651cf9ea9814a78ba833"
+    },
+    {
+      "file": "src/cell-designer/PresentationRuleEditor.tsx",
+      "bytes": 16610,
+      "sha256": "c15b8799e08bd34c7d8073d38e8937226a8f8cd993d3bbe0ebef0d80028c62cc"
+    },
+    {
+      "file": "src/cell-designer/StyleEffectEditor.tsx",
+      "bytes": 8282,
+      "sha256": "4f03c22bad4662b148b865ac9f24bf20b905e30d34af17afa102da9b244f8c87"
+    },
+    {
+      "file": "src/cell-designer/HybridCellDesigner.tsx",
+      "bytes": 88567,
+      "sha256": "1b5218df92b74ee3836cede48ad80fa1c2533d48890d9c34f2f7212b3059e317"
+    },
+    {
+      "file": "src/cell-designer/CellReportDesigner.tsx",
+      "bytes": 27383,
+      "sha256": "6d953a033a5e653db2fa6fb0c945a9ec616c73d383ffa341321dc5c0df1cf3f6"
+    },
+    {
+      "file": "src/cell-designer/designerReducer.ts",
+      "bytes": 38726,
+      "sha256": "8930ac8a986c6aca927cb5ceabe46ad551879bad6a9e7e1da88f778ca394e5fd"
+    },
+    {
+      "file": "src/cell-designer/hybridTemplateState.ts",
+      "bytes": 10048,
+      "sha256": "375f81f6b62b48331e9c27542776dea78f3d20344731f5dba6d7160514937f95"
+    },
+    {
+      "file": "src/cell-designer/syncWorkbookToTemplate.ts",
+      "bytes": 16377,
+      "sha256": "66b33b342ee5c5469b66e1ffb8dcce8243e8d3fb7476c6ad57332dc44a35720a"
+    },
+    {
+      "file": "src/report/buildBiGrid.ts",
+      "bytes": 4329,
+      "sha256": "a74bc35a945b737d168f6d2f602dbba7786464185ecf006a945d3b3c326da831"
+    },
+    {
+      "file": "src/report/types.ts",
+      "bytes": 6409,
+      "sha256": "cdfd74597f9f8c0200b1976a6e84f75f64838c5a696272fdf673327ac9013e82"
+    },
+    {
+      "file": "src/univer/adapter.ts",
+      "bytes": 7742,
+      "sha256": "f4806e05e4956c2986654bd95a5ee20d4328fa25827a20525859e131f9ac69f2"
+    },
+    {
+      "file": "src/univer/UniverPreview.tsx",
+      "bytes": 24061,
+      "sha256": "c9bca555eb4b2f2a50e149116ff1fe4c8bde87772519c147315f1a62e45cb491"
+    },
+    {
+      "file": "src/ui/presentation/report/gridAdapter.ts",
+      "bytes": 5913,
+      "sha256": "9ce529b5702003f846e8ab29b8568ef6a3227f8f905c0d5371e895bb6764f214"
+    },
+    {
+      "file": "src/ui/presentation/report/styleAdapter.ts",
+      "bytes": 2236,
+      "sha256": "8e3fec91ab1f2e8c9c57f612a447e2d9b0143912c64a4b3311fd463bdf31d634"
+    },
+    {
+      "file": "src/ui/presentation/report/ReportTableView.tsx",
+      "bytes": 7080,
+      "sha256": "dace14504300976d7574f7d65fb405abded6d5d1f2a296582e2247474e7040d2"
+    },
+    {
+      "file": "test/presentation-rules.test.mjs",
+      "bytes": 27687,
+      "sha256": "00db0aa5536580139871bc55840c64cd68a58a57c06ea6f72e4a23b03bbdcdd8"
+    },
+    {
+      "file": "test/fixtures/presentation-facts.json",
+      "bytes": 4169,
+      "sha256": "94c5c61b7005737262352f23cf10c5ef84a543f8aa053754bcf0468f3a998402"
+    },
+    {
+      "file": "test/helpers/presentation.mjs",
+      "bytes": 945,
+      "sha256": "ba077bcb9e2b2e846e33ad5e3ae6d63acaf07456180b416a106bbe2f49ec2485"
+    },
+    {
+      "file": "scripts/verify-presentation-rules.mjs",
+      "bytes": 3172,
+      "sha256": "d7b7135609ecbc655f5dec664faf79a587d9fc0ab63810407df17c912a2ae8d6"
+    },
+    {
+      "file": "examples/cell-reports/workshop-delivery-status-rules.json",
+      "bytes": 17506,
+      "sha256": "750a5d6d77f5eaa007242c7ee0ab86c3f108579dfcbbbf3b18fca85a5ae5fe6a"
+    },
+    {
+      "file": "doc/conditional-rules-optimization-plan-2026-10-26.md",
+      "bytes": 32323,
+      "sha256": "420273618d33c619f962184d694cb3ecd31655592fc1141d212b5672e1481b4c"
+    },
+    {
+      "file": "doc/conditional-rules-implementation-and-acceptance-2026-10-26.md",
+      "bytes": 13012,
+      "sha256": "79ff6901ed74ffd3ec38a17c5b1dc9b259e852c96ab8619c25f851b7eb702b72"
+    },
+    {
+      "file": "doc/univer-implementation-issues-and-remediation.md",
+      "bytes": 267362,
+      "sha256": "eb99620a5d97f10516ee2440cc6689c43f44c2a4e86679a30f47d7c70a776222"
+    },
+    {
+      "file": "../dynamic-data-test/vite.config.ts",
+      "bytes": 2574,
+      "sha256": "01219443e1102ebf35c4a0ed62db66d88f8d7569954a5f402a9edaec0909756f"
+    },
+    {
+      "file": "../dynamic-data-test/src/components/CellReportEditModal.tsx",
+      "bytes": 6742,
+      "sha256": "af4596422f91d58d18bbe0fe84bbb6dc0a7375d81a5b2f67c26c6300085211ea"
+    }
+  ]
+}

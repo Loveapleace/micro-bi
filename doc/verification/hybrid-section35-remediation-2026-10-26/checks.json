@@ -1,0 +1,138 @@
+{
+  "date": "2026-10-26",
+  "scope": "第35节7项整改及第36节复验关闭",
+  "baseRevision": "2a138f070e465bf5d70ae17d82c8846758fed529",
+  "issues": [
+    {
+      "id": "H3D-F01",
+      "status": "closed",
+      "priority": "P2"
+    },
+    {
+      "id": "H3D-F02",
+      "status": "closed",
+      "priority": "P1"
+    },
+    {
+      "id": "H3D-F03",
+      "status": "closed",
+      "priority": "P2"
+    },
+    {
+      "id": "H3D-F04",
+      "status": "closed",
+      "priority": "P2"
+    },
+    {
+      "id": "H3D-F05",
+      "status": "closed",
+      "priority": "P1"
+    },
+    {
+      "id": "H3D-F06",
+      "status": "closed",
+      "priority": "P2"
+    },
+    {
+      "id": "H3D-F07",
+      "status": "closed",
+      "priority": "P1"
+    }
+  ],
+  "focusedTests": {
+    "passed": 10,
+    "failed": 0,
+    "evidence": "focused-tests.log"
+  },
+  "unitTests": {
+    "passed": 331,
+    "failed": 0,
+    "evidence": "unit-tests.log"
+  },
+  "builds": {
+    "library": "ESM/CJS/declarations passed",
+    "host": "TypeScript/Vite passed; existing chunk-size warning",
+    "libraryEvidence": "library-build.log",
+    "hostEvidence": "host-build.log"
+  },
+  "browser": {
+    "passed": 17,
+    "failed": 0
+  },
+  "existingObservation": {
+    "id": "H3-OBS01",
+    "status": "tracking",
+    "mainSessionPageErrors": 2,
+    "finalCleanPageErrors": 0
+  },
+  "hostSourceUnchanged": true,
+  "factSourceUnmodified": true,
+  "userStorageUnmodified": true,
+  "fixturesRemoved": true,
+  "browsersClosed": true,
+  "newCommitCreated": false,
+  "sourceHashes": [
+    {
+      "path": "src/cell-designer/HybridCellDesigner.tsx",
+      "sha256": "ef0470bc75d73667e38aea16f841e95780a74cc9d77debb0458dc9482a418f16"
+    },
+    {
+      "path": "src/cell-designer/hybridHistory.ts",
+      "sha256": "af148c1920bd215d042ea7530a54b43856e8c9d04b17a410c99995af5c375af6"
+    },
+    {
+      "path": "src/cell-designer/hybridTemplateState.ts",
+      "sha256": "07488abb776bb6cf12f9b8da7afa2029ee55c448d196dd0463365ed8d5d7b020"
+    },
+    {
+      "path": "src/cell-designer/univerEvents.ts",
+      "sha256": "889da504eb1843bfffd801e90bca4525f730f1dd6b71880230fd1e5fc2275431"
+    },
+    {
+      "path": "src/core/datasetRegistry.ts",
+      "sha256": "715304e352dc746bce9d8047ecbf0fdd96da6dd54a2dd98e600c9c77096d4893"
+    },
+    {
+      "path": "src/report-template/panelToTemplateAdapter.ts",
+      "sha256": "c79c0f9de76b5a3c0d49e57f599e1fbb5c16aadd99b6b78dd3d8d7e666d8b6e9"
+    },
+    {
+      "path": "src/report-template/compileHybridHierarchy.ts",
+      "sha256": "eea6a4e2132a09d083092eb3ca663065fe16aeaeb86f6f4d0970db09a180e1c5"
+    },
+    {
+      "path": "src/report-template/types.ts",
+      "sha256": "4cfabbfd64964cf069856980c3db063b2b80bb96c732c302dc3a060fe4d5b2a9"
+    },
+    {
+      "path": "src/univer/adapter.ts",
+      "sha256": "4a5c78c8fce97f4a30d00f321f953a42a93256f4822a0c57f021a585e5fe928d"
+    },
+    {
+      "path": "src/univer/UniverPreview.tsx",
+      "sha256": "2151f4f3c42000982e39f02e1caf5382af7b3f1504c1c9292562ecc831a5508d"
+    },
+    {
+      "path": "test/hybrid-deep-remediation.test.mjs",
+      "sha256": "5114bb0db076b29a4baddf1f5e9039c7d2cd086156506266a8e554510f5e861e"
+    }
+  ],
+  "hostHashes": [
+    {
+      "path": "../dynamic-data-test/src/App.tsx",
+      "sha256": "81c0f4c57e79614d5b3c32778abd2291ca523df9c18c8cb1b3a2e19e1ea73679"
+    },
+    {
+      "path": "../dynamic-data-test/src/constants/presets.ts",
+      "sha256": "09a84df338874a7aa9e7716c548f6c37aac4298a279cb14e1c1db9dc84d8517a"
+    },
+    {
+      "path": "../dynamic-data-test/src/mockData.ts",
+      "sha256": "7ae500177b538d96817ecb646f80804965e0ed2c85f21a7a11d7aa13f59ba125"
+    },
+    {
+      "path": "../dynamic-data-test/package.json",
+      "sha256": "297942f660651c61ac5d7d1e0ac8b7515ce31c9fc1c0c027353e04d963563451"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 /**
  * React 18 升级专项验收套件 (scripts/verify-react18-acceptance.mjs)
- * 对应 doc/react17-to-react18-upgrade-plan.md 第 7 节验收用例 (R18-T01 ~ R18-T16)
+ * 对应 doc/react18-implementation-and-acceptance.md 第 3 节验收用例 (R18-T01 ~ R18-T16)
  */
 import assert from 'node:assert/strict';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';

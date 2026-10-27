@@ -188,6 +188,14 @@ export interface BiGridCell {
   field?: string | undefined;
   style?: PublishedCellStyle | undefined;
   tooltip?: string | undefined;
+  sourceCellId?: string | undefined;
+  regionId?: string | undefined;
+  formula?: string | undefined;
+  /** 仅编译期共享引用，不进入发布/保存包。 */
+  ruleFacts?: readonly Record<string, any>[] | undefined;
+  baseDisplayText?: string | undefined;
+  basePresentationStyle?: PublishedCellStyle | undefined;
+  displaySource?: 'format' | 'conditional' | undefined;
 }
 
 export interface BiGridModel {
@@ -197,13 +205,21 @@ export interface BiGridModel {
   cells: BiGridCell[];
   merges: ReportCellMerge[];
   bindings: ReportBinding[];
+  defaultRowHeight?: number | undefined;
+  basePresentationRowHeights?: Record<number,number> | undefined;
+  ruleStatistics?: import('../report-template/presentationTypes.js').RuleStatistics[];
   colWidths?: Record<number, number> | undefined;
   rowHeights?: Record<number, number> | undefined;
   mergeOrigins?: {
     ruleId: string;
-    origin: 'static-layout' | 'manual-instance' | 'group-span' | 'adjacent-equal';
+    origin: 'static-layout' | 'manual-instance' | 'group-span' | 'adjacent-equal' | 'static-span';
     targetCellId?: string | undefined;
     groupContextKey?: string | undefined;
+    spanInstanceKey?: string | undefined;
     range: ReportCellMerge;
+  }[] | undefined;
+  staticSpanInstances?: {
+    ruleId: string; templateCellId: string; instanceKey: string; regionId: string;
+    range: ReportCellMerge; merged: boolean;
   }[] | undefined;
 }

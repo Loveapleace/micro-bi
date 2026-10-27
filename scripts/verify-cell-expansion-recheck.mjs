@@ -1,3 +1,4 @@
+import { setPresentation } from '../test/helpers/presentation.mjs';
 /** 独立复验：调用实际v2引擎、快照同步器、编译器和VTable适配器；不改业务实现。 */
 import assert from 'node:assert/strict';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
@@ -21,7 +22,7 @@ function doc(cells, changes = {}) {
     id: 'independent-ce-review', title: '独立CE复验', templateRevision: 1,
     sheets: [{ id: 'sheet-1', name: '测试' }],
     regions: [{ id: 'r1', datasetId: 'ds', sheetId: 'sheet-1', anchor: { row: 0, column: 0 }, filters: [] }],
-    cells, layoutRules: [], styleRules: [], conditionalRules: [], instanceOverrides: [], orphanedEdits: [],
+    cells, layoutRules: [], styleRules: [], presentationRules: {version:1,revision:0,ruleSets:[]}, instanceOverrides: [], orphanedEdits: [],
     ...changes,
   };
 }
@@ -148,9 +149,9 @@ await check('CER-15', 'sheets', '第二张工作表的数据模板同样展开�
   assert.equal(c.publication.sheets.find(s => s.id === 'sheet-2').cells.find(c => c.r === 0 && c.c === 0)?.v, 30, '第二张表仍按静态内容发布null');
 });
 await check('CER-16', 'style', '条件格式在当前业务值上生效', () => {
-  const d = basic(); d.conditionalRules = [{ id: 'highlight', sheetId: 'sheet-1', regionId: 'r1', targetMetricId: 'quantity', condition: { operator: 'gt', values: [15] }, style: { backgroundColor: '#ff0000' }, priority: 1 }];
+  const d = basic(); setPresentation(d,d.cells.find(c=>c.content.metricId==='quantity').id,{operator:'gt',threshold:15,style:{backgroundColor:'#FF0000'}});
   const g = expandCellDrivenTemplate(d, rows).grid;
-  assert.equal(g.cells.find(c => c.row === 2 && c.col === 1)?.style?.bgColor, '#ff0000', 'v2没有执行conditionalRules');
+  assert.equal(g.cells.find(c => c.row === 2 && c.col === 1)?.style?.bgColor, '#FF0000', 'v2没有执行conditionalRules');
 });
 await check('CER-17', 'merge', '投影生成的动态合并不能经未编辑快照固化为人工规则', () => {
   const d = basic(); d.cells.push(field('defects', 'defects', 2, 1, 'sum', 'inherit', 'team'));

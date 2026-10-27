@@ -331,6 +331,8 @@ export const App = () => {
 
 ## 🛠️ 本地开发与贡献
 
+目录职责和报表设计文档见[文档导航](doc/README.md)。源码在`src/`，回归测试及固定输入在`test/`，可执行验证脚本在`scripts/`，报表示例在`examples/`。
+
 ```bash
 # 1. 安装依赖
 npm install

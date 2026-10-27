@@ -1,0 +1,183 @@
+{
+  "date": "2026-10-26",
+  "url": "http://localhost:5174/",
+  "checks": [
+    {
+      "id": "R35-01",
+      "status": "pass",
+      "detail": "I12文字A→B，原生撤销回A，重做回B；页面无异常"
+    },
+    {
+      "id": "R35-02",
+      "status": "pass",
+      "detail": "原生字号18后增添缺陷指标仍18；原生格式不会被源历史初始化覆盖"
+    },
+    {
+      "id": "R35-03",
+      "status": "pass",
+      "detail": "第3行前插行标题仍第1行，业务表头3→4；撤销回3，重做回4，再撤销回3"
+    },
+    {
+      "id": "R35-04",
+      "status": "pass",
+      "detail": "C4指标1位小数+件+告警，经F2非法编辑后预览矩阵逐字一致，13个.0件保留；重开准确R4C3高级设置，单位件、告警true"
+    },
+    {
+      "id": "R35-05",
+      "status": "pass",
+      "detail": "冷缓存异步源显示加载提示，加载中保存被阻止；加载完成14条，自动识别时间与数值，默认主轴转速/轴承温度而非时间/车间计数，首次预览即有数据"
+    },
+    {
+      "id": "R35-06",
+      "status": "pass",
+      "detail": "直接保存及VTable保留13个.0件、备注B和公式6，刷新后仍可重开；精确属性回显在R35-07按重选后的C5另行核对"
+    },
+    {
+      "id": "R35-07",
+      "status": "pass",
+      "detail": "取消交付指标后保存重开仍未选择；重新勾选追加到缺陷之后，源格为C5；保存刷新重开C5字号18、件和告警true，未把设置错误附到C4缺陷指标"
+    },
+    {
+      "id": "R35-08",
+      "status": "pass",
+      "detail": "取消同类合并的提示改为仅保留首格值，不擅自填充标签；数值矩阵不变，CtrlZ恢复开启/CtrlY关闭，保存重开仍关闭"
+    },
+    {
+      "id": "R35-09",
+      "status": "pass",
+      "detail": "1366×768暗黑主题向导标题变为rgb(240,240,240)，右侧标题和维度说明清晰；保存和模式切换按钮可见"
+    },
+    {
+      "id": "R35-10",
+      "status": "pass",
+      "detail": "行完工月+车间+工件三级、列投产日+工件两级及总计正确，既有18号/单位/告警、备注和公式保留；G10区域后全宽两行说明原生取消后merge=false、height=2仍保存重开"
+    },
+    {
+      "id": "R35-11",
+      "status": "pass",
+      "detail": "保存报表不重开编辑器，源13→14条新增月份/车间/工件后交付10850→11171，总计列18→19，静态说明仍一次、备注和公式6保留"
+    },
+    {
+      "id": "R35-12",
+      "status": "pass",
+      "detail": "14条事实逆序后VTable矩阵与新增版本逐字一致"
+    },
+    {
+      "id": "R35-13",
+      "status": "pass",
+      "detail": "删除首车间后8事实、交付6771，总计列收缩到13；移除夹具恢复13事实后10850、列18，矩阵逐字等于基线；重开E6字体18、G10取消状态及高度2保留"
+    },
+    {
+      "id": "R35-14",
+      "status": "pass",
+      "detail": "独立冷缓存夹具首次异步失败显示错误、保存被阻止；重试加载14条，动态headers的主轴转速标签及数值类型同步，自动选中正确数值指标"
+    },
+    {
+      "id": "R35-15",
+      "status": "pass",
+      "detail": "冷缓存异步A延迟1500ms，立即切至静态B；等待A晚到后仍为B设备12条、无时间字段，工时/能耗默认选择正确。随后录入自由备注和预览仍正常"
+    },
+    {
+      "id": "R35-16",
+      "status": "pass",
+      "detail": "最终源码全选复制实测边界：插行26→撤销25→重做26，删行25→撤销26→重做25；插列16→撤销15→重做16，删列15→撤销16→重做15，标题及业务坐标同步恢复。规范mutation只处理一次，无150ms误去重"
+    },
+    {
+      "id": "R35-17",
+      "status": "pass",
+      "detail": "最终源码干净会话完成行列插删→撤销重做→文字A/B历史→字号18后新增指标→件/1位/告警→非法编辑保护→预览→直接保存→VTable→刷新重开。13个单位值、备注B/公式6、字号18/告警及真实25×15边界均保留，非法文字未进入展示"
+    }
+  ],
+  "counts": {
+    "passed": 17,
+    "failed": 0
+  },
+  "pageErrors": {
+    "mainSession": [
+      "DependencyNotFoundError: [redi]: Cannot find \"SheetsScrollRenderController2\" registered by any injector. The stack of dependencies is: \"\".\n    at ResolvedDependencyCollection.get (http://localhost:5174/node_modules/.vite/deps/chunk-YL3BL3IU.js?v=7668c2ec:6827:21)\n    at onSelf (http://localhost:5174/node_modules/.vite/deps/chunk-YL3BL3IU.js?v=7668c2ec:7404:48)\n    at Injector2.getValue (http://localhost:5174/node_modules/.vite/deps/chunk-YL3BL3IU.js?v=7668c2ec:7416:40)\n    at Injector2._get (http://localhost:5174/node_modules/.vite/deps/chunk-YL3BL3IU.js?v=7668c2ec:7231:33)\n    at Injector2.get (http://localhost:5174/node_modules/.vite/deps/chunk-YL3BL3IU.js?v=7668c2ec:7222:28)\n    at RenderUnitDependencyService.resolve (http://localhost:5174/node_modules/.vite/deps/@univerjs_preset-sheets-core.js?v=7668c2ec:40137:27)\n    at RenderUnit2.with (http://localhost:5174/node_modules/.vite/deps/@univerjs_preset-sheets-core.js?v=7668c2ec:40082:36)\n    at handler (http://localhost:5174/node_modules/.vite/deps/@univerjs_preset-sheets-core.js?v=7668c2ec:239632:145)\n    at Injector2.invoke (http://localhost:5174/node_modules/.vite/deps/chunk-YL3BL3IU.js?v=7668c2ec:7169:12)\n    at CommandService2._execute (http://localhost:5174/node_modules/.vite/deps/chunk-YL3BL3IU.js?v=7668c2ec:19421:38)",
+      "DependencyNotFoundError: [redi]: Cannot find \"SheetsScrollRenderController2\" registered by any injector. The stack of dependencies is: \"\".\n    at ResolvedDependencyCollection.get (http://localhost:5174/node_modules/.vite/deps/chunk-YL3BL3IU.js?v=7668c2ec:6827:21)\n    at onSelf (http://localhost:5174/node_modules/.vite/deps/chunk-YL3BL3IU.js?v=7668c2ec:7404:48)\n    at Injector2.getValue (http://localhost:5174/node_modules/.vite/deps/chunk-YL3BL3IU.js?v=7668c2ec:7416:40)\n    at Injector2._get (http://localhost:5174/node_modules/.vite/deps/chunk-YL3BL3IU.js?v=7668c2ec:7231:33)\n    at Injector2.get (http://localhost:5174/node_modules/.vite/deps/chunk-YL3BL3IU.js?v=7668c2ec:7222:28)\n    at RenderUnitDependencyService.resolve (http://localhost:5174/node_modules/.vite/deps/@univerjs_preset-sheets-core.js?v=7668c2ec:40137:27)\n    at RenderUnit2.with (http://localhost:5174/node_modules/.vite/deps/@univerjs_preset-sheets-core.js?v=7668c2ec:40082:36)\n    at handler (http://localhost:5174/node_modules/.vite/deps/@univerjs_preset-sheets-core.js?v=7668c2ec:239632:145)\n    at Injector2.invoke (http://localhost:5174/node_modules/.vite/deps/chunk-YL3BL3IU.js?v=7668c2ec:7169:12)\n    at CommandService2._execute (http://localhost:5174/node_modules/.vite/deps/chunk-YL3BL3IU.js?v=7668c2ec:19421:38)"
+    ],
+    "asyncRetry": [],
+    "rapidSwitch": [],
+    "finalCleanSession": []
+  },
+  "consoleWarnings": [
+    "Warning: [antd: Modal] `destroyOnClose` is deprecated. Please use `destroyOnHidden` instead.",
+    "Warning: [antd: message] Static function can not consume context like dynamic theme. Please use 'App' component instead.",
+    "[HybridReportEditModal] 保存异常: Error: 数据源正在加载，请完成后再保存\n    at Object.validateAndGetReport (http://localhost:5174/@fs/C:/Users/And19/Desktop/web/micro-bi/src/cell-designer/HybridCellDesigner.tsx?t=1792997537648:1257:49)\n    at handleOk (http://localhost:5174/src/components/HybridReportEditModal.tsx?t=1792997313527:55:46)\n    at Object.handleOk [as onClick] (http://localhost:5174/node_modules/.vite/deps/antd.js?v=7668c2ec:19742:49)\n    at http://localhost:5174/node_modules/.vite/deps/antd.js?v=7668c2ec:14100:69\n    at HTMLUnknownElement.callCallback2 (http://localhost:5174/node_modules/.vite/deps/chunk-XQC7LINP.js?v=7668c2ec:3674:22)\n    at Object.invokeGuardedCallbackDev (http://localhost:5174/node_modules/.vite/deps/chunk-XQC7LINP.js?v=7668c2ec:3699:24)\n    at invokeGuardedCallback (http://localhost:5174/node_modules/.vite/deps/chunk-XQC7LINP.js?v=7668c2ec:3733:39)\n    at invokeGuardedCallbackAndCatchFirstError (http://localhost:5174/node_modules/.vite/deps/chunk-XQC7LINP.js?v=7668c2ec:3736:33)\n    at executeDispatch (http://localhost:5174/node_modules/.vite/deps/chunk-XQC7LINP.js?v=7668c2ec:7014:11)\n    at processDispatchQueueItemsInOrder (http://localhost:5174/node_modules/.vite/deps/chunk-XQC7LINP.js?v=7668c2ec:7034:15)",
+    "Warning: [antd: Modal] `destroyOnClose` is deprecated. Please use `destroyOnHidden` instead.",
+    "Warning: [antd: message] Static function can not consume context like dynamic theme. Please use 'App' component instead.",
+    "Warning: [antd: Modal] `destroyOnClose` is deprecated. Please use `destroyOnHidden` instead.",
+    "Warning: [antd: message] Static function can not consume context like dynamic theme. Please use 'App' component instead.",
+    "Warning: [antd: Modal] `destroyOnClose` is deprecated. Please use `destroyOnHidden` instead."
+  ],
+  "dataVersions": {
+    "baseline": {
+      "qty": 10850,
+      "totalColumn": 18,
+      "caption": 1,
+      "note": true,
+      "formula": true
+    },
+    "added": {
+      "qty": 11171,
+      "totalColumn": 19,
+      "caption": 1,
+      "note": true,
+      "formula": true
+    },
+    "reversed": {
+      "qty": 11171,
+      "totalColumn": 19,
+      "caption": 1,
+      "note": true,
+      "formula": true
+    },
+    "deleted": {
+      "qty": 6771,
+      "totalColumn": 13,
+      "caption": 1,
+      "note": true,
+      "formula": true
+    },
+    "restored": {
+      "qty": 10850,
+      "totalColumn": 18,
+      "caption": 1,
+      "note": true,
+      "formula": true
+    },
+    "reversedEqualsAdded": true,
+    "restoredEqualsBaseline": true,
+    "fixtureRequests": [
+      {
+        "url": "http://localhost:5174/src/mockData.ts",
+        "count": 14
+      },
+      {
+        "url": "http://localhost:5174/src/mockData.ts",
+        "count": 14
+      },
+      {
+        "url": "http://localhost:5174/src/mockData.ts",
+        "count": 8
+      }
+    ]
+  },
+  "isolation": {
+    "independentChromiumContexts": true,
+    "userStorageUntouched": true,
+    "factFilesUnmodified": true,
+    "fixturesRemoved": true,
+    "browsersClosed": true
+  },
+  "notes": [
+    "Main session caught 2 previously tracked SheetsScrollRenderController2 dependency errors during repeated opens/theme changes; kept as H3-OBS01, not claimed fixed. Final clean acceptance session had zero page errors.",
+    "Properties are checked against the actual source metric address: after deselect/reselect quantity is appended after defects (C5 rather than C4). Early coordinate/initialization readings are not acceptance evidence.",
+    "Final structural acceptance copies the whole sheet through its corner header; counts verify physical rows/columns as well as source positions. Earlier source-only undo left an unused row; corrected and retested.",
+    "Structural callbacks now consume canonical physical mutation IDs only; command/confirm wrappers do not count as additional removals.",
+    "A test helper Escape closed an AntD modal and one dropdown had duplicate aria-live text. Those harness attempts were retargeted and not counted as product failures.",
+    "Data fixtures replace only source module responses in isolated contexts; data-version reload was verified, not a real production push API.",
+    "Final-source clean cycle rechecks template, preview, save/reopen, VTable, note/formula, units/condition, and 25x15 sheet dimensions."
+  ]
+}

@@ -1,3 +1,4 @@
+import { setPresentation } from '../test/helpers/presentation.mjs';
 /** 独立复验边界条件；调用实际编译器、快照适配器和已安装SDK，不修改业务实现。 */
 import assert from 'node:assert/strict';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
@@ -122,7 +123,7 @@ await check('RC-08', 'DCR-03', '模板格styleRules实际作用于展开度量',
 
 await check('RC-09', 'DCR-03', '条件背景色不清掉原有加粗、字体色和数字格式', () => {
   const doc = fresh(); const b = targetBinding(expand(doc));
-  doc.conditionalRules.push({ id: 'qty-bg', sheetId: 'sheet-1', targetMetricId: 'qty-sum', condition: { operator: 'gt', values: [100] }, style: { backgroundColor: '#00ff00' }, priority: 1 });
+  setPresentation(doc,doc.cells.find(c=>c.content.metricId==='qty-sum').id,{operator:'gt',threshold:100,style:{backgroundColor:'#00FF00'}});
   const style = cellAt(expand(doc), b.target.row, b.target.column)?.style;
   assert.equal(style.bgColor, '#00ff00');
   assert.equal(style.bold, true, '背景色规则把原加粗覆盖成undefined');
@@ -133,8 +134,8 @@ await check('RC-09', 'DCR-03', '条件背景色不清掉原有加粗、字体色
 await check('RC-10', 'DCR-03', '缺失事实的null交叉格不被条件规则当作数值0', () => {
   const doc = fresh(); const before = expand(doc); const empty = before.cells.find((c) => c.metricId === 'qty-sum' && c.value === null);
   assert.ok(empty, '测试数据应存在空交叉格');
-  doc.conditionalRules.push({ id: 'zero', sheetId: 'sheet-1', targetMetricId: 'qty-sum', condition: { operator: 'eq', values: [0] }, style: { backgroundColor: '#ff0000' }, priority: 1 });
-  assert.notEqual(cellAt(expand(doc), empty.row, empty.col)?.style?.bgColor, '#ff0000', 'Number(null)=0导致空格被错误高亮');
+  setPresentation(doc,doc.cells.find(c=>c.content.metricId==='qty-sum').id,{operator:'eq',threshold:0,style:{backgroundColor:'#FF0000'}});
+  assert.notEqual(cellAt(expand(doc), empty.row, empty.col)?.style?.bgColor, '#FF0000', 'Number(null)=0导致空格被错误高亮');
 });
 
 await check('RC-11', 'DCR-04', 'Excel引用公式SUM(K1:K2)应计算或明确阻断', () => {

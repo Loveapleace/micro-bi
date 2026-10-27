@@ -1,0 +1,88 @@
+{
+  "date": "2026-10-26",
+  "url": "http://localhost:5174/",
+  "checks": [
+    {
+      "id": "SPAN-UI-01",
+      "status": "pass",
+      "detail": "原模式三入口从G12空白格创建静态区域，区域后锚定、两行高度、全表含总计，预览文字一次且未影响交付10850"
+    },
+    {
+      "id": "SPAN-UI-02",
+      "status": "pass",
+      "detail": "保存为VTable后重开G12，高度2、文字、全表范围及区域后锚点完整恢复；开发热更新后通过UI恢复验收标题"
+    },
+    {
+      "id": "SPAN-UI-03",
+      "status": "pass",
+      "detail": "从J16创建第二条规则，按行父组在组前显示一次，仅跨动态列且排除总计；三个车间各一条，表尾说明仍一次"
+    },
+    {
+      "id": "SPAN-UI-04",
+      "status": "pass",
+      "detail": "原生取消首个分组说明合并和整表尾说明合并，切模式、保存刷新重开：前者保留1条局部取消、其他组继续合并；后者合并显示关闭但高度/范围/文字保留"
+    },
+    {
+      "id": "SPAN-UI-05",
+      "status": "pass",
+      "detail": "隔离数据源新增月份/产品/车间后，不重开编辑器，保存卡片自动扩列增行，交付10973，行分组说明4条，表尾说明1条"
+    },
+    {
+      "id": "SPAN-UI-06",
+      "status": "pass",
+      "detail": "输入记录逆序后，说明、业务数据和空行占位的VTable二维文本逐字一致"
+    },
+    {
+      "id": "SPAN-UI-07",
+      "status": "pass",
+      "detail": "数据新增后重开，表尾合并仍关闭、分组局部取消仍1条；实际预览旧组未合并，新组仍合并"
+    },
+    {
+      "id": "SPAN-UI-08",
+      "status": "pass",
+      "detail": "删除已取消合并的父组后说明减为2条、交付6450；恢复原13条事实后VTable文本逐字等于基线，取消例外随父组恢复而恢复生效"
+    },
+    {
+      "id": "SPAN-UI-09",
+      "status": "pass",
+      "detail": "行轴新增产品下级分组后，父车间说明仍3条而非按叶组重复，表尾1条，业务10850；左标签增列后两个范围随新数据起点和全表宽度迁移"
+    },
+    {
+      "id": "SPAN-UI-10",
+      "status": "pass",
+      "detail": "删除下级分组恢复原矩阵；一层、两层结构均验证空数据保存后恢复，与各自结构基线逐字一致，规则/高度/局部取消不丢失"
+    },
+    {
+      "id": "SPAN-UI-11",
+      "status": "pass",
+      "detail": "同一源格连续F2修改两次，预览和保存VTable仅最新文字一次；重开保留区域后定位、高度2和已取消合并状态"
+    },
+    {
+      "id": "SPAN-UI-12",
+      "status": "pass",
+      "detail": "用户显式打开表尾合并显示并恢复局部分组合并后，移除网络夹具、刷新原始数据仍正确居中，业务总量10850；非自动复活"
+    }
+  ],
+  "pageErrors": [],
+  "isolation": "Independent Chromium context; no user browser storage modified",
+  "dataFixtureMethod": "Only this context /src/mockData.ts response array is replaced before registry registration; reload existing saved card without opening/resaving editor, except explicitly documented empty-data save.",
+  "fixtureRequests": [
+    "http://localhost:5174/src/mockData.ts",
+    "http://localhost:5174/src/mockData.ts",
+    "http://localhost:5174/src/mockData.ts",
+    "http://localhost:5174/src/mockData.ts",
+    "http://localhost:5174/src/mockData.ts",
+    "http://localhost:5174/src/mockData.ts",
+    "http://localhost:5174/src/mockData.ts",
+    "http://localhost:5174/src/mockData.ts",
+    "http://localhost:5174/src/mockData.ts",
+    "http://localhost:5174/src/mockData.ts",
+    "http://localhost:5174/src/mockData.ts"
+  ],
+  "sourceRestored": true,
+  "notes": [
+    "Hot reload during implementation reset the initial draft title; restored via UI before persistence cases.",
+    "Comparisons use the same grouping structure baseline; one- and two-level row grouping have separate evidence.",
+    "Clipboard values are polled after copy. Closing-dropdown controls are located by aria-controls."
+  ]
+}

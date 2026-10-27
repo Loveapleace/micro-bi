@@ -3,6 +3,7 @@ import type { CellDefinition, CellTemplateDocumentV1, MergeConfigV1 } from '../r
 import { hybridAxisKey } from '../report-template/hybridAxes.js';
 import { computeBindingSignature } from '../report-template/identity.js';
 import { syncDocumentFromWorkbookSnapshot } from './syncWorkbookToTemplate.js';
+import { captureStaticSpanIntent } from './staticSpanIntent.js';
 
 export function mergeRetainedHybridConfig(previous: MergeConfigV1 | undefined, active: MergeConfigV1 | undefined): MergeConfigV1 | undefined {
   if (!active) return previous;
@@ -29,6 +30,7 @@ export function rebindHybridMergeConfig(config: MergeConfigV1 | undefined, oldCe
 
 /** 预览投影的取消按来源还原为源意图，而不是保存当前坐标的合并结果。 */
 export function captureHybridPreviewMerges(doc: CellTemplateDocumentV1, snapshot: any, grid: BiGridModel): CellTemplateDocumentV1 {
+  doc = captureStaticSpanIntent(doc, snapshot, grid);
   const sheetId = doc.sheets[0]?.id || 'sheet-1';
   const merges = snapshot?.sheets?.[sheetId]?.mergeData;
   if (!Array.isArray(merges) || !doc.mergeConfig || !grid.mergeOrigins) return doc;
@@ -37,6 +39,7 @@ export function captureHybridPreviewMerges(doc: CellTemplateDocumentV1, snapshot
   const config: MergeConfigV1 = { ...doc.mergeConfig, policies: [...doc.mergeConfig.policies], suppressions: [...doc.mergeConfig.suppressions] };
   const disabled = new Set(doc.hybridConfig?.version === 2 ? doc.hybridConfig.disabledLayoutRuleIds : []);
   for (const origin of grid.mergeOrigins) {
+    if (origin.origin === 'static-span') continue;
     if (actual.has(key(origin.range))) continue;
     if (origin.origin === 'static-layout' || origin.origin === 'manual-instance') {
       disabled.add(origin.ruleId);
@@ -54,7 +57,7 @@ export function captureHybridPreviewMerges(doc: CellTemplateDocumentV1, snapshot
         source: 'user', sequence: config.suppressions.length + 1 });
     }
   }
-  const generated = new Set(grid.merges.map(key));
+  const generated = new Set([...grid.merges, ...(grid.staticSpanInstances || []).map((i) => i.range)].map(key));
   const manualOnly = { ...snapshot, sheets: { ...snapshot.sheets, [sheetId]: { ...snapshot.sheets[sheetId], mergeData: merges.filter((m: any) => !generated.has(key(m))) } } };
   const synced = syncDocumentFromWorkbookSnapshot(doc, manualOnly, 'preview', grid);
   const rules = doc.layoutRules.filter((r) => !disabled.has(r.id));

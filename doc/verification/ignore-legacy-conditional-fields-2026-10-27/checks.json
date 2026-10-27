@@ -1,0 +1,49 @@
+{
+  "verifiedAt": "2026-10-27T01:11:38.774Z",
+  "baseHead": "2a138f070e465bf5d70ae17d82c8846758fed529",
+  "tests": {
+    "total": 373,
+    "passed": 373,
+    "failed": 0
+  },
+  "focusedTests": 42,
+  "libraryBuild": true,
+  "hostBuild": true,
+  "diffCheck": true,
+  "browser": {
+    "total": 2,
+    "passed": 2,
+    "pageErrors": []
+  },
+  "policy": "Ignore obsolete conditionalRules/conditionRules. Validate and execute presentationRules only. No migration.",
+  "fingerprints": [
+    {
+      "file": "src/report-template/presentationRules.ts",
+      "sha256": "16713f4c426379d86af133058d72a92ab6dad8a64d445803ab1801cd4e46a4fb"
+    },
+    {
+      "file": "src/cell-designer/HybridCellDesigner.tsx",
+      "sha256": "d00f623c7224d379b7f6fb5d4b511b60f6f9caf30894475d8e05e124bfed56c3"
+    },
+    {
+      "file": "test/presentation-rules.test.mjs",
+      "sha256": "d70643e99ddfe7b5221c3d5e2e8a34b01245e45ef74dbde4a6d6402feac386fc"
+    },
+    {
+      "file": "doc/ignore-legacy-conditional-fields-2026-10-27.md",
+      "sha256": "5905cdaccd709d4ac9574a1df323b78d38d50c0e0f9fbab11378c039c85c06e3"
+    },
+    {
+      "file": "doc/conditional-rules-implementation-and-acceptance-2026-10-26.md",
+      "sha256": "8ac4e033a319977c8bd9ec60418290fbdec908eedc121eb6b38da1fd2ff2084f"
+    },
+    {
+      "file": "doc/conditional-rules-optimization-plan-2026-10-26.md",
+      "sha256": "8bd93fd42f8eeed6bd60fe0939101ab42fca77b9aa98c453241d396979aa157d"
+    },
+    {
+      "file": "doc/univer-implementation-issues-and-remediation.md",
+      "sha256": "117c932d0557e6a45e13d84bd69b096f2f4afc388db96917b7757926b943a68f"
+    }
+  ]
+}

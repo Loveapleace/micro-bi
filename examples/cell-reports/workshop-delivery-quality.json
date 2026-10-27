@@ -242,8 +242,12 @@
     }
   ],
   "styleRules": [],
-  "conditionalRules": [],
   "instanceOverrides": [],
   "orphanedEdits": [],
-  "capabilitiesVersion": "cell-v1"
+  "capabilitiesVersion": "cell-v1",
+  "presentationRules": {
+    "version": 1,
+    "revision": 0,
+    "ruleSets": []
+  }
 }

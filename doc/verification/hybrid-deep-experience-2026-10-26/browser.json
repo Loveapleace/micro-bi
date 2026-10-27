@@ -1,0 +1,157 @@
+{
+  "date": "2026-10-26",
+  "url": "http://localhost:5174/",
+  "checks": [
+    {
+      "id": "H3D-01",
+      "status": "pass",
+      "detail": "原模式三入口创建并配置车间×投产日，交付与缺陷两指标、行总计；动态预览得到3车间5日，交付总计10850、缺陷237"
+    },
+    {
+      "id": "H3D-02",
+      "status": "pass",
+      "detail": "平均聚合基于事实重算，首车间750/2=375，跨日均值4400/6=733.33而非日均值平均；缺陷保持求和"
+    },
+    {
+      "id": "H3D-03",
+      "status": "pass",
+      "detail": "行时间月+车间+工件三级与列时间日+工件两级同时配置，设计态同步出现全部字段，预览按交集展开"
+    },
+    {
+      "id": "H3D-04",
+      "status": "pass",
+      "detail": "多级交叉预览与VTable文本一致，刷新重开恢复行时间/分类、列时间/分类、两位小数与总计"
+    },
+    {
+      "id": "H3D-05",
+      "status": "pass",
+      "detail": "高级单位件、1位小数、自定义字体/背景及<90条件告警在展开中生效，侧栏显示自定义"
+    },
+    {
+      "id": "H3D-06",
+      "status": "fail",
+      "issue": "H3D-F01",
+      "detail": "模板E5原生字号从12改18并再次选中核实为18；勾选良品率后立即回12，取消勾选仍12；同样路径复现两次"
+    },
+    {
+      "id": "H3D-07",
+      "status": "pass",
+      "detail": "正向对照：原生18号字号后修改时间粒度可保留，保存重开仍18；高级单位、精度与条件告警保留。需等待画布初始化完成再断言选中格"
+    },
+    {
+      "id": "H3D-08",
+      "status": "pass",
+      "detail": "自由备注和=SUM(1,2,3)保存到VTable，结果为6；自由格随动态区域位移，非原I12/J12绝对展示坐标"
+    },
+    {
+      "id": "H3D-09",
+      "status": "fail",
+      "issue": "H3D-F02",
+      "detail": "自由格I12依次写撤销验收A、撤销验收B，点击原生撤销一次及两次都仍B，未恢复上一次文字；前次公式撤销亦未改变画布"
+    },
+    {
+      "id": "H3D-10",
+      "status": "fail",
+      "issue": "H3D-F02",
+      "detail": "原生在第3行上方插入1行，撤销后结构仍插入态，保存VTable保留同一空行和位移；与文字撤销问题同归历史栈同步问题"
+    },
+    {
+      "id": "H3D-11",
+      "status": "fail",
+      "issue": "H3D-F03",
+      "detail": "在第3行前插入行时，不在插入范围内的第1行标题也从第1行移到第2行，插入影响超出所选位置"
+    },
+    {
+      "id": "H3D-12",
+      "status": "pass",
+      "detail": "静态0时间数据源切换后清理原工单字段，设备工时/能耗默认指标正确；多级分组健康平均96.25/98.65，保存重开关闭合并状态保留"
+    },
+    {
+      "id": "H3D-13",
+      "status": "fail",
+      "issue": "H3D-F04",
+      "detail": "关闭同类项单元格合并后线框确已分开，但9行中车间列仅4行有值，5行为空；预览和VTable/复制均如此，不符合取消则平铺展示便于二次导出文案"
+    },
+    {
+      "id": "H3D-14",
+      "status": "pass",
+      "detail": "移除全部行列维度会切换为12条原始设备明细，字段值保持；清空指标后可以保存仅静态标题的报表，未将此视为校验失败"
+    },
+    {
+      "id": "H3D-15",
+      "status": "fail",
+      "issue": "H3D-F05",
+      "detail": "首次选择内置异步数据源，等待远超模拟300ms后仍0条，预览无事实，时间字段显示暂无且全部数值指标误判计数。当前未显示加载或重试入口"
+    },
+    {
+      "id": "H3D-16",
+      "status": "pass",
+      "detail": "1366×768笔记本视口中模板/预览切换和保存按钮均可见，左侧面板独立滚动，Univer工具栏自动收纳"
+    },
+    {
+      "id": "H3D-17",
+      "status": "fail",
+      "issue": "H3D-F06",
+      "detail": "暗黑主题下模式三标题栏/向导标题沿用黑色文字，而容器变为#1f1f1f，报表名称与向导标题对比度不足；浅色卡片和Univer仍是亮色"
+    },
+    {
+      "id": "H3D-18",
+      "status": "fail",
+      "issue": "H3D-F07",
+      "detail": "独立重配交付指标1位小数+件和<90告警，预览26个.0件；F2试改受控字段被恢复，但预览件后缀变0个，原告警关闭；保护绑定同时删除合法高级覆盖"
+    },
+    {
+      "id": "H3D-19",
+      "status": "pass",
+      "detail": "G10创建按日期父列组范围跟随、区域后说明，5日期各一次；原生取消首日范围并保存，重开局部取消1条；新增月份/车间/工件321件后6条说明、总量11171，总计列18→19"
+    },
+    {
+      "id": "H3D-20",
+      "status": "pass",
+      "detail": "已验证网络夹具实际响应，14事实逆序后VTable二维文本与新增版本逐字一致，取消例外仍1条"
+    },
+    {
+      "id": "H3D-21",
+      "status": "pass",
+      "detail": "8事实删除首车间后交付6771，列范围收缩、总计列19→13，说明仍6条；移除夹具恢复13条真实源后5条说明、10850，整个矩阵与基线逐字一致；自由备注和公式6均保留"
+    }
+  ],
+  "pageErrors": [
+    "DependencyNotFoundError: [redi]: Cannot find \"SheetsScrollRenderController2\" registered by any injector. The stack of dependencies is: \"\"."
+  ],
+  "consoleErrors": [
+    "Warning: [antd: Card] `bodyStyle` is deprecated. Please use `styles.body` instead.",
+    "Warning: [antd: message] Static function can not consume context like dynamic theme. Please use 'App' component instead.",
+    "Warning: [antd: Modal] `destroyOnClose` is deprecated. Please use `destroyOnHidden` instead.",
+    "Warning: [antd: message] Static function can not consume context like dynamic theme. Please use 'App' component instead.",
+    "Warning: [antd: Modal] `destroyOnClose` is deprecated. Please use `destroyOnHidden` instead."
+  ],
+  "counts": {
+    "passed": 13,
+    "failed": 8,
+    "distinctIssues": 7
+  },
+  "dataFixtures": {
+    "method": "Only isolated context mockData.ts network response replaced; no fact file changes. Reload existing saved card without editor/resave.",
+    "requests": [
+      {
+        "url": "http://localhost:5174/src/mockData.ts",
+        "count": 8
+      },
+      {
+        "url": "http://localhost:5174/src/mockData.ts",
+        "count": 14
+      }
+    ],
+    "restored": true,
+    "finalMatrixEqualsBaseline": true
+  },
+  "isolation": "Independent Chromium context; no user browser storage changed",
+  "qaNotes": [
+    "Controls are read after canvas initializes; early initialization values are not acceptance evidence.",
+    "VTable copy clicks a visible data cell; a previous selection copied from another table was rejected and evidence replaced.",
+    "Data fixture uses a mutable object and validates served response; first reassignment captured an old closure, and deletion/reversal were rerun with actual 8/14 record responses.",
+    "Clearing all measures can save a title-only static report; no claim of validation defect.",
+    "One previously tracked lifecycle dependency error occurred; 3 subsequent steady open/cancel cycles did not add page errors."
+  ]
+}

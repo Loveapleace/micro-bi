@@ -1,12 +1,10 @@
-# 模板动态合并完整设计：分组覆盖、横纵向相邻同值合并
+# 模板动态合并规格：分组覆盖与横纵相邻同值
 
-**2026-10-20布局来源修订：新cell模式不再配置全局layoutKind/metricDirection，详见[单元格驱动展开引擎设计](cell-driven-expansion-engine-design.md)。** 本文动态合并的源规则、身份、取消例外及预览/保存/VTable要求保持；新引擎的分组覆盖改为消费局部重复块的真实footprint。以下全局方向示例和用例保留旧协议兼容意义，新引擎需追加局部排版重构用例，不能只隐藏旧方向控件。
+维护日期：2026-10-27。本文保留当前仍使用的源规则、身份、分组边界、取消例外和Univer/VTable一致性约定。新cell模式不配置全局layoutKind/metricDirection；模式三和兼容路径可保留这些内部布局信息。下文历史方向示例及扩展用例按相应入口解释，不能重新要求新cell模式选择全局方向。
 
-日期：2026-10-19。版本：设计稿1.0。状态：**待实施规格，本次交付为文档，未实现或验收本文新增能力。**
+分组覆盖、相邻同值及取消例外的核心协议已在源码和测试中使用；更广的用例矩阵为持续回归规格，不表示全部组合均做过浏览器验收。范围跟随见[实施验收](static-span-implementation-and-acceptance-2026-10-26.md)，多级轴与数据变化见[多轴实施](hybrid-multiaxis-implementation-and-acceptance-2026-10-23.md)，条件样式与跨行合并边界见[条件规则实施](conditional-rules-implementation-and-acceptance-2026-10-26.md)。
 
-范围：`micro-bi` 单元格模板设计器、动态展开/编译、Univer编辑预览，以及 `dynamic-data-test` 原看板保存与VTable展示。保留当前字段配置面板，不用独立演示页替代主流程。
-
-关联：[双配置方式方案](dual-mode-report-configuration-design.md)、[Univer/VTable集成方案](univer-preview-vtable-report-design.md)、[整改清单](univer-implementation-issues-and-remediation.md)、[React18升级方案](react17-to-react18-upgrade-plan.md)。本文细化模板动态合并，不重新评定整改清单第24节的实现方验收结论。
+关联：[单元格展开规格](cell-driven-expansion-engine-design.md)、[当前架构](README.md#当前架构)、[整改总表](univer-implementation-issues-and-remediation.md)、[React18运行约定](react18-implementation-and-acceptance.md)。
 
 ## 1. 目标、决策与验收范围
 
@@ -49,7 +47,7 @@
 1. 车间名称与其下两格空白是一个成员块的布局结果，不能用“车间名称和空白相等”判断。应使用成员块元数据。
 2. 明细列出现`A、A、B、A`时，相邻同值仅合并前两个A；不会将最后的A移到前面，也不改变分组、排序或数据行数量。
 
-## 3. 当前代码基础与缺口
+## 3. 设计起点与扩展背景（非当前缺陷清单）
 
 本节是本次读码事实，不表示新增规格已经实现。
 
@@ -753,7 +751,7 @@ F0分别执行rows/columns两种排列；FV/FH使用合成数据，不能把它�
 
 ## 18. 实施交付物与行业参考
 
-实施交付物应包括新协议与迁移、设计侧栏与高级设置、纯合并求值器、命令/快照隔离、保存包与主应用自动重编译、VTable适配回归、新示例和逐项测试证据。本轮仅交付本规格及关联文档入口，没有提前修改业务实现或标记用例通过。
+持续维护合并协议、设计器入口、纯合并求值器、命令/快照隔离、保存重编译和VTable回归。具体实现与测试数量以相应实施验收记录为准，本文不单独重复声明本轮执行结果。
 
 FineReport官方说明区分普通分组与相邻连续分组，后者处理连续相同成员；可作为本方案把分组与同值模式分开配置的参考。[相邻连续分组](https://help.fanruan.com/finereport/doc-view-319.html)
 

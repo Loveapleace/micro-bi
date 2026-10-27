@@ -383,8 +383,12 @@
     }
   ],
   "styleRules": [],
-  "conditionalRules": [],
   "instanceOverrides": [],
   "orphanedEdits": [],
-  "capabilitiesVersion": "cell-expansion-v2"
+  "capabilitiesVersion": "cell-expansion-v2",
+  "presentationRules": {
+    "version": 1,
+    "revision": 0,
+    "ruleSets": []
+  }
 }

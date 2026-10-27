@@ -51,6 +51,8 @@ import { compileCellReport, type CompileCellReportResult } from '../report-templ
 import { normalizeCellTemplate } from '../report-template/normalizeCellTemplate.js';
 import { expandCellTemplate } from '../report-template/expandTemplate.js';
 import { expandCellDrivenTemplate } from '../report-template/cellExpansionEngine.js';
+import { applyPresentationRules } from '../report-template/presentationRules.js';
+import { addStaticSpanDesignMerges } from '../report-template/staticSpans.js';
 import { resolveFieldId } from '../report-template/identity.js';
 import {
   designerReducer,
@@ -106,6 +108,7 @@ export const CellReportDesigner = forwardRef<CellReportDesignerRef, CellReportDe
     stateRef.current = state;
     const [fieldSearch, setFieldSearch] = useState('');
     const [wizardOpen, setWizardOpen] = useState(false);
+    const [switchingView, setSwitchingView] = useState(false);
     const [univerAPI, setUniverAPI] = useState<FUniver | null>(null);
 
     // 数据源与字段提取
@@ -353,7 +356,7 @@ export const CellReportDesigner = forwardRef<CellReportDesignerRef, CellReportDe
           .map((r) => [r.index!, r.size!])
       );
 
-      return {
+      const design = addStaticSpanDesignMerges(state.document, {
         type: 'detail',
         rowCount: 25,
         colCount: 15,
@@ -362,8 +365,11 @@ export const CellReportDesigner = forwardRef<CellReportDesignerRef, CellReportDe
         bindings: [],
         colWidths,
         rowHeights,
-      };
+      });
+      return applyPresentationRules(state.document,design,[],{conditions:false}).grid;
     }, [state.document, state.mode, activeData]);
+
+    const advancedPreviewGrid = useMemo(()=>state.advancedModalOpen ? expandCellDrivenTemplate(state.document,activeData).grid:undefined,[state.advancedModalOpen,state.document,activeData]);
 
     // 对外暴露 Ref 接口 (DCR-09: 同步原生编辑与工作簿快照)
     const flushDraft = () => {
@@ -476,9 +482,12 @@ export const CellReportDesigner = forwardRef<CellReportDesignerRef, CellReportDe
             {/* 设计态 / 预览态切换 */}
             <Segmented
               value={state.mode}
-              onChange={(val) => {
-                flushDraft();
-                dispatch({ type: 'SET_MODE', mode: val as 'design' | 'preview' });
+              disabled={switchingView}
+              onChange={async (val) => {
+                setSwitchingView(true);
+                try { await univerPreviewRef.current?.waitForFormulaSettled(); flushDraft();
+                  dispatch({ type: 'SET_MODE', mode: val as 'design' | 'preview' });
+                } finally { setSwitchingView(false); }
               }}
               options={[
                 { label: '模板设计态', value: 'design', icon: <TableOutlined /> },
@@ -720,11 +729,10 @@ export const CellReportDesigner = forwardRef<CellReportDesignerRef, CellReportDe
           open={state.advancedModalOpen}
           cell={state.selectedCell}
           document={state.document}
+          fields={fieldItems}
+          previewGrid={advancedPreviewGrid}
           onSave={(updated) => {
-            if (updated.parents) dispatch({ type: 'UPDATE_DRAFT_PARENTS', parents: updated.parents });
-            if (updated.content) dispatch({ type: 'UPDATE_DRAFT_CONTENT', content: updated.content });
-            if (updated.style) dispatch({ type: 'UPDATE_DRAFT_STYLE', style: updated.style });
-            dispatch({ type: 'APPLY_DRAFT' });
+            dispatch({ type: 'APPLY_ADVANCED', updated });
             dispatch({ type: 'CLOSE_ADVANCED' });
           }}
           onCancel={() => dispatch({ type: 'CLOSE_ADVANCED' })}

@@ -90,18 +90,15 @@ export function attachUniverDesignerEvents(
       const d = api.addEvent(name, handleSelectionChanged);
       if (d?.dispose) disposers.push(() => d.dispose());
     }
-    let lastStructureOp = '';
-    let lastStructureOpTime = 0;
-
     if (api.Event?.CommandExecuted && typeof api.addEvent === 'function') {
       const d = api.addEvent(api.Event.CommandExecuted, (event: any) => {
+        if (api.__biSourceHistoryReplay) return;
         const cmdInfo = event?.commandInfo || event;
         const cmdId = String(cmdInfo?.id || '').toLowerCase();
         if (cmdId.includes('selection')) {
           handleSelectionChanged(event);
         } else if (
-          cmdId.includes('insert-col') &&
-          !cmdId.includes('undo') &&
+          cmdId === 'sheet.mutation.insert-col' &&
           options.onColumnsInserted
         ) {
           if ((api as any)?.__biTransaction || (api as any)?.__isProgrammaticWrite || (api as any)?.isProgrammaticWrite || (globalThis as any)?.__isBiProgrammaticWrite) {
@@ -112,16 +109,9 @@ export function attachUniverDesignerEvents(
           const endCol = params?.range?.endColumn !== undefined ? params.range.endColumn : (params?.range?.startColumn !== undefined ? params.range.startColumn : (params?.count ? startCol + params.count - 1 : startCol));
           const count = Math.max(1, endCol - startCol + 1);
           const sheetId = params?.subUnitId || params?.sheetId || params?.unitId;
-          const opKey = `insert-col:${sheetId}:${startCol}:${count}`;
-          const now = Date.now();
-          if (opKey !== lastStructureOp || now - lastStructureOpTime > 150) {
-            lastStructureOp = opKey;
-            lastStructureOpTime = now;
-            options.onColumnsInserted({ sheetId, startIndex: startCol, count });
-          }
+          options.onColumnsInserted({ sheetId, startIndex: startCol, count });
         } else if (
-          cmdId.includes('remove-col') &&
-          !cmdId.includes('undo') &&
+          cmdId === 'sheet.mutation.remove-col' &&
           options.onColumnsRemoved
         ) {
           if ((api as any)?.__biTransaction || (api as any)?.__isProgrammaticWrite || (api as any)?.isProgrammaticWrite || (globalThis as any)?.__isBiProgrammaticWrite) {
@@ -132,16 +122,9 @@ export function attachUniverDesignerEvents(
           const endCol = params?.range?.endColumn !== undefined ? params.range.endColumn : (params?.range?.startColumn !== undefined ? params.range.startColumn : (params?.count ? startCol + params.count - 1 : startCol));
           const count = Math.max(1, endCol - startCol + 1);
           const sheetId = params?.subUnitId || params?.sheetId || params?.unitId;
-          const opKey = `remove-col:${sheetId}:${startCol}:${count}`;
-          const now = Date.now();
-          if (opKey !== lastStructureOp || now - lastStructureOpTime > 150) {
-            lastStructureOp = opKey;
-            lastStructureOpTime = now;
-            options.onColumnsRemoved({ sheetId, startIndex: startCol, count });
-          }
+          options.onColumnsRemoved({ sheetId, startIndex: startCol, count });
         } else if (
-          cmdId.includes('insert-row') &&
-          !cmdId.includes('undo') &&
+          cmdId === 'sheet.mutation.insert-row' &&
           options.onRowsInserted
         ) {
           if ((api as any)?.__biTransaction || (api as any)?.__isProgrammaticWrite || (api as any)?.isProgrammaticWrite || (globalThis as any)?.__isBiProgrammaticWrite) {
@@ -152,16 +135,9 @@ export function attachUniverDesignerEvents(
           const endRow = params?.range?.endRow !== undefined ? params.range.endRow : (params?.range?.startRow !== undefined ? params.range.startRow : (params?.count ? startRow + params.count - 1 : startRow));
           const count = Math.max(1, endRow - startRow + 1);
           const sheetId = params?.subUnitId || params?.sheetId || params?.unitId;
-          const opKey = `insert-row:${sheetId}:${startRow}:${count}`;
-          const now = Date.now();
-          if (opKey !== lastStructureOp || now - lastStructureOpTime > 150) {
-            lastStructureOp = opKey;
-            lastStructureOpTime = now;
-            options.onRowsInserted({ sheetId, startIndex: startRow, count });
-          }
+          options.onRowsInserted({ sheetId, startIndex: startRow, count });
         } else if (
-          (cmdId.includes('remove-row') || cmdId.includes('remove-rows')) &&
-          !cmdId.includes('undo') &&
+          cmdId === 'sheet.mutation.remove-rows' &&
           options.onRowsRemoved
         ) {
           if ((api as any)?.__biTransaction || (api as any)?.__isProgrammaticWrite || (api as any)?.isProgrammaticWrite || (globalThis as any)?.__isBiProgrammaticWrite) {
@@ -172,13 +148,7 @@ export function attachUniverDesignerEvents(
           const endRow = params?.range?.endRow !== undefined ? params.range.endRow : (params?.range?.startRow !== undefined ? params.range.startRow : (params?.count ? startRow + params.count - 1 : startRow));
           const count = Math.max(1, endRow - startRow + 1);
           const sheetId = params?.subUnitId || params?.sheetId || params?.unitId;
-          const opKey = `remove-row:${sheetId}:${startRow}:${count}`;
-          const now = Date.now();
-          if (opKey !== lastStructureOp || now - lastStructureOpTime > 150) {
-            lastStructureOp = opKey;
-            lastStructureOpTime = now;
-            options.onRowsRemoved({ sheetId, startIndex: startRow, count });
-          }
+          options.onRowsRemoved({ sheetId, startIndex: startRow, count });
         } else if (cmdId.includes('set-range-values') && !cmdId.includes('mutation') && options.onCellEdited) {
           if ((api as any)?.__biTransaction || (api as any)?.__isProgrammaticWrite || (api as any)?.isProgrammaticWrite || (globalThis as any)?.__isBiProgrammaticWrite) {
             return;

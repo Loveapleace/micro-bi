@@ -31,6 +31,8 @@ export type DesignerAction =
   | { type: 'UPDATE_DRAFT_CONTENT'; content: Partial<CellContent> }
   | { type: 'UPDATE_DRAFT_PARENTS'; parents: { row: string | null; column: string | null } }
   | { type: 'UPDATE_DRAFT_STYLE'; style: Record<string, any> }
+  | { type: 'UPDATE_DRAFT_ADVANCED'; updated: Partial<CellDefinition> }
+  | { type: 'APPLY_ADVANCED'; updated: import('../report-template/presentationTypes.js').AdvancedCellUpdate }
   | { type: 'APPLY_DRAFT' }
   | { type: 'REVERT_DRAFT' }
   | { type: 'DELETE_CELL_BINDING' }
@@ -258,6 +260,19 @@ export function designerReducer(state: DesignerState, action: DesignerAction): D
           },
         },
       };
+    }
+
+    case 'APPLY_ADVANCED': {
+      const { presentationRules, visualStyleRules, ...updated } = action.updated;
+      const committed = designerReducer(designerReducer(state, { type: 'UPDATE_DRAFT_ADVANCED', updated }), { type: 'APPLY_DRAFT' });
+      return { ...committed, document: { ...committed.document,
+        ...(presentationRules ? { presentationRules } : {}), ...(visualStyleRules ? { styleRules: visualStyleRules } : {}) } };
+    }
+    case 'UPDATE_DRAFT_ADVANCED': {
+      if (!state.selectedCell) return state;
+      return { ...state, selectedCell: { ...state.selectedCell, ...action.updated,
+        content: { ...state.selectedCell.content, ...action.updated.content } as CellContent,
+        style: { ...state.selectedCell.style, ...action.updated.style } }, draftDirty: true };
     }
 
     case 'APPLY_DRAFT': {
@@ -651,6 +666,7 @@ export function designerReducer(state: DesignerState, action: DesignerAction): D
           } else if (content.kind === 'literal') {
             updatedCell = {
               ...existing,
+              literalOverride: Boolean(existing.panelOwner) || existing.literalOverride,
               content: { kind: 'literal', value: value ?? '' },
             };
           } else if (content.kind === 'field') {

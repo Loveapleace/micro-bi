@@ -31,6 +31,8 @@ import { expandCellDrivenTemplate } from './cellExpansionEngine.js';
 import { applyRegionFilters } from './regionFilter.js';
 import { evaluateArithmetic } from './arithmeticEval.js';
 import { evaluateSheetFormula } from './sheetFormulaEvaluator.js';
+import { applyPresentationRules } from './presentationRules.js';
+import { activeStaticSpans, applyStaticSpans, prepareStaticSpanTemplate } from './staticSpans.js';
 
 function toPublishedStyle(style?: CellStyleDefinition): PublishedCellStyle {
   if (!style) return {};
@@ -339,6 +341,19 @@ export function expandCellTemplate(
     };
   }
 
+  if (activeStaticSpans(doc, plan.sheetId).length) {
+    const base = expandCellTemplate({ ...prepareStaticSpanTemplate(doc), presentationRules: undefined, styleRules: [] }, plan, rawDataset);
+    const definitions = [...plan.rowDimensions, ...plan.columnDimensions, ...plan.detailColumns];
+    const bindings = base.grid.bindings.map((b) => {
+      const targetId = (b as any).templateCellId || (b.semantic.metricId ? plan.measures.find((m) => m.metricId === b.semantic.metricId)?.templateCellId :
+        definitions.find((d) => d.fieldKey === b.semantic.field)?.templateCellId);
+      return { ...b, templateCellId: targetId, regionId: plan.regionId };
+    });
+    const spanned = applyStaticSpans(doc, { ...base.grid, bindings }, { sheetId: plan.sheetId });
+    const presentation = applyPresentationRules(doc, spanned.grid, rawDataset, { sheetId: plan.sheetId });
+    return { ...base, grid: presentation.grid, diagnostics: [...(base.diagnostics || []), ...spanned.diagnostics, ...presentation.diagnostics] };
+  }
+
   const filtered = applyRegionFilters(rawDataset, plan.filters);
   let baseGrid: BiGridModel;
   const diagnostics: TemplateDiagnostic[] = [];
@@ -642,65 +657,6 @@ export function expandCellTemplate(
     }
   }
 
-  // 消费 styleRules (样式规则)
-  const sortedStyleRules = [...(doc.styleRules || [])].sort((a, b) => (a.priority ?? 0) - (b.priority ?? 0));
-  for (const rule of sortedStyleRules) {
-    if (rule.sheetId && rule.sheetId !== sheetId) continue;
-    const pubStyle = toPublishedStyle(rule.style);
-    if (!pubStyle || Object.keys(pubStyle).length === 0) continue;
-
-    for (const c of cellMap.values()) {
-      let match = false;
-      if (rule.scope === 'template-cell') {
-        const templateId = c.metricId
-          ? plan.measures.find((m) => m.metricId === c.metricId)?.templateCellId
-          : [...plan.rowDimensions, ...plan.columnDimensions, ...plan.detailColumns].find((d) => d.fieldKey === c.field)?.templateCellId;
-        match = templateId === rule.targetId;
-      } else if (rule.scope === 'region') {
-        match = !rule.targetId || rule.targetId === plan.regionId;
-      } else if (rule.scope === 'sheet') {
-        match = true;
-      }
-
-      if (match) {
-        c.style = mergePublishedStyles(c.style, pubStyle);
-      }
-    }
-  }
-
-  // 消费 conditionalRules (条件格式)
-  const sortedConditions = [...(doc.conditionalRules || [])].sort((a, b) => (a.priority ?? 0) - (b.priority ?? 0));
-  for (const rule of sortedConditions) {
-    if (rule.sheetId && rule.sheetId !== sheetId) continue;
-    if (rule.regionId && rule.regionId !== plan.regionId) continue;
-
-    for (const c of cellMap.values()) {
-      if (rule.targetMetricId && c.metricId !== rule.targetMetricId) continue;
-      // 缺失事实的 null / undefined 交叉格不作为数值 0 参与条件判断 (RC-10)
-      if (c.value === null || c.value === undefined || c.value === '') continue;
-
-      const num = typeof c.value === 'number' ? c.value : Number(c.value);
-      if (isNaN(num)) continue;
-
-      let matched = false;
-      const { operator, values } = rule.condition;
-      const v0 = values?.[0] ?? 0;
-      const v1 = values?.[1] ?? 0;
-      switch (operator) {
-        case 'gt': matched = num > v0; break;
-        case 'gte': matched = num >= v0; break;
-        case 'lt': matched = num < v0; break;
-        case 'lte': matched = num <= v0; break;
-        case 'eq': matched = num === v0; break;
-        case 'between': matched = num >= v0 && num <= v1; break;
-      }
-
-      if (matched) {
-        c.style = mergePublishedStyles(c.style, toPublishedStyle(rule.style));
-      }
-    }
-  }
-
   const resolved = resolveTemplateMerges(doc, plan, baseGrid, { sheetId });
   if (resolved.diagnostics.length > 0) {
     diagnostics.push(...resolved.diagnostics);
@@ -711,6 +667,7 @@ export function expandCellTemplate(
     ...baseGrid,
     cells: Array.from(cellMap.values()),
     merges: activeMerges,
+    mergeOrigins: resolved.resolvedDetails,
     rowCount: Math.max(baseGrid.rowCount, 25),
     colCount: Math.max(baseGrid.colCount, 15),
     colWidths: Object.fromEntries(
@@ -725,8 +682,10 @@ export function expandCellTemplate(
     ),
   };
 
+  const presentation = applyPresentationRules(doc, finalGrid, rawDataset, { sheetId });
+  diagnostics.push(...presentation.diagnostics);
   return {
-    grid: finalGrid,
+    grid: presentation.grid,
     recordCount: rawDataset.length,
     filteredCount: filtered.length,
     diagnostics,

@@ -1,0 +1,42 @@
+{
+  "isolatedContexts": true,
+  "fixtures": "test/fixtures/legacy-conditional-browser.json",
+  "results": [
+    {
+      "scenario": "旧字段忽略验收",
+      "passed": true,
+      "previewAndSaveUnblocked": true,
+      "reopenUnblocked": true,
+      "previewCounts": [
+        0,
+        0,
+        0
+      ],
+      "vtableCounts": [
+        0,
+        0,
+        0
+      ],
+      "savedRules": 0,
+      "pageErrors": []
+    },
+    {
+      "scenario": "新旧字段并存验收",
+      "passed": true,
+      "previewAndSaveUnblocked": true,
+      "reopenUnblocked": true,
+      "previewCounts": [
+        5,
+        4,
+        4
+      ],
+      "vtableCounts": [
+        5,
+        4,
+        4
+      ],
+      "savedRules": 3,
+      "pageErrors": []
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+import { setPresentation } from './helpers/presentation.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { expandCellDrivenTemplate } from '../dist/esm/report-template/cellExpansionEngine.js';
@@ -81,13 +82,6 @@ test('Advanced Cell Features: 8 大高级属性全量求值与发布测试', () 
             emptyDisplay: 'N/A',
             zeroDisplay: 'dash',
           },
-          conditionRules: [
-            {
-              id: 'cond-1',
-              condition: { operator: 'lt', values: [90] },
-              style: { color: '#cf1322', backgroundColor: '#fff1f0', bold: true },
-            },
-          ],
         },
         style: {
           textAlign: 'center',
@@ -124,6 +118,7 @@ test('Advanced Cell Features: 8 大高级属性全量求值与发布测试', () 
   ];
 
   // 1. 测试展开引擎求值
+  setPresentation(doc, 'c-score', { threshold: 90, style: { color: '#CF1322', backgroundColor: '#FFF1F0', bold: true } });
   const { grid } = expandCellDrivenTemplate(doc, dataset);
   assert.equal(grid.cells.length >= 8, true);
 
@@ -148,8 +143,8 @@ test('Advanced Cell Features: 8 大高级属性全量求值与发布测试', () 
   assert.equal(scoreCell0.value, 85);
   assert.equal(scoreCell0.displayText, '85.0');
   // 满足 < 90 条件格式，触发告警样式
-  assert.equal(scoreCell0.style.color, '#cf1322');
-  assert.equal(scoreCell0.style.bgColor, '#fff1f0');
+  assert.equal(scoreCell0.style.color, '#CF1322');
+  assert.equal(scoreCell0.style.bgColor, '#FFF1F0');
   assert.equal(scoreCell0.style.wrapText, true);
   assert.equal(scoreCell0.style.verticalAlign, 'middle');
   assert.equal(scoreCell0.style.fontSize, 14);
@@ -158,7 +153,7 @@ test('Advanced Cell Features: 8 大高级属性全量求值与发布测试', () 
   assert.equal(scoreCell1.value, 95);
   assert.equal(scoreCell1.displayText, '95.0');
   // 95 >= 90，不触发告警红
-  assert.notEqual(scoreCell1.style.color, '#cf1322');
+  assert.notEqual(scoreCell1.style.color, '#CF1322');
 
   // 验证 4: 零值与空值容错
   const lossZeroCell = grid.cells.find((c) => c.row === 1 && c.col === 3);
@@ -179,10 +174,12 @@ test('Advanced Cell Features: 8 大高级属性全量求值与发布测试', () 
   const univerData = biGridToUniverWorksheetData(grid);
   const uCellDate = univerData.cellData[1][0];
   assert.equal(uCellDate.custom.tooltip, '统计月份口径');
-  assert.equal(uCellDate.v, '2024年03月');
+  assert.equal(uCellDate.v, '2024-03-15');
+  assert.equal(uCellDate.custom.displayText, '2024年03月');
 
   const uCellLossNull = univerData.cellData[2][3];
-  assert.equal(uCellLossNull.v, '-'); // 空值正确映射为 displayText '-'
+  assert.equal(uCellLossNull.v, 0); // SUM空事实的有效值为0，显示“-”不改变它。
+  assert.equal(uCellLossNull.custom.displayText, '-'); // 空值正确映射为 displayText '-'
 });
 
 test('Advanced Cell Features: 单格受控动态合并策略 (none / adjacent-equal / group-span)', () => {

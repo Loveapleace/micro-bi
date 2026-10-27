@@ -1,3 +1,4 @@
+import { setPresentation } from '../test/helpers/presentation.mjs';
 /** 主应用实现验收诊断。真实编译器/适配器；不冒充浏览器 E2E。缺口用例应返回非零。 */
 import assert from 'node:assert/strict';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
@@ -94,9 +95,9 @@ await check('CX-02', '实例人工覆盖999应被编译器消费', 'CD-24/25/29'
   assert.ok(compile(doc).publication.sheets[0].cells.some((c) => c.v === 999), 'instanceOverrides完全未被展开器消费');
 }, true);
 await check('CX-03', '样式规则和条件格式必须在新数据上重算', 'CD-36', () => {
-  const doc = fresh(); doc.conditionalRules.push({ id: 'high-qty', sheetId: 'sheet-1', regionId: 'delivery-region', targetMetricId: 'qty-sum', condition: { operator: 'gt', values: [100] }, style: { backgroundColor: '#ff0000' }, priority: 1 });
+  const doc = fresh(); setPresentation(doc,doc.cells.find(c=>c.content.metricId==='qty-sum').id,{operator:'gt',threshold:100,style:{backgroundColor:'#FF0000'}});
   const target = cellFor(grid(doc), 'qty-sum', data[0].workshop, '2026-08-01');
-  assert.equal(target.style.bgColor, '#ff0000', 'conditionalRules未被执行');
+  assert.equal(target.style.bgColor, '#FF0000', 'conditionalRules未被执行');
 }, true);
 await check('CX-04', 'Excel工作表公式应执行或明确阻断发布', 'CD-12/37/39', () => {
   const doc = fresh(); doc.cells.push({ id: 'manual-formula', sheetId: 'sheet-1', position: { row: 20, column: 0 }, content: { kind: 'sheet-formula', formula: '=1+1' }, parents: { row: null, column: null } });

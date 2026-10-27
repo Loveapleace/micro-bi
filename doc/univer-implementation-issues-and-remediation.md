@@ -1,22 +1,16 @@
-# MicroBI Univer 集成问题清单与整改方案
+# MicroBI报表问题与整改记录
 
-**模式三实际体验补充（2026-10-23）见第29节及[体验报告](hybrid-mode3-experience-2026-10-23.md)**：独立浏览器会话通过真实主应用完成新建、字段配置、预览、保存、重开、刷新、F2备注和高级单位设置；12项9通过、3失败。新增行总计重复/范围错误、关闭总计回显复活、格式控件回显不一致3项发现。本次不修改业务源码，也不重评第28节其他问题的整改状态。
+维护日期：2026-10-27。本文保留原问题ID和章节号，便于追溯已经整改的原因；第1～35节是相应日期的历史检查，不再作为当前版本状态。已被替代的独立可行性、阶段方案和验收文档已删除，保留的现行文档见[导航](README.md)。
 
-**最新独立复验见第28节及[2026-10-21新展开引擎验收](cell-driven-expansion-acceptance-2026-10-21.md)**：213项单测、宿主构建及旧路径FR12/RC25/AC-CX15通过；新增v2专项21项4通过、17失败，归并为9项整改发现。新建入口、覆盖保存、公式、时间分组、明细身份、局部布局、多区域/多表及合并取消仍有缺口，不能沿用第27节“全部闭环”作为当前结论。
+当前约定与结果：
 
-整理日期：2026-10-16。主流程接入问题补充日期：2026-10-16。动态模板初次验收日期：2026-10-16。最新整改复验日期：2026-10-19。
+- 原字段面板、单元格驱动和模式三入口保留；Univer只用于配置/预览，正式报表使用VTable。单元格模式不要求全局布局和指标方向。
+- 模式三第35节的7项问题以第36节复验关闭为准；多级行列轴和静态范围跟随见第32/34节。
+- 多条件、AND/OR、最终文本及单格/整行样式见第37/38节；第39节明确旧条件字段直接忽略，不校验、不迁移、不阻断。
+- 第40/41节移除展示态及编辑态顶部两个复制按钮；复制功能后续另行设计，保留表格已有能力。
+- 最近代码基线全库373项通过；此后文件和文档整理不扩大业务验收范围。H3-OBS01生命周期观察继续保留，不因干净会话没有异常就宣布关闭。
 
-适用范围：`micro-bi` 工作区中的报表矩阵、Univer 配置编辑、发布编译与 VTable 展示实现，以及 `dynamic-data-test` 中现有看板配置弹窗、保存与卡片展示主流程。
-
-**2026-10-19 合并策略调整**：单元格合并、取消合并及其格式统一跟随配置态 Excel/Univer，正式 VTable 不按相邻同值数据再次自动合并；详见第 16 节。该节为本次新增实施要求，不代表已完成代码修改或验收。
-
-本文保留原 MBI-01～18、DYN-01～08 的登记原因与整改要求。**最新整体复验见第 14 节（2026-10-19），展示态合并格空白的根因补证见第 15 节**：当前提交 `82f107c` 已让上一轮 20 项动态专项全部通过，但新增 19 项边界检查仍有 16 项失败，原主配置弹窗仍存在人工值提交回退、真实工作表容量不扩展和保存后 VTable 不随源数据更新等问题。不能据此将完整保存、动态刷新流程标为完成。
-
-2026-10-19 实际执行库 `npm test`（139 项通过）、宿主构建、原 20 项专项（全部通过）、新增 19 项边界专项（3 项通过、16 项失败）及原看板浏览器回归。证据按日期保存在 `doc/verification/`，不覆盖 10 月 16 日结果。新增测试脚本与文档，未保留业务源码修改；本地演示数据在临时变更验证后已经按原始 SHA-256 恢复。本文 v2 模板类型和实施步骤仍是设计要求，不能当作当前已有 API。
-
-**本次明确的交付要求：Univer 必须接入现有看板“配置／新建”弹窗，替换其中的 HTML 预览，保留现有字段、维度与指标配置区域；保存后在同一看板的表格视图中由 VTable 展示用户编辑结果。独立报表工作区或验收页只能用于辅助测试，不能替代这条主流程。**
-
-设计依据：[配置态 Univer 编辑与 VTable 报表展示集成方案](C:/Users/And19/Desktop/web/micro-bi/doc/univer-preview-vtable-report-design.md)。
+最新维护记录见第42/43节。
 
 ## 1. 历史检查结论与证据范围（最新复验见第 14 节）
 
@@ -1747,7 +1741,7 @@ node scripts/verify-report-merge-text.mjs
 
 ## 17. 保留面板配置，独立新增单元格设计（2026-10-19）
 
-用户已明确要求保留当前配置面板方式，再新增一种单元格配置方案。完整实施规格见[双配置方式报表设计方案](C:/Users/And19/Desktop/web/micro-bi/doc/dual-mode-report-configuration-design.md)，包含交互、协议、编译、存储、动态刷新、代码落点、阶段门槛和 CD-01～40 验收用例。
+用户已明确要求保留当前配置面板方式，再新增一种单元格配置方案。完整实施规格见[双配置方式报表设计方案](cell-driven-expansion-engine-design.md)，包含交互、协议、编译、存储、动态刷新、代码落点、阶段门槛和 CD-01～40 验收用例。
 
 - 原配置按钮、原新建主按钮和旧 API 保持兼容；历史条目缺省为 panel，不强制迁移。
 - 新增方式从原主应用的附加入口创建，单击配置基础属性，设计态双击高级，F2/公式栏等保留内容编辑路径。
@@ -1764,7 +1758,7 @@ node scripts/verify-report-merge-text.mjs
 
 **本节后续“全部闭环”表述为整改阶段自测声明；第19节独立复验已发现反例，当前关闭状态以第19节为准。**
 
-本节是后续实现版本的实际验收结果，第17节及更早的“尚未实施/待执行”保持各自历史时间含义。完整操作、证据和方案见[双配置方式验收与示例配置记录](cell-designer-acceptance-and-example.md)。
+本节是后续实现版本的实际验收结果，第17节及更早的“尚未实施/待执行”保持各自历史时间含义。完整操作、证据和方案见[双配置方式验收与示例配置记录](univer-implementation-issues-and-remediation.md#18-双配置方式验收与示例配置2026-10-19)。
 
 **结论：主应用基础示例与纯编译语义诊断已全部闭环，整改推进中。** 本次已修复独立注册表导致0行/空字段库、SDK双击及单击桥接、侧栏草稿保存、布局/指标方向入口、静态注册数据自动刷新及空数组、模板格样式格式、非零anchor、预览日期序号/残留格等问题。原面板继续保留。新增示例从主应用下拉菜单创建、保存至原卡片并重开，VTable显示交付10,850.00、缺陷237、加权缺陷率2.18%。
 
@@ -1789,7 +1783,7 @@ node scripts/verify-report-merge-text.mjs
 
 ## 19. 单元格报表整改复验（2026-10-19）
 
-**验收不通过。** 完整复现、因果链、代码位置、整改步骤与证据见[单元格报表整改复验报告](cell-designer-remediation-recheck-2026-10-19.md)。
+**验收不通过。** 完整复现、因果链、代码位置、整改步骤与证据见[单元格报表整改复验报告](univer-implementation-issues-and-remediation.md#19-单元格报表整改复验2026-10-19)。
 
 本轮结果：155/155单元测试、15/15原AC/CX、20/20 DT及19/19 RX通过，宿主生产构建通过。新增独立边界检查25项，3通过、22失败。失败用例合并到整改项后是原8项保持打开、新增1项，不能把22个失败断言当作22个独立问题。
 
@@ -1866,7 +1860,7 @@ node scripts/verify-report-merge-text.mjs
 
 ## 21. R3主流程专项验收：F2、冷加载、动态覆盖与合并（2026-10-19）
 
-**部分通过，完整验收仍不通过。** 完整记录、代码位置、复现与实施步骤见[R3主流程专项报告](cell-designer-dynamic-acceptance-r3-2026-10-19.md)。
+**部分通过，完整验收仍不通过。** 完整记录、代码位置、复现与实施步骤见[R3主流程专项报告](univer-implementation-issues-and-remediation.md#21-r3主流程专项验收f2冷加载动态覆盖与合并2026-10-19)。
 
 确认已修复：从刷新后的页面直接打开单元格设计器样式正常；F2改题保存后3个车间及总计共4行加权缺陷率完整，总交付10,850.00、缺陷237、缺陷率2.18%。一次预览覆盖600→999已在对应VTable格生效，普通成员增删、逆序、源值变化和空数据均可按范围正确刷新。
 
@@ -1927,7 +1921,7 @@ node scripts/verify-report-merge-text.mjs
 
 ## 23. R4复验：设计态刷新合并与存量实例身份（2026-10-19）
 
-**第21节原FR12项全部通过，完整动态流程仍不通过。** 完整复现、代码位置、整改步骤与测试矩阵见[R4合并与身份复验报告](cell-designer-identity-merge-acceptance-r4-2026-10-19.md)。
+**第21节原FR12项全部通过，完整动态流程仍不通过。** 完整复现、代码位置、整改步骤与测试矩阵见[R4合并与身份复验报告](univer-implementation-issues-and-remediation.md#23-r4复验设计态刷新合并与存量实例身份2026-10-19)。
 
 ### 23.1 已通过的整改与测试边界
 
@@ -1983,16 +1977,16 @@ node scripts/verify-report-merge-text.mjs
 ### 1. 整改内容与技术实现
 
 1. **R4-M1（设计快照保留业务选择器，防数据变更误认领，R4-01, R4-02）**：
-   - 在 [`syncWorkbookToTemplate.ts`](src/cell-designer/syncWorkbookToTemplate.ts) 中重构工作表合并同步逻辑：当处于设计态（`grid.bindings` 为空）同步 `rawSheet.mergeData` 时，查找原有规则中相同范围或 ID 的规则，原样继承其 `semanticSelector`、`id`、`source` 及 `sequence`，彻底杜绝设计快照将已有合并选择器抹除的问题；
+   - 在 [`syncWorkbookToTemplate.ts`](../src/cell-designer/syncWorkbookToTemplate.ts) 中重构工作表合并同步逻辑：当处于设计态（`grid.bindings` 为空）同步 `rawSheet.mergeData` 时，查找原有规则中相同范围或 ID 的规则，原样继承其 `semanticSelector`、`id`、`source` 及 `sequence`，彻底杜绝设计快照将已有合并选择器抹除的问题；
    - 在设计窗口内即使事实数据发生变化，已保留的 `semanticSelector` 在切回预览态后仍可精确重定位至原业务单元格（如 D8:E8），新插入的成员格保持独立，不会发生旧范围错误绑定新成员。
 2. **R4-I1（存量旧键再次编辑升级去重与基线不可变比较，R4-05, R4-06）**：
-   - 在 [`syncWorkbookToTemplate.ts`](src/cell-designer/syncWorkbookToTemplate.ts) 中，编辑保存查找已有覆盖项时，同时支持匹配新规范键 `instKey` 与存量旧键 `legacyInstKey`，实现存量覆盖原地升级并去重，杜绝相同业务格生成新旧两条覆盖记录；
-   - 在 [`expandTemplate.ts`](src/report-template/expandTemplate.ts) 中，将覆盖项的 `originalBaseValue` 始终与展开时建立的不可变事实基准 `(b as any).originalValue` 进行比较，杜绝因连续编辑或顺序原因误报事实基线冲突。
+   - 在 [`syncWorkbookToTemplate.ts`](../src/cell-designer/syncWorkbookToTemplate.ts) 中，编辑保存查找已有覆盖项时，同时支持匹配新规范键 `instKey` 与存量旧键 `legacyInstKey`，实现存量覆盖原地升级并去重，杜绝相同业务格生成新旧两条覆盖记录；
+   - 在 [`expandTemplate.ts`](../src/report-template/expandTemplate.ts) 中，将覆盖项的 `originalBaseValue` 始终与展开时建立的不可变事实基准 `(b as any).originalValue` 进行比较，杜绝因连续编辑或顺序原因误报事实基线冲突。
 3. **R4-I2（规范元组编解码与字符解耦，R4-07）**：
-   - 在 [`identity.ts`](src/report-template/identity.ts) 中补充提供标准的 `decodeMemberValue` 与 `decodeMemberTuple`；
-   - 在 [`expandTemplate.ts`](src/report-template/expandTemplate.ts) 中彻底废除使用 `%3D` 或 `=` 字符猜测键协议的粗糙逻辑，改为解码后严格校验字段前缀是否属于已知字段名。当存量成员文本中本身合法包含 `=`（如 `A=B`）时，不会被误判为带字段的新协议，合法覆盖精准消费。
+   - 在 [`identity.ts`](../src/report-template/identity.ts) 中补充提供标准的 `decodeMemberValue` 与 `decodeMemberTuple`；
+   - 在 [`expandTemplate.ts`](../src/report-template/expandTemplate.ts) 中彻底废除使用 `%3D` 或 `=` 字符猜测键协议的粗糙逻辑，改为解码后严格校验字段前缀是否属于已知字段名。当存量成员文本中本身合法包含 `=`（如 `A=B`）时，不会被误判为带字段的新协议，合法覆盖精准消费。
 4. **R4-I3（存量旧键维度字段更名强校验，R4-08）**：
-   - 在 [`expandTemplate.ts`](src/report-template/expandTemplate.ts) 的 `checkPathMatch` 中增强 schema 校验：当存量旧键不含字段名时，检查当前轴对应的模板单元格；若单元格 ID 在数据集中作为已知事实字段存在（表明曾为该字段设计），但当前 `fieldKey` 已被更改为其他字段（如 `workshop` 更改为 `dispatch_group`），判定为轴 schema 发生变更，拒绝静默继承，并发出 `ERR_OVERRIDE_SCHEMA_MISMATCH` 诊断，要求显式迁移。
+   - 在 [`expandTemplate.ts`](../src/report-template/expandTemplate.ts) 的 `checkPathMatch` 中增强 schema 校验：当存量旧键不含字段名时，检查当前轴对应的模板单元格；若单元格 ID 在数据集中作为已知事实字段存在（表明曾为该字段设计），但当前 `fieldKey` 已被更改为其他字段（如 `workshop` 更改为 `dispatch_group`），判定为轴 schema 发生变更，拒绝静默继承，并发出 `ERR_OVERRIDE_SCHEMA_MISMATCH` 诊断，要求显式迁移。
 
 ### 2. 全量自动化测试验证矩阵
 
@@ -2072,9 +2066,9 @@ node scripts/verify-report-merge-text.mjs
 
 ### 3. 持久化证据与产物归档
 
-- **验证测试套件源码**：[`micro-bi/test/cell-dynamic-merge.test.mjs`](test/cell-dynamic-merge.test.mjs)（含 CFG-01～10、GSP-01～12、EQ-01～14）
-- **独立验收执行脚本**：[`micro-bi/scripts/verify-cell-dynamic-merge.mjs`](scripts/verify-cell-dynamic-merge.mjs)
-- **验收证据 JSON**：[`micro-bi/doc/verification/cell-dynamic-merge-2026-10-20.json`](doc/verification/cell-dynamic-merge-2026-10-20.json)
+- **验证测试套件源码**：[`micro-bi/test/cell-dynamic-merge.test.mjs`](../test/cell-dynamic-merge.test.mjs)（含 CFG-01～10、GSP-01～12、EQ-01～14）
+- **独立验收执行脚本**：[`micro-bi/scripts/verify-cell-dynamic-merge.mjs`](../scripts/verify-cell-dynamic-merge.mjs)
+- **验收证据 JSON**：[`micro-bi/doc/verification/cell-dynamic-merge-2026-10-20.json`](verification/cell-dynamic-merge-2026-10-20.json)
 
 
 ## 27. 单元格模式解除全局布局限制：单元格驱动展开引擎落地与验收（2026-10-20）
@@ -2139,16 +2133,16 @@ node scripts/verify-report-merge-text.mjs
 
 ### 3. 持久化证据与产物归档
 
-- **新引擎核心源码**：[`micro-bi/src/report-template/cellExpansionEngine.ts`](src/report-template/cellExpansionEngine.ts)
-- **新引擎测试套件**：[`micro-bi/test/cell-driven-expansion.test.mjs`](test/cell-driven-expansion.test.mjs)（覆盖 CE-T01 ～ CE-T22）
-- **独立验收脚本**：[`micro-bi/scripts/verify-cell-driven-expansion.mjs`](scripts/verify-cell-driven-expansion.mjs)
-- **持久化证据 JSON**：[`micro-bi/doc/verification/cell-driven-expansion-2026-10-20.json`](doc/verification/cell-driven-expansion-2026-10-20.json)
+- **新引擎核心源码**：[`micro-bi/src/report-template/cellExpansionEngine.ts`](../src/report-template/cellExpansionEngine.ts)
+- **新引擎测试套件**：[`micro-bi/test/cell-driven-expansion.test.mjs`](../test/cell-driven-expansion.test.mjs)（覆盖 CE-T01 ～ CE-T22）
+- **独立验收脚本**：[`micro-bi/scripts/verify-cell-driven-expansion.mjs`](../scripts/verify-cell-driven-expansion.mjs)
+- **持久化证据 JSON**：[`micro-bi/doc/verification/cell-driven-expansion-2026-10-20.json`](verification/cell-driven-expansion-2026-10-20.json)
 
 ## 28. 新展开引擎独立复验与继续整改（2026-10-21）
 
 后续模式三的实际浏览器体验见第29节；该轮使用独立Chromium会话，不等于已补齐本节全部v2动态边界和用户内置浏览器中的复验。
 
-**完整验收不通过。** 详见[完整验收报告、复现与整改步骤](cell-driven-expansion-acceptance-2026-10-21.md)。本轮未修改业务源码和事实数据；新增独立验收脚本及证据，不覆盖历史轮次。
+**完整验收不通过。** 详见[完整验收报告、复现与整改步骤](univer-implementation-issues-and-remediation.md#28-新展开引擎独立复验与继续整改2026-10-21)。本轮未修改业务源码和事实数据；新增独立验收脚本及证据，不覆盖历史轮次。
 
 ### 28.1 实际结果与范围
 
@@ -2226,7 +2220,7 @@ CER-F09中显式改enabled=false的CER-18通过；因此缺陷定位为命令/�
 
 ## 29. 新建看板模式三实际体验与整改（2026-10-23）
 
-完整操作、截图、VTable复制数据与整改步骤见[模式三体验报告](hybrid-mode3-experience-2026-10-23.md)。本轮通过项目已有Playwright启动独立浏览器，以实际UI操作完成；用户当前内置浏览器及既有看板未修改。体验卡片保存在隔离会话中，不承诺出现在用户当前看板列表。
+完整操作、截图、VTable复制数据与整改步骤见[模式三体验报告](hybrid-section35-remediation-and-acceptance-2026-10-26.md)。本轮通过项目已有Playwright启动独立浏览器，以实际UI操作完成；用户当前内置浏览器及既有看板未修改。体验卡片保存在隔离会话中，不承诺出现在用户当前看板列表。
 
 ### 29.1 已完成的操作与结果
 
@@ -2304,13 +2298,13 @@ H3-F02为已记录的组合路径，不宣称所有纯关闭操作必然失败�
 
 ### 30.4 单独保留的生命周期观察
 
-第一轮包含若干开启动画尚未结束时的坐标点击；过程中捕获两条Univer pageerror：`[redi]: Cannot find "SheetsScrollRenderController2" registered by any injector`及`Cannot read properties of null (reading 'row')`。这两条不计入“无控制台异常”，也未据此认定保存结果错误。原始记录保存在browser.json；`automation-attempt-before-retarget.tsv`及investigation截图是早期定位过程，不作为直接保存通过的证据，H3-R07以重新定位后的`preset-direct-save.tsv`为准。
+第一轮包含若干开启动画尚未结束时的坐标点击；过程中捕获两条Univer pageerror：`[redi]: Cannot find "SheetsScrollRenderController2" registered by any injector`及`Cannot read properties of null (reading 'row')`。这两条不计入“无控制台异常”，也未据此认定保存结果错误。原始记录保存在browser.json；早期自动化点击过程不作为直接保存通过的证据，H3-R07以重新定位后的`preset-direct-save.tsv`为准；无引用的过程导出已在项目清理中移除。
 
 随后另建干净会话，完成新建保存、设计态备注保存及刷新，再连续三轮执行“打开高级设置→取消→预览开关总计→切设计→保存→刷新”，全部成功且pageErrors为空，见[独立生命周期记录](verification/hybrid-remediation-2026-10-23/stable-lifecycle.json)。目前未稳定复现上述两条异常，保留为**H3-OBS01（待跟踪）**；不把其写成已修复，也不将本轮三个缺陷关闭扩大为全部生命周期问题已关闭。
 
 ## 31. 模式三新增维度未同步的分析与待整改项（2026-10-23）
 
-用户截图中的“列时间周期=计划投产时间/月，同时添加承制车间列分类”已经实际复现。详细根因、逐层排查步骤、完整修复建议和验收矩阵见[维度同步分析](hybrid-dimension-sync-analysis-2026-10-23.md)。本节保留分析轮记录；后续代码整改和实际验收已完成，最新结果见第32节。
+用户截图中的“列时间周期=计划投产时间/月，同时添加承制车间列分类”已经实际复现。详细根因、逐层排查步骤、完整修复建议和验收矩阵见[维度同步分析](hybrid-multiaxis-implementation-and-acceptance-2026-10-23.md)。本节保留分析轮记录；后续代码整改和实际验收已完成，最新结果见第32节。
 
 | 编号 | 级别/状态 | 确认的问题 | 整改与关闭标准 |
 | --- | --- | --- | --- |
@@ -2351,38 +2345,284 @@ HDIM-F01、HDIM-F02已按第31节完成。完整实现、源码落点、测试�
 
 ## 33. 静态文本随动态列宽展开并居中的能力边界与建议（2026-10-23）
 
+第一行、第二行只是用户举例，**本节面向任意位置的静态单元格或静态区域**。表头、表中说明、分组内部说明、表尾备注均使用同一套范围跟随规则，不以行号、标题/备注身份或某个特殊单元格ID决定是否支持。
+
+**实现状态更新（2026-10-26）：本节方案已落地并通过验收。** 原入口可通过“模板设计态→双击静态文字/空白格→范围跟随”配置；完整使用说明、模型和证据见[实现验收报告](static-span-implementation-and-acceptance-2026-10-26.md)及第34节。
+
 ### 33.1 当前是否可以配置
 
 | 场景 | 当前能力 |
 | --- | --- |
-| 系统自动生成的首行标题 | 有`merge-title`特例：预览/发布根据已展开格子的最右列扩宽。可双击A1→样式与排版→水平居中→保存；本轮已实际操作并验证重开保持。 |
-| 自定义首行或第二行文本，要求严格跟随某个动态列区域全宽 | **没有通用配置入口。** 固定合并及部分跨区域合并虽会随块位移变化，但不能明确、稳定地表达“恰好覆盖当前区域所有动态列、可选总计”。不能将手填A2:H2当作完整方案。 |
-| 只跟随动态列，排除左侧行维度/指标标签；可选含总计 | 当前首行特例无法选择这些边界，需扩展语义跨度规则。 |
+| 系统自动生成的首行标题 | 新标题已成为通用`staticSpan`规则的预设，和其他静态格走相同引擎；旧`merge-title`仅作旧源兼容。旧版已取消的标题合并迁移后不会复活。 |
+| 任意位置的静态文字/单一文字区域，严格跟随目标动态列范围 | **已实现通用入口。** 可配置目标区域、全宽/动态列/列父组范围、锚点、出现上下文和高度；冲突会阻止发布，不吞掉其他文字。 |
+| 只跟随动态列，排除左侧标签；可选含总计 | **已实现。** 末尾总计可选；列父组范围不包含整表末尾总计。 |
 
-“居中”应相对于最终合并区域的实际像素宽度，不是相对于浏览器当前可见画布。当前系统首行文本仍由面板生成；能够修改其居中样式，不等于已有任意自定义标题内容及范围跟随配置。
+“居中”相对于最终区域的实际像素宽度，不是相对于浏览器当前可见画布。系统首行仍可由面板生成，也可在静态单元格高级设置中改写文字；任意其他静态文字或区域使用同一个“范围跟随”入口。
 
-首行居中证据：[高级设置](verification/hybrid-multiaxis-acceptance-2026-10-23/auto-title-centered-settings.png)、[动态预览](verification/hybrid-multiaxis-acceptance-2026-10-23/auto-title-centered-preview.png)。这些证明系统标题特例，不作为任意静态文本功能已实现的证据。
+原首行居中历史证据：[高级设置](verification/hybrid-multiaxis-acceptance-2026-10-23/auto-title-centered-settings.png)、[动态预览](verification/hybrid-multiaxis-acceptance-2026-10-23/auto-title-centered-preview.png)。任意位置的新功能以第34节的G12、J16及专项任意行测试为验收依据，不用旧标题截图代替。
 
 ### 33.2 建议的配置方式
 
-在静态单元格高级设置增加“范围跟随”：
+任意静态格/源静态区域的高级设置现已提供“范围跟随”，没有只适用于标题行的开关：
 
 | 配置 | 含义 |
 | --- | --- |
 | 固定范围 | 沿用普通手工合并。 |
-| 当前报表全宽 | 从行维度标签起，覆盖指标标签、全部动态叶列；总计可选。 |
+| 目标报表全宽 | 从行维度标签起，覆盖指标标签、全部动态叶列；总计可选。 |
 | 仅动态列区域 | 从第一列动态数据起，覆盖所有展开后的叶列；排除左侧标签，总计可选。 |
+| 指定动态块/所属分组 | 可跟随指定块，或所属行/列父分组的列范围，不影响同工作表内其他块。 |
+| 位置锚定 | 保留模板位置，或跟随动态块/分组的前部、内部、尾部；数据展开时先定位实际行位置，再计算横向跨度。 |
+| 出现上下文 | 整个目标范围显示一次，或每个所属行/列分组各显示一次；横向撑宽本身不导致每个叶列都重复文字。 |
 | 包含总计 | 明确范围末尾是否包含行总计；总计关闭时不多占一列。 |
 | 对齐 | 默认水平/垂直居中，允许保留文字换行、字号、背景、边框及行高。 |
 
-例如第一行“月度生产汇总”选择报表全宽，第二行“统计口径：已审核工单”也可选择全宽；若第二行只说明数据部分，则选择仅动态列区域。设计时配置的是规则，不需要知道最终有几个月、几个车间或几个产品。
+例如报表前部的标题可以跟随全表；报表中间的业务说明可以跟随指定动态块；分组内部的说明可以每组出现一次并覆盖该组的动态列；表尾审核备注可以锚定动态块之后并覆盖全表。设计时配置的是对象、上下文和规则，不需要知道最终有几个月、几个车间、几个产品，也不依赖文本恰好位于哪一行。
 
 ### 33.3 实现建议与验收要求
 
-1. 保存独立的源跨度规则，至少包含静态文本格ID、sheetId、regionId、范围类型和includeTotals；不保存一次预览展开得到的绝对结束列。静态文字只出现一次，不绑定右扩展父格去重复生成。
-2. 在轴树与布局展开完成后，由目标region的行标签起点、动态数据起点、叶列真实footprint、总计边界计算范围。不要使用工作表预留列数、可见窗口宽度或其他自由备注的最右坐标充当目标区域宽度。
+1. 保存独立的源跨度规则，至少包含目标单元格/静态区域ID、sheetId、目标region/动态块、范围类型、位置锚点、出现上下文和includeTotals；不保存一次预览展开得到的绝对结束列。文字在每个明确的目标上下文中出现一次，不能因为横向跟随而按每个叶列重复。
+2. 在轴树与布局展开完成后，先根据锚点和父组路径定位文字所在行，再由目标region/动态块的行标签起点、动态数据起点、叶列真实footprint、总计边界计算横向范围。为内部或尾部说明保留空间并参与占位检查。不要使用工作表预留列数、可见窗口宽度或其他自由备注的最右坐标充当目标区域宽度。
 3. 生成合并和居中样式，附带来源/owner，预览与中性publication复用，VTable消费同一结果。原生取消合并应关闭该源规则或生成明确例外，不能下次预览重新出现。
 4. 同一格固定合并与区域跟随明确互斥；范围内已有其他非空内容或人工规则冲突时诊断，不能吞掉第二个文字。空数据使用原型最小合法跨度，不生成反向范围。
-5. 测试未知叶列数量的增删、重排、多级列分类、不同列宽、总计开关、空数据、多区域隔离；覆盖模板→预览→保存→刷新重开→VTable及取消后的往返。每轮校验文本只出现一次、合并边界正确、居中基于实际区域宽度。
+5. 测试报表前部、中间、每组内部、尾部四类位置，以及未知叶列数量的增删、重排、多级列分类、不同列宽、总计开关、空数据和多区域隔离；覆盖模板→预览→保存→刷新重开→VTable及取消后的往返。每轮校验文本按配置的上下文次数出现、行锚点及合并边界正确、居中基于实际区域宽度。
+6. 将现有系统标题的特例逐步迁移为通用规则的预设用法；通用执行器不得使用“第0/1行”或仅`merge-title`可用等条件。相同配置放在其他静态单元格时应得到同样行为。
 
-本节为需求评估与方案，通用范围跟随入口尚未实现，不能与第32节已关闭的多级维度问题合并计为通过。
+上述方案已于2026-10-26实现，验收单独记录在第34节，不与第32节历史通过项混算。源文字及结构在设计态编辑；实际多格范围的原生取消/恢复可回写，单格或未来合并的启停可使用“合并显示”。固定模式按原固定来源执行；仅停止合并而保留定位时，应关闭“合并显示”，而非退出范围跟随。
+
+## 34. 任意静态单元格/区域范围跟随的实现验收（2026-10-26）
+
+**第33节已实现并验收。** 新能力接入原模式三及共用单元格高级设置，覆盖设计、预览、保存重开和VTable展示，没有独立演示页或行号特判。完整说明见[静态范围跟随实现验收](static-span-implementation-and-acceptance-2026-10-26.md)。
+
+### 34.1 最终实现
+
+| 落点 | 行为 |
+| --- | --- |
+| `CellDefinition.staticSpan`、`staticSpans.ts` | 保存源范围、目标区域、锚点、分组上下文、高度及合并/局部例外；运行时按实际叶列/父组footprint计算宽度，不使用工作表预留列或远处备注。 |
+| `StaticSpanSettings.tsx`、`CellAdvancedSettings.tsx` | 双击静态格或空白格配置文字、目标全宽/仅动态列/列分组、前中后锚点、重复上下文、总计及合并显示，首次启用居中。 |
+| 新旧展开器及编译发布 | 预留组内/表中行带，移动业务格、绑定和行高，保护非空内容及人工规则；数字格式与条件样式沿用原管道；中性publication统一用于预览与VTable。 |
+| `staticSpanIntent.ts`及快照同步 | 原生取消一次性合并只关闭合并显示；局部取消保存完整分组身份；模式切换/保存不固化投影，不随新数据复活；显式恢复可重启。 |
+| 混合/自由设计器及草稿 | 连续文字修改不丢规则；未应用到画布的新设置不会被旧快照覆盖；保留已有样式、条件、实例覆盖等源记录，旧父格及标题取消状态可迁移。 |
+
+数据成员暂时缺失时，局部取消记录仍保留，相同身份恢复后继续生效；新父组按默认规则执行。改变父链形成不同完整上下文时，旧例外不强套到新组。父分组字段被移除时源规则不静默丢弃，校验提示重新指定目标。
+
+### 34.2 自动化与构建
+
+| 检查 | 结果 | 证据 |
+| --- | --- | --- |
+| 新增静态范围专项 | 35/35通过 | [专项日志](verification/static-span-acceptance-2026-10-26/focused-tests.log) |
+| 全库单测 | 321/321通过 | [全量日志](verification/static-span-acceptance-2026-10-26/unit-tests.log) |
+| 库构建 | ESM/CJS及声明通过 | [库日志](verification/static-span-acceptance-2026-10-26/library-build.log) |
+| 宿主生产构建 | TypeScript/Vite通过，已有大包提示保留 | [宿主日志](verification/static-span-acceptance-2026-10-26/host-build.log) |
+| 原入口浏览器检查 | 12项通过，pageErrors为空；最终源码另做一次保存重开核验通过 | [浏览器记录](verification/static-span-acceptance-2026-10-26/browser.json)、[收尾核验](verification/static-span-acceptance-2026-10-26/final-smoke.json) |
+
+专项覆盖任意行、区域前后、组前/组内/组后、两行静态区域、不同列宽、总计开关、空数据、多区域隔离、源格式/条件/行高、旧规则兼容、分组及类型身份、草稿与连续编辑、原生取消与恢复、布局冲突保护。
+
+### 34.3 主应用验收结果
+
+从G12设置全表含总计、区域后两行说明；从J16设置仅动态列、不含总计、每车间组前一次说明，地址仅为测试示例。预览、VTable、保存刷新重开均正确。原生取消首个组说明及表尾合并后，局部取消1条、表尾合并关闭且源参数仍在，切模式和新数据均不复活。
+
+原13条事实交付10850；新增月份、产品、车间后10973，组说明3→4条、表尾仍一次；逆序二维文本不变；删除已取消的车间后6450、组说明2条；空数据可保存，恢复后与同结构基线逐字一致。增加产品下级分组后父车间说明仍3条，宽度起点及总宽随标签列变化，取消身份不串用。连续F2改字只保存最新一次，源高度和取消状态不丢；用户显式恢复合并后再正常居中。
+
+数据变化使用独立Chromium上下文的源模块网络夹具，未改原事实文件或用户浏览器存储，未声称验证真实服务端推送。结束已移除夹具、核对真实源并关闭测试浏览器。
+
+证据：[范围设置](verification/static-span-acceptance-2026-10-26/arbitrary-cell-span-settings.png)、[分组设置](verification/static-span-acceptance-2026-10-26/per-group-settings.png)、[取消后参数](verification/static-span-acceptance-2026-10-26/once-unmerge-rule-retained.png)、[局部例外](verification/static-span-acceptance-2026-10-26/local-unmerge-rule-retained.png)、[新增后取消不复活](verification/static-span-acceptance-2026-10-26/unmerge-after-data-added-preview.png)、[最终VTable](verification/static-span-acceptance-2026-10-26/final-vtable.png)、[最终矩阵](verification/static-span-acceptance-2026-10-26/final-vtable.tsv)、[源码指纹及汇总](verification/static-span-acceptance-2026-10-26/checks.json)。
+
+## 35. 模式三深度体验新增问题与整改要求（2026-10-26）
+
+本节保留整改前的21项交互检查：13项通过、8项未通过，归并为7项问题（3项P1、4项P2）。**7项现已完成整改并复验关闭，最新状态见第36节。** 文字撤销和插行撤销对应同一问题，不重复计数。完整原始操作、定位、截图及逐项回归要求见[模式三深度体验报告](hybrid-section35-remediation-and-acceptance-2026-10-26.md)，整改前记录见[交互记录](verification/hybrid-deep-experience-2026-10-26/browser.json)。
+
+本轮没有修改业务代码、依赖或事实源；与第34节验收的22个库/测试/宿主文件指纹一致，没有重新执行单测和构建，也不以第34节的321项单测代替本轮用户交互验收。独立浏览器上下文已关闭，网络数据夹具已移除，用户当前看板和存储未操作。
+
+### 35.1 新增整改清单
+
+| ID | 优先级 | 已复现现象 | 具体整改与关闭标准 |
+| --- | --- | --- | --- |
+| H3D-F01 | P2 | 模板E5原生字号12→18，勾选良品率即回12；维度粒度变更的对照路径能保留18 | `HybridCellDesigner.tsx`指标增删/全选/清空统一先flush旧渲染快照，再以稳定身份改选择；同步Ref，保留样式/格式/条件/自由备注。关闭：新增/删除/全选/清空后预览、直接保存、重开均不丢原字段设置，不把删除字段样式串给其他指标。 |
+| H3D-F02 | P1 | 自由格A→B后撤销仍B；插入行撤销后仍保留结构，保存也未恢复 | 将源模型历史与Univer用户命令统一为可逆事务，程序回填不计用户历史；处理undo/redo的值与结构mutation，源/画布一起恢复，覆盖锚点、自由格、规则、父格和例外。关闭：一次撤销恢复前态、重做恢复后态；文字/公式、行列插删及合并组合在预览/保存重开一致。命令栈具体污染位置仍需插桩确认。 |
+| H3D-F03 | P2 | 在第3行前插行，原第1行标题额外移到第2行 | 标题源位置与区域锚点独立变换，`anchorRow-2`仅作首次创建/旧源缺省值；不能重算已存在标题的坐标。关闭：标题前/后、标题与数据间及业务区内插删只移动受影响对象，范围跟随、样式、撤销及重开仍保留。 |
+| H3D-F04 | P2 | 取消同类合并后9行中5行父车间为空，复制相同，与“平铺便于二次导出”提示不一致 | 保留Excel取消合并只留首格的既定语义，改准确提示；如需平表，独立显式开启“重复显示维度标签”，按完整组路径输出，不自动填充静态说明或指标，也不恢复VTable自动同值合并。关闭：两种模式含义明确、复制值符合选择，空成员/同名组不串用。此项不代表事实丢失。 |
+| H3D-F05 | P1 | 首次选择异步源一直0条，时间字段不可选、数值误判计数；保存后宿主才出现14条 | 接现有`useDatasetData`，统一解析data/headers及loading/error；数据/schema就绪再初始化推荐维度与指标，未知类型不可持久化为计数。增加加载/重试及切源请求代号，区别加载中与真实空数据。关闭：冷缓存首次配置即有14条及正确时间/数值类型，加载失败/重试/快速切源不串源，保存前后结果一致。 |
+| H3D-F06 | P2 | 暗黑容器#1f1f1f上向导/报表标题仍为默认黑字，难以辨认 | 容器、Typography、边框及提示统一主题token；报表纸面与用户单元格色保持独立。关闭：浅色/暗黑/工业蓝及1366×768下主要标签、提示与按钮可读，主题切换不改变配置。 |
+| H3D-F07 | P1 | F2改写受控指标虽恢复绑定，却清除合法高级覆盖；26个“.0件”变0个，告警关闭 | 移除保护分支按坐标删除整条extraCustomCells记录的行为；优先事前拒绝非法内容，或仅回滚值/公式。按sheetId+稳定源ID保留样式、格式、条件、父格、合并等。关闭：F2/Delete/批量粘贴被拒后绑定正确、单位和告警不变，自由格及跨表同坐标不误删，预览/保存重开一致。 |
+
+建议整改顺序：F07保护分支误删→F02历史事务→F05异步数据→F01面板同步→F03源位置→F04文案/显式标签模式→F06主题。F01、F02和F07共享源/画布一致性，但触发路径不同，不能只修一个快照分支后整体关闭。
+
+关键证据：[字号前](verification/hybrid-deep-experience-2026-10-26/11-native-font-before.png)、[字号后](verification/hybrid-deep-experience-2026-10-26/11-native-font-after.png)、[撤销文字未变](verification/hybrid-deep-experience-2026-10-26/15-undo-once.tsv)、[插行撤销未恢复](verification/hybrid-deep-experience-2026-10-26/16-row-insert-undo.tsv)、[取消合并的展示](verification/hybrid-deep-experience-2026-10-26/18-device-card.png)、[异步源未加载](verification/hybrid-deep-experience-2026-10-26/22-async-not-loaded.png)、[暗色画面](verification/hybrid-deep-experience-2026-10-26/25-dark-laptop.png)、[保护前26个单位值](verification/hybrid-deep-experience-2026-10-26/28-protection-before-preview.tsv)、[保护后单位消失](verification/hybrid-deep-experience-2026-10-26/28-protection-after-preview.tsv)。
+
+### 35.2 本轮通过项及数据变化复核
+
+行侧完工月+车间+工件三级、列侧投产日+工件两级可同时配置，模板同步完整；平均按事实重新计算，总计、格式简化控件、保存重开和VTable基础链路正常。无时间设备源可自动清理原工单配置，健康平均96.25/98.65正确；无维度切明细可显示12条原始记录。
+
+G10新增“所属列分组宽度/投产日父格/每列分组一次/目标区域后”说明，原生取消首日E20:G20合并后保存。数据版本变化无需重开编辑器或重存：
+
+| 场景 | 交付 | 说明数 | 总计列（1起） | 核对 |
+| --- | --- | --- | --- | --- |
+| 原13条 | 10850 | 5 | 18 | 原生局部取消1条；自由备注和公式6保留 |
+| 新日期/车间/工件，14条 | 11171 | 6 | 19 | 实际扩列增行；重开仍保留1条例外 |
+| 14条逆序 | 11171 | 6 | 19 | 矩阵逐字一致 |
+| 删除原首车间，8条 | 6771 | 6 | 13 | 叶列减少，说明范围收缩 |
+| 恢复13条真实源 | 10850 | 5 | 18 | 全矩阵与保存基线逐字一致 |
+
+证据：[原保存](verification/hybrid-deep-experience-2026-10-26/31-span-baseline-vtable.tsv)、[新增](verification/hybrid-deep-experience-2026-10-26/32-data-added-vtable.tsv)、[逆序](verification/hybrid-deep-experience-2026-10-26/33-data-reversed-vtable.tsv)、[删除](verification/hybrid-deep-experience-2026-10-26/34-data-deleted-vtable.tsv)、[恢复](verification/hybrid-deep-experience-2026-10-26/35-data-restored-vtable.tsv)、[新数据后局部取消](verification/hybrid-deep-experience-2026-10-26/33-column-span-cancel-retained.png)。
+
+数据变化采用独立上下文的源模块响应夹具，已核对实际8/14条响应；没有修改事实源文件。它验证宿主重编译消费新版本，不等同于真实服务端推送、性能或全部Excel菜单验收。
+
+### 35.3 既有生命周期观察
+
+本轮再次捕获一次`SheetsScrollRenderController2`依赖未注册pageerror；后续稳定等待画布再连续开关三轮没有新增异常。继续保留第30.4节**H3-OBS01待跟踪**，不计入新增7项，不宣称生命周期已修复或所有控制台无异常。原文及AntD弃用/主题提示见browser.json，源码及结果汇总见[checks.json](verification/hybrid-deep-experience-2026-10-26/checks.json)。
+
+## 36. 第35节7项整改落地与复验关闭（2026-10-26）
+
+**H3D-F01～F07全部已整改并复验关闭。** 保留原模式三入口、字段/时间粒度/多级行列轴、既有高级配置、自由备注、公式、合并规则和VTable发布方式。完整说明见[整改与验收报告](hybrid-section35-remediation-and-acceptance-2026-10-26.md)。
+
+### 36.1 逐项关闭
+
+| ID | 关闭依据 | 状态 |
+| --- | --- | --- |
+| F07/P1 | 保护仅回滚非法内容，不删合法高级覆盖；自由编辑/高级更新按sheetId识别。F2后单位、精度、告警与矩阵保留，非法文字不进入保存/VTable | 已关闭 |
+| F02/P1 | 源快照接入原生SDK历史，支持按钮及Ctrl+Z/Y；恢复面板、自由格、规则、位置和实际边界，回填不计用户历史。实际行25→26→25、列15→16→15，插删及重做均正确，保存重开25×15 | 已关闭 |
+| F05/P1 | 接入useDatasetData及目标隔离，加载/失败提示、重试和保存屏障。冷缓存首次14条、时间/数值识别正确；首次失败后重试、动态headers、A迟到不覆盖B均通过 | 已关闭 |
+| F01/P2 | 指标增删/全选/清空先flush再更新选择；暂未选择指标存retainedCells。原生18号字不丢；取消并保存后重选恢复原单位/告警/样式，未串给其他指标 | 已关闭 |
+| F03/P2 | titlePosition与业务anchor独立变换，旧缺省兼容。第3行前插行标题仍第1行，业务表头移动及撤销正确 | 已关闭 |
+| F04/P2 | 提示改为“取消合并后仅保留首格值”，沿用Excel行为；不擅自重复标签，不恢复VTable自动合并，矩阵不变且关闭意图保存 | 已关闭 |
+| F06/P2 | 暗色标题和说明颜色与容器一致；1366×768主要标题、模式与保存按钮可读，业务纸面样式保留 | 已关闭 |
+
+F02补充修复了两个原方案中的隐患：源坐标回退但实际空行仍累加；结构命令/确认包装被重复解释为删除。最终保存设计工作区大小，模式三在清理旧区域后同步边界；结构桥接只处理四类真实mutation，取消150ms时间去重，不漏掉连续真实操作。其他UniverPreview调用默认保留原工作区行为。
+
+### 36.2 验收与原功能回归
+
+| 检查 | 结果 | 证据 |
+| --- | --- | --- |
+| 新增专项 | 10/10通过 | [日志](verification/hybrid-section35-remediation-2026-10-26/focused-tests.log) |
+| 全库单测 | 331/331通过 | [日志](verification/hybrid-section35-remediation-2026-10-26/unit-tests.log) |
+| 库构建 | ESM/CJS及声明通过 | [日志](verification/hybrid-section35-remediation-2026-10-26/library-build.log) |
+| 宿主构建 | TypeScript/Vite通过，已有大包提示保留 | [日志](verification/hybrid-section35-remediation-2026-10-26/host-build.log) |
+| 浏览器 | 17/17通过；最终源码干净会话再跑完整保存重开链路 | [记录](verification/hybrid-section35-remediation-2026-10-26/browser.json) |
+| 实际行列边界 | 插行26→25→26、删行25→26→25；插列16→15→16、删列15→16→15；保存重开25×15 | [实测](verification/hybrid-section35-remediation-2026-10-26/20-physical-history.json) |
+
+保留并回归了行三级、列两级、多级事实交集、总计、1位小数/件/18号字/条件告警、备注及Excel公式6。G10任意静态说明跟随区域后全宽、两行高，原生取消后保留merge=false、height=2。
+
+保存报表不重开编辑器/重存，源13→14条时交付10850→11171、总计列18→19；14条逆序矩阵逐字一致；删除首车间后8条、交付6771、总计列13；恢复真实13条后10850/列18，矩阵逐字等于基线，说明一次、备注和公式保留，重开取消状态仍关闭。
+
+证据：[保护配置](verification/hybrid-section35-remediation-2026-10-26/05-protection-retained.png)、[重选指标](verification/hybrid-section35-remediation-2026-10-26/08-reselected-reopened-properties.png)、[暗色](verification/hybrid-section35-remediation-2026-10-26/10-dark-laptop.png)、[数据基线](verification/hybrid-section35-remediation-2026-10-26/13-complex-baseline-vtable.tsv)、[新增](verification/hybrid-section35-remediation-2026-10-26/14-data-added-vtable.tsv)、[逆序](verification/hybrid-section35-remediation-2026-10-26/15-data-reversed-vtable.tsv)、[删除](verification/hybrid-section35-remediation-2026-10-26/16-data-deleted-vtable.tsv)、[恢复](verification/hybrid-section35-remediation-2026-10-26/17-data-restored-vtable.tsv)、[取消规则](verification/hybrid-section35-remediation-2026-10-26/17-reopened-caption-retained.png)、[失败重试](verification/hybrid-section35-remediation-2026-10-26/18-async-retry-success.png)、[最终VTable](verification/hybrid-section35-remediation-2026-10-26/21-final-vtable.tsv)、[最终属性](verification/hybrid-section35-remediation-2026-10-26/21-final-reopened-properties.png)、[源码指纹](verification/hybrid-section35-remediation-2026-10-26/checks.json)。
+
+### 36.3 留存与既有观察
+
+主会话多次开关/换主题附近捕获2次既有Univer依赖未注册异常，仍按**H3-OBS01待跟踪**；失败重试、快速切源及最终干净会话均无pageerror。7项关闭不扩大为该生命周期问题已修复。
+
+验收使用独立浏览器及源模块响应夹具，未改原事实/宿主源文件或用户看板存储；全部夹具已移除、浏览器已关闭。数据版本消费已验证，不声称真实推送、全部Excel菜单或大数据性能验收。本轮未自动提交Git。
+
+## 37. 条件规则、多条件与最终显示文本替换优化方案（2026-10-26）
+
+**按用户修正，现有告警条件有效，新方案不需要兼容旧配置。** 普通和条件样式均支持“仅单元格 / 整行”及文字/背景调色盘。本节已实施并验收，统一新模型；2026-10-27进一步明确旧字段直接忽略、不校验、不阻断。原设计见[优化方案](conditional-rules-optimization-plan-2026-10-26.md)，实现见[实施验收文档](conditional-rules-implementation-and-acceptance-2026-10-26.md)，最新调整见第39节。
+
+### 37.1 目标
+
+| 需求 | 方案 |
+| --- | --- |
+| 多条条件规则 | 原高级设置接入完整列表，支持增删、复制、排序、启停、稳定ID及命中后停止，统一按新模型执行 |
+| 一条规则多个条件 | 类型化AND/OR树，当前值/同记录字段/同切片指标有明确口径，不能以邻格坐标代替业务引用 |
+| 命中后替换最终文字 | 支持固定文本、占位符模板及显式空文本；与样式动作可同时使用 |
+| 样式作用范围 | 普通样式和条件动作均可选仅单元格（默认）/整行；整行覆盖所属报表实际列，包含开启的行总计列，不扩散到其他报表或其他指标行 |
+| 自定义调色盘 | 文字色和背景色共用ColorPicker，支持可视化选色、HEX/RGB、预设及最近12色；规范保存颜色，清除/恢复基础色/无填充语义分开 |
+| 原数值和公式保留 | 数值600可显示低产，原值仍600、公式加1仍601；Univer通过呈现层投影，VTable消费统一publication |
+| 可解释与动态稳定 | 提供匹配/最终应用/被前序拦截统计；按源身份和完整上下文绑定，数据增删、排序、透视列变化后重算 |
+
+原13条交付数据的300～1500在＜90时0命中；只读编译检查＜1000时发布与VTable适配有9条标红，见[记录](verification/conditional-rules-plan-2026-10-26/current-engine-probe.json)。这不是新增浏览器验收结论。
+
+### 37.2 实现原则与步骤
+
+1. 先做Univer呈现PoC：原值/公式保持，文本/空文本、默认文字抑制、换行/合并/缩放及复制验证；不能把数值v直接改成状态文字来绕过。
+2. 统一采用document.presentationRules首版结构version=1，定义条件树、目标、动作、enabled/order/stopIfTrue和revision；删除旧条件字段入口和独立求值分支。只校验新模型，旧条件字段直接忽略，不迁移、不阻断。
+3. 各布局和静态路径共用新求值器及样式目标解析。先确定命中，再展开cell/row视觉目标并处理行去重、合并边界和冲突；条件始终读相同的不可变有效值/基础文本。
+4. 原高级设置共用规则、样式及颜色编辑组件；普通和条件样式都提供单格/整行及文字/背景调色盘，含HEX/RGB、预设、最近色、显式重置和试算；父格独立页。
+5. 接通Hybrid状态、metadata、retainedCells、styleRules、reducer和历史；scope/颜色按同一记录原子保存，拖动只更新草稿，确认一次入历史；模板态直接保存也生效。
+6. 接通两端初次/增量呈现、派生显示防回写及复制。整行作用逐格输出resolvedStyle，显式false和颜色清除完整映射；文本仅替换命中格，publication.v保留原值。
+7. 回归多级分组、双向透视、总计角色、多区域、静态范围说明及取消合并；同显“低产”的600/650不因文案相同而自动合并。
+8. 按新契约重建项目示例和测试夹具，验证新配置保存重开、撤销重做、数据变化、缓存失效及性能；统一设计端/编译器/宿主发布，归档证据后关闭需求。
+
+新建规则统一默认命中后停止，用户显式继续匹配时才设stopIfTrue=false。禁用保留新规则，临时取消指标时规则休眠，不能删除或串到同坐标其他字段。绿色/自定义样式按新模型定义准确回显。旧条件如需继续使用，按新界面重新配置，不提供自动转换。
+
+样式层级为基础→普通整行→普通单格→条件整行→条件单格；只在已生效动作间合成，不绕过停止匹配。不同指标产生的行样式按稳定全局规则顺序处理，同规则同目标行去重。整行范围随动态列和总计变化计算，跨行合并格未被完整且一致覆盖时保留原样式并在试算说明，禁止为着色拆合并或只改主格而误染其他行。
+
+### 37.3 关键验收
+
+示例规则：＜700显示低产/红色（5条）；≥700 AND＜1000显示关注/橙色（4条）；≥1000显示正常/绿色（4条）。全部保留原值；0命中合法且可解释；重叠规则的停止/覆盖行为明确。
+
+必须覆盖：600显示低产时公式仍601；条件移除后恢复原格式；派生显示不保存为人工覆盖；模板→预览→保存→刷新重开→VTable一致。新增验证单格/整行边界、跨行合并处理、整行着色但文本仅改命中格、动态列/多区域、样式冲突、自定义调色/清除/草稿取消及一次撤销。完整用例CR-01～38见方案文档；不恢复旧配置迁移要求。
+
+## 38. 第37节条件规则实施与验收（2026-10-26）
+
+状态：**本次需求已实现**。保留原配置入口，接通模板设计、动态预览、保存重开及VTable；未自动提交Git。详细落点、规则契约、示例和复验步骤见[实施验收文档](conditional-rules-implementation-and-acceptance-2026-10-26.md)。
+
+### 38.1 交付项
+
+| 项目 | 实现及验收 |
+| --- | --- |
+| 多条规则及AND/OR | 原高级设置接入完整列表、稳定ID、增删复制排序启停、嵌套条件组、全局顺序、命中后停止及otherwise动作；试算可解释 |
+| 最终文本替换 | 固定/占位符/空文本均支持；值、基础文本及最终文本分开，前序文案不成为后序比较输入 |
+| 单格/整行样式 | 普通和条件动作共用；实际region列范围随动态列与行总计变化，文本仍只改命中格；跨行合并部分命中保留原样式 |
+| 自定义调色盘 | 文字/背景支持可视化、HEX/RGB、预设、最近12色及显式重置；RGB255/230/230实测保存#FFE6E6，拖动只改草稿 |
+| 原值及原生公式 | Univer工作簿v/f保持，CELL_CONTENT只读呈现；600显示低产或空白时公式均601；VTable用rawRecords和最终绘字 |
+| 保存、历史及动态定位 | 新根模型纳入两个设计器、HybridHistory及reducer；原生快照不冻结派生文字/样式，指标暂时移除保留休眠规则 |
+| 旧字段处理（10月27日修正） | 旧conditionalRules/conditionRules直接忽略，不校验、不执行、不迁移、不阻断；生成器、示例、夹具使用新结构 |
+
+### 38.2 验收结果
+
+专项**40/40**（CR-01～38及行高、多区域两个补充），全库**371/371**，库ESM/CJS/声明和宿主TypeScript/Vite构建通过。浏览器原入口及独立SDK实测**17/17**通过，清洁验收pageerror为0。[浏览器记录](verification/conditional-rules-acceptance-2026-10-26/browser.json)、[构建/测试及源码指纹](verification/conditional-rules-acceptance-2026-10-26/checks.json)。
+
+明细规则＜700/≥700 AND＜1000/≥1000结果为5低产、4关注、4正常。低产整行作用5行/20格，文案仅5个交付格改变。原生VTable复制得到状态词，原值复制合计10850；源格F2的SUM仍10850。原生SDK进一步核验600显示低产或空字符串均算601，[证据](verification/conditional-rules-acceptance-2026-10-26/final-native-formula-proof.json)。
+
+不重存配置，明细13→14条后状态6/4/4、业务合计11171；删除首车间剩8条、3/2/3、6771，逆序不串规则，恢复为5/4/4及10850。行两级、列时间+分类透视的叶列12→13→8→12，交付10850→11171→6771→10850；逆序和恢复矩阵分别逐字等于对应基线。[明细数据变化](verification/conditional-rules-acceptance-2026-10-26/data-changes.json)、[透视数据变化](verification/conditional-rules-acceptance-2026-10-26/pivot-data-changes.json)。
+
+模板态直接保存24号换行文案后，VTable自动行高66且完整显示。验收发现VTable默认不解析显式换行、默认大内边距导致截断，已接通enableLineBreak、rowHeightConfig和一致边距并复验，[最终画面](verification/conditional-rules-acceptance-2026-10-26/30-wrapped-vtable-final.png)。
+
+新增[交付状态规则示例](../examples/cell-reports/workshop-delivery-status-rules.json)。本机1万记录/4万格、3规则的纯TS求值样本约70～92ms，每规则至多3个样本，不据此推断浏览器容量，[测量记录](verification/conditional-rules-acceptance-2026-10-26/performance-and-example.json)。
+
+### 38.3 语义说明与保留观察
+
+透视空交集的SUM沿用有效数值0，＜700会命中0格；如需排除0可配置＞0 AND＜700。F2示例SUM(D4:D16)保留固定13行引用，新增第14条不会由文本动作扩写范围；动态总计使用现有聚合/业务公式。
+
+指标方向、总计角色、合并边界、取消合并意图及辅助静态路径以自动化为主要证据；浏览器覆盖范围按逐项记录，不扩大为全部Excel操作验收。早期迭代/HMR捕获既有Univer依赖异常，历史H3-OBS01继续保留；本次清洁会话无pageerror不等于该观察已关闭。既有AntD提示及宿主大包提示保留。独立浏览器夹具已移除，未改用户原看板存储或事实源，开发服务保留。
+
+## 39. 旧条件字段忽略，不再校验或阻断（2026-10-27）
+
+按用户最新要求，移除共享校验器的旧conditionalRules/conditionRules检查，并删除HybridCellDesigner对initialDocument旧字段的独立预览、保存屏障。旧字段不校验、不执行、不迁移；新presentationRules的正常校验保留。此约定替代第37/38节实施时的旧字段拒绝策略。
+
+新增CR-41/42覆盖空/非空/非法旧数据、无新模型及新旧字段并存；全库373/373通过，库与宿主构建通过。原模式三入口两组隔离浏览器回归均可预览、保存、刷新、重开和VTable展示；混合配置保留3条新规则及5/4/4状态，pageerror为0。
+
+详见[修正与验收](ignore-legacy-conditional-fields-2026-10-27.md)、[浏览器记录](verification/ignore-legacy-conditional-fields-2026-10-27/browser.json)和[源码及测试汇总](verification/ignore-legacy-conditional-fields-2026-10-27/checks.json)。本轮未自动提交Git。
+
+## 40. 移除展示态顶部复制操作栏（2026-10-27）
+
+按用户要求，ReportTableView移除“复制显示内容/复制原始值”按钮及顶部容器，表格直接占用展示区域。配置态UniverPreview的两个按钮保留，工作表页签和数据配置不变。
+
+保留VTable原有选区、Ctrl+A及Ctrl+C复制。复验发现已有右键copy菜单只发出菜单事件，原先没有执行复制；已接到VTable公开getCopyValue方法写入剪贴板，菜单复制与原生键盘复制使用相同内容口径。
+
+验收：展示态按钮数量0；Ctrl+A/C复制仍为5低产、4关注、4正常；右键复制选区与键盘复制一致，直接右键单格可复制WO-202608-01；配置态按钮数量2；pageerror为0。TypeScript检查及ESM/CJS构建通过。原旧字段回归脚本同步改为通过VTable原生快捷键复制，继续可复验。
+
+证据：[展示态无操作栏](verification/display-copy-toolbar-removal-2026-10-27/01-display-no-toolbar.png)、[原生复制保留](verification/display-copy-toolbar-removal-2026-10-27/02-native-copy-preserved.png)、[浏览器结果](verification/display-copy-toolbar-removal-2026-10-27/browser.json)。本次只按界面范围调整，未新增单元测试，未自动提交Git。
+
+## 41. 编辑态同步移除复制操作栏（2026-10-27）
+
+按用户进一步要求，UniverPreview移除“复制显示内容/复制原始值”按钮、26像素顶部容器及未使用的导入。模板设计态、动态预览及共用该组件的配置入口均不再出现这两个按钮，画布直接使用原区域高度。表格现有能力保持，本轮不继续扩展复制，后续方案另行处理；此约定更新第40节当时保留配置态按钮的范围。
+
+实际原模式三入口验收：模板设计、动态预览、保存重开后的编辑态按钮数量均为0，保存成功，pageerror为0。TypeScript检查及ESM/CJS构建通过；旧字段回归脚本改用已有原生快捷键读取预览，不依赖已移除按钮。未新增单元测试，未自动提交Git。
+
+证据：[模板设计](verification/editor-copy-toolbar-removal-2026-10-27/01-design-no-copy-toolbar.png)、[动态预览](verification/editor-copy-toolbar-removal-2026-10-27/02-preview-no-copy-toolbar.png)、[验收记录](verification/editor-copy-toolbar-removal-2026-10-27/browser.json)。
+
+## 42. 项目文件整理（2026-10-27）
+
+清理173个文件，共10,319,149字节（约10.3 MB）：172个未引用的调试截图、空导出、重复事实快照、过程文件及日志；1个没有调用方且未公开导出的旧SimpleDrawer组件。保留全部有效测试、示例、公共模块、必要ambient声明、设计方案和已引用的验收证据及最终汇总，没有按日期批量删除旧文档。
+
+浏览器回归脚本归位`scripts/verify-legacy-conditional-fields.mjs`，输入归位`test/fixtures/legacy-conditional-browser.json`；更新复验命令。新增[文档导航](README.md)及目录留存说明，修复13处原有相对链接，并忽略本地缓存、临时目录和常见测试工具输出。
+
+验证：库ESM/CJS/声明及宿主TypeScript/Vite构建通过，全库373/373测试通过；移动后的两组浏览器回归通过。检查本地文档链接无缺失，源码入口依赖完整，保留不通过import引用但由编译器加载的`univer-locales.d.ts`。详见[删除及移动清单](verification/project-cleanup-2026-10-27.json)。本轮未自动提交Git，未修改用户看板数据。
+
+## 43. 删除过时Markdown（2026-10-27）
+
+按用户追加要求，删除12份已被后续实现或整改记录替代的Markdown：早期可行性及集成/双模式草案、R2～R4阶段验收、新引擎早期复验、模式三首次/深度体验及维度遗漏分析，以及React17升级前方案。
+
+保留现行展开和合并规格、多轴/范围跟随/条件规则及模式三最新实施验收。React18仍有效的依赖、API检查、回归要求和实施历史整理为[运行约定](react18-implementation-and-acceptance.md)，移除升级前混合依赖状态的判断；总表原问题ID及章节号保留，不将旧失败报告继续作为当前结论。
+
+同步更新[文档导航与当前架构](README.md)、旧链接的替代去向，以及React18验证脚本中的文档注释。源代码和测试逻辑未变，本轮检查所有保留文档的本地链接、目标章节及Git差异；不重复宣称新一轮业务测试结果。[删除及替代清单](verification/markdown-cleanup-2026-10-27.json)。

@@ -6,6 +6,8 @@ import type {
 } from './types.js';
 import { parseFormula, extractReferencedFields } from '../engine/formula/parser.js';
 import { validateHybridAxes } from './hybridAxes.js';
+import { validateStaticSpans } from './staticSpans.js';
+import { validatePresentationRules } from './presentationRules.js';
 
 export interface ValidationResult {
   valid: boolean;
@@ -21,7 +23,7 @@ export function validateCellTemplateDocument(
   doc: CellTemplateDocumentV1,
   availableFields?: readonly string[] | undefined
 ): ValidationResult {
-  const diagnostics: TemplateDiagnostic[] = validateHybridAxes(doc);
+  const diagnostics: TemplateDiagnostic[] = [...validateHybridAxes(doc), ...validateStaticSpans(doc), ...validatePresentationRules(doc, availableFields)];
   const occupied = new Map<string, string>();
   if (doc.hybridConfig?.version === 2) {
     for (const cell of doc.cells || []) {

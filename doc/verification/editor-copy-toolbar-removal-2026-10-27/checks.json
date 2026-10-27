@@ -1,0 +1,17 @@
+{
+  "typecheck": true,
+  "build": true,
+  "diffCheck": true,
+  "browser": {
+    "templateDesignCopyButtons": 0,
+    "dynamicPreviewCopyButtons": 0,
+    "reopenedEditorCopyButtons": 0,
+    "saveAndReopen": true,
+    "pageErrors": []
+  },
+  "source": {
+    "file": "src/univer/UniverPreview.tsx",
+    "sha256": "80178b92189e0fc1473b7de8e80c459a290b08b09292acac217b431a258abc44"
+  },
+  "scope": "remove editor copy toolbar only; defer further copy development"
+}

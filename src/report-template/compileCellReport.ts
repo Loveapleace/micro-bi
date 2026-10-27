@@ -20,6 +20,7 @@ import { validateCellTemplateDocument } from './validator.js';
 import { normalizeCellTemplate } from './normalizeCellTemplate.js';
 import { expandCellTemplate } from './expandTemplate.js';
 import { expandCellDrivenTemplate } from './cellExpansionEngine.js';
+import { applyPresentationRules } from './presentationRules.js';
 
 export interface CompileCellReportResult {
   publication: PublishedReport;
@@ -37,7 +38,7 @@ export function compileCellReport(
     availableFields?: readonly string[];
   } = {}
 ): CompileCellReportResult {
-  const compilerVersion = options.compilerVersion || '1.0.0-cell';
+  const compilerVersion = options.compilerVersion || '2.0.0-presentation-1';
   const dataRevision = options.dataRevision ?? Date.now();
   const createdAt = new Date().toISOString();
 
@@ -152,6 +153,7 @@ export function compileCellReport(
 
     const sheetsList = doc.sheets && doc.sheets.length > 0 ? doc.sheets : [{ id: 'sheet-1', name: 'Sheet1' }];
     const publishedStaticSheets: PublishedSheet[] = [];
+    const presentationDiagnostics: TemplateDiagnostic[] = [];
 
     for (const sheet of sheetsList) {
       const sheetCells: PublishedCell[] = [];
@@ -202,6 +204,12 @@ export function compileCellReport(
           };
         });
 
+      const staticGrid = {type:'detail' as const,rowCount:Math.max(1,...sheetCells.map(c=>c.r+1)),colCount:Math.max(1,...sheetCells.map(c=>c.c+1)),
+        cells:sheetCells.map(c=>({row:c.r,col:c.c,value:c.v,displayText:c.displayText,style:c.styleId?staticStyles[c.styleId]:undefined,role:'custom' as const,
+          sourceCellId:doc.cells.find(d=>d.sheetId===sheet.id&&d.position.row===c.r&&d.position.column===c.c)?.id})),bindings:[],merges:sheetMerges};
+      const decorated=applyPresentationRules(doc,staticGrid,rawDataset,{sheetId:sheet.id});
+      presentationDiagnostics.push(...decorated.diagnostics);
+      sheetCells.splice(0,sheetCells.length,...decorated.grid.cells.map(c=>({r:c.row,c:c.col,v:c.value,displayText:c.displayText,styleId:regStaticStyle(c.style),role:c.role})));
       publishedStaticSheets.push({
         id: sheet.id,
         name: sheet.name || sheet.id,
@@ -210,14 +218,14 @@ export function compileCellReport(
         colCount: Math.max(10, ...sheetCells.map((c) => c.c + 1)),
         cells: sheetCells,
         merges: sheetMerges,
-        defaultRowHeight: 28,
+        defaultRowHeight: 24,
         defaultColWidth: 100,
         colWidths: Object.fromEntries(
           (doc.layoutRules || [])
             .filter((r) => r.sheetId === sheet.id && r.kind === 'column-width' && r.index !== undefined && r.size !== undefined)
             .map((r) => [r.index!, r.size!])
         ),
-        rowHeights: Object.fromEntries(
+        rowHeights: decorated.grid.rowHeights || Object.fromEntries(
           (doc.layoutRules || [])
             .filter((r) => r.sheetId === sheet.id && r.kind === 'row-height' && r.index !== undefined && r.size !== undefined)
             .map((r) => [r.index!, r.size!])
@@ -235,8 +243,8 @@ export function compileCellReport(
         styles: staticStyles,
       },
       stamp,
-      diagnostics: validation.diagnostics,
-      valid: validation.valid,
+      diagnostics: [...validation.diagnostics,...presentationDiagnostics],
+      valid: validation.valid && !presentationDiagnostics.some(d=>d.severity==='error'),
     };
   }
 
@@ -275,6 +283,7 @@ export function compileCellReport(
       c: c.col,
       v: c.value,
       displayText: c.displayText,
+      ...(c.formula ? { formula: c.formula } : {}),
       styleId,
       role: c.role,
       tooltip: c.tooltip,
@@ -309,10 +318,10 @@ export function compileCellReport(
     colCount: effectiveColCount,
     cells,
     merges,
-    defaultRowHeight: 28,
+    defaultRowHeight: 24,
     defaultColWidth: 100,
-    colWidths: Object.fromEntries((doc.layoutRules || []).filter((r) => r.sheetId === plan.sheetId && r.kind === 'column-width' && r.index !== undefined && r.size !== undefined).map((r) => [r.index!, r.size!])),
-    rowHeights: Object.fromEntries((doc.layoutRules || []).filter((r) => r.sheetId === plan.sheetId && r.kind === 'row-height' && r.index !== undefined && r.size !== undefined).map((r) => [r.index!, r.size!])),
+    colWidths: grid.colWidths || Object.fromEntries((doc.layoutRules || []).filter((r) => r.sheetId === plan.sheetId && r.kind === 'column-width' && r.index !== undefined && r.size !== undefined).map((r) => [r.index!, r.size!])),
+    rowHeights: grid.rowHeights || Object.fromEntries((doc.layoutRules || []).filter((r) => r.sheetId === plan.sheetId && r.kind === 'row-height' && r.index !== undefined && r.size !== undefined).map((r) => [r.index!, r.size!])),
   };
 
   const allSheets: PublishedSheet[] = [activeSheet];
@@ -377,9 +386,9 @@ export function compileCellReport(
         colCount: sColCount,
         cells: sCells,
         merges: sMerges,
-        defaultRowHeight: 28,
+        defaultRowHeight: 24,
         defaultColWidth: 100,
-        colWidths: Object.fromEntries(
+        colWidths: sGrid.colWidths || Object.fromEntries(
           (doc.layoutRules || [])
             .filter(
               (r) =>
@@ -390,7 +399,7 @@ export function compileCellReport(
             )
             .map((r) => [r.index!, r.size!])
         ),
-        rowHeights: Object.fromEntries(
+        rowHeights: sGrid.rowHeights || Object.fromEntries(
           (doc.layoutRules || [])
             .filter(
               (r) =>
@@ -461,7 +470,7 @@ export function compileCellReport(
       colCount: Math.max(10, ...sheetCells.map((c) => c.c + 1)),
       cells: sheetCells,
       merges: sheetMerges,
-      defaultRowHeight: 28,
+      defaultRowHeight: 24,
       defaultColWidth: 100,
     });
   }

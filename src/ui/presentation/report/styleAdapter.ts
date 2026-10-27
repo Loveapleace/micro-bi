@@ -5,6 +5,7 @@
 import type { PublishedCellStyle } from '../../../report/types.js';
 
 export interface VTableCellStyleResult {
+  padding?: [number,number,number,number] | undefined;
   fontFamily?: string | undefined;
   fontSize?: number | undefined;
   fontWeight?: string | number | undefined;
@@ -25,12 +26,13 @@ export function mapPublishedStyleToVTable(
 ): VTableCellStyleResult {
   if (!style) return {};
 
-  const res: VTableCellStyleResult = {};
+  // 与中性网格的自动行高估算使用同一内边距，避免24号换行文本被主题默认大边距截断。
+  const res: VTableCellStyleResult = {padding:[4,6,4,6]};
 
   if (style.fontFamily) res.fontFamily = style.fontFamily;
   if (style.fontSize) res.fontSize = style.fontSize;
-  if (style.bold) res.fontWeight = 'bold';
-  if (style.italic) res.fontStyle = 'italic';
+  if (style.bold !== undefined) res.fontWeight = style.bold ? 'bold' : 'normal';
+  if (style.italic !== undefined) res.fontStyle = style.italic ? 'italic' : 'normal';
   if (style.underline) res.underline = true;
   if (style.strikethrough) res.lineThrough = true;
   if (style.color) res.color = style.color;
