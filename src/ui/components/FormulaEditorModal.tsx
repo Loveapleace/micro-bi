@@ -25,6 +25,7 @@ import { SimpleModal } from './common/SimpleModal.js';
 const { Text } = Typography;
 
 export interface FormulaEditorModalProps {
+  readonly usage?: 'table' | 'chart' | undefined;
   readonly open: boolean;
   readonly initialValue?: ComputedColumnConfig | undefined;
   readonly availableFields: readonly FieldMeta[];
@@ -37,6 +38,7 @@ export interface FormulaEditorModalProps {
 export const FormulaEditorModal: React.FC<FormulaEditorModalProps> = ({
   open,
   initialValue,
+  usage = 'table',
   availableFields,
   sampleRow,
   onOk,
@@ -240,14 +242,14 @@ export const FormulaEditorModal: React.FC<FormulaEditorModalProps> = ({
       title={
         <Space size={6}>
           <CalculatorOutlined style={{ color: '#1677ff' }} />
-          <span>{initialValue ? t('编辑动态计算列') : t('新建动态计算列')}</span>
+          <span>{usage==='chart'?(initialValue?'编辑业务指标':'新建业务指标'):initialValue ? t('编辑动态计算列') : t('新建动态计算列')}</span>
         </Space>
       }
       open={open}
       width={680}
       onOk={handleSubmit}
       onCancel={onCancel}
-      okText={t('保存列配置')}
+      okText={usage==='chart'?'保存指标配置':t('保存列配置')}
       cancelText={t('取消')}
       destroyOnClose
       isDark={isDark}
@@ -277,7 +279,7 @@ export const FormulaEditorModal: React.FC<FormulaEditorModalProps> = ({
           <div style={{ flex: 1 }}>
             <div style={{ marginBottom: 6, fontWeight: 500, fontSize: 13 }}>
               <span style={{ color: '#ff4d4f', marginRight: 4 }}>*</span>
-              {t('表格显示名称 (Label)')}
+              {usage==='chart'?'指标显示名称':t('表格显示名称 (Label)')}
             </div>
             <Input
               value={label}

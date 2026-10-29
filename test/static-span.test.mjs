@@ -9,7 +9,6 @@ import { captureHybridPreviewMerges } from '../dist/esm/cell-designer/hybridMerg
 import { syncDocumentFromWorkbookSnapshot } from '../dist/esm/cell-designer/syncWorkbookToTemplate.js';
 import { adaptPublishedSheetToVTable } from '../dist/esm/ui/presentation/report/gridAdapter.js';
 import { collectHybridExtras, mergeHybridCells, preserveHybridDocumentMetadata } from '../dist/esm/cell-designer/hybridTemplateState.js';
-import { createInitialDesignerState, designerReducer } from '../dist/esm/cell-designer/designerReducer.js';
 
 const facts = [
   { id: 1, shop: 'A', date: '2026-08-01', part: 'X', qty: 10, defects: 1 },
@@ -321,23 +320,6 @@ test('SS-27 unmerged static areas retain logical extent and source row heights i
   assert.ok(!sheet.merges.some((m) => m.startRow === text.r));
 });
 
-test('SS-28 free-designer advanced drafts, undo/redo and native edits retain static span metadata', () => {
-  const doc = template(); const c = caption(doc, { placement: 'after-region' });
-  const config = clone(c.staticSpan); delete c.staticSpan;
-  let state = createInitialDesignerState(doc);
-  state = designerReducer(state, { type: 'SELECT_CELL', position: c.position, sheetId: c.sheetId });
-  state = designerReducer(state, { type: 'UPDATE_DRAFT_ADVANCED', updated: { staticSpan: config, style: { textAlign: 'center', bold: true } } });
-  state = designerReducer(state, { type: 'APPLY_DRAFT' });
-  assert.equal(state.document.cells.find((x) => x.id === c.id).staticSpan.id, config.id);
-  state = designerReducer(state, { type: 'UNDO' });
-  assert.equal(state.document.cells.find((x) => x.id === c.id).staticSpan, undefined);
-  state = designerReducer(state, { type: 'REDO' });
-  for (const value of ['第一次修改', '第二次修改']) state = designerReducer(state, { type: 'APPLY_NATIVE_CELL_EDIT', row: c.position.row, column: c.position.column, sheetId: c.sheetId, value });
-  const edited = state.document.cells.find((x) => x.id === c.id);
-  assert.equal(edited.content.value, '第二次修改'); assert.deepEqual(edited.staticSpan, config);
-  assert.equal(compileCellReport(clone(state.document), facts).valid, true);
-});
-
 test('SS-29 same-looking typed group members have distinct cancellation identities', () => {
   const doc = template(); caption(doc, { repeat: 'row-groups', rowParentId: 'cell-row-shop', placement: 'before-group' });
   const rows = [{ ...facts[0], shop: 1 }, { ...facts[1], shop: '1' }];
@@ -351,14 +333,14 @@ test('SS-29 same-looking typed group members have distinct cancellation identiti
 
 test('SS-30 different column widths and caption styles are preserved in VTable configuration', () => {
   const doc = template(); const c = caption(doc, { scope: 'columns', includeTotals: false, placement: 'before-region' });
-  c.style = { ...c.style, fontFamily: 'Arial', fontSize: 18, italic: true, backgroundColor: '#eef4ff', wrapText: true, border: { top: true, bottom: true, color: '#335577' } };
+  c.style = { ...c.style, fontFamily: 'Arial', fontSize: 18, italic: true, backgroundColor: '#eef4ff', wrapText: true, border: { top: {style:'thin',color:'#335577'}, bottom: {style:'medium',color:'#335577'} } };
   doc.layoutRules = doc.layoutRules.filter((r) => r.kind !== 'column-width');
   for (const [index, size] of [[2, 97], [3, 153], [4, 71]]) doc.layoutRules.push({ id: `width-${index}`, sheetId: 'sheet-1', kind: 'column-width', index, size });
   const result = compileCellReport(doc, facts); assert.equal(result.valid, true);
   const table = adaptPublishedSheetToVTable(result.publication.sheets[0], result.publication.styles);
   const merge = table.customMergeCell.find((m) => m.text === c.content.value);
   assert.equal(merge.style.textAlign, 'center'); assert.equal(merge.style.fontSize, 18);
-  assert.equal(merge.style.bgColor, '#eef4ff'); assert.equal(merge.style.borderColor, '#335577');
+  assert.equal(merge.style.bgColor, '#eef4ff'); assert.deepEqual(merge.style.borderColor, ['#335577','#000000','#335577','#000000']);assert.deepEqual(merge.style.borderLineWidth,[1,0,2,0]);
   assert.equal([2, 3, 4].reduce((n, i) => n + table.columns[i].width, 0), 321);
 });
 
@@ -375,11 +357,11 @@ test('SS-31 migrating a disabled legacy title merge does not reactivate merging'
   assert.ok(!grid.mergeOrigins.some((m) => m.origin === 'static-span' && m.targetCellId === 'title'));
 });
 
-test('SS-32 static numeric formats and conditional styles remain identical when following is enabled', () => {
+test('SS-32 static numeric formats and toolbar styles remain identical when following is enabled', () => {
   const doc = template(); const c = caption(doc, { placement: 'after-region' });
   c.content.value = 12345.5;
   c.formatOptions = { format: 'number', precision: 1, scale: 1000, prefix: '约', suffix: '千元' };
-  setPresentation(doc,c.id,{operator:'gt',threshold:10000,style:{color:'#CC0011'}});
+  doc.styleRules.push({id:'static-toolbar',sheetId:c.sheetId,scope:'template-cell',targetId:c.id,priority:0,style:{color:'#CC0011'}});
   const fixed = clone(doc); delete fixed.cells.find((x) => x.id === c.id).staticSpan;
   const expected = expandCellDrivenTemplate(fixed, facts).grid.cells.find((x) => x.value === 12345.5);
   const result = expandCellDrivenTemplate(doc, facts);

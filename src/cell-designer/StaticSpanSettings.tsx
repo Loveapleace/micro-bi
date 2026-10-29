@@ -1,28 +1,23 @@
 import React from 'react';
-import { Button, Form, Input, InputNumber, Select, Space, Switch, Typography } from 'antd';
+import { Button, Form, InputNumber, Select, Space, Switch, Typography } from 'antd';
 import type { CellDefinition, CellTemplateDocumentV1, StaticSpanConfig } from '../report-template/types.js';
 
 export interface StaticSpanSettingsProps {
   cell: CellDefinition;
   document: CellTemplateDocumentV1;
   value: StaticSpanConfig;
-  text: string;
-  onTextChange: (value: string) => void;
   onChange: (value: StaticSpanConfig) => void;
-  onActivate: () => void;
 }
 
 /** 任意静态格均使用同一个设置入口，无标题行或固定行号分支。 */
-export function StaticSpanSettings({ cell, document, value, text, onTextChange, onChange, onActivate }: StaticSpanSettingsProps) {
+export function StaticSpanSettings({ cell, document, value, onChange }: StaticSpanSettingsProps) {
   const regions = document.regions.filter((r) => r.sheetId === cell.sheetId);
   const parents = (axis: 'row' | 'column') => document.cells.filter((c) => c.sheetId === cell.sheetId && c.regionId === value.regionId &&
     c.content.kind === 'field' && c.content.role === `${axis}-dimension`).map((c) => ({ value: c.id,
       label: `${(c.content as any).displayName || (c.content as any).fieldKey}${(c.content as any).timeBucket ? ` · ${(c.content as any).timeBucket.granularity}` : ''}` }));
   const update = (changes: Partial<StaticSpanConfig>) => onChange({ ...value, ...changes });
   return <Form layout="vertical" size="small" style={{ marginTop: 8 }}>
-    <Form.Item label="静态文本"><Input.TextArea aria-label="静态文本" rows={2} value={text} onChange={(e) => onTextChange(e.target.value)} /></Form.Item>
     <Form.Item label="范围跟随"><Select aria-label="范围跟随" value={value.enabled ? value.scope : 'fixed'} onChange={(scope) => {
-      if (!value.enabled && scope !== 'fixed') onActivate();
       update({ enabled: scope !== 'fixed', scope: scope === 'fixed' ? value.scope : scope as StaticSpanConfig['scope'],
         ...(scope === 'column-group' ? { repeat: value.repeat === 'once' ? 'column-groups' : value.repeat,
           columnParentId: value.columnParentId || parents('column')[0]?.value, includeTotals: false } : {}) });
@@ -54,7 +49,7 @@ export function StaticSpanSettings({ cell, document, value, text, onTextChange, 
       <Form.Item label="合并显示"><Switch aria-label="合并显示" checked={value.merge} disabled={!value.enabled} onChange={(merge) => update({ merge })} /></Form.Item>
     </Space>
     <Typography.Paragraph type="secondary" style={{ fontSize: 12 }}>
-      宽度按目标区域实际展开的列计算，首次启用默认居中；样式可在“样式与排版”调整。关闭合并显示仍保留范围与定位。分组说明会预留行，其他非空静态内容冲突时阻止发布。
+      宽度按目标区域实际展开的列计算，未单独设置对齐时默认居中；外观使用画布顶部的 Excel 工具栏调整。关闭合并显示仍保留范围与定位。分组说明会预留行，其他非空静态内容冲突时阻止发布。
       {value.scope === 'column-group' && value.repeat === 'row-groups' ? '当前配置会在每个行父组与列父组的交叉范围各显示一次。' : ''}
     </Typography.Paragraph>
     {value.suppressions.length > 0 && <Space><Typography.Text type="secondary">已保留 {value.suppressions.length} 条局部取消</Typography.Text>

@@ -1,0 +1,363 @@
+{
+  "date": "2026-10-29",
+  "status": "implemented-and-accepted",
+  "scope": "Mode-three advanced settings ownership: toolbar, dimensions, measures, static content and shared business settings",
+  "environment": {
+    "url": "http://localhost:5174/",
+    "browser": "155.0.8059.85",
+    "isolatedContext": true,
+    "userStorageChanged": false
+  },
+  "roleAudit": [
+    {
+      "role": "dimension",
+      "tabs": [
+        "维度设置",
+        "条件规则",
+        "整行样式",
+        "动态合并",
+        "字段信息"
+      ],
+      "hasAggregation": false,
+      "hasScaling": false
+    },
+    {
+      "role": "static",
+      "tabs": [
+        "内容",
+        "合并与范围"
+      ]
+    },
+    {
+      "role": "time-dimension",
+      "tabs": [
+        "维度设置",
+        "条件规则",
+        "整行样式",
+        "动态合并",
+        "字段信息"
+      ],
+      "hasDateFormat": false
+    },
+    {
+      "role": "measure",
+      "tabs": [
+        "指标设置",
+        "条件规则",
+        "整行样式",
+        "动态合并",
+        "字段信息"
+      ],
+      "hasAggregation": true,
+      "hasPrecision": false
+    },
+    {
+      "role": "header",
+      "tabs": [
+        "字段信息"
+      ],
+      "editableInputs": 0
+    },
+    {
+      "role": "total",
+      "tabs": [
+        "汇总设置",
+        "条件规则",
+        "整行样式",
+        "动态合并",
+        "字段信息"
+      ],
+      "hasAggregation": false
+    },
+    {
+      "role": "formula",
+      "tabs": [
+        "结果设置",
+        "条件规则",
+        "整行样式",
+        "字段信息"
+      ]
+    }
+  ],
+  "blankOpensAdvanced": false,
+  "aggregationHistory": {
+    "undo": {
+      "aggregation": "sum",
+      "empty": ""
+    },
+    "redo": {
+      "aggregation": "avg",
+      "empty": "暂无产出"
+    },
+    "finalAggregation": "sum"
+  },
+  "toolbarNumberHistory": {
+    "percent": "0%",
+    "undo": "#,##0.00",
+    "redo": "0%"
+  },
+  "rowStyle": {
+    "enabledReopen": {
+      "checked": "true",
+      "background": "#D6E4FF"
+    },
+    "disabledReopen": "false",
+    "reenabledColor": "#D6E4FF",
+    "disabledSaveRule": {
+      "id": "row-style-meas-output_qty",
+      "sheetId": "sheet-1",
+      "targetId": "meas-output_qty",
+      "target": {
+        "sheetId": "sheet-1",
+        "regionId": "region-1",
+        "cellId": "meas-output_qty",
+        "contentKind": "field",
+        "roles": [
+          "data"
+        ],
+        "field": "output_qty",
+        "role": "measure",
+        "operation": "sum"
+      },
+      "scope": "row",
+      "enabled": false,
+      "style": {
+        "backgroundColor": "#D6E4FF",
+        "color": "#0050B3"
+      },
+      "priority": 0,
+      "regionId": "region-1",
+      "noFill": false
+    },
+    "disabledAfterSave": "false",
+    "enabledAfterSaveColor": "#D6E4FF",
+    "normalRulesPreserved": true,
+    "conditionsPreserved": true,
+    "finalRule": {
+      "id": "row-style-meas-output_qty",
+      "sheetId": "sheet-1",
+      "targetId": "meas-output_qty",
+      "target": {
+        "sheetId": "sheet-1",
+        "regionId": "region-1",
+        "cellId": "meas-output_qty",
+        "contentKind": "field",
+        "roles": [
+          "data"
+        ],
+        "field": "output_qty",
+        "role": "measure",
+        "operation": "sum"
+      },
+      "scope": "row",
+      "enabled": true,
+      "style": {
+        "backgroundColor": "#D6E4FF",
+        "color": "#0050B3"
+      },
+      "priority": 0,
+      "regionId": "region-1",
+      "noFill": false
+    }
+  },
+  "conditionAudit": {
+    "hasCellAndRowScopes": true,
+    "conditionCount": 2,
+    "stats": "规则\t目标\t命中\t最终触发\t被前序拦截\t影响行\t影响格\t跳过合并\n大额交付提示\t15\t4\t4\t0\t3\t4\t0"
+  },
+  "preview": {
+    "sameInstance": true,
+    "low": {
+      "raw": 600,
+      "text": "0.6千件",
+      "color": "#531DAB",
+      "background": "#D6E4FF"
+    },
+    "high": [
+      {
+        "v": 1300,
+        "text": "大额 1.3千件",
+        "color": "#CF1322"
+      },
+      {
+        "v": 1200,
+        "text": "大额 1.2千件",
+        "color": "#CF1322"
+      },
+      {
+        "v": 1500,
+        "text": "大额 1.5千件",
+        "color": "#CF1322"
+      },
+      {
+        "v": 1100,
+        "text": "大额 1.1千件",
+        "color": "#CF1322"
+      }
+    ],
+    "formula": {
+      "raw": 1350,
+      "formula": "=SUM(C4:D4)"
+    },
+    "titleFont": 20
+  },
+  "saveReopen": {
+    "tabs": [
+      "指标设置",
+      "条件规则",
+      "整行样式",
+      "动态合并",
+      "字段信息"
+    ],
+    "empty": "暂无产出",
+    "scale": 1,
+    "aggregation": 1,
+    "rowEnabled": "true",
+    "background": "#D6E4FF"
+  },
+  "sourceChecks": {
+    "afterReloadEqual": true,
+    "afterFinalCancelEqual": true,
+    "afterDisableReenableSemanticDiff": [],
+    "comparisonNormalization": "Only generated document ID and styleRules array ordering normalized for actual edit saves; rule IDs, priority and contents preserved.",
+    "baselineSourceSha256": "81c640766a687c17b2e7d46e4c906727f12be799e80fed73b33d4bbc33d8f389",
+    "afterReloadSha256": "81c640766a687c17b2e7d46e4c906727f12be799e80fed73b33d4bbc33d8f389",
+    "finalSourceSha256": "7627d138bcd38386941e6a273b3598e07a8acf3be4aaa884816a62f891cb44f2"
+  },
+  "dataStages": [
+    {
+      "kind": "add",
+      "rows": 14,
+      "sourceUnchanged": true,
+      "staticMerge": false,
+      "rowRules": 1,
+      "formula": 1350,
+      "newCell": {
+        "r": 9,
+        "c": 7,
+        "v": 2400,
+        "displayText": "2.4千件",
+        "styleId": "s_5",
+        "role": "metric-value"
+      },
+      "publicationMatchesCompiler": true
+    },
+    {
+      "kind": "reverse",
+      "rows": 14,
+      "sourceUnchanged": true,
+      "staticMerge": false,
+      "rowRules": 1,
+      "formula": 1350,
+      "newCell": {
+        "r": 9,
+        "c": 7,
+        "v": 2400,
+        "displayText": "2.4千件",
+        "styleId": "s_5",
+        "role": "metric-value"
+      },
+      "publicationMatchesCompiler": true
+    },
+    {
+      "kind": "delete",
+      "rows": 7,
+      "sourceUnchanged": true,
+      "staticMerge": false,
+      "rowRules": 1,
+      "formula": 2700,
+      "publicationMatchesCompiler": true
+    },
+    {
+      "kind": "empty",
+      "rows": 0,
+      "sourceUnchanged": true,
+      "staticMerge": false,
+      "rowRules": 1,
+      "formula": 0,
+      "publicationMatchesCompiler": true
+    },
+    {
+      "kind": "restore",
+      "rows": 13,
+      "sourceUnchanged": true,
+      "staticMerge": false,
+      "rowRules": 1,
+      "formula": 1350,
+      "publicationMatchesCompiler": true
+    }
+  ],
+  "addedDataVisibleInRealPreview": true,
+  "staticSpan": {
+    "id": "span-title",
+    "enabled": true,
+    "regionId": "region-1",
+    "scope": "report",
+    "placement": "template",
+    "repeat": "once",
+    "rowOffset": 0,
+    "height": 1,
+    "includeTotals": true,
+    "merge": false,
+    "suppressions": [],
+    "templateRange": {
+      "startRow": 0,
+      "startColumn": 0,
+      "endRow": 0,
+      "endColumn": 0
+    }
+  },
+  "finalFormula": {
+    "r": 23,
+    "c": 13,
+    "v": 1350,
+    "displayText": "1350",
+    "formula": "=SUM(C4:D4)",
+    "styleId": "s_11",
+    "role": "metric-value"
+  },
+  "validation": {
+    "tests": 502,
+    "passed": 502,
+    "failed": 0,
+    "skipped": 0,
+    "newOwnershipTests": 16,
+    "libraryBuild": "ESM/CJS/types passed",
+    "hostBuild": "TypeScript/Vite passed",
+    "testLogSha256": "8912950d9ad7152244710e1e581d54df8df71d0617540ee21b7d64cf45f55f7a",
+    "hostBuildLogSha256": "1eee45895d209acc2b6139cb67aaf7daae3dcbadaf899163ecd6dc6176f3023d"
+  },
+  "pageErrors": [],
+  "consoleWarnings": [
+    "Warning: [antd: Modal] `destroyOnClose` is deprecated. Please use `destroyOnHidden` instead.",
+    "Warning: [antd: message] Static function can not consume context like dynamic theme. Please use 'App' component instead."
+  ],
+  "sourceSha256": {
+    "src/cell-designer/CellAdvancedSettings.tsx": "5c4af257b5e8bd775bd2df45227a1fdfae4f15b297c19c8fea6a36fe331de735",
+    "src/cell-designer/advancedCellState.ts": "9fe396c5959246de3cfb383d118c0716c70800654160d34f8f96da4656bc7e61",
+    "src/cell-designer/StyleEffectEditor.tsx": "8547dd4f2c4ee369fc4efb93e2e605272f21cb9abec78727fdc18c5ff66ffb15",
+    "src/report-template/cellCapabilities.ts": "edda5c8ac8201ed037e6639b9fc7289a1b9911d6d7b84c1c546245f4364e5867",
+    "src/report-template/presentationRules.ts": "403829914d7b306330f697a71ce4669a9096fbc3497d8a4b5f47c77f82c2eecf",
+    "src/report-template/types.ts": "bba0e03f8ee1a3c5cf0321d93b268f04ef45f062d91958e21af5227c0063b222",
+    "src/report/numberFormat.ts": "08e42d8bf0a6d3c0d5ae9783a1d20b77a4c9ab5cca7ab729c21d2d2635892105",
+    "test/advanced-cell-capabilities.test.mjs": "0bee6901a426522a0b534937fb8f7008542785e701dee88930d9e4efcc8152f6",
+    "test/advanced-cell-ownership.test.mjs": "28698fc58c0f17c36d19b745e374bd24c224aa8b4b89535fb319559d736b514c",
+    "test/toolbar-formatting.test.mjs": "8472d2a0240b4a718f26f63f83a6358d4ed2c922f8a3c01c1142a6a8dab93c72"
+  },
+  "observations": {
+    "H3-OBS01-A": "previous lifecycle fix retained; no recurrence in this acceptance",
+    "H3-OBS01-B": "historical null(row) observation remains; no claim of closure"
+  },
+  "evidenceFiles": [
+    "01-static-content.png",
+    "02-dimension-settings.png",
+    "03-measure-settings.png",
+    "04-row-style.png",
+    "05-generated-header.png",
+    "06-conditional-actions.png",
+    "07-vtable-saved.png"
+  ],
+  "evidenceNotes": [
+    "保存与数据恢复后的VTable截图SHA-256相同，共用07-vtable-saved.png；各阶段计算和源保留断言继续见本记录。"
+  ]
+}

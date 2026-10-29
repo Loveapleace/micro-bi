@@ -1,0 +1,387 @@
+{
+  "date": "2026-10-28",
+  "entry": "http://localhost:5174/ main mode3 configuration",
+  "isolation": "Independent Playwright contexts/storage; mock facts overridden only in QA page response; original user browser and fact source untouched",
+  "validation": {
+    "libraryBuild": true,
+    "hostBuild": true,
+    "allTests": {
+      "passed": 468,
+      "failed": 0,
+      "newToolbarTests": 25
+    },
+    "gitDiffCheck": true,
+    "displayAndChartStaticGraphsExcludeUniver": true
+  },
+  "checks": {
+    "staticTabs": [
+      "内容",
+      "合并与范围"
+    ],
+    "underlineStrikeFontSaved": true,
+    "percentAndDecimalUndoRedo": true,
+    "currencySaved": true,
+    "perSideBorderAndDoubleLine": true,
+    "clearAndUndoRestore": true,
+    "realStylePainter": true,
+    "numericPainter": {
+      "copiedPattern": "0.0%",
+      "undoRestoredPattern": "\"¥\"#,##0.00_);[Red](\"¥\"#,##0.00)"
+    },
+    "customNumberFormat": true,
+    "serialDateFormat": true,
+    "timeMemberDateFormat": true,
+    "formulaRawAndExpressionPreserved": true,
+    "newCellValueAndFormatSameTask": true,
+    "noOp": {
+      "styleRules": 0,
+      "noNumberFormatOverrides": true
+    },
+    "unsupportedCommands": {
+      "overflow": false,
+      "rotation": false,
+      "diagonal": false
+    },
+    "wrapOptions": "改颜色\n隐藏\n取消隐藏\n保护工作表\n取消保护工作表\n更改工作表权限\n查看所有保护范围\n自动换行\n截断",
+    "normalTextNotHiddenByDoubleBorderOverlay": true,
+    "repaintAfterLayoutCommit": true
+  },
+  "compiledData": [
+    {
+      "name": "baseline",
+      "records": 13,
+      "rows": 26,
+      "columns": 14,
+      "customText": "12,345.678件",
+      "sourceUnchanged": true,
+      "formatAndBorderPreserved": true
+    },
+    {
+      "name": "add",
+      "records": 14,
+      "rows": 28,
+      "columns": 15,
+      "customText": "12,345.678件",
+      "sourceUnchanged": true,
+      "formatAndBorderPreserved": true
+    },
+    {
+      "name": "reverse",
+      "records": 13,
+      "rows": 26,
+      "columns": 14,
+      "customText": "12,345.678件",
+      "sourceUnchanged": true,
+      "formatAndBorderPreserved": true
+    },
+    {
+      "name": "remove-group",
+      "records": 7,
+      "rows": 24,
+      "columns": 14,
+      "customText": "12,345.678件",
+      "sourceUnchanged": true,
+      "formatAndBorderPreserved": true
+    },
+    {
+      "name": "empty",
+      "records": 0,
+      "rows": 22,
+      "columns": 10,
+      "customText": "12,345.678件",
+      "sourceUnchanged": true,
+      "formatAndBorderPreserved": true
+    },
+    {
+      "name": "restore",
+      "records": 13,
+      "rows": 26,
+      "columns": 14,
+      "customText": "12,345.678件",
+      "sourceUnchanged": true,
+      "formatAndBorderPreserved": true
+    }
+  ],
+  "browserData": [
+    {
+      "name": "add",
+      "records": 14,
+      "formattedMeasures": 24,
+      "formulaValue": 0,
+      "sourceUnchanged": true
+    },
+    {
+      "name": "reverse",
+      "records": 13,
+      "formattedMeasures": 15,
+      "formulaValue": 1350,
+      "sourceUnchanged": true
+    },
+    {
+      "name": "remove-group",
+      "records": 7,
+      "formattedMeasures": 10,
+      "formulaValue": 2700,
+      "sourceUnchanged": true
+    },
+    {
+      "name": "empty",
+      "records": 0,
+      "formattedMeasures": 0,
+      "formulaValue": 0,
+      "sourceUnchanged": true
+    },
+    {
+      "name": "restore",
+      "records": 13,
+      "formattedMeasures": 15,
+      "formulaValue": 1350,
+      "sourceUnchanged": true
+    }
+  ],
+  "stableReopen": {
+    "custom": "12,345.678件",
+    "date": "2026-08-01",
+    "formula": 1350
+  },
+  "sourceExamples": {
+    "quantity": {
+      "id": "meas-output_qty",
+      "sheetId": "sheet-1",
+      "regionId": "region-1",
+      "position": {
+        "row": 3,
+        "column": 2
+      },
+      "content": {
+        "kind": "field",
+        "fieldId": "output_qty",
+        "fieldKey": "output_qty",
+        "metricId": "metric-output_qty",
+        "role": "measure",
+        "operation": "sum",
+        "expand": "inherit",
+        "displayName": "交付件数",
+        "format": "percent",
+        "formatOptions": {
+          "numberFormat": "0.0%",
+          "format": "percent",
+          "precision": 1,
+          "useGrouping": false
+        }
+      },
+      "parents": {
+        "row": "cell-row-workshop",
+        "column": "cell-col-plan_start_time"
+      },
+      "style": {
+        "textAlign": "right",
+        "color": "#d46b08",
+        "backgroundColor": "#fff7e6"
+      },
+      "panelOwner": {
+        "generator": "hybrid-panel",
+        "cellId": "meas-output_qty",
+        "generation": "panel-cd3276d7"
+      },
+      "formatOptions": {
+        "numberFormat": "0.0%",
+        "format": "percent",
+        "precision": 1,
+        "useGrouping": false
+      }
+    },
+    "title": {
+      "id": "title",
+      "sheetId": "sheet-1",
+      "regionId": "region-1",
+      "position": {
+        "row": 0,
+        "column": 0
+      },
+      "content": {
+        "kind": "literal",
+        "value": "承制车间 × 计划投产时间 双向交叉报表"
+      },
+      "parents": {
+        "row": "none",
+        "column": "none"
+      },
+      "style": {
+        "bold": true,
+        "fontSize": 14,
+        "color": "#1677ff"
+      },
+      "panelOwner": {
+        "generator": "hybrid-panel",
+        "cellId": "title",
+        "generation": "panel-cd3276d7"
+      },
+      "staticSpan": {
+        "id": "span-title",
+        "enabled": true,
+        "regionId": "region-1",
+        "scope": "report",
+        "placement": "template",
+        "repeat": "once",
+        "rowOffset": 0,
+        "height": 1,
+        "includeTotals": true,
+        "merge": true,
+        "suppressions": []
+      }
+    },
+    "customValues": [
+      {
+        "id": "c-mvrvp09o-1",
+        "sheetId": "sheet-1",
+        "position": {
+          "row": 19,
+          "column": 9
+        },
+        "content": {
+          "kind": "literal",
+          "value": 46235,
+          "formatOptions": {
+            "numberFormat": "yyyy-mm-dd",
+            "format": "date",
+            "precision": 0,
+            "useGrouping": false
+          }
+        },
+        "parents": {
+          "row": null,
+          "column": null
+        },
+        "formatOptions": {
+          "numberFormat": "yyyy-mm-dd",
+          "format": "date",
+          "precision": 0,
+          "useGrouping": false
+        },
+        "regionId": "region-1"
+      },
+      {
+        "id": "c-mvrvp54a-2",
+        "sheetId": "sheet-1",
+        "position": {
+          "row": 20,
+          "column": 9
+        },
+        "content": {
+          "kind": "literal",
+          "value": 12345.678,
+          "formatOptions": {
+            "numberFormat": "#,##0.000\"件\"",
+            "format": "number",
+            "precision": 3,
+            "useGrouping": true
+          }
+        },
+        "parents": {
+          "row": null,
+          "column": null
+        },
+        "formatOptions": {
+          "numberFormat": "#,##0.000\"件\"",
+          "format": "number",
+          "precision": 3,
+          "useGrouping": true
+        },
+        "regionId": "region-1"
+      },
+      {
+        "id": "c-mvrvp581-3",
+        "sheetId": "sheet-1",
+        "position": {
+          "row": 21,
+          "column": 9
+        },
+        "content": {
+          "kind": "sheet-formula",
+          "formula": "=SUM(C4:D4)",
+          "formatOptions": {
+            "numberFormat": "#,##0.000",
+            "format": "number",
+            "precision": 3,
+            "useGrouping": true
+          }
+        },
+        "parents": {
+          "row": null,
+          "column": null
+        },
+        "formatOptions": {
+          "numberFormat": "#,##0.000",
+          "format": "number",
+          "precision": 3,
+          "useGrouping": true
+        },
+        "regionId": "region-1"
+      }
+    ]
+  },
+  "runtime": {
+    "iterationErrors": [
+      "Cannot read properties of undefined (reading 'indexOf')",
+      "[redi]: Cannot find \"SheetsScrollRenderController2\" registered by any injector. The stack of dependencies is: \"\".",
+      "[redi]: Cannot find \"SheetsScrollRenderController2\" registered by any injector. The stack of dependencies is: \"\".",
+      "[redi]: Cannot find \"SheetsScrollRenderController2\" registered by any injector. The stack of dependencies is: \"\"."
+    ],
+    "additionalReopenErrors": [
+      "[redi]: Cannot find \"SheetsScrollRenderController2\" registered by any injector. The stack of dependencies is: \"\"."
+    ],
+    "stableFinalSessionErrors": [],
+    "knownObservation": "H3-OBS01 remains open. Error from invalid diagnostic border command parameters is distinct from supported operation checks."
+  },
+  "dependency": {
+    "name": "numfmt",
+    "version": "4.1.1",
+    "license": "MIT"
+  },
+  "sourceHashes": {
+    "src/report/cellStyle.ts": "ba99c3df052412b709b68f57149fdad30f342fa78e8352ca135e10aed1b088b2",
+    "src/report/numberFormat.ts": "6662db11fd7e539bcc2152f4442edfd6a3d71ed1425b86ba4296df878e1ce476",
+    "src/report/types.ts": "8ff6d4ffc93fc1f0762d24e337ca54c6a006a34791209108117991733bf03243",
+    "src/report/buildBiGrid.ts": "73b9ab5ce58c92495bc87afda06a5805a2606b2c1555be0af5a42fa4d812c4e7",
+    "src/report-template/types.ts": "bbe315a75fd9b465937d2c816494192bba2f870fc47661d89755396a4941c2c8",
+    "src/report-template/cellExpansionEngine.ts": "2dd40dcae1e2bba228ed341552c3c241afd1d27e265e6f0bbfa2db9c68ad0172",
+    "src/report-template/presentationRules.ts": "40c8383bc063a57731f2f3807ee8b30cb0c7af75a94b2835e302938fb45386bd",
+    "src/cell-designer/HybridCellDesigner.tsx": "3a6bf32b16451a9924622c547a1e843a7afb7014dbddc78513c30137464ae7cb",
+    "src/cell-designer/syncWorkbookToTemplate.ts": "357b4d467880a1f347bd67f7d2acf22ab53906ed9d14952165875def1941bc5b",
+    "src/cell-designer/hybridHistory.ts": "f411f9d846661bcb6b9635f2beb3bcc76a28c0452c94bf86ce2372fa7d8ff8be",
+    "src/cell-designer/hybridTemplateState.ts": "b30d14dac20dede47bc0cccfb21b5e596a16647bcd75be5d8a0fe0835aa4e7e3",
+    "src/univer/adapter.ts": "ae717223e89a646d0a2a68c9890ca0d466c40fca80f4bb8c24f88d988dd1592e",
+    "src/univer/compileReport.ts": "640c0e39cffd64b5521fdeef74d1361999013ece57b5610f1a5ea9629d058601",
+    "src/ui/presentation/report/gridAdapter.ts": "ae32d99fff4f534fff2c0ff3e90184852732304f2ea4f1d5be7f62cfcd1d93fa",
+    "src/ui/presentation/report/styleAdapter.ts": "919f63290c665d28e9068a810071c33e5f3755f9eea84f6ed0af135214e2eac7",
+    "test/toolbar-formatting.test.mjs": "202b37061310b6ba27c455645bd67bc769e7d963070102e6c0179bc98fcc2e3c",
+    "package.json": "ae2eade2ee0079a641430ae55ae9fc1c7bf3736acf575705de91ed70ae697332",
+    "package-lock.json": "14064ac62d80fbeb60917352097e84274dde125641bd7e3132a09d8fee514346",
+    "src/ui/presentation/report/ReportTableView.tsx": "27f3dcb0038a85e8c3c9d6b2b2fd2f3c17758c789c2d0b689af8c0f4b30df7c3"
+  },
+  "staticDependencyGraphs": {
+    "main": [
+      "index.html"
+    ],
+    "chart": [
+      "src/components/DashboardEditModal.tsx",
+      "index.html",
+      "_ColorPicker-B2NbuI9H.js"
+    ]
+  },
+  "repaintCycles": [
+    {
+      "cycle": 1,
+      "completed": true
+    },
+    {
+      "cycle": 2,
+      "completed": true
+    },
+    {
+      "cycle": 3,
+      "completed": true
+    }
+  ]
+}

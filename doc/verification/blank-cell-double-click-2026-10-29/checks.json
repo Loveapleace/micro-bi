@@ -1,0 +1,126 @@
+{
+  "date": "2026-10-29",
+  "status": "fixed-and-accepted",
+  "environment": {
+    "url": "http://localhost:5174/",
+    "isolatedBrowserContext": true,
+    "userStorageChanged": false
+  },
+  "rootCause": "The bridge canceled native double-click editing before the business callback decided whether an advanced settings dialog existed.",
+  "before": {
+    "events": [
+      {
+        "eventType": 3,
+        "row": 1,
+        "column": 0,
+        "cancel": true
+      }
+    ],
+    "selection": {
+      "startRow": 1,
+      "startColumn": 0,
+      "endRow": 1,
+      "endColumn": 0,
+      "rangeType": 0,
+      "unitId": "workbook-analysis",
+      "sheetId": "sheet-1"
+    }
+  },
+  "afterNativeEditStart": [
+    {
+      "eventType": 3,
+      "row": 1,
+      "column": 0
+    },
+    {
+      "started": true,
+      "row": 1,
+      "column": 0
+    }
+  ],
+  "firstInputValue": "空白格录入验收",
+  "f2Works": true,
+  "secondInput": {
+    "r": 7,
+    "c": 8,
+    "v": "第二处静态内容"
+  },
+  "undoWorks": true,
+  "redoWorks": true,
+  "existingContentTabs": [
+    "内容",
+    "合并与范围"
+  ],
+  "measureTabs": [
+    "指标设置",
+    "条件规则",
+    "整行样式",
+    "动态合并",
+    "字段信息"
+  ],
+  "previewReadOnly": {
+    "events": [
+      {
+        "eventType": 3,
+        "row": 12,
+        "column": 8,
+        "cancel": true
+      }
+    ],
+    "started": false
+  },
+  "publishedNotes": [
+    {
+      "r": 1,
+      "c": 0,
+      "v": "空白格录入验收-F2",
+      "text": "空白格录入验收-F2"
+    },
+    {
+      "r": 11,
+      "c": 12,
+      "v": "第二处静态内容",
+      "text": "第二处静态内容"
+    }
+  ],
+  "reopenNotes": {
+    "a2": "空白格录入验收-F2",
+    "i8": "第二处静态内容"
+  },
+  "reopenAdvancedContent": "空白格录入验收-F2",
+  "sourceAfterRefreshEqual": true,
+  "savedSourceSha256": "09b8e1d0ee26996dc3ebdd7c3b1a938dc7ce5f436386b9186c5ff65df5cc11c9",
+  "refreshedSourceSha256": "09b8e1d0ee26996dc3ebdd7c3b1a938dc7ce5f436386b9186c5ff65df5cc11c9",
+  "preservedSection54UiSha256Matches": {
+    "src/cell-designer/CellAdvancedSettings.tsx": true,
+    "src/cell-designer/StyleEffectEditor.tsx": true,
+    "src/cell-designer/StaticSpanSettings.tsx": true,
+    "src/report-template/cellCapabilities.ts": true
+  },
+  "validation": {
+    "tests": 507,
+    "passed": 507,
+    "failed": 0,
+    "newTests": 5,
+    "libraryBuild": "ESM/CJS/declarations passed",
+    "hostBuild": "TypeScript/Vite passed",
+    "testLogSha256": "d886c66638d3643f483bc18f1997239efc037b207756d96970282dc30638c996",
+    "hostBuildLogSha256": "704a7b9ebc976abdd8cfd200cdb93346f7f29ae9e94a71ee01184855f0bdf996"
+  },
+  "pageErrors": [],
+  "sourceSha256": {
+    "src/cell-designer/univerEvents.ts": "fb82892b1ba9ae2399e0f790c420c80e6cc32b3e966703048d2ecc994a5276f8",
+    "src/cell-designer/HybridCellDesigner.tsx": "318efea71a82f77d43d9666b8bbef3754875ef8e59ac3c07fbbecfadb4757420",
+    "src/cell-designer/guidedEditing.ts": "1617cab785f4f7931411cca5259988afff3744a48468ed707d7499c5a1b271b3",
+    "test/cell-designer-acceptance.test.mjs": "4fddef228c1cc7ebc0cd5020a1b102aaee41343fe6b730786bb6f0a1133e6665",
+    "test/blank-cell-editing.test.mjs": "62b9fe0ebe555924e50cf78b1ec9015d969d9cffc03b776774a7c2fb7808526e"
+  },
+  "evidenceFiles": [
+    "01-design-native-content.png",
+    "02-vtable-native-content.png"
+  ],
+  "visualQA": {
+    "designShowsSourcePlaceholders": true,
+    "savedNotesPresent": true
+  }
+}

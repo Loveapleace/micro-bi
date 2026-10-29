@@ -1,6 +1,6 @@
 # 模板动态合并规格：分组覆盖与横纵相邻同值
 
-维护日期：2026-10-27。本文保留当前仍使用的源规则、身份、分组边界、取消例外和Univer/VTable一致性约定。新cell模式不配置全局layoutKind/metricDirection；模式三和兼容路径可保留这些内部布局信息。下文历史方向示例及扩展用例按相应入口解释，不能重新要求新cell模式选择全局方向。
+维护日期：2026-10-28。当前表格入口仅为模式三，模式二已下线且不兼容其配置。本文的源规则、稳定身份、分组边界、取消例外及Univer/VTable一致性继续适用；布局与父格由模式三生成，数据区不允许自由编辑。下文历史方向示例用于说明底层展开，不代表恢复自由设计入口或暴露全局方向开关。具体边界见[当前实施](mode2-retirement-and-guided-editing-2026-10-28.md)。
 
 分组覆盖、相邻同值及取消例外的核心协议已在源码和测试中使用；更广的用例矩阵为持续回归规格，不表示全部组合均做过浏览器验收。范围跟随见[实施验收](static-span-implementation-and-acceptance-2026-10-26.md)，多级轴与数据变化见[多轴实施](hybrid-multiaxis-implementation-and-acceptance-2026-10-23.md)，条件样式与跨行合并边界见[条件规则实施](conditional-rules-implementation-and-acceptance-2026-10-26.md)。
 
@@ -548,7 +548,7 @@ React18的重复render/effect和旧异步结果不能改写源规则。编译器
 | --- | --- | --- |
 | DM-01 协议与迁移 | 修改`report-template/types.ts`、`validator.ts`、`identity.ts`；新增`mergeMigration.ts`；同步宿主保存包类型及能力检查 | 1.0保持原行为，1.1能完整序列化/恢复策略与取消记录；未知能力拒绝降级；迁移幂等 |
 | DM-02 事务与草稿 | 修改`designerReducer.ts`，增加规则草稿、应用/关闭/恢复/取消/清除例外动作；保存规则stableId与editSequence；所有源变更进入统一history | 单次动作只生成一个撤销节点，关闭再开启不换ID，不丢暂不匹配例外 |
-| DM-03 设计入口 | 修改`CellInspector.tsx`、`CellAdvancedSettings.tsx`、`CellReportDesigner.tsx`；必要时新增`MergeRuleEditor.tsx` | 单击/双击在真实配置弹窗可配置；预览选择能定位来源模板格和取消范围；不做独立演示入口替代 |
+| DM-03 设计入口 | 当前通过`HybridCellDesigner.tsx`、`CellAdvancedSettings.tsx`及共享合并状态接入；原自由设计器已下线 | 在模式三真实配置弹窗配置；预览选择能定位来源模板格和取消范围；不做独立演示入口替代 |
 | DM-04 计划与排序 | 修改`normalizeCellTemplate.ts`及CellRegionConfig排序字段；策略按region/target编入计划；布局排序接收稳定配置 | 分组/透视按兄弟节点排序，固定tie-break，身份不依赖位置；切metricDirection不改策略所属目标 |
 | DM-05 展开元数据 | 修改`groupedProjector.ts`、`pivotProjector.ts`及明细投影；在`report/types.ts`或内部模块定义footprint/owner | 标签、总计、小计、指标、父组及块范围可准确区分；不必给所有被覆盖空白制造业务值 |
 | DM-06 分组覆盖 | 新增内部`mergeResolver.ts`实现group-span；在`expandTemplate.ts`布局完成后调用 | 先完成截图的车间行块与日期列块，支持指标3→4及多级父组，生成来源完整 |

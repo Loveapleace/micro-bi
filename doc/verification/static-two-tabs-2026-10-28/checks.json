@@ -1,0 +1,165 @@
+{
+  "date": "2026-10-28",
+  "entry": "http://localhost:5174/ existing main mode3 dialog",
+  "isolation": "Independent Playwright browser and storage; original browser/data untouched",
+  "staticTabs": [
+    "内容",
+    "合并与范围"
+  ],
+  "checks": {
+    "advancedStylesRulesAndInfoRemoved": true,
+    "staticDisplayFormatsNotEditable": true,
+    "realToolbarOperations": [
+      "font size 20",
+      "bold off",
+      "italic on",
+      "horizontal left",
+      "vertical bottom",
+      "wrap on/off"
+    ],
+    "sameNativeFacadeOperations": [
+      "font color #722ED1",
+      "background #FFFBE6"
+    ],
+    "contentAndSpanSaveReopen": true,
+    "fixedToReportRoundTripPreservesStyles": true,
+    "mergeDisabledPreserved": true,
+    "dimensionAndMeasureStyleRulesAndAggregationRetained": true,
+    "previewAndVTableDisplay": true
+  },
+  "publishedStyleWrapOn": {
+    "fontSize": 20,
+    "bold": false,
+    "italic": true,
+    "color": "#722ED1",
+    "bgColor": "#FFFBE6",
+    "align": "left",
+    "verticalAlign": "bottom",
+    "wrapText": true
+  },
+  "publishedStyleWrapOff": {
+    "fontSize": 20,
+    "bold": false,
+    "italic": true,
+    "color": "#722ED1",
+    "bgColor": "#FFFBE6",
+    "align": "left",
+    "verticalAlign": "bottom",
+    "wrapText": false
+  },
+  "sourceSpan": {
+    "id": "span-title",
+    "enabled": true,
+    "regionId": "region-1",
+    "scope": "report",
+    "placement": "template",
+    "repeat": "once",
+    "rowOffset": 0,
+    "height": 1,
+    "includeTotals": true,
+    "merge": false,
+    "suppressions": [],
+    "templateRange": {
+      "startRow": 0,
+      "startColumn": 0,
+      "endRow": 0,
+      "endColumn": 0
+    }
+  },
+  "reopenUniverStyle": {
+    "fs": 20,
+    "bl": 0,
+    "it": 1,
+    "cl": {
+      "rgb": "#722ED1"
+    },
+    "bg": {
+      "rgb": "#FFFBE6"
+    },
+    "ht": 1,
+    "vt": 3,
+    "tb": 1
+  },
+  "dataRecompile": [
+    {
+      "name": "baseline",
+      "records": 13,
+      "lastColumn": 7,
+      "styleUnchanged": true,
+      "sourceUnchanged": true,
+      "mergeDisabled": true
+    },
+    {
+      "name": "add",
+      "records": 14,
+      "lastColumn": 8,
+      "styleUnchanged": true,
+      "sourceUnchanged": true,
+      "mergeDisabled": true
+    },
+    {
+      "name": "reverse",
+      "records": 13,
+      "lastColumn": 7,
+      "styleUnchanged": true,
+      "sourceUnchanged": true,
+      "mergeDisabled": true
+    },
+    {
+      "name": "remove-group",
+      "records": 7,
+      "lastColumn": 7,
+      "styleUnchanged": true,
+      "sourceUnchanged": true,
+      "mergeDisabled": true
+    },
+    {
+      "name": "empty",
+      "records": 0,
+      "lastColumn": 3,
+      "styleUnchanged": true,
+      "sourceUnchanged": true,
+      "mergeDisabled": true
+    },
+    {
+      "name": "restore",
+      "records": 13,
+      "lastColumn": 7,
+      "styleUnchanged": true,
+      "sourceUnchanged": true,
+      "mergeDisabled": true
+    }
+  ],
+  "validation": {
+    "libraryBuild": true,
+    "hostBuild": true,
+    "allTests": {
+      "passed": 443,
+      "failed": 0
+    },
+    "newCases": [
+      "AC-33",
+      "AC-34"
+    ],
+    "wrapStrategy": {
+      "WRAP": 3,
+      "OVERFLOW": 1,
+      "CLIP": 2
+    }
+  },
+  "runtime": {
+    "pageErrors": [],
+    "knownObservation": "H3-OBS01 remains open; no lifecycle fix claimed"
+  },
+  "codeHashes": {
+    "src/cell-designer/CellAdvancedSettings.tsx": "f059be30c4a286e378438890139dbc006f65e9d93a9f35dcbf876206934d1c8e",
+    "src/cell-designer/StaticSpanSettings.tsx": "297a8d4cee32f6a416cdb748fa50b7e49626b29fe9189144edf22a66e92bc889",
+    "src/cell-designer/advancedCellState.ts": "2ea5ddff3a4983ea2385399c98e887b5c4d8668f30fe3067133a473667a9c8ee",
+    "src/cell-designer/syncWorkbookToTemplate.ts": "a6c94c4d65d800757df3d47ec90579078ef9dfa26aa60fca500d20f509d25bd3",
+    "src/report-template/cellCapabilities.ts": "3ef81fd7d219d45c5a37e2b5b350a738d35987c097e300f704ac20906c22fad4",
+    "src/report/buildBiGrid.ts": "4339a6c42cf4f0176af09817e913fd366a5f56c5ae2f475c898ff29d539d6504",
+    "src/univer/compileReport.ts": "47c9de409a8270b093f6ab9e589fe88e3f29673f0f8414cf5a05d056f627b894",
+    "test/advanced-cell-capabilities.test.mjs": "16e3f274be4a451542bb3d51876b154e3a931344b38f02ce4dad8f97d22bac03",
+    "test/reportCompiler.test.mjs": "4becb249872a482317f647ef8e79ed88525a57ee2de4a911b6715ab8e4dee365"
+  }
+}

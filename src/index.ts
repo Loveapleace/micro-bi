@@ -21,3 +21,4 @@ export * from './core/index.js';
 export * from './engine/index.js';
 export * from './locale/index.js';
 export * from './report/index.js';
+export * from './chart/index.js';

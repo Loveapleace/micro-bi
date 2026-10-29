@@ -13,7 +13,6 @@ import '@univerjs/sheets/facade';
 import { compileCellReport, normalizeCellTemplate, expandCellTemplate, buildInstanceKey, encodeMemberTuple } from '../dist/esm/report-template/index.js';
 import { syncDocumentFromWorkbookSnapshot } from '../dist/esm/cell-designer/syncWorkbookToTemplate.js';
 import { attachUniverDesignerEvents } from '../dist/esm/cell-designer/univerEvents.js';
-import { createInitialDesignerState, designerReducer } from '../dist/esm/cell-designer/designerReducer.js';
 
 const example = JSON.parse(await readFile(new URL('../examples/cell-reports/workshop-delivery-quality.json', import.meta.url), 'utf8'));
 const source = await readFile(new URL('../../dynamic-data-test/src/mockData.ts', import.meta.url), 'utf8');
@@ -125,7 +124,7 @@ await check('RC-09', 'DCR-03', '条件背景色不清掉原有加粗、字体色
   const doc = fresh(); const b = targetBinding(expand(doc));
   setPresentation(doc,doc.cells.find(c=>c.content.metricId==='qty-sum').id,{operator:'gt',threshold:100,style:{backgroundColor:'#00FF00'}});
   const style = cellAt(expand(doc), b.target.row, b.target.column)?.style;
-  assert.equal(style.bgColor, '#00ff00');
+  assert.equal(style.bgColor, '#00FF00');
   assert.equal(style.bold, true, '背景色规则把原加粗覆盖成undefined');
   assert.equal(style.color, '#1677ff');
   assert.equal(style.format, '#,##0.00');
@@ -236,32 +235,16 @@ function closure(entry) {
 await check('RC-23', 'DCR-10', '生产入口静态依赖图不包含Univer预览及设计器', () => {
   const entry = Object.keys(manifest).find((k) => manifest[k].isEntry);
   const graph = closure(entry);
-  assert.ok(!graph.some((k) => /UniverPreview|CellReportEditModal|DashboardEditModal|univerAcceptance/.test(k)), graph.join(','));
+  assert.ok(!graph.some((k) => /UniverPreview|HybridReportEditModal|DashboardEditModal|univerAcceptance/.test(k)), graph.join(','));
   return { entry, staticImports: graph.map((k) => manifest[k].file), dynamicImports: manifest[entry].dynamicImports };
 });
-await check('RC-24', 'DCR-10/新回归', '单元格编辑入口独立加载Univer CSS', () => {
-  const cellEntry = Object.keys(manifest).find((k) => /CellReportEditModal\.tsx$/.test(k));
+await check('RC-24', 'DCR-10/新回归', '模式三编辑入口加载Univer CSS，图表入口保持隔离', () => {
+  const cellEntry = Object.keys(manifest).find((k) => /HybridReportEditModal\.tsx$/.test(k));
   const panelEntry = Object.keys(manifest).find((k) => /DashboardEditModal\.tsx$/.test(k));
   assert.ok(cellEntry && panelEntry);
   const cellCSS = new Set(closure(cellEntry).flatMap((k) => manifest[k].css || []));
   const panelCSS = new Set(closure(panelEntry).flatMap((k) => manifest[k].css || []));
-  assert.ok([...panelCSS].some((css) => cellCSS.has(css)), `单元格入口CSS=${[...cellCSS].join(',') || '空'}；原面板CSS=${[...panelCSS].join(',')}`);
-});
-
-await check('RC-25', 'DCR-09', '真实SDK刷新占位符不能把业务公式格转成literal', async () => {
-  const univer = new Univer({ locale: LocaleType.EN_US, locales: { [LocaleType.EN_US]: enUS } });
-  univer.registerPlugin(UniverSheetsPlugin);
-  const api = FUniver.newAPI(univer);
-  try {
-    let state = createInitialDesignerState(fresh());
-    const workbook = api.createWorkbook({ id: 'recheck-business-guard', sheetOrder: ['sheet-1'], sheets: { 'sheet-1': { id: 'sheet-1', name: '测试', rowCount: 30, columnCount: 20, cellData: {} } } });
-    const dispose = attachUniverDesignerEvents(api, { onCellEdited: (edit) => { state = designerReducer(state, { type: 'APPLY_NATIVE_CELL_EDIT', ...edit }); } });
-    api.__isProgrammaticWrite = true;
-    await workbook.getActiveSheet().getRange(6, 2).setValue({ v: '=[加权缺陷率]', t: 1 });
-    await Promise.resolve();
-    dispose();
-    assert.equal(state.document.cells.find((c) => c.id === 'defect-rate')?.content.kind, 'business-formula', '程序刷新导致业务公式被改成literal，后续编译丢掉整组指标');
-  } finally { univer.dispose(); }
+  assert.ok(cellCSS.size > 0 && ![...panelCSS].some((css) => cellCSS.has(css)), `单元格入口CSS=${[...cellCSS].join(',') || '空'}；原面板CSS=${[...panelCSS].join(',')}`);
 });
 
 const outDir = process.argv[2]

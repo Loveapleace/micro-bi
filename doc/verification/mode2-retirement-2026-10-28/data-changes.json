@@ -1,0 +1,72 @@
+{
+  "date": "2026-10-28",
+  "fixture": "Preset 4 with manual quantity merge, first-workshop unmerge suppression and static SUM formula",
+  "baselineFacts": 13,
+  "baselineGrid": {
+    "rows": 24,
+    "cols": 14
+  },
+  "stages": [
+    {
+      "name": "added",
+      "facts": 14,
+      "sourceSame": true,
+      "rows": 26,
+      "cols": 15,
+      "manualRules": 1,
+      "suppressions": 1,
+      "manualMerge": {
+        "startRow": 3,
+        "endRow": 3,
+        "startCol": 2,
+        "endCol": 3,
+        "text": "600.00"
+      }
+    },
+    {
+      "name": "reversed",
+      "facts": 14,
+      "sourceSame": true,
+      "rows": 26,
+      "cols": 15,
+      "manualRules": 1,
+      "suppressions": 1,
+      "manualMerge": {
+        "startRow": 3,
+        "endRow": 3,
+        "startCol": 2,
+        "endCol": 3,
+        "text": "600.00"
+      }
+    },
+    {
+      "name": "deleted-first-group",
+      "facts": 8,
+      "sourceSame": true,
+      "rows": 24,
+      "cols": 15,
+      "manualRules": 1,
+      "suppressions": 1
+    },
+    {
+      "name": "restored",
+      "facts": 13,
+      "sourceSame": true,
+      "rows": 24,
+      "cols": 14,
+      "manualRules": 1,
+      "suppressions": 1,
+      "manualMerge": {
+        "startRow": 3,
+        "endRow": 3,
+        "startCol": 2,
+        "endCol": 3,
+        "text": "600.00"
+      }
+    }
+  ],
+  "reversedMatrixSame": true,
+  "restoredMatrixSame": true,
+  "restoredMergesSame": true,
+  "sourceUnchangedAtEveryStage": true
+}

@@ -11,7 +11,6 @@ import { applyPresentationRules, normalizeRuleColor, validatePresentationRules }
 import { biGridToUniverWorksheetData, publishedStyleToUniver } from '../dist/esm/report/buildBiGrid.js';
 import { adaptPublishedSheetToVTable, publishedSheetToTsv } from '../dist/esm/ui/presentation/report/gridAdapter.js';
 import { syncDocumentFromWorkbookSnapshot } from '../dist/esm/cell-designer/syncWorkbookToTemplate.js';
-import { designerReducer, createInitialDesignerState } from '../dist/esm/cell-designer/designerReducer.js';
 import { HybridHistory } from '../dist/esm/cell-designer/hybridHistory.js';
 import { mergeHybridCells, collectHybridExtras } from '../dist/esm/cell-designer/hybridTemplateState.js';
 import { setPresentation } from './helpers/presentation.mjs';
@@ -75,7 +74,9 @@ test('CR-09 source formulas and workbook raw cells use600 despite low-production
 });
 test('CR-10 empty,zero,false and numeric strings have distinct predicates',()=>{
   const doc=staticDoc([null,'',0,false,'0','   ',NaN]);for(const c of doc.cells)doc.presentationRules.ruleSets.push({id:'set-'+c.id,order:doc.presentationRules.ruleSets.length,target:targetForCell(c),rules:[rule('empty-'+c.id,{kind:'comparison',left:{kind:'current'},operator:'empty'},{text:'空'}),rule('zero-'+c.id,cmp('eq',0),{text:'零'})]});
-  const grid=expandCellDrivenTemplate(doc,[]).grid;assert.equal(count(grid,'空'),3);assert.equal(count(grid,'零'),1);assert.equal(grid.cells.find(c=>c.sourceCellId==='s3').value,false);assert.equal(grid.cells.find(c=>c.sourceCellId==='s4').displayText,'0');
+  const values=doc.cells.map(c=>c.content.value),gridInput=expandCellDrivenTemplate(doc,[]).grid;
+  doc.cells.forEach((c,i)=>{c.content={kind:'field',fieldId:'f'+i,fieldKey:'f'+i,role:'detail-column',operation:'list',expand:'down'};doc.presentationRules.ruleSets[i].target=targetForCell(c);});
+  const grid=applyPresentationRules(doc,gridInput,[]).grid;assert.equal(count(grid,'空'),3);assert.equal(count(grid,'零'),1);assert.equal(grid.cells.find(c=>c.sourceCellId==='s3').value,false);assert.equal(grid.cells.find(c=>c.sourceCellId==='s4').displayText,'0');assert.equal(values[3],false);
 });
 test('CR-11 comparisons use an explicit display scale, never parsed unit strings',()=>{
   const doc=detail();source(doc).formatOptions={scale:1000,prefix:'约',suffix:'千件',precision:2};configure(doc,[rule('scale',cmp('lt',0.7,{kind:'current',basis:'display-number'}),{text:'小量'})]);assert.equal(count(output(doc).grid,'小量'),5);assert.equal(output(doc).sheet.cells.find(c=>c.r===3&&c.c===3).v,600);
@@ -103,9 +104,6 @@ test('CR-17 raw snapshots keep field bindings while native style deltas become e
   snapshot.sheets['sheet-1'].cellData[qty.position.row][qty.position.column].s={...publishedStyleToUniver(projected.cells.find(c=>c.sourceCellId===qty.id).style),fs:18};
   synced=syncDocumentFromWorkbookSnapshot(doc,snapshot,'design',projected);const native=synced.styleRules.find(r=>r.scope==='template-cell');assert.equal(native.style.fontSize,18);assert.equal(native.style.backgroundColor,undefined);assert.equal(synced.cells.find(c=>c.id===qty.id).content.kind,'field');
 });
-test('CR-18 atomic advanced updates and undo/redo include root rules and normal row styles',()=>{
-  const doc=detail(),qty=source(doc);let state=createInitialDesignerState(doc);state=designerReducer(state,{type:'SELECT_CELL',position:qty.position,sheetId:'sheet-1'});const changed=statusDoc();state=designerReducer(state,{type:'APPLY_ADVANCED',updated:{presentationRules:changed.presentationRules,visualStyleRules:[{id:'basic-row',sheetId:'sheet-1',regionId:'region-1',scope:'row',targetId:qty.id,style:{color:'#123456'},priority:0}]}});assert.equal(state.document.presentationRules.ruleSets[0].rules.length,3);state=designerReducer(state,{type:'UNDO'});assert.equal(state.document.presentationRules.ruleSets.length,0);state=designerReducer(state,{type:'REDO'});assert.equal(state.document.styleRules[0].scope,'row');
-});
 test('CR-19 data insertion/deletion/reverse recompute conditions without stale positions',()=>{
   const doc=statusDoc();const added=[...facts,{...facts[0],order_code:'NEW',output_qty:321}];assert.equal(count(output(doc,added).grid,'低产'),6);assert.equal(count(output(doc,facts.filter(r=>r.output_qty>=700)).grid,'低产'),0);const a=output(doc,facts).sheet,b=output(doc,[...facts].reverse()).sheet;assert.deepEqual(a.cells.filter(c=>c.c===3&&typeof c.v==='number').map(c=>[c.v,c.displayText]).sort(),b.cells.filter(c=>c.c===3&&typeof c.v==='number').map(c=>[c.v,c.displayText]).sort());
 });
@@ -118,11 +116,11 @@ test('CR-21 temporarily unselected targets retain rules and restore on reselect 
 test('CR-22 total roles require an explicit target/role selection',()=>{
   const doc=compilePanelToCellTemplate({...baseConfig,dimensions:{categories:['workshop'],columnTimeBucket:{field:'plan_start_time',granularity:'day'}},columns:[{type:'aggregated',field:'output_qty',agg:'sum'}]},'orders',{showRowTotals:true});configure(doc,[rule('status',cmp('gt',0),{text:'数据'})]);let grid=output(doc).grid;assert.equal(grid.cells.some(c=>c.sourceCellId?.startsWith('meas-rowtotal-')&&c.displayText==='数据'),false);doc.presentationRules.ruleSets[0].target.kind='field';doc.presentationRules.ruleSets[0].target.roles=['total'];grid=output(doc).grid;assert.equal(grid.cells.filter(c=>c.displayText==='数据').length,3);
 });
-test('CR-23 pure static sheets use the same rule and text engine',()=>{
-  const doc=staticDoc([600,1200]);setPresentation(doc,'s0',{threshold:700,text:'低产',style:{color:'#123456'}});const r=compileCellReport(doc,[]);assert.equal(r.valid,true);assert.equal(r.publication.sheets[0].cells[0].v,600);assert.equal(r.publication.sheets[0].cells[0].displayText,'低产');assert.equal(r.publication.styles[r.publication.sheets[0].cells[0].styleId].color,'#123456');
+test('CR-23 static condition targets are invalid and cannot silently replace static content',()=>{
+  const doc=staticDoc([600,1200]);setPresentation(doc,'s0',{threshold:700,text:'低产',style:{color:'#123456'}});const r=compileCellReport(doc,[]);assert.equal(r.valid,false);assert.ok(r.diagnostics.some(d=>d.code==='ERR_STATIC_CONDITION'));const g=expandCellDrivenTemplate(doc,[]).grid;assert.equal(g.cells[0].value,600);assert.equal(g.cells[0].displayText,'600');
 });
-test('CR-24 per-group static span conditions run after final contextual instances',()=>{
-  const doc=compilePanelToCellTemplate({...baseConfig,dimensions:{categories:['workshop']},columns:[{type:'aggregated',field:'output_qty',agg:'sum'}]},'orders');const parent=doc.cells.find(c=>c.content.kind==='field'&&c.content.role==='row-dimension');doc.cells.push({id:'caption',sheetId:'sheet-1',regionId:'region-1',position:{row:9,column:6},parents:{row:'none',column:'none'},content:{kind:'literal',value:'审核'},staticSpan:{id:'span-caption',enabled:true,regionId:'region-1',scope:'report',placement:'before-group',repeat:'row-groups',rowParentId:parent.id,rowOffset:0,height:1,includeTotals:true,merge:false,suppressions:[]}});setPresentation(doc,'caption',{predicate:cmp('gt',4000,{kind:'field',field:'output_qty',agg:'sum'}),text:'{rowLabel}：复核'});const {grid}=output(doc);const captions=grid.cells.filter(c=>c.sourceCellId==='caption');assert.equal(captions.length,3);assert.equal(captions.filter(c=>c.displayText.endsWith('复核')).length,2);assert.ok(captions.some(c=>c.displayText==='1号五轴切削车间：复核'));assert.equal(grid.staticSpanInstances.filter(i=>i.templateCellId==='caption').every(i=>!i.merged),true);
+test('CR-24 per-group static spans retain contextual layout but reject conditional static targets',()=>{
+  const doc=compilePanelToCellTemplate({...baseConfig,dimensions:{categories:['workshop']},columns:[{type:'aggregated',field:'output_qty',agg:'sum'}]},'orders');const parent=doc.cells.find(c=>c.content.kind==='field'&&c.content.role==='row-dimension');doc.cells.push({id:'caption',sheetId:'sheet-1',regionId:'region-1',position:{row:9,column:6},parents:{row:'none',column:'none'},content:{kind:'literal',value:'审核'},staticSpan:{id:'span-caption',enabled:true,regionId:'region-1',scope:'report',placement:'before-group',repeat:'row-groups',rowParentId:parent.id,rowOffset:0,height:1,includeTotals:true,merge:false,suppressions:[]}});setPresentation(doc,'caption',{predicate:cmp('gt',4000,{kind:'field',field:'output_qty',agg:'sum'}),text:'{rowLabel}：复核'});assert.equal(compileCellReport(doc,facts).valid,false);doc.presentationRules=emptyPresentationRules();const {grid}=output(doc);const captions=grid.cells.filter(c=>c.sourceCellId==='caption');assert.equal(captions.length,3);assert.ok(captions.every(c=>c.displayText==='审核'));assert.equal(grid.staticSpanInstances.filter(i=>i.templateCellId==='caption').every(i=>!i.merged),true);
 });
 test('CR-25 identical final status text does not create numeric merges',()=>{
   const doc=statusDoc();const grid=output(doc).grid;const low=quantities(grid,doc).filter(c=>c.displayText==='低产');assert.equal(new Set(low.map(c=>c.value)).size,5);assert.equal(grid.merges.some(m=>m.startCol===3&&m.endRow>m.startRow),false);
@@ -169,10 +167,10 @@ test('CR-38 disabling row action cleans previous row fill and preserves text/val
 });
 
 test('CR-39 replacement wrap/font resolves shared automatic row heights and removes derived heights on disable',()=>{
-  const doc=staticDoc([600]);setPresentation(doc,'s0',{threshold:700,text:'较长的交付状态说明\n第二行',style:{fontSize:24,wrapText:true}});
-  const input={type:'detail',rowCount:2,colCount:2,cells:[{row:0,col:0,value:600,displayText:'600',role:'custom',sourceCellId:'s0',style:{}}],bindings:[],merges:[],colWidths:{0:90}};
+  const doc=detail();setPresentation(doc,source(doc).id,{threshold:700,text:'较长的交付状态说明\n第二行',style:{fontSize:24,wrapText:true}});
+  const input={type:'detail',rowCount:2,colCount:2,cells:[{row:0,col:0,value:600,displayText:'600',role:'custom',sourceCellId:source(doc).id,style:{}}],bindings:[],merges:[],colWidths:{0:90}};
   const before=applyPresentationRules(doc,input).grid;assert.ok(before.rowHeights[0]>24);assert.equal(biGridToUniverWorksheetData(before).rowData[0].h,before.rowHeights[0]);
-  const compiled=compileCellReport(doc,[]),table=adaptPublishedSheetToVTable(compiled.publication.sheets[0],compiled.publication.styles);assert.equal(table.options.rowHeightConfig[0].height,compiled.publication.sheets[0].rowHeights[0]);assert.equal(table.options.enableLineBreak,true);assert.deepEqual(table.columns[0].style({row:0}).padding,[4,6,4,6]);
+  const compiled=compileCellReport(doc,[{...facts[0],output_qty:600}]),table=adaptPublishedSheetToVTable(compiled.publication.sheets[0],compiled.publication.styles);assert.ok(table.options.rowHeightConfig.length>0);for(const h of table.options.rowHeightConfig)assert.equal(h.height,compiled.publication.sheets[0].rowHeights[h.key]);assert.equal(table.options.enableLineBreak,true);assert.deepEqual(table.columns[0].style({row:0}).padding,[4,6,4,6]);
   doc.presentationRules.ruleSets[0].rules[0].enabled=false;const after=applyPresentationRules(doc,before).grid;assert.equal(after.rowHeights[0],undefined);assert.equal(after.cells[0].value,600);
 });
 

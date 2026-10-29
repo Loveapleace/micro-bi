@@ -17,6 +17,9 @@ import type {
   BindingRole,
 } from '../report/types.js';
 import { validatePublishedReport } from '../report/validator.js';
+import { readUniverStyle, sourceStyleToPublished } from '../report/cellStyle.js';
+import { formatExcelValue, isValidNumberFormat } from '../report/numberFormat.js';
+import { readUniverCellValue } from '../cell-designer/univerValues.js';
 
 export interface CompileReportOptions {
   reportId?: string | undefined;
@@ -34,40 +37,8 @@ function mapUniverStyleToPublishedStyle(
 ): PublishedCellStyle | undefined {
   if (!s) return undefined;
 
-  const style: PublishedCellStyle = {};
-
-  if (s.ff) style.fontFamily = s.ff;
-  if (s.fs) style.fontSize = s.fs;
-  if (s.bl === 1) style.bold = true;
-  if (s.it === 1) style.italic = true;
-  if (s.ul?.s === 1) style.underline = true;
-  if (s.st?.s === 1) style.strikethrough = true;
-  if (s.cl?.rgb) style.color = s.cl.rgb;
-  if (s.bg?.rgb) style.bgColor = s.bg.rgb;
-
-  // 对齐：1: 左, 2: 中, 3: 右
-  if (s.ht === 1) style.align = 'left';
-  else if (s.ht === 2) style.align = 'center';
-  else if (s.ht === 3) style.align = 'right';
-
-  // 垂直对齐：1: 顶, 2: 中, 3: 底
-  if (s.vt === 1) style.verticalAlign = 'top';
-  else if (s.vt === 2) style.verticalAlign = 'middle';
-  else if (s.vt === 3) style.verticalAlign = 'bottom';
-
-  // 换行：1: 溢出, 2: 换行, 3: 截断
-  if (s.tb === 2) style.wrapText = true;
-
-  // 边框映射
-  if (s.bd) {
-    style.border = {
-      ...(s.bd.t?.cl?.rgb ? { top: { color: s.bd.t.cl.rgb, style: 'thin' } } : {}),
-      ...(s.bd.b?.cl?.rgb ? { bottom: { color: s.bd.b.cl.rgb, style: 'thin' } } : {}),
-      ...(s.bd.l?.cl?.rgb ? { left: { color: s.bd.l.cl.rgb, style: 'thin' } } : {}),
-      ...(s.bd.r?.cl?.rgb ? { right: { color: s.bd.r.cl.rgb, style: 'thin' } } : {}),
-    };
-  }
-
+  const style=sourceStyleToPublished(readUniverStyle(s));
+  if(s.n?.pattern)style.format=s.n.pattern;
   return style;
 }
 
@@ -199,10 +170,15 @@ export function compileReport(
 
         let v: string | number | boolean | null = null;
         if (rawCell.v !== undefined && rawCell.v !== null) {
-          v = rawCell.v as any;
+          v = readUniverCellValue(rawCell) as any;
         }
 
         let displayText: string | undefined = undefined;
+        let styleId=typeof rawCell.s==='string'?rawCell.s:undefined;
+        if(rawCell.s&&typeof rawCell.s==='object'){
+          styleId=`inline-${sheetId}-${r}-${c}`;styles[styleId]=mapUniverStyleToPublishedStyle(rawCell.s)||{};
+        }
+        const pattern=styleId?styles[styleId]?.format:undefined;
         // 若有活跃的 FWorkbook 实例，尝试读取精准的数字格式化文本
         if (fWorkbook && typeof fWorkbook.getSheetBySheetId === 'function') {
           try {
@@ -230,7 +206,7 @@ export function compileReport(
         }
 
         if (displayText === undefined && v !== null) {
-          displayText = String(v);
+          displayText = pattern&&isValidNumberFormat(pattern)?formatExcelValue(v,pattern):String(v);
         }
 
         const cell: PublishedCell = {
@@ -239,7 +215,7 @@ export function compileReport(
           v,
           ...(displayText !== undefined ? { displayText } : {}),
           ...(rawCell.f ? { formula: rawCell.f } : {}),
-          ...(typeof rawCell.s === 'string' ? { styleId: rawCell.s } : {}),
+          ...(styleId ? { styleId } : {}),
           ...(rawCell.custom?.role ? { role: rawCell.custom.role as BindingRole } : {}),
           ...(rawCell.custom?.tooltip ? { tooltip: rawCell.custom.tooltip } : {}),
         };

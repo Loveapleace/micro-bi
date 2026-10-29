@@ -6,6 +6,8 @@ export * from './theme.js';
 export * from './DynamicDataView.js';
 export * from './charts/metricUtils.js';
 export * from './charts/VChartView.js';
+export * from './charts/ChartView.js';
+export * from './charts/chartSpec.js';
 export * from './table/VTableView.js';
 export * from './table/tableExport.js';
 export * from './table/summaryCalculator.js';

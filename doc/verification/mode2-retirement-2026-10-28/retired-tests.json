@@ -1,0 +1,72 @@
+[
+  {
+    "file": "test/cell-designer-acceptance.test.mjs",
+    "test": "'cell designer: save commits a focused inspector draft before reading the template'",
+    "reason": "Removed standalone free-editor state/entry; shared compiler and projection coverage retained"
+  },
+  {
+    "file": "test/cell-designer-acceptance.test.mjs",
+    "test": "'cell designer: changing selection commits to the previous cell and undo restores it'",
+    "reason": "Removed standalone free-editor state/entry; shared compiler and projection coverage retained"
+  },
+  {
+    "file": "test/cell-designer-acceptance.test.mjs",
+    "test": "'cell designer: region layout and metric direction remain in the source document'",
+    "reason": "Removed standalone free-editor state/entry; shared compiler and projection coverage retained"
+  },
+  {
+    "file": "test/cell-designer-acceptance.test.mjs",
+    "test": "'DCR-09: CommandExecuted set-range-values captures native F2 cell edits and dispatches to template'",
+    "reason": "Removed standalone free-editor state/entry; shared compiler and projection coverage retained"
+  },
+  {
+    "file": "test/cell-designer-acceptance.test.mjs",
+    "test": "'cell designer: switching literal -> field -> literal preserves text and leaves draft clean'",
+    "reason": "Removed standalone free-editor state/entry; shared compiler and projection coverage retained"
+  },
+  {
+    "file": "test/cell-designer-acceptance.test.mjs",
+    "test": "'cell designer: REVERT_DRAFT restores original cell and prevents accidental commit on selection change'",
+    "reason": "Removed standalone free-editor state/entry; shared compiler and projection coverage retained"
+  },
+  {
+    "file": "test/cell-designer-acceptance.test.mjs",
+    "test": "'cell designer: INSERT_COLUMNS shifts cells/layout/regions and expands hierarchical pivot correctly'",
+    "reason": "Removed standalone free-editor state/entry; shared compiler and projection coverage retained"
+  },
+  {
+    "file": "test/cell-designer-acceptance.test.mjs",
+    "test": "'cell designer: SET_DYNAMIC_MERGE_POLICY normalizes mismatched regionId and passes validator'",
+    "reason": "Removed standalone free-editor state/entry; shared compiler and projection coverage retained"
+  },
+  {
+    "file": "test/cell-expansion-fixes.test.mjs",
+    "test": "'Fix 12: Designer reducer supports UPDATE_DRAFT_STYLE and persists to template'",
+    "reason": "Removed standalone free-editor state/entry; shared compiler and projection coverage retained"
+  },
+  {
+    "file": "test/cell-expansion-fixes.test.mjs",
+    "test": "'Fix 13: Switching dataset syncs regionId and wizard options to new dataset fields'",
+    "reason": "Removed standalone free-editor state/entry; shared compiler and projection coverage retained"
+  },
+  {
+    "file": "test/presentation-rules.test.mjs",
+    "test": "'CR-18 atomic advanced updates and undo/redo include root rules and normal row styles'",
+    "reason": "Removed standalone free-editor state/entry; shared compiler and projection coverage retained"
+  },
+  {
+    "file": "test/static-span.test.mjs",
+    "test": "'SS-28 free-designer advanced drafts, undo/redo and native edits retain static span metadata'",
+    "reason": "Removed standalone free-editor state/entry; shared compiler and projection coverage retained"
+  },
+  {
+    "file": "scripts/verify-cell-remediation-recheck.mjs",
+    "test": "'RC-25'",
+    "reason": "Removed standalone free-editor state/entry; shared compiler and projection coverage retained"
+  },
+  {
+    "file": "scripts/verify-cell-expansion-recheck.mjs",
+    "test": "'CER-03'",
+    "reason": "Removed standalone free-editor state/entry; shared compiler and projection coverage retained"
+  }
+]

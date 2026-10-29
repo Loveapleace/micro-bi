@@ -1,0 +1,209 @@
+{
+  "date": "2026-10-28",
+  "origin": "http://localhost:5174/",
+  "isolation": "Independent headless contexts, separate storage and routed mock facts; original user browser untouched",
+  "menu": [
+    "图表分析新建 (模式一：VChart)",
+    "智能协同设计新建 (模式三：面板选字段 + Excel展开)"
+  ],
+  "mixedSourceResult": [
+    {
+      "id": "current-chart",
+      "mode": "chart",
+      "hasGuided": false
+    },
+    {
+      "id": "current-guided",
+      "mode": "hybrid",
+      "hasGuided": true
+    }
+  ],
+  "onlyRetiredSourceFallback": [
+    {
+      "id": "view_preset_1",
+      "mode": "chart"
+    },
+    {
+      "id": "view_preset_2",
+      "mode": "chart"
+    },
+    {
+      "id": "view_preset_3",
+      "mode": "chart"
+    },
+    {
+      "id": "view_preset_4",
+      "mode": "hybrid"
+    }
+  ],
+  "existingGuidedV1": {
+    "savedMode": "hybrid",
+    "version": 2,
+    "rowAxes": [
+      {
+        "id": "row:category:workshop",
+        "fieldKey": "workshop",
+        "kind": "category"
+      }
+    ],
+    "columnAxes": [
+      {
+        "id": "column:time:plan_start_time",
+        "fieldKey": "plan_start_time",
+        "kind": "time",
+        "timeBucket": {
+          "granularity": "day"
+        }
+      }
+    ],
+    "styleRetained": true,
+    "manualMergeRetained": true
+  },
+  "nativeContentProtection": {
+    "F2": true,
+    "typing": true,
+    "paste": true,
+    "delete": true,
+    "removeDataRow": true,
+    "crossBoundaryPaste": {
+      "before": [
+        "承制车间",
+        "{承制车间 ↓}"
+      ],
+      "after": [
+        "承制车间",
+        "{承制车间 ↓}"
+      ]
+    }
+  },
+  "nativeStyle": {
+    "fontSize": 18,
+    "source": [
+      {
+        "id": "native-style-sheet-1-meas-output_qty",
+        "sheetId": "sheet-1",
+        "targetId": "meas-output_qty",
+        "target": {
+          "sheetId": "sheet-1",
+          "regionId": "region-1",
+          "cellId": "meas-output_qty",
+          "contentKind": "field",
+          "roles": [
+            "data"
+          ],
+          "field": "output_qty",
+          "role": "measure",
+          "operation": "sum"
+        },
+        "scope": "template-cell",
+        "style": {
+          "fontSize": 18
+        },
+        "priority": 0
+      }
+    ],
+    "published": [
+      {
+        "r": 3,
+        "c": 2,
+        "v": 600,
+        "style": {
+          "color": "#d46b08",
+          "bgColor": "#fff7e6",
+          "align": "right",
+          "format": "number",
+          "fontSize": 18
+        }
+      },
+      {
+        "r": 3,
+        "c": 3,
+        "v": 750,
+        "style": {
+          "color": "#d46b08",
+          "bgColor": "#fff7e6",
+          "align": "right",
+          "format": "number",
+          "fontSize": 18
+        }
+      }
+    ]
+  },
+  "staticNote": {
+    "first": "QA_STATIC_NOTE",
+    "final": "QA_NOTE_FINAL",
+    "undo": "QA_STATIC_NOTE",
+    "redo": "QA_NOTE_FINAL",
+    "savedCount": 1
+  },
+  "merge": {
+    "rawBefore": [
+      600,
+      750
+    ],
+    "rawAfter": [
+      600,
+      750
+    ],
+    "formulaResult": [
+      {
+        "r": "23",
+        "c": "13",
+        "f": "=SUM(C4:D4)",
+        "v": 1350
+      }
+    ],
+    "incorrectDiscardPrompt": false,
+    "cancelledGroup": [
+      {
+        "id": "unmerge:merge-policy-cell-row-workshop:grp::region-1::row::workshop::s:1%E5%8F%B7%E4%BA%94%E8%BD%B4%E5%88%87%E5%89%8A%E8%BD%A6%E9%97%B4",
+        "policyId": "merge-policy-cell-row-workshop",
+        "policyKind": "group-span",
+        "scope": "group-context",
+        "groupContextKey": "grp::region-1::row::workshop::s:1%E5%8F%B7%E4%BA%94%E8%BD%B4%E5%88%87%E5%89%8A%E8%BD%A6%E9%97%B4",
+        "source": "user",
+        "sequence": 1
+      }
+    ],
+    "manualRules": [
+      {
+        "id": "hybrid-merge:sheet-1:3:3:2:3",
+        "kind": "merge",
+        "sheetId": "sheet-1",
+        "range": {
+          "startRow": 3,
+          "endRow": 3,
+          "startColumn": 2,
+          "endColumn": 3
+        },
+        "source": "user",
+        "semanticSelector": {
+          "regionId": "region-1",
+          "masterSignature": "{\"role\":\"metric-value\",\"metric\":\"metric-output_qty\",\"row\":[[\"workshop\",\"s:1%E5%8F%B7%E4%BA%94%E8%BD%B4%E5%88%87%E5%89%8A%E8%BD%A6%E9%97%B4\"]],\"col\":[[\"plan_start_time\",\"s:2026-08-01\"]]}",
+          "coveredSignatures": [
+            "{\"role\":\"metric-value\",\"metric\":\"metric-output_qty\",\"row\":[[\"workshop\",\"s:1%E5%8F%B7%E4%BA%94%E8%BD%B4%E5%88%87%E5%89%8A%E8%BD%A6%E9%97%B4\"]],\"col\":[[\"plan_start_time\",\"s:2026-08-01\"]]}",
+            "{\"role\":\"metric-value\",\"metric\":\"metric-output_qty\",\"row\":[[\"workshop\",\"s:1%E5%8F%B7%E4%BA%94%E8%BD%B4%E5%88%87%E5%89%8A%E8%BD%A6%E9%97%B4\"]],\"col\":[[\"plan_start_time\",\"s:2026-08-02\"]]}"
+          ]
+        }
+      }
+    ]
+  },
+  "chart": {
+    "editorOpened": true,
+    "chartCanvasCount": 1,
+    "univerWorkbenchCount": 0,
+    "saved": true
+  },
+  "errors": {
+    "cleanMain": [],
+    "sourceBoundary": [],
+    "final": [],
+    "fallback": [],
+    "guidedV1": []
+  },
+  "probeNote": "One early diagnostic listener attempted to serialize an SDK circular object and was removed; final clean sessions above do not contain that instrumentation. No product error attributed to that diagnostic failure.",
+  "openObservations": [
+    "H3-OBS01 lifecycle observation retained",
+    "H3-DRILL-01 remains TODO"
+  ]
+}

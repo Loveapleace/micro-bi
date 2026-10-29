@@ -6,7 +6,7 @@
 
 库和宿主采用React/ReactDOM 18.3.1及匹配的18类型，宿主使用createRoot和StrictMode，外部数据注册订阅使用useSyncExternalStore。Univer只在配置端按需加载，正式报表继续由VTable展示。具体依赖版本以package.json和锁文件为准。
 
-React18升级不要求重写报表DSL、整体替换AntD/VTable或自动将计算放入Transition，也不改变现有模板源与发布模型的职责。升级相关历史实施记录中的版本和数量对应2026-10-19，不当作当前全库测试数量；当前基线为373项，见[最近项目验证](verification/project-cleanup-2026-10-27.json)。
+React18升级不要求重写报表DSL、整体替换AntD/VTable或自动将计算放入Transition，也不改变现有模板源与发布模型的职责。升级相关历史实施记录中的版本和数量对应2026-10-19；当前模式二已下线，409项基线及现行入口见[最新实施验收](mode2-retirement-and-guided-editing-2026-10-28.md)。
 
 ## 2. 三方库API检查
 

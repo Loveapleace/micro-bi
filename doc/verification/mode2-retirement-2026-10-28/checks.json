@@ -1,0 +1,595 @@
+{
+  "date": "2026-10-28",
+  "baseCommit": "67e0410cdab49190be03ccdef0f2aaf23e2c16d8",
+  "uncommitted": true,
+  "scope": "Mode2 retirement plus controlled Mode3 editing; preserves uncommitted Mode1 VChart overhaul",
+  "builds": {
+    "library": {
+      "command": "npm run build",
+      "esm": true,
+      "cjs": true,
+      "declarations": true,
+      "passed": true
+    },
+    "host": {
+      "command": "npm run build",
+      "typescript": true,
+      "vite": true,
+      "passed": true,
+      "largeChunkWarningRetained": true
+    }
+  },
+  "unitTests": {
+    "command": "npm run test:only",
+    "passed": 409,
+    "failed": 0,
+    "newGuidedEditingTests": 19,
+    "retiredFreeDesignerTests": 12,
+    "previousBaseline": 402
+  },
+  "supplementalChecks": {
+    "expansion": {
+      "total": 20,
+      "passed": 20,
+      "failed": 0
+    },
+    "sdkSnapshotAndManifest": {
+      "total": 24,
+      "passed": 24,
+      "failed": 0
+    },
+    "retiredCliChecks": 2,
+    "fixtureCorrections": [
+      "CER-11 now uses explicit none parents for a fixed region footer and verifies one shifted note plus unchanged quantities 10/20",
+      "RC-09 uses uppercase HEX from current presentation rules"
+    ]
+  },
+  "production": {
+    "dynamicEntries": [
+      "src/components/DashboardEditModal.tsx",
+      "src/components/HybridReportEditModal.tsx"
+    ],
+    "freeEditorChunk": false,
+    "staticUniverIsolation": true,
+    "hybridCssChartCssSeparated": true
+  },
+  "sourceFingerprintAlgorithm": "sha256(JSON.stringify(sorted list of {path,sha256} for every .ts/.tsx under src)); paths relative with forward slashes",
+  "sources": {
+    "library": {
+      "fileCount": 118,
+      "sha256": "a45ff8436b079c9efc068cefa33a57c25db517753fc7ee62b842868cd9dd4292",
+      "files": [
+        {
+          "path": "src/cell-designer/CellAdvancedSettings.tsx",
+          "sha256": "bb9709ad7193b6f0f39e64799cfe0bcdfff7937eaecb07e6cf7cf45b7f962f5a"
+        },
+        {
+          "path": "src/cell-designer/HybridCellDesigner.tsx",
+          "sha256": "a2a27c0bab22361487bf5b93042a1446c4ac4ff52f0668b194d48c8ee693c991"
+        },
+        {
+          "path": "src/cell-designer/PresentationRuleEditor.tsx",
+          "sha256": "c15b8799e08bd34c7d8073d38e8937226a8f8cd993d3bbe0ebef0d80028c62cc"
+        },
+        {
+          "path": "src/cell-designer/StaticSpanSettings.tsx",
+          "sha256": "475b0b499dd8bcb4da70c28cf53b1e53304bb1c616499761280ed93c20649c0a"
+        },
+        {
+          "path": "src/cell-designer/StyleEffectEditor.tsx",
+          "sha256": "4f03c22bad4662b148b865ac9f24bf20b905e30d34af17afa102da9b244f8c87"
+        },
+        {
+          "path": "src/cell-designer/guidedEditing.ts",
+          "sha256": "ee5491fefba10889e5819335caa1ce8d5bce20d90b22475e1b9709684e04c66e"
+        },
+        {
+          "path": "src/cell-designer/hybridHistory.ts",
+          "sha256": "af148c1920bd215d042ea7530a54b43856e8c9d04b17a410c99995af5c375af6"
+        },
+        {
+          "path": "src/cell-designer/hybridMergeState.ts",
+          "sha256": "5b80375da173510c69b172e409bce96d5afa52f6320557f02e048a0fd3dee01f"
+        },
+        {
+          "path": "src/cell-designer/hybridTemplateState.ts",
+          "sha256": "375f81f6b62b48331e9c27542776dea78f3d20344731f5dba6d7160514937f95"
+        },
+        {
+          "path": "src/cell-designer/index.ts",
+          "sha256": "521fedf7b88026d9aafb59224d184a9a3b36f0e9287da3f8b3ced4e2fc2ab2a1"
+        },
+        {
+          "path": "src/cell-designer/staticSpanIntent.ts",
+          "sha256": "7a1fe0af0ced3ba7a2985a7b213083115761516459ad5ca926ba91cd5f941abf"
+        },
+        {
+          "path": "src/cell-designer/syncWorkbookToTemplate.ts",
+          "sha256": "66b33b342ee5c5469b66e1ffb8dcce8243e8d3fb7476c6ad57332dc44a35720a"
+        },
+        {
+          "path": "src/cell-designer/univerEvents.ts",
+          "sha256": "889da504eb1843bfffd801e90bca4525f730f1dd6b71880230fd1e5fc2275431"
+        },
+        {
+          "path": "src/chart/compileChart.ts",
+          "sha256": "893fdd382bb4389ba8043b7c6327829f3cd29d5eddb8b2d11372355cfc97ade0"
+        },
+        {
+          "path": "src/chart/formulaValidation.ts",
+          "sha256": "50db519cb1020344f26b926b974b8541aa596a2f7cda9b71585cf0026e7ac6ed"
+        },
+        {
+          "path": "src/chart/index.ts",
+          "sha256": "0df3aad6e5e4fbdb5d91c25b44a56692ae201fb6323267b3f2bee986368abde0"
+        },
+        {
+          "path": "src/chart/types.ts",
+          "sha256": "0a9558aabc2f0d97ece42d05e695c14a1c0563a968483ec7b30ff61d6dda0c92"
+        },
+        {
+          "path": "src/core/datasetRegistry.ts",
+          "sha256": "715304e352dc746bce9d8047ecbf0fdd96da6dd54a2dd98e600c9c77096d4893"
+        },
+        {
+          "path": "src/core/index.ts",
+          "sha256": "57c88fac31234ff1657e394da76c9674e05d933552c66884b6de433f6c2eb061"
+        },
+        {
+          "path": "src/core/registry.ts",
+          "sha256": "e174616fc74ded8432e3285cf796578e72c00741b0754f5ca34f3c1b7c4003a3"
+        },
+        {
+          "path": "src/engine/aggregation.ts",
+          "sha256": "66a36bdde0bf95e059a9b603a77c72cf9ef07f7f1df889782defeaa3a6ccdf34"
+        },
+        {
+          "path": "src/engine/bucketing.ts",
+          "sha256": "9aada6d49782fba3601080d687eccdeeb0dc7dcaaf4a9413ef8e72239f5abc47"
+        },
+        {
+          "path": "src/engine/comparison.ts",
+          "sha256": "650078c4e3fcb2bf4a6495c3aafdac81f1329cd0f94558ef07ea31074337a966"
+        },
+        {
+          "path": "src/engine/formulaHelper.ts",
+          "sha256": "030f3155a5f6c1a8ecc2ef0374e8880883529b78acc58d8f85d0b76918ea80ab"
+        },
+        {
+          "path": "src/engine/formula/evaluator.ts",
+          "sha256": "db222a6e76f0d6c1f5b3cfa38f3b26d49075f2b374561167e2350f0253ebeb9e"
+        },
+        {
+          "path": "src/engine/formula/index.ts",
+          "sha256": "c1d2af645160389e8adbde2cf2e302d29e031b3e594b2b18585907b1018d468c"
+        },
+        {
+          "path": "src/engine/formula/lexer.ts",
+          "sha256": "9a41adf68a2f767ab0a315a3722346f3acb99598fa28e05134ab13447c61e293"
+        },
+        {
+          "path": "src/engine/formula/parser.ts",
+          "sha256": "9209b8d151933088f84a7b4168c99f6b78d3872e2f75306bcc6b88767767ca8b"
+        },
+        {
+          "path": "src/engine/formula/token.ts",
+          "sha256": "425220281ae68b6d5147e55d82287ca09ee931284fc0c41474ef6da881dc1e23"
+        },
+        {
+          "path": "src/engine/index.ts",
+          "sha256": "f6d01af90911ec717eab84df32f2fad58173c9e0e9f74adb7fbb01ffc8c9a5b8"
+        },
+        {
+          "path": "src/engine/modeAdapter.ts",
+          "sha256": "0a4c83ecdf7ad3959f0c619629c8f4ebea78b378baa76f8502d9a58505e5ea1a"
+        },
+        {
+          "path": "src/engine/pipeline.ts",
+          "sha256": "1ac464f1d47dc558d3b8882c7518dcf458463eaf7ead240d3868d5541648d887"
+        },
+        {
+          "path": "src/engine/profiler.ts",
+          "sha256": "9b71a9ae408ad5e609be32e069d53628886c696b9a116e4ad21e2f256ad67260"
+        },
+        {
+          "path": "src/engine/recordMetadata.ts",
+          "sha256": "4aecedb5024e40aac6ba2068dfb51cfac52693321a994a5394fa126714c9ffbf"
+        },
+        {
+          "path": "src/engine/slotMatcher.ts",
+          "sha256": "1a1543cc6e0864ef6585a28062cdeafe661b09c1b14bc3d1af6465b77fe3c263"
+        },
+        {
+          "path": "src/engine/summary.ts",
+          "sha256": "def23768728e605bde3aac150055674987e80d24c0c345323bdabfe8b83948b2"
+        },
+        {
+          "path": "src/engine/template.ts",
+          "sha256": "3549811b2d7a45f28a2da24487a7122e8fe829cb99abb19790dc8c46184c499c"
+        },
+        {
+          "path": "src/engine/types.ts",
+          "sha256": "9f26dd492eabd86b109c0600aa7c187c9004cca2af5e40787c4d14917531d53a"
+        },
+        {
+          "path": "src/engine/validator.ts",
+          "sha256": "7133420ffaec508abd7bfca0f199cbc47ddcdb75e508c547f3227a1a98e55031"
+        },
+        {
+          "path": "src/index.ts",
+          "sha256": "6a7568124c9a4a259824ded09f36f3fb6db43c4c6a72e8461829671aac0bb3d6"
+        },
+        {
+          "path": "src/locale/context.tsx",
+          "sha256": "2b8fa4a57435f4a19f8830c71b86f4a382520a28f15368a4b72cff69e6afbada"
+        },
+        {
+          "path": "src/locale/en_US.ts",
+          "sha256": "ad8dc5dce455da7a5ff18d4ca085900aeb8b1d6dd37e7ee70925dd4ab5fa2268"
+        },
+        {
+          "path": "src/locale/index.ts",
+          "sha256": "e9dffb7241d65e7e7e8365757fec6fa6e072e291102f759507753ca61fb330ac"
+        },
+        {
+          "path": "src/locale/types.ts",
+          "sha256": "3e5c746e96b917c531924f09f349e56e1eec22ce507196a314d19d5452e24fbd"
+        },
+        {
+          "path": "src/locale/utils.ts",
+          "sha256": "e3375b6d6e2ec842c3efa770eb43628baaabe045c851863280fd1c67ef77d048"
+        },
+        {
+          "path": "src/locale/zh_CN.ts",
+          "sha256": "bc5af46389e95685c0087e4d476f2b17e77bba38e106068bc58a8aa75ae3196c"
+        },
+        {
+          "path": "src/report-template/arithmeticEval.ts",
+          "sha256": "23f30bc9fda1489a75ac4828eabd4dedc9b3883bcf7fc96a6ba4775af1774df2"
+        },
+        {
+          "path": "src/report-template/cellExpansionEngine.ts",
+          "sha256": "e9c5ad8511a58c8f435780a7a578bafc4655e4228340cddeed305b18c21d6058"
+        },
+        {
+          "path": "src/report-template/compileCellReport.ts",
+          "sha256": "f7e93fafca2e7f574079e9c66a50c07edcd97954e090945a1c0273b348e2e087"
+        },
+        {
+          "path": "src/report-template/compileHybridHierarchy.ts",
+          "sha256": "313ac02d280889708391fbcf72b7ddfd09108f65dd62f8de0e99e89492c63c60"
+        },
+        {
+          "path": "src/report-template/expandTemplate.ts",
+          "sha256": "e35e9c6a927e14393167c3016e466fd7f839827c3678415482462285f7627e52"
+        },
+        {
+          "path": "src/report-template/guidedSource.ts",
+          "sha256": "70cebeff3aea14fa2e880cae2d7dd34cac162f759bc48439887527922a53c971"
+        },
+        {
+          "path": "src/report-template/hybridAxes.ts",
+          "sha256": "2a0195189382fe549baa4a97b5eb8c8b80d10c67c36b2d474e647f8262373224"
+        },
+        {
+          "path": "src/report-template/identity.ts",
+          "sha256": "ef020169e18f9a265b34500e9bfc0b99a4c61f0caf53cbd6cd8bb0addf5489d2"
+        },
+        {
+          "path": "src/report-template/index.ts",
+          "sha256": "983f65175533e7cc1e9cfeffca878a8491e48e7faa2a68a1617a28febd84c8ab"
+        },
+        {
+          "path": "src/report-template/mergeMigration.ts",
+          "sha256": "f74bae962a592081705ffd506b10f200fb3e40d514bff7b4fac80e88a1ff895d"
+        },
+        {
+          "path": "src/report-template/mergeResolver.ts",
+          "sha256": "84f15b43a4a059783ba7c5ab55214307b2201f251c9259b1afd203b5410f19a7"
+        },
+        {
+          "path": "src/report-template/normalizeCellTemplate.ts",
+          "sha256": "a033c40d56937860cb708f50b357cb031ea32d6fa2161daae41d6a0903bcd25a"
+        },
+        {
+          "path": "src/report-template/panelToTemplateAdapter.ts",
+          "sha256": "f6856c8c475dd5a47c48ec47ca0f017a3ff758b3e344da6e93cf9a191590806c"
+        },
+        {
+          "path": "src/report-template/presentationRules.ts",
+          "sha256": "16713f4c426379d86af133058d72a92ab6dad8a64d445803ab1801cd4e46a4fb"
+        },
+        {
+          "path": "src/report-template/presentationTypes.ts",
+          "sha256": "7873e9730ae26eaf8c7fa714696b53ab71440780864018eb1e482be43d7ce28a"
+        },
+        {
+          "path": "src/report-template/regionFilter.ts",
+          "sha256": "917a7bd92f1717f646b7fb5e0b4b8664dd52aca5c1db00c1ee81772458df68e1"
+        },
+        {
+          "path": "src/report-template/sheetFormulaEvaluator.ts",
+          "sha256": "2342acac5fbb22bc00ccdae06f40fc787536bd58baa86c548d93497d426359ac"
+        },
+        {
+          "path": "src/report-template/staticSpans.ts",
+          "sha256": "3fc8d5c9d12c58fab32b54d47406461806563bdd6b479796e92eef0a6664a49a"
+        },
+        {
+          "path": "src/report-template/types.ts",
+          "sha256": "99ca25843cf5c390da0c8ecfdeb0d9991d7e442d4a9883fd05ef5896cee2f394"
+        },
+        {
+          "path": "src/report-template/validator.ts",
+          "sha256": "032e16f03a484cb99d9fe53fdec1a569a451d1f3c5392fcb521da567ee185839"
+        },
+        {
+          "path": "src/report/bindings.ts",
+          "sha256": "787897d791dc03b377123e72d687c158dba21e3d550c81c0db1878444dc71364"
+        },
+        {
+          "path": "src/report/buildBiGrid.ts",
+          "sha256": "a74bc35a945b737d168f6d2f602dbba7786464185ecf006a945d3b3c326da831"
+        },
+        {
+          "path": "src/report/calculateMetrics.ts",
+          "sha256": "1173fefe87c436f0a6627d4a7722fbfda0b07e10dbdd26e9853e79a8b70b6d43"
+        },
+        {
+          "path": "src/report/groupedProjector.ts",
+          "sha256": "820359a1d09ab99291d8ff4edca084e81ff7772409fc9f5b50bf9bc2af25c5a2"
+        },
+        {
+          "path": "src/report/index.ts",
+          "sha256": "882e19fe211d09d6d4fa372114016bd685574edd4762ada01b3b934f1e59df36"
+        },
+        {
+          "path": "src/report/normalizeAxes.ts",
+          "sha256": "1fb16c818a36c7fd7c415cb066faeaeec51a4bcbc09294331521c6946fdb4ea1"
+        },
+        {
+          "path": "src/report/pivotProjector.ts",
+          "sha256": "b5f8fd00bab491b13c017322756941bf75fbf58c814a49a2290a85c044e8c339"
+        },
+        {
+          "path": "src/report/refresh.ts",
+          "sha256": "bcfe1376d1329952231c8a20a98a69aabd41269d58b34be19dca53b120b951c5"
+        },
+        {
+          "path": "src/report/types.ts",
+          "sha256": "cdfd74597f9f8c0200b1976a6e84f75f64838c5a696272fdf673327ac9013e82"
+        },
+        {
+          "path": "src/report/validator.ts",
+          "sha256": "a098e82abf4408546a1860f2b5d544c9418832528c5366ffb293ee4a4c52f87e"
+        },
+        {
+          "path": "src/types.ts",
+          "sha256": "c21042b4ee2369c188888946934f4df947113102ab43ca83c21781a7d70ed51d"
+        },
+        {
+          "path": "src/ui/ChartConfigPanel.tsx",
+          "sha256": "b1d63cc784955f710c60d04059f1d8355f72d65d37609d778c238df478be521c"
+        },
+        {
+          "path": "src/ui/DynamicDataConfigPanel.tsx",
+          "sha256": "0d6e2b36bb5472df2e17847bf270402bb497fa3a9b4e41b0a3e7899d34fc8eba"
+        },
+        {
+          "path": "src/ui/components/ColumnConfigList.tsx",
+          "sha256": "15da4db3393d950d0fab292579c31b4141abdc608eceff8d36d7dad4817cdb33"
+        },
+        {
+          "path": "src/ui/components/DimensionConfig.tsx",
+          "sha256": "dee80dcd831fd501708353eb56a4d826d730c1512d4b3aa210397c68ec5aedd8"
+        },
+        {
+          "path": "src/ui/components/FieldProfilerList.tsx",
+          "sha256": "58960820198aca907d4226f47badffa44a496edf5799bfde627498ae26762ab3"
+        },
+        {
+          "path": "src/ui/components/FormulaEditorModal.tsx",
+          "sha256": "f5ad8a986596250e69452013e7a288d854870c6afad248edc91cd0c7970c4b19"
+        },
+        {
+          "path": "src/ui/components/ImportConfigModal.tsx",
+          "sha256": "fb07e77f4ea1e9e46ed86c72420a742959173622b23c5683fbe900da9a800ee4"
+        },
+        {
+          "path": "src/ui/components/LivePreviewTable.tsx",
+          "sha256": "f1cfbc58c705a6cd3e84f8819cecef274b8c37d6a93295d9faa7f7568a64dd30"
+        },
+        {
+          "path": "src/ui/components/PivotSkeletonWireframe.tsx",
+          "sha256": "20981f75abc13582e083915ff904b0bf8e64e81767c5de76e3c70e1665903fda"
+        },
+        {
+          "path": "src/ui/components/SlotConfirmPopover.tsx",
+          "sha256": "e78de22167074029fea7f153b1ad1d7dd9573360b37b553dbd22e2ff28d5afcc"
+        },
+        {
+          "path": "src/ui/components/common/SimpleModal.tsx",
+          "sha256": "5bf7536ab387de8ca104bcf482953f7f8dc3f42a358632f3697c066f76fa5232"
+        },
+        {
+          "path": "src/ui/index.ts",
+          "sha256": "be69616a5a5ee352d9009946d6f4282001a16702b49f79cc4fb475ea7972f36f"
+        },
+        {
+          "path": "src/ui/presentation/DynamicDataView.tsx",
+          "sha256": "c7f7e3728bc724f00f5ef26bdcc6ec8f132388a7027661fe40921620a0987285"
+        },
+        {
+          "path": "src/ui/presentation/charts/ChartView.tsx",
+          "sha256": "da6e4efdf3d56e8ef29d3abb9a9a2394924eff4b6e95a84f20a25a0e2f3620b7"
+        },
+        {
+          "path": "src/ui/presentation/charts/VChartView.tsx",
+          "sha256": "c9512d6c31ffacb28d322d5f15d15ff5c8a7532c1273535ad0d13877baed295a"
+        },
+        {
+          "path": "src/ui/presentation/charts/chartSpec.ts",
+          "sha256": "5a8c65c300f34567fd6942e707943a92fd3449429d62caacf632c52fc4b3b232"
+        },
+        {
+          "path": "src/ui/presentation/charts/metricUtils.ts",
+          "sha256": "8434e5ebcc60e38ba503d0b7f2acfbaa6920b09344d658aa4bb714fb46aa6167"
+        },
+        {
+          "path": "src/ui/presentation/index.ts",
+          "sha256": "a7fa271ff195f013528ab0528cec4bd7bd4b390c50c5b64413af1007ec94d56a"
+        },
+        {
+          "path": "src/ui/presentation/report/ReportTableView.tsx",
+          "sha256": "5068f2907dfb463e43913f33c957e48a7e13ebd5e3b72a7f8429b35b2dca2c14"
+        },
+        {
+          "path": "src/ui/presentation/report/gridAdapter.ts",
+          "sha256": "9ce529b5702003f846e8ab29b8568ef6a3227f8f905c0d5371e895bb6764f214"
+        },
+        {
+          "path": "src/ui/presentation/report/index.ts",
+          "sha256": "34ad0d78a3d8a9dedcec3fdfd99f652f5ef1e0ab6dce76a6bd5cbbe483d57103"
+        },
+        {
+          "path": "src/ui/presentation/report/styleAdapter.ts",
+          "sha256": "8e3fec91ab1f2e8c9c57f612a447e2d9b0143912c64a4b3311fd463bdf31d634"
+        },
+        {
+          "path": "src/ui/presentation/table/VTableView.tsx",
+          "sha256": "67d66f08a800c3cd0c4baf86a82426a81b933749b7aa5e4d67adc91eee476d51"
+        },
+        {
+          "path": "src/ui/presentation/table/summaryCalculator.ts",
+          "sha256": "e3a8f4ea48fbdb9104beee527a7e10453ca0ac8bdae835f591d42fd803dae19e"
+        },
+        {
+          "path": "src/ui/presentation/table/tableExport.ts",
+          "sha256": "67a72bc20a568fca6a1a2ae5b3fa7a0e26085187bd95b40dcb2785943c6e2ad0"
+        },
+        {
+          "path": "src/ui/presentation/table/vtableSortPatch.ts",
+          "sha256": "884c39791376f5c82b683ff287c8ed0ab35f13280439cb5b5f9e68ec0e59685d"
+        },
+        {
+          "path": "src/ui/presentation/theme.ts",
+          "sha256": "f671c22352797b250ee66e1b1c4681ae1eb4fa999c8ad73114b6435c28474371"
+        },
+        {
+          "path": "src/ui/presentation/toolbar/DimensionSwitcher.tsx",
+          "sha256": "0e067de371c450db8910a2591c0514590a5f284a682bdafa8f8e737342172cbd"
+        },
+        {
+          "path": "src/ui/presentation/toolbar/MetricSwitcher.tsx",
+          "sha256": "26dd47bc12463ef9206d6333eeb6ad53cd1861733fbf77a351a39845d8d03c95"
+        },
+        {
+          "path": "src/ui/presentation/toolbar/ViewTypeSwitcher.tsx",
+          "sha256": "9e2d781bbc93890bd4140fc8c28344dbdc05df0ec484d48ea2f92807a2ea3639"
+        },
+        {
+          "path": "src/ui/presentation/types.ts",
+          "sha256": "b40d941b2fdc0706ce030ff59bd09ebe64921e5224b2b465e1f46a013173ab7b"
+        },
+        {
+          "path": "src/ui/types.ts",
+          "sha256": "a054515c20f6834d419a883c396618fecc1167789da7038e89db932391245bf2"
+        },
+        {
+          "path": "src/univer/BiBindingPlugin.ts",
+          "sha256": "b92af9c4e1ba056f83f0454a7823c29d8be2d5269a95bb8445507563eeeddb74"
+        },
+        {
+          "path": "src/univer/ReportConfigPanel.tsx",
+          "sha256": "cd5e6b49531325c727aaef73bad02c117a8abc2d470da0734064e2a41a7a05ab"
+        },
+        {
+          "path": "src/univer/UniverPreview.tsx",
+          "sha256": "80178b92189e0fc1473b7de8e80c459a290b08b09292acac217b431a258abc44"
+        },
+        {
+          "path": "src/univer/adapter.ts",
+          "sha256": "f4806e05e4956c2986654bd95a5ee20d4328fa25827a20525859e131f9ac69f2"
+        },
+        {
+          "path": "src/univer/compileReport.ts",
+          "sha256": "a1ac3f80964d4d1c3f446232314b2bf08bd876ef7aa11465ebe1afde04b4af2d"
+        },
+        {
+          "path": "src/univer/gridSync.ts",
+          "sha256": "19c0c0239efca94f5307bf37722771e614ffadef497dfea81b34959620f1fe85"
+        },
+        {
+          "path": "src/univer/index.ts",
+          "sha256": "bf0ea491e539499994a9577c4e3fcd095011e0970db80d35f882709105e6ab05"
+        },
+        {
+          "path": "src/univer/univer-locales.d.ts",
+          "sha256": "28a6d7df6890ffc920137c94c98c5487d861466aad6cf9fc1d370478d9dc8261"
+        },
+        {
+          "path": "src/version.ts",
+          "sha256": "86c7e343a07717f655d0915f202b1d8be0da55e919b3eb8e12987b0216cbce16"
+        }
+      ]
+    },
+    "host": {
+      "fileCount": 9,
+      "sha256": "f726d0c923fac3710d5b839beeaec3e7ee0cb847351c2f593bca28eefa0bb0fa",
+      "files": [
+        {
+          "path": "src/App.tsx",
+          "sha256": "67736d59555904479d16367869684ab23df1cc4dc14def77d4f7785eea4cb99a"
+        },
+        {
+          "path": "src/components/DashboardCard.tsx",
+          "sha256": "ed2fc5f1cb7c83007ddb3e8ea2253edd019213a909e3814bb9431cb2e5e7be11"
+        },
+        {
+          "path": "src/components/DashboardEditModal.tsx",
+          "sha256": "389c97155d9a23ba1dd366ae11733e7d5b704c14242bcf0be7aff04b3ffb6780"
+        },
+        {
+          "path": "src/components/HeaderBar.tsx",
+          "sha256": "330e6dc185b690c241757e0767dffbca0d8859ca274ff9578ecc0bf7e09940b1"
+        },
+        {
+          "path": "src/components/HybridReportEditModal.tsx",
+          "sha256": "b413b519e6540d269896f855e4db2ee5ab2e98529dba0cc0d923de76e6f1b6b0"
+        },
+        {
+          "path": "src/constants/presets.ts",
+          "sha256": "8e47acbb66c0213a597e5300eff76ef454fa43691584fb3421e1823fbb48a8b4"
+        },
+        {
+          "path": "src/main.tsx",
+          "sha256": "3abc357ab8b8a4180a9fdb9c5ddcfdd1373db86b2c5b71bb5d0c7f8cd43c117d"
+        },
+        {
+          "path": "src/mockData.ts",
+          "sha256": "7ae500177b538d96817ecb646f80804965e0ed2c85f21a7a11d7aa13f59ba125"
+        },
+        {
+          "path": "src/types/dashboard.ts",
+          "sha256": "cb9b05ae65d200865ff70f5349fca62e634dddfe55bfecb85823e4d11e6576e7"
+        }
+      ]
+    }
+  },
+  "browserEvidence": "browser.json",
+  "dataEvidence": "data-changes.json",
+  "retiredTests": "retired-tests.json",
+  "logsLocation": "System temporary directory: micro-bi-mode2-*-2026-10-28.log",
+  "testData": "Independent browser storage and intercepted mock response; original user browser/storage/source files untouched",
+  "openItems": [
+    "H3-OBS01 retained",
+    "H3-DRILL-01 not implemented"
+  ],
+  "automaticCommit": false,
+  "documentation": {
+    "files": 14,
+    "relativeTargetsChecked": 313,
+    "missing": 0,
+    "scope": "Relative file targets; historical absolute source/line links and remote URLs not revalidated"
+  }
+}

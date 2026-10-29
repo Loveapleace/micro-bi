@@ -1,0 +1,53 @@
+{
+  "kind": "chart-config",
+  "version": 1,
+  "datasetId": "industrial_lifecycle_orders",
+  "chartType": "bar",
+  "dimension": {
+    "field": "workshop"
+  },
+  "metrics": [
+    {
+      "type": "aggregated",
+      "field": "output_qty",
+      "agg": "sum",
+      "label": "交付总件数",
+      "axis": "left",
+      "unit": "件"
+    },
+    {
+      "type": "computed",
+      "name": "defect_rate",
+      "label": "综合缺陷率",
+      "expression": "IF([SUM(output_qty)] > 0, [SUM(defect_count)] / [SUM(output_qty)] * 100, 0)",
+      "precision": 2,
+      "scope": "auto",
+      "axis": "right",
+      "unit": "%"
+    }
+  ],
+  "filters": [
+    {
+      "id": "36d73d5f-a777-46a5-ab3c-a47a43dd9400",
+      "field": "output_qty",
+      "operator": "gte",
+      "value": 700
+    }
+  ],
+  "sort": {
+    "field": "output_qty",
+    "order": "desc"
+  },
+  "appearance": {
+    "legend": true,
+    "labels": true,
+    "stacked": false,
+    "smooth": false,
+    "palette": [
+      "#1677FF",
+      "#1677FF"
+    ]
+  },
+  "seriesField": "part_name",
+  "topN": 2
+}

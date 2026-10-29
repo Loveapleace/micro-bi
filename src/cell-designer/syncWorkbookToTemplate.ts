@@ -21,8 +21,12 @@ import {
 } from '../report-template/identity.js';
 import type { BiGridModel } from '../report/types.js';
 import { captureStaticSpanIntent, omitStaticSpanProjection, restoreStaticSpanSourceMerges } from './staticSpanIntent.js';
-import { publishedStyleToUniver } from '../report/buildBiGrid.js';
+import { toExcelPattern } from '../report/buildBiGrid.js';
+import { normalizeCellStyle, publishedStyleToSource, readUniverStyle } from '../report/cellStyle.js';
+import { isValidNumberFormat, numberFormatOptions } from '../report/numberFormat.js';
 import { targetForCell } from '../report-template/presentationTypes.js';
+import { readUniverCellValue, readUniverLiteralValue } from './univerValues.js';
+import { isEditableGeneratedText } from '../report-template/guidedSource.js';
 
 export function extractStyleFromUniver(
   styleIdOrObj: any,
@@ -35,27 +39,7 @@ export function extractStyleFromUniver(
       : styleIdOrObj;
   if (!s || typeof s !== 'object') return undefined;
 
-  const style: CellStyleDefinition = {};
-  if (s.ff) style.fontFamily = s.ff;
-  if (typeof s.fs === 'number') style.fontSize = s.fs;
-  if (s.bl === 1 || s.bl === true) style.bold = true;
-  else if (s.bl === 0 || s.bl === false) style.bold = false;
-
-  if (s.it === 1 || s.it === true) style.italic = true;
-  else if (s.it === 0 || s.it === false) style.italic = false;
-
-  if (s.cl?.rgb) style.color = s.cl.rgb;
-  if (s.bg?.rgb) style.backgroundColor = s.bg.rgb;
-
-  if (s.ht === 1) style.textAlign = 'left';
-  else if (s.ht === 2) style.textAlign = 'center';
-  else if (s.ht === 3) style.textAlign = 'right';
-
-  if (s.vt === 1) style.verticalAlign = 'top';
-  else if (s.vt === 2) style.verticalAlign = 'middle';
-  else if (s.vt === 3) style.verticalAlign = 'bottom';
-
-  return Object.keys(style).length > 0 ? style : undefined;
+  return readUniverStyle(s);
 }
 
 export function syncDocumentFromWorkbookSnapshot(
@@ -212,10 +196,11 @@ export function syncDocumentFromWorkbookSnapshot(
         const c = Number(cStr);
         if (!cellVal) continue;
 
-        const v = cellVal.v;
+        const v = readUniverCellValue(cellVal);
         const f = cellVal.f;
         const s = cellVal.s;
         const mappedStyle = extractStyleFromUniver(s, rawStyles);
+        const nativeStyle=typeof s==='string'?rawStyles[s]:s;
 
         if (mode === 'design') {
           const existing = nextCells.find(
@@ -227,8 +212,16 @@ export function syncDocumentFromWorkbookSnapshot(
 
           if (existing) {
             // 已存在模板单元格：同步内容与样式
-            if (f) {
-              existing.content = { kind: 'sheet-formula', formula: f };
+            if (isEditableGeneratedText(existing)) {
+              // 标签只覆盖字面内容，保留面板身份；公式不能把它转换成计算格。
+              if(!f&&!cellVal.si){
+                const fullSheet=Number.isInteger(rawSheet.rowCount)&&Number.isInteger(rawSheet.columnCount);
+                const hasValue=fullSheet||Object.prototype.hasOwnProperty.call(cellVal,'v')||typeof cellVal.p?.body?.dataStream==='string'||cellVal.custom?.biProjection;
+                const text=readUniverLiteralValue(cellVal)??null;
+                if(hasValue&&text!==existing.content.value){existing.content.value=text;existing.literalOverride=true;}
+              }
+            } else if (f) {
+              existing.content = { ...(existing.content.kind==='sheet-formula'?existing.content:{}),kind: 'sheet-formula', formula: f };
             } else if (v === null || v === '') {
               if (existing.content.kind === 'literal') {
                 existing.content.value = v;
@@ -249,23 +242,29 @@ export function syncDocumentFromWorkbookSnapshot(
               }
             }
 
-            if (mappedStyle) {
-              const projected = grid?.cells.find(t=>t.row===r&&t.col===c);
-              if (cellVal.custom?.biProjection && projected) {
-                const expected=extractStyleFromUniver(publishedStyleToUniver(projected.style||{}))||{};
+            const projected = grid?.cells.find(t=>t.row===r&&t.col===c);
+            if (cellVal.custom?.biProjection && projected) {
+                const actual=normalizeCellStyle(mappedStyle);
+                const expected=normalizeCellStyle(publishedStyleToSource(projected.style));
                 const delta:CellStyleDefinition={};
-                for(const prop of new Set([...Object.keys(mappedStyle),...Object.keys(expected)]))
-                  if(JSON.stringify((mappedStyle as any)[prop])!==JSON.stringify((expected as any)[prop]))(delta as any)[prop]=(mappedStyle as any)[prop];
+                for(const prop of new Set([...Object.keys(actual),...Object.keys(expected)]))
+                  if(JSON.stringify((actual as any)[prop])!==JSON.stringify((expected as any)[prop]))(delta as any)[prop]=(actual as any)[prop];
                 if(Object.keys(delta).length){
                   const active=nextStyleRules.filter(x=>x.scope==='template-cell'&&x.targetId===existing.id).sort((a,b)=>b.priority-a.priority)[0];
                   const id=active?.id||`native-style-${sheetId}-${existing.id}`;
                   const next={...active,id,sheetId,targetId:existing.id,target:targetForCell(existing),scope:'template-cell' as const,presetId:undefined,style:{...active?.style,...delta},priority:active?.priority??nextStyleRules.length};
-                  if('backgroundColor' in delta && delta.backgroundColor===undefined)next.noFill=true;
+                  next.reset=active?.reset?.filter(key=>!(key in delta));
+                  if('backgroundColor' in delta)next.noFill=delta.backgroundColor===undefined;
                   nextStyleRules=nextStyleRules.filter(x=>x.id!==id);nextStyleRules.push(next);
                 }
-              } else existing.style = { ...(existing.style || {}), ...mappedStyle };
+            } else if(mappedStyle||s===null)existing.style=normalizeCellStyle(mappedStyle);
+            const pattern=nativeStyle?.n?.pattern||'General';
+            const expectedPattern=toExcelPattern(projected?.style?.format)||((existing.content as any).formatOptions||existing.formatOptions)?.numberFormat||toExcelPattern((existing.content as any).format)||'General';
+            if((cellVal.custom?.biProjection&&projected||nativeStyle?.n?.pattern||s===null)&&pattern!==expectedPattern&&isValidNumberFormat(pattern)){
+              const formatOptions={...((existing.content as any).formatOptions||existing.formatOptions||{}),...numberFormatOptions(pattern)};
+              existing.formatOptions=formatOptions;existing.content={...existing.content,format:formatOptions.format,formatOptions};
             }
-          } else if ((v !== undefined && v !== null && v !== '') || f) {
+          } else if ((v !== undefined && v !== null && v !== '') || f || !cellVal.custom?.biProjection&&(mappedStyle||nativeStyle?.n?.pattern)) {
             // 过滤：绝不将内部渲染的字段占位符 "{...}" 或 "=[...]" 错误固化为普通静态字面量单元格
             const strVal = String(v ?? '').trim();
             const isTemplatePlaceholder = /^\{.*\}$/.test(strVal) || /^=\[.*\]$/.test(strVal);
@@ -281,10 +280,13 @@ export function syncDocumentFromWorkbookSnapshot(
               content:
                 f || strVal.startsWith('=')
                   ? { kind: 'sheet-formula', formula: f || strVal }
-                  : { kind: 'literal', value: v },
+                  : { kind: 'literal', value: v ?? null },
               parents: { row: null, column: null },
               ...(mappedStyle ? { style: mappedStyle } : {}),
             };
+            if(nativeStyle?.n?.pattern&&isValidNumberFormat(nativeStyle.n.pattern)){
+              newCell.formatOptions=numberFormatOptions(nativeStyle.n.pattern);(newCell.content as any).formatOptions=newCell.formatOptions;
+            }
             nextCells.push(newCell);
           }
         } else if (mode === 'preview' && grid?.bindings) {

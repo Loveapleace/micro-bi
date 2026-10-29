@@ -17,6 +17,7 @@ export interface VTableReportGridConfig {
     range: { start: { col: number; row: number }; end: { col: number; row: number } };
     text: string;
     style?: any;
+    customRender?: ((args:any)=>any) | undefined;
   }[];
   options: Partial<ListTableConstructorOptions>;
 }
@@ -33,6 +34,18 @@ export function adaptPublishedSheetToVTable(
   for (const cell of sheet.cells) {
     cellIndex.set(`${cell.r},${cell.c}`, cell);
   }
+  const hasDouble=(cell:PublishedCell|undefined)=>Boolean(cell?.styleId&&Object.values(styles[cell.styleId]?.border||{}).some(b=>b?.style==='double'));
+  const doubleBorderRender=(args:any)=>{
+    const merge=(sheet.merges||[]).find(m=>args.row>=m.startRow&&args.row<=m.endRow&&args.col>=m.startCol&&args.col<=m.endCol);
+    const cell=cellIndex.get(`${merge?.startRow??args.row},${merge?.startCol??args.col}`);
+    if(!hasDouble(cell))return undefined;
+    const border=cell?.styleId?styles[cell.styleId]?.border:undefined;
+    const rect=args.rect||{},w=rect.width??((rect.right??0)-(rect.left??0)),h=rect.height??((rect.bottom??0)-(rect.top??0));
+    const elements:any[]=[];
+    const points={top:[{x:2,y:2},{x:w-2,y:2}],right:[{x:w-2,y:2},{x:w-2,y:h-2}],bottom:[{x:2,y:h-2},{x:w-2,y:h-2}],left:[{x:2,y:2},{x:2,y:h-2}]};
+    for(const side of ['top','right','bottom','left'] as const)if(border?.[side]?.style==='double')elements.push({type:'line',points:points[side],stroke:border[side]?.color||'#000000',lineWidth:1,pickable:false});
+    return {elements,renderDefault:true,expectedWidth:w,expectedHeight:h};
+  };
 
   // 2. 生成 records
   const records: Record<string, unknown>[] = [];
@@ -65,29 +78,21 @@ export function adaptPublishedSheetToVTable(
       fieldFormat: (record: any) => records[record._rowIndex]?.[`col_${c}`] ?? '',
       title: '', // 无自动表头，统一由第一行真实单元格充当
       width: colWidth,
-      tooltip: (args: any) => {
-        const r = args.row;
-        const cell = cellIndex.get(`${r},${c}`);
-        if (cell?.tooltip) {
-          return {
-            content: cell.tooltip,
-          };
-        }
-        return undefined;
-      },
       style: (args: any) => {
         const r = args.row;
         const cell = cellIndex.get(`${r},${c}`);
         if (cell?.styleId && styles[cell.styleId]) {
-          return mapPublishedStyleToVTable(styles[cell.styleId]) as any;
+          return mapPublishedStyleToVTable(styles[cell.styleId],cell.v) as any;
         }
         return {
           textAlign: 'left',
           textBaseline: 'middle',
-          fontSize: 12,
+          fontSize: 11,
+          textOverflow: 'clip',
           padding: [4,6,4,6],
         };
       },
+      ...(sheet.cells.some(cell=>cell.c===c&&hasDouble(cell))?{customRender:doubleBorderRender}:{}),
     } as any);
   }
 
@@ -109,7 +114,7 @@ export function adaptPublishedSheetToVTable(
 
     const masterCell = cellIndex.get(`${startRow},${startCol}`);
     const style = masterCell?.styleId && styles[masterCell.styleId]
-      ? (mapPublishedStyleToVTable(styles[masterCell.styleId]) as any)
+      ? (mapPublishedStyleToVTable(styles[masterCell.styleId],masterCell.v) as any)
       : undefined;
 
     return {
@@ -119,6 +124,7 @@ export function adaptPublishedSheetToVTable(
       },
       text,
       ...(style ? { style } : {}),
+      ...(hasDouble(masterCell)?{customRender:doubleBorderRender}:{}),
     };
   });
 

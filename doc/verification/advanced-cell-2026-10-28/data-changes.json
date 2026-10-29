@@ -1,0 +1,72 @@
+{
+  "date": "2026-10-28",
+  "sourceSha256": "c95ca008401ee97f2eab569026b9ad899604f29e578eae5ebcc262522cbc3dd5",
+  "baseline": {
+    "facts": 13,
+    "rows": 24,
+    "cols": 14,
+    "ruleSets": 3,
+    "suppressions": 1,
+    "manualRules": 1,
+    "merges": 3,
+    "titleMerged": false
+  },
+  "stages": [
+    {
+      "name": "added-group-and-date",
+      "facts": 14,
+      "sourceSame": true,
+      "rows": 26,
+      "cols": 15,
+      "ruleSets": 3,
+      "suppressions": 1,
+      "manualRules": 1,
+      "merges": 4,
+      "titleMerged": false,
+      "spanEnabled": true
+    },
+    {
+      "name": "reversed",
+      "facts": 14,
+      "sourceSame": true,
+      "rows": 26,
+      "cols": 15,
+      "ruleSets": 3,
+      "suppressions": 1,
+      "manualRules": 1,
+      "merges": 4,
+      "titleMerged": false,
+      "spanEnabled": true
+    },
+    {
+      "name": "deleted-first-group",
+      "facts": 8,
+      "sourceSame": true,
+      "rows": 24,
+      "cols": 15,
+      "ruleSets": 3,
+      "suppressions": 1,
+      "manualRules": 1,
+      "merges": 3,
+      "titleMerged": false,
+      "spanEnabled": true
+    },
+    {
+      "name": "restored",
+      "facts": 13,
+      "sourceSame": true,
+      "rows": 24,
+      "cols": 14,
+      "ruleSets": 3,
+      "suppressions": 1,
+      "manualRules": 1,
+      "merges": 3,
+      "titleMerged": false,
+      "spanEnabled": true
+    }
+  ],
+  "reversedMatrixSame": true,
+  "restoredMatrixSame": true,
+  "restoredMergesSame": true,
+  "sourceUnchangedEveryStage": true
+}

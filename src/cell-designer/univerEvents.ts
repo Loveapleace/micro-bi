@@ -2,13 +2,17 @@
  * Univer SDK 选区与双击事件桥接模块 (univerEvents.ts)
  * 遵循 Section 15.1, 15.2:
  * 1. 监听 SelectionChanged / CellClicked，单击仅更新选区与基础属性面板，不弹窗、不逐格请求数据
- * 2. 拦截 BeforeSheetEditStart 中的双击事件，取消原生单元格编辑器并打开高级属性
+ * 2. 按业务处理结果分流双击；仅已处理的高级配置/受保护区域取消原生编辑
  * 3. 键盘 F2 / 字符键入不受误拦截，保留普通单元格与公式输入能力
  */
 import type { FUniver } from '../univer/adapter.js';
+import { readUniverCellValue } from './univerValues.js';
 
 // 已安装 Univer 版本中 DeviceInputEventType.Dblclick 的取值；升级 SDK 时须复核。
 const DBLCLICK_EVENT_TYPE = 3;
+export function isUniverDoubleClick(event:{eventType?:unknown;inputEvent?:{type?:unknown}|undefined}):boolean {
+  return event.eventType===DBLCLICK_EVENT_TYPE||event.eventType==='dblclick'||event.inputEvent?.type==='dblclick';
+}
 
 export interface CellEditEvent {
   row: number;
@@ -26,7 +30,8 @@ export interface StructureChangeEvent {
 
 export interface UniverBridgeOptions {
   onSelectCell?: (pos: { row: number; column: number; sheetId?: string | undefined }) => void;
-  onDoubleClicked?: ((pos: { row: number; column: number; sheetId?: string | undefined }) => void) | undefined;
+  /** 返回true表示已处理并取消原生编辑；false将空白静态格交给SDK直接输入。 */
+  onDoubleClicked?: ((pos: { row: number; column: number; sheetId?: string | undefined }) => boolean) | undefined;
   onCellEdited?: ((change: CellEditEvent) => void) | undefined;
   onColumnsInserted?: ((change: StructureChangeEvent) => void) | undefined;
   onColumnsRemoved?: ((change: StructureChangeEvent) => void) | undefined;
@@ -174,12 +179,12 @@ export function attachUniverDesignerEvents(
                     if (rowObj && typeof rowObj === 'object' && !('v' in rawVal) && !('f' in rawVal)) {
                       const cell = rowObj[c] ?? rowObj[c - startCol];
                       if (cell !== undefined) {
-                        val = typeof cell === 'object' && cell !== null ? cell.v : cell;
+                        val = typeof cell === 'object' && cell !== null ? readUniverCellValue(cell) : cell;
                         formula = typeof cell === 'object' && cell !== null ? cell.f : undefined;
                       }
                     } else if ('v' in rawVal || 'f' in rawVal) {
                       if (r === startRow && c === startCol) {
-                        val = rawVal.v;
+                        val = readUniverCellValue(rawVal);
                         formula = rawVal.f;
                       }
                     }
@@ -190,7 +195,7 @@ export function attachUniverDesignerEvents(
                       const rowArr = rawVal[relR];
                       if (Array.isArray(rowArr) && relC >= 0 && relC < rowArr.length) {
                         const cell = rowArr[relC];
-                        val = typeof cell === 'object' && cell !== null ? cell.v : cell;
+                        val = typeof cell === 'object' && cell !== null ? readUniverCellValue(cell) : cell;
                         formula = typeof cell === 'object' && cell !== null ? cell.f : undefined;
                       }
                     }
@@ -220,7 +225,7 @@ export function attachUniverDesignerEvents(
                       row: r,
                       column: c,
                       sheetId,
-                      value: cellObj?.v !== undefined ? cellObj.v : cellObj,
+                      value: cellObj?.v !== undefined ? readUniverCellValue(cellObj) : cellObj,
                       formula: cellObj?.f,
                     });
                   }
@@ -243,20 +248,11 @@ export function attachUniverDesignerEvents(
       const column = editEvent.column ?? 0;
       const sheetId = editEvent.worksheet?.getSheetId?.() || editEvent.sheetId;
 
-      // 已安装 Univer 1.0.4 中 DeviceInputEventType.Dblclick = 3。
-      const isDblclick =
-        editEvent.eventType === DBLCLICK_EVENT_TYPE ||
-        editEvent.eventType === 'dblclick' ||
-        editEvent.inputEvent?.type === 'dblclick';
-
-      if (isDblclick && options.onDoubleClicked) {
-        // 阻止原生行内文本编辑器弹出
+      if (isUniverDoubleClick(editEvent) && options.onDoubleClicked?.({ row, column, sheetId }) === true) {
+        // 业务方真正接管后才取消；空白静态格不弹高级配置，但应保留原生输入。
         if (typeof editEvent.cancel === 'function') {
           editEvent.cancel();
         } else editEvent.cancel = true;
-
-        // 仅触发一次打开高级属性
-        options.onDoubleClicked?.({ row, column, sheetId });
       }
     };
 

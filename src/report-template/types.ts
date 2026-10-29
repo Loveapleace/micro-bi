@@ -1,9 +1,8 @@
-import type { DataRecord } from '../types.js';
 import type { PublishedReport } from '../report/types.js';
 
 export type CellDocumentType = 'cell-template';
 export type CellSchemaVersion = '1.0' | '1.1' | '2.0';
-export type AuthoringMode = 'panel' | 'cell' | 'hybrid';
+export type AuthoringMode = 'chart' | 'hybrid';
 
 export type RegionLayoutKind = 'detail' | 'grouped' | 'pivot';
 export type MetricDirection = 'columns' | 'rows';
@@ -56,6 +55,8 @@ export interface CellTimeBucketConfig {
 export type CellMergePolicyKind = 'default' | 'none' | 'group-span' | 'adjacent-equal';
 
 export interface CellFormatOptions {
+  /** Excel工具栏维护普通显示格式；General表示明确清除。高级配置仅编辑业务显示缩放与空值占位。 */
+  numberFormat?: string | undefined;
   format?: string | undefined;
   precision?: number | undefined;
   useGrouping?: boolean | undefined;
@@ -133,18 +134,14 @@ export interface CellStyleDefinition {
   fontSize?: number | undefined;
   bold?: boolean | undefined;
   italic?: boolean | undefined;
+  underline?: boolean | undefined;
+  strikethrough?: boolean | undefined;
   color?: string | undefined;
   backgroundColor?: string | undefined;
-  textAlign?: 'left' | 'center' | 'right' | undefined;
+  textAlign?: 'general' | 'left' | 'center' | 'right' | undefined;
   verticalAlign?: 'top' | 'middle' | 'bottom' | undefined;
   wrapText?: boolean | undefined;
-  border?: {
-    top?: boolean | undefined;
-    bottom?: boolean | undefined;
-    left?: boolean | undefined;
-    right?: boolean | undefined;
-    color?: string | undefined;
-  } | undefined;
+  border?: import('../report/types.js').CellBorderConfig | undefined;
 }
 
 export interface CellDefinition {

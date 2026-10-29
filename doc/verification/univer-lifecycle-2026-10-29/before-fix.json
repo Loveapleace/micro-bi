@@ -1,0 +1,101 @@
+{
+  "normalCycles": [
+    {
+      "cycle": 1,
+      "newErrors": 0
+    },
+    {
+      "cycle": 2,
+      "newErrors": 0
+    },
+    {
+      "cycle": 3,
+      "newErrors": 0
+    },
+    {
+      "cycle": 4,
+      "newErrors": 0
+    },
+    {
+      "cycle": 5,
+      "newErrors": 0
+    },
+    {
+      "cycle": 6,
+      "newErrors": 0
+    },
+    {
+      "cycle": 7,
+      "newErrors": 0
+    },
+    {
+      "cycle": 8,
+      "newErrors": 0
+    },
+    {
+      "cycle": 9,
+      "newErrors": 0
+    },
+    {
+      "cycle": 10,
+      "newErrors": 0
+    }
+  ],
+  "earlyCycles": [
+    {
+      "cycle": 1,
+      "errors": 1
+    },
+    {
+      "cycle": 2,
+      "errors": 1
+    },
+    {
+      "cycle": 3,
+      "errors": 1
+    },
+    {
+      "cycle": 4,
+      "errors": 1
+    },
+    {
+      "cycle": 5,
+      "errors": 1
+    },
+    {
+      "cycle": 6,
+      "errors": 1
+    }
+  ],
+  "initialStage": 1,
+  "errors": [
+    {
+      "message": "[redi]: Cannot find \"SheetsScrollRenderController2\" registered by any injector. The stack of dependencies is: \"\".",
+      "stack": "DependencyNotFoundError: [redi]: Cannot find \"SheetsScrollRenderController2\" registered by any injector. The stack of dependencies is: \"\".\n    at ResolvedDependencyCollection.get (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:6835:21)\n    at onSelf (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7412:48)\n    at Injector2.getValue (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7424:40)\n    at Injector2._get (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7239:33)\n    at Injector2.get (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7230:28)\n    at RenderUnitDependencyService.resolve (http://localhost:5174/node_modules/.vite/deps/chunk-627SHJ2U.js?v=c1455d39:97814:27)\n    at RenderUnit2.with (http://localhost:5174/node_modules/.vite/deps/chunk-627SHJ2U.js?v=c1455d39:97759:36)\n    at handler (http://localhost:5174/node_modules/.vite/deps/@univerjs_preset-sheets-core.js?v=c1455d39:121090:145)\n    at Injector2.invoke (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7177:12)\n    at CommandService2._execute (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:19429:38)"
+    },
+    {
+      "message": "[redi]: Cannot find \"SheetsScrollRenderController2\" registered by any injector. The stack of dependencies is: \"\".",
+      "stack": "DependencyNotFoundError: [redi]: Cannot find \"SheetsScrollRenderController2\" registered by any injector. The stack of dependencies is: \"\".\n    at ResolvedDependencyCollection.get (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:6835:21)\n    at onSelf (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7412:48)\n    at Injector2.getValue (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7424:40)\n    at Injector2._get (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7239:33)\n    at Injector2.get (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7230:28)\n    at RenderUnitDependencyService.resolve (http://localhost:5174/node_modules/.vite/deps/chunk-627SHJ2U.js?v=c1455d39:97814:27)\n    at RenderUnit2.with (http://localhost:5174/node_modules/.vite/deps/chunk-627SHJ2U.js?v=c1455d39:97759:36)\n    at handler (http://localhost:5174/node_modules/.vite/deps/@univerjs_preset-sheets-core.js?v=c1455d39:121090:145)\n    at Injector2.invoke (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7177:12)\n    at CommandService2._execute (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:19429:38)"
+    },
+    {
+      "message": "[redi]: Cannot find \"SheetsScrollRenderController2\" registered by any injector. The stack of dependencies is: \"\".",
+      "stack": "DependencyNotFoundError: [redi]: Cannot find \"SheetsScrollRenderController2\" registered by any injector. The stack of dependencies is: \"\".\n    at ResolvedDependencyCollection.get (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:6835:21)\n    at onSelf (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7412:48)\n    at Injector2.getValue (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7424:40)\n    at Injector2._get (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7239:33)\n    at Injector2.get (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7230:28)\n    at RenderUnitDependencyService.resolve (http://localhost:5174/node_modules/.vite/deps/chunk-627SHJ2U.js?v=c1455d39:97814:27)\n    at RenderUnit2.with (http://localhost:5174/node_modules/.vite/deps/chunk-627SHJ2U.js?v=c1455d39:97759:36)\n    at handler (http://localhost:5174/node_modules/.vite/deps/@univerjs_preset-sheets-core.js?v=c1455d39:121090:145)\n    at Injector2.invoke (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7177:12)\n    at CommandService2._execute (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:19429:38)"
+    },
+    {
+      "message": "[redi]: Cannot find \"SheetsScrollRenderController2\" registered by any injector. The stack of dependencies is: \"\".",
+      "stack": "DependencyNotFoundError: [redi]: Cannot find \"SheetsScrollRenderController2\" registered by any injector. The stack of dependencies is: \"\".\n    at ResolvedDependencyCollection.get (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:6835:21)\n    at onSelf (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7412:48)\n    at Injector2.getValue (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7424:40)\n    at Injector2._get (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7239:33)\n    at Injector2.get (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7230:28)\n    at RenderUnitDependencyService.resolve (http://localhost:5174/node_modules/.vite/deps/chunk-627SHJ2U.js?v=c1455d39:97814:27)\n    at RenderUnit2.with (http://localhost:5174/node_modules/.vite/deps/chunk-627SHJ2U.js?v=c1455d39:97759:36)\n    at handler (http://localhost:5174/node_modules/.vite/deps/@univerjs_preset-sheets-core.js?v=c1455d39:121090:145)\n    at Injector2.invoke (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7177:12)\n    at CommandService2._execute (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:19429:38)"
+    },
+    {
+      "message": "[redi]: Cannot find \"SheetsScrollRenderController2\" registered by any injector. The stack of dependencies is: \"\".",
+      "stack": "DependencyNotFoundError: [redi]: Cannot find \"SheetsScrollRenderController2\" registered by any injector. The stack of dependencies is: \"\".\n    at ResolvedDependencyCollection.get (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:6835:21)\n    at onSelf (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7412:48)\n    at Injector2.getValue (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7424:40)\n    at Injector2._get (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7239:33)\n    at Injector2.get (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7230:28)\n    at RenderUnitDependencyService.resolve (http://localhost:5174/node_modules/.vite/deps/chunk-627SHJ2U.js?v=c1455d39:97814:27)\n    at RenderUnit2.with (http://localhost:5174/node_modules/.vite/deps/chunk-627SHJ2U.js?v=c1455d39:97759:36)\n    at handler (http://localhost:5174/node_modules/.vite/deps/@univerjs_preset-sheets-core.js?v=c1455d39:121090:145)\n    at Injector2.invoke (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7177:12)\n    at CommandService2._execute (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:19429:38)"
+    },
+    {
+      "message": "[redi]: Cannot find \"SheetsScrollRenderController2\" registered by any injector. The stack of dependencies is: \"\".",
+      "stack": "DependencyNotFoundError: [redi]: Cannot find \"SheetsScrollRenderController2\" registered by any injector. The stack of dependencies is: \"\".\n    at ResolvedDependencyCollection.get (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:6835:21)\n    at onSelf (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7412:48)\n    at Injector2.getValue (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7424:40)\n    at Injector2._get (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7239:33)\n    at Injector2.get (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7230:28)\n    at RenderUnitDependencyService.resolve (http://localhost:5174/node_modules/.vite/deps/chunk-627SHJ2U.js?v=c1455d39:97814:27)\n    at RenderUnit2.with (http://localhost:5174/node_modules/.vite/deps/chunk-627SHJ2U.js?v=c1455d39:97759:36)\n    at handler (http://localhost:5174/node_modules/.vite/deps/@univerjs_preset-sheets-core.js?v=c1455d39:121090:145)\n    at Injector2.invoke (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7177:12)\n    at CommandService2._execute (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:19429:38)"
+    },
+    {
+      "message": "[redi]: Cannot find \"SheetsScrollRenderController2\" registered by any injector. The stack of dependencies is: \"\".",
+      "stack": "DependencyNotFoundError: [redi]: Cannot find \"SheetsScrollRenderController2\" registered by any injector. The stack of dependencies is: \"\".\n    at ResolvedDependencyCollection.get (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:6835:21)\n    at onSelf (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7412:48)\n    at Injector2.getValue (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7424:40)\n    at Injector2._get (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7239:33)\n    at Injector2.get (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7230:28)\n    at RenderUnitDependencyService.resolve (http://localhost:5174/node_modules/.vite/deps/chunk-627SHJ2U.js?v=c1455d39:97814:27)\n    at RenderUnit2.with (http://localhost:5174/node_modules/.vite/deps/chunk-627SHJ2U.js?v=c1455d39:97759:36)\n    at handler (http://localhost:5174/node_modules/.vite/deps/@univerjs_preset-sheets-core.js?v=c1455d39:121090:145)\n    at Injector2.invoke (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:7177:12)\n    at CommandService2._execute (http://localhost:5174/node_modules/.vite/deps/chunk-3BIDKH3D.js?v=c1455d39:19429:38)"
+    }
+  ]
+}

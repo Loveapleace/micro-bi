@@ -1,0 +1,344 @@
+{
+  "date": "2026-10-29",
+  "scope": "Existing modified and untracked files in micro-bi; preserve feature changes, tests, examples and accepted evidence",
+  "before": {
+    "changedFiles": 151,
+    "untrackedFiles": 101
+  },
+  "after": {
+    "existingChangedFiles": 140,
+    "untrackedFiles": 90,
+    "stagedFiles": []
+  },
+  "removedFiles": [
+    {
+      "path": "doc/verification/static-advanced-2026-10-28/02-position-info.png",
+      "bytes": 40193,
+      "sha256": "c435e90cb51b5c8e5f2409ca32448400c4c37966f16a7098ea3d639f6457c86c",
+      "reason": "No reference in project source, tests, docs or acceptance metadata"
+    },
+    {
+      "path": "doc/verification/static-advanced-2026-10-28/03-vtable-static-text.png",
+      "bytes": 42419,
+      "sha256": "e59671c0ba8ab0bce6236a9744ba4135ad413f3d251c7a1b0dae6d63ef82b7ff",
+      "reason": "No reference in project source, tests, docs or acceptance metadata"
+    },
+    {
+      "path": "doc/verification/advanced-cell-ownership-2026-10-29/08-vtable-restored.png",
+      "bytes": 39295,
+      "sha256": "d766be8b3eed2ca537bed9ed1e3738ad1bd214f3f263fe0dc30d4f2bc6f13c78",
+      "reason": "Byte-identical duplicate evidence",
+      "replacement": "doc/verification/advanced-cell-ownership-2026-10-29/07-vtable-saved.png"
+    },
+    {
+      "path": "doc/verification/generated-label-editing-2026-10-29/03-vtable-restored-labels.png",
+      "bytes": 34682,
+      "sha256": "dff022acbee1ae4a86805a991487539ec8c50b15ef9375f0834059879b3290a0",
+      "reason": "Byte-identical duplicate evidence",
+      "replacement": "doc/verification/generated-label-editing-2026-10-29/02-vtable-edited-labels.png"
+    },
+    {
+      "path": "doc/advanced-cell-settings-implementation-and-acceptance-2026-10-28.md",
+      "bytes": 19923,
+      "sha256": "80c92e3800eca67051dfd1fb1b7b2e91b9139402630caac0b0e6bc9be08c29ac",
+      "reason": "Superseded stage UI guide; valid type/atomic-update guidance consolidated and historical acceptance retained",
+      "replacement": "doc/advanced-cell-settings-ownership-and-acceptance-2026-10-29.md"
+    },
+    {
+      "path": "doc/verification/advanced-cell-2026-10-28/02-measure.png",
+      "bytes": 152184,
+      "sha256": "b02eac3226233cdb4b2aae4e987a087bf958e7435c60a2fdb301e26463b43cc2",
+      "reason": "Orphaned stage evidence after consolidating the superseded advanced-cell guide; current evidence and historical result JSON remain"
+    },
+    {
+      "path": "doc/verification/advanced-cell-2026-10-28/04-date-rules.png",
+      "bytes": 182777,
+      "sha256": "e89333373d99ef56bb4d090755109cc0b6257d426017d2926af269eee887254b",
+      "reason": "Orphaned stage evidence after consolidating the superseded advanced-cell guide; current evidence and historical result JSON remain"
+    },
+    {
+      "path": "doc/verification/advanced-cell-2026-10-28/07-mixed-condition-types.png",
+      "bytes": 175122,
+      "sha256": "5bb70df8249b475aeca72c5f1ca48c5e73d57f2cf64eb522dce9ac4daa1d5fb1",
+      "reason": "Orphaned stage evidence after consolidating the superseded advanced-cell guide; current evidence and historical result JSON remain"
+    },
+    {
+      "path": "doc/verification/advanced-cell-2026-10-28/09-vtable-restored.png",
+      "bytes": 45044,
+      "sha256": "83b96bc1c30c9f8c3aa3bdcb7ad3acc47f2e60d152b40f8c1b77e612f00ff11c",
+      "reason": "Orphaned stage evidence after consolidating the superseded advanced-cell guide; current evidence and historical result JSON remain"
+    },
+    {
+      "path": "doc/verification/static-advanced-2026-10-28/01-static-content.png",
+      "bytes": 39768,
+      "sha256": "0a67168ab717c7377a36eb120e2ac203f339aca7a5cdb8f5284594bad7e03279",
+      "reason": "Orphaned stage evidence after consolidating the superseded advanced-cell guide; current evidence and historical result JSON remain"
+    },
+    {
+      "path": "doc/verification/static-advanced-2026-10-28/checks.json",
+      "bytes": 4785,
+      "sha256": "67ba7100241b5a2adb27ade0b2a9e1419e1c792ce2db7971e6c2f8ee19b1458f",
+      "reason": "Orphaned stage evidence after consolidating the superseded advanced-cell guide; current evidence and historical result JSON remain"
+    },
+    {
+      "path": "doc/verification/static-two-tabs-2026-10-28/03-static-content-only.png",
+      "bytes": 26838,
+      "sha256": "7cf0ff07bb35d11a8337e49e3c41f57aa3a742595e154cfcfa04053459d357c8",
+      "reason": "Orphaned stage evidence after consolidating the superseded advanced-cell guide; current evidence and historical result JSON remain"
+    }
+  ],
+  "bytesRemoved": 803030,
+  "evidenceReuse": [
+    {
+      "removed": "doc/verification/advanced-cell-ownership-2026-10-29/08-vtable-restored.png",
+      "retained": "doc/verification/advanced-cell-ownership-2026-10-29/07-vtable-saved.png",
+      "checks": "doc/verification/advanced-cell-ownership-2026-10-29/checks.json"
+    },
+    {
+      "removed": "doc/verification/generated-label-editing-2026-10-29/03-vtable-restored-labels.png",
+      "retained": "doc/verification/generated-label-editing-2026-10-29/02-vtable-edited-labels.png",
+      "checks": "doc/verification/generated-label-editing-2026-10-29/checks.json"
+    }
+  ],
+  "codeCleanup": {
+    "unusedDeclarationsRemoved": 20,
+    "scope": "TypeScript unused-local/parameter audit filtered to existing changed source files",
+    "remainingUnusedInChangedSources": 0,
+    "unrelatedSourceDiagnosticsLeftUntouched": 37,
+    "otherCleanup": [
+      "Remove private unused fixedScope branch after standalone row-style UI retirement",
+      "Remove redundant disposal bookkeeping; actual instance ownership and disposal order unchanged",
+      "Remove repeated comment and update React version annotation"
+    ],
+    "files": [
+      "src/cell-designer/HybridCellDesigner.tsx",
+      "src/cell-designer/PresentationRuleEditor.tsx",
+      "src/cell-designer/StyleEffectEditor.tsx",
+      "src/report-template/cellExpansionEngine.ts",
+      "src/report-template/presentationRules.ts",
+      "src/report-template/types.ts",
+      "src/ui/presentation/charts/VChartView.tsx",
+      "src/ui/index.ts",
+      "src/univer/UniverPreview.tsx"
+    ]
+  },
+  "preserved": {
+    "allNewSourceModulesReachableFromPublicEntrypoints": true,
+    "businessFeatures": true,
+    "all518Tests": true,
+    "examples": true,
+    "coreAcceptanceJson": true,
+    "previousTrackedDeletions": [
+      "src/cell-designer/CellInspector.tsx",
+      "src/cell-designer/CellReportDesigner.tsx",
+      "src/cell-designer/ReportWizardModal.tsx",
+      "src/cell-designer/designerReducer.ts"
+    ],
+    "noGitIndexWrites": true,
+    "noCommit": true
+  },
+  "validation": {
+    "tests": 518,
+    "passed": 518,
+    "failed": 0,
+    "libraryBuild": "ESM/CJS/declarations passed",
+    "hostBuild": "TypeScript/Vite passed",
+    "missingMarkdownFiles": [],
+    "missingEvidenceFiles": [],
+    "unitLogSha256": "5f4f0334e106b40a06efc5c9ba6eb43bfdaeb9afb2618ef64bb6090bfc23ac79",
+    "hostLogSha256": "aa2fc31659cf6422b8cee726442fe47a3e4b45f532aa59136c9cbe7cc936c4d2",
+    "browser": {
+      "isolatedContext": true,
+      "tabs": [
+        "指标设置",
+        "条件规则",
+        "动态合并"
+      ],
+      "numericConditions": 2,
+      "conditionalRowStyle": true,
+      "nativeLabelEditing": true,
+      "preview": true,
+      "savedPublication": true,
+      "lifecycleCycles": [
+        {
+          "stage": 2,
+          "cleared": true
+        },
+        {
+          "stage": 2,
+          "cleared": true
+        },
+        {
+          "stage": 2,
+          "cleared": true
+        }
+      ],
+      "pageErrors": []
+    }
+  },
+  "sourceSha256": {
+    "src/cell-designer/HybridCellDesigner.tsx": "9b04fa7a2176734f4deaa7ead37902391a38ca7bb5fec95614ccb3d8f37d4c6c",
+    "src/cell-designer/PresentationRuleEditor.tsx": "cd83585c701471a3cc4351fcf21d976bf3d6aa451d8409925b097619551dacc8",
+    "src/cell-designer/StyleEffectEditor.tsx": "11fab728537892a43bb88504dcc3e77f7fbade1ba5f425101954b6db2c23832e",
+    "src/report-template/cellExpansionEngine.ts": "d168be4a09c935eeefad9afd4a12bfd1fc0210517531d8a7c7c92ac70191f0d4",
+    "src/report-template/presentationRules.ts": "7c6fdb046c007a959908737f7a744e856e44c8aead73574458996654257d7171",
+    "src/report-template/types.ts": "ae16b0de31bd3064495aeb3191186fd09e35312e1969cd49694cab2941c4a66c",
+    "src/ui/presentation/charts/VChartView.tsx": "e72099081a9c9fffb699d45a6758fbbb253938ca4d6b5326327be8e85eec805d",
+    "src/ui/index.ts": "50d7c97c2011bf495fda6ec6612a8b8e852c769f033318564307e29d3ac57bd1",
+    "src/univer/UniverPreview.tsx": "5183c7cc60bb08099bd312616cf09122ccc75e2005f6eae379309ec6138f9af9"
+  },
+  "reviewGroups": {
+    "src": [
+      "src/cell-designer/CellAdvancedSettings.tsx",
+      "src/cell-designer/HybridCellDesigner.tsx",
+      "src/cell-designer/PresentationRuleEditor.tsx",
+      "src/cell-designer/StaticSpanSettings.tsx",
+      "src/cell-designer/StyleEffectEditor.tsx",
+      "src/cell-designer/advancedCellState.ts",
+      "src/cell-designer/guidedEditing.ts",
+      "src/cell-designer/hybridHistory.ts",
+      "src/cell-designer/hybridTemplateState.ts",
+      "src/cell-designer/index.ts",
+      "src/cell-designer/syncWorkbookToTemplate.ts",
+      "src/cell-designer/univerEvents.ts",
+      "src/cell-designer/univerValues.ts",
+      "src/chart/compileChart.ts",
+      "src/chart/formulaValidation.ts",
+      "src/chart/index.ts",
+      "src/chart/types.ts",
+      "src/index.ts",
+      "src/report-template/cellCapabilities.ts",
+      "src/report-template/cellExpansionEngine.ts",
+      "src/report-template/compileCellReport.ts",
+      "src/report-template/guidedSource.ts",
+      "src/report-template/index.ts",
+      "src/report-template/presentationRules.ts",
+      "src/report-template/presentationTypes.ts",
+      "src/report-template/staticSpans.ts",
+      "src/report-template/types.ts",
+      "src/report-template/validator.ts",
+      "src/report/buildBiGrid.ts",
+      "src/report/cellStyle.ts",
+      "src/report/index.ts",
+      "src/report/numberFormat.ts",
+      "src/report/types.ts",
+      "src/ui/ChartConfigPanel.tsx",
+      "src/ui/components/FormulaEditorModal.tsx",
+      "src/ui/index.ts",
+      "src/ui/presentation/charts/ChartView.tsx",
+      "src/ui/presentation/charts/VChartView.tsx",
+      "src/ui/presentation/charts/chartSpec.ts",
+      "src/ui/presentation/index.ts",
+      "src/ui/presentation/report/ReportTableView.tsx",
+      "src/ui/presentation/report/gridAdapter.ts",
+      "src/ui/presentation/report/styleAdapter.ts",
+      "src/univer/UniverPreview.tsx",
+      "src/univer/adapter.ts",
+      "src/univer/compileReport.ts",
+      "src/univer/index.ts",
+      "src/univer/lifecycle.ts"
+    ],
+    "test": [
+      "test/advanced-cell-capabilities.test.mjs",
+      "test/advanced-cell-ownership.test.mjs",
+      "test/blank-cell-editing.test.mjs",
+      "test/cell-designer-acceptance.test.mjs",
+      "test/cell-expansion-fixes.test.mjs",
+      "test/chart.test.mjs",
+      "test/generated-label-editing.test.mjs",
+      "test/guided-editing.test.mjs",
+      "test/presentation-rules.test.mjs",
+      "test/reportCompiler.test.mjs",
+      "test/static-span.test.mjs",
+      "test/toolbar-formatting.test.mjs",
+      "test/univer-lifecycle.test.mjs"
+    ],
+    "examples": [
+      "examples/charts/workshop-delivery-chart.json"
+    ],
+    "doc": [
+      "doc/README.md",
+      "doc/advanced-cell-settings-ownership-and-acceptance-2026-10-29.md",
+      "doc/blank-cell-double-click-fix-2026-10-29.md",
+      "doc/cell-driven-expansion-engine-design.md",
+      "doc/conditional-rules-implementation-and-acceptance-2026-10-26.md",
+      "doc/generated-label-editing-implementation-and-acceptance-2026-10-29.md",
+      "doc/mode1-vchart-implementation-and-acceptance-2026-10-27.md",
+      "doc/mode2-retirement-and-guided-editing-2026-10-28.md",
+      "doc/react18-implementation-and-acceptance.md",
+      "doc/static-span-implementation-and-acceptance-2026-10-26.md",
+      "doc/template-dynamic-merge-design.md",
+      "doc/toolbar-formatting-implementation-and-acceptance-2026-10-28.md",
+      "doc/univer-implementation-issues-and-remediation.md",
+      "doc/univer-lifecycle-fix-and-acceptance-2026-10-29.md",
+      "doc/verification/advanced-cell-2026-10-28/browser.json",
+      "doc/verification/advanced-cell-2026-10-28/checks.json",
+      "doc/verification/advanced-cell-2026-10-28/data-changes.json",
+      "doc/verification/advanced-cell-ownership-2026-10-29/01-static-content.png",
+      "doc/verification/advanced-cell-ownership-2026-10-29/02-dimension-settings.png",
+      "doc/verification/advanced-cell-ownership-2026-10-29/03-measure-settings.png",
+      "doc/verification/advanced-cell-ownership-2026-10-29/04-row-style.png",
+      "doc/verification/advanced-cell-ownership-2026-10-29/05-generated-header.png",
+      "doc/verification/advanced-cell-ownership-2026-10-29/06-conditional-actions.png",
+      "doc/verification/advanced-cell-ownership-2026-10-29/07-vtable-saved.png",
+      "doc/verification/advanced-cell-ownership-2026-10-29/checks.json",
+      "doc/verification/blank-cell-double-click-2026-10-29/01-design-native-content.png",
+      "doc/verification/blank-cell-double-click-2026-10-29/02-vtable-native-content.png",
+      "doc/verification/blank-cell-double-click-2026-10-29/checks.json",
+      "doc/verification/change-area-cleanup-2026-10-29.json",
+      "doc/verification/generated-label-editing-2026-10-29/01-edited-template-labels.png",
+      "doc/verification/generated-label-editing-2026-10-29/02-vtable-edited-labels.png",
+      "doc/verification/generated-label-editing-2026-10-29/checks.json",
+      "doc/verification/mode1-vchart-2026-10-27/01-new-chart-presets.png",
+      "doc/verification/mode1-vchart-2026-10-27/02-mode1-chart-only-panel.png",
+      "doc/verification/mode1-vchart-2026-10-27/03-dual-axis-formula-and-style.png",
+      "doc/verification/mode1-vchart-2026-10-27/04-series-filter-topn.png",
+      "doc/verification/mode1-vchart-2026-10-27/05-pie-filtered-chart.png",
+      "doc/verification/mode1-vchart-2026-10-27/06-saved-pie-card.png",
+      "doc/verification/mode1-vchart-2026-10-27/07-dynamic-baseline.png",
+      "doc/verification/mode1-vchart-2026-10-27/08-data-restored.png",
+      "doc/verification/mode1-vchart-2026-10-27/09-laptop-source-isolation.png",
+      "doc/verification/mode1-vchart-2026-10-27/browser.json",
+      "doc/verification/mode1-vchart-2026-10-27/bundle-isolation.json",
+      "doc/verification/mode1-vchart-2026-10-27/checks.json",
+      "doc/verification/mode1-vchart-2026-10-27/data-changes.json",
+      "doc/verification/mode1-vchart-2026-10-27/saved-chart-config.json",
+      "doc/verification/mode2-retirement-2026-10-28/03-controlled-advanced.png",
+      "doc/verification/mode2-retirement-2026-10-28/07-source-boundary.png",
+      "doc/verification/mode2-retirement-2026-10-28/10-data-restored-vtable.png",
+      "doc/verification/mode2-retirement-2026-10-28/11-final-vtable.png",
+      "doc/verification/mode2-retirement-2026-10-28/browser.json",
+      "doc/verification/mode2-retirement-2026-10-28/checks.json",
+      "doc/verification/mode2-retirement-2026-10-28/data-changes.json",
+      "doc/verification/mode2-retirement-2026-10-28/retired-tests.json",
+      "doc/verification/static-settings-audit-2026-10-28/01-static-settings.png",
+      "doc/verification/static-settings-audit-2026-10-28/02-boolean-static.png",
+      "doc/verification/static-settings-audit-2026-10-28/checks.json",
+      "doc/verification/static-two-tabs-2026-10-28/01-two-tabs-and-span.png",
+      "doc/verification/static-two-tabs-2026-10-28/02-vtable-toolbar-style.png",
+      "doc/verification/static-two-tabs-2026-10-28/checks.json",
+      "doc/verification/style-clarity-2026-10-28/01-labeled-controls.png",
+      "doc/verification/style-clarity-2026-10-28/02-effects-preview.png",
+      "doc/verification/style-clarity-2026-10-28/checks.json",
+      "doc/verification/toolbar-formatting-2026-10-28/01-vtable-styles-and-formats.png",
+      "doc/verification/toolbar-formatting-2026-10-28/02-static-two-tabs.png",
+      "doc/verification/toolbar-formatting-2026-10-28/03-vtable-restored.png",
+      "doc/verification/toolbar-formatting-2026-10-28/checks.json",
+      "doc/verification/tooltip-removal-2026-10-28/01-static-content.png",
+      "doc/verification/tooltip-removal-2026-10-28/checks.json",
+      "doc/verification/univer-lifecycle-2026-10-29/01-editor-ready.png",
+      "doc/verification/univer-lifecycle-2026-10-29/02-vtable-after-save-and-refresh.png",
+      "doc/verification/univer-lifecycle-2026-10-29/before-fix.json",
+      "doc/verification/univer-lifecycle-2026-10-29/checks.json"
+    ],
+    "scripts": [
+      "scripts/verify-cell-expansion-recheck.mjs",
+      "scripts/verify-cell-remediation-recheck.mjs"
+    ],
+    "root": [
+      "README.md",
+      "package-lock.json",
+      "package.json"
+    ]
+  }
+}

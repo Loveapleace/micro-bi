@@ -3,6 +3,7 @@
  * 纯展示层映射，将 PublishedCellStyle 映射为 VTable 单元格样式配置。
  */
 import type { PublishedCellStyle } from '../../../report/types.js';
+import { BORDER_SIDES, borderWidth, borderDash } from '../../../report/cellStyle.js';
 
 export interface VTableCellStyleResult {
   padding?: [number,number,number,number] | undefined;
@@ -17,27 +18,29 @@ export interface VTableCellStyleResult {
   textAlign?: 'left' | 'center' | 'right' | undefined;
   textBaseline?: 'top' | 'middle' | 'bottom' | undefined;
   autoWrapText?: boolean | undefined;
-  borderColor?: string | undefined;
-  borderLineWidth?: number | undefined;
+  textOverflow?: string | undefined;
+  borderColor?: string | string[] | undefined;
+  borderLineWidth?: number | number[] | undefined;
+  borderLineDash?: number[][] | undefined;
 }
 
 export function mapPublishedStyleToVTable(
-  style?: PublishedCellStyle
+  style?: PublishedCellStyle, value?:unknown
 ): VTableCellStyleResult {
   if (!style) return {};
 
   // 与中性网格的自动行高估算使用同一内边距，避免24号换行文本被主题默认大边距截断。
-  const res: VTableCellStyleResult = {padding:[4,6,4,6]};
+  const res: VTableCellStyleResult = {padding:[4,6,4,6],fontFamily:'Arial',fontSize:11,textOverflow:'clip'};
 
   if (style.fontFamily) res.fontFamily = style.fontFamily;
   if (style.fontSize) res.fontSize = style.fontSize;
   if (style.bold !== undefined) res.fontWeight = style.bold ? 'bold' : 'normal';
   if (style.italic !== undefined) res.fontStyle = style.italic ? 'italic' : 'normal';
-  if (style.underline) res.underline = true;
-  if (style.strikethrough) res.lineThrough = true;
+  if (style.underline!==undefined) res.underline = style.underline;
+  if (style.strikethrough!==undefined) res.lineThrough = style.strikethrough;
   if (style.color) res.color = style.color;
   if (style.bgColor) res.bgColor = style.bgColor;
-  if (style.align) res.textAlign = style.align;
+  if (style.align) res.textAlign = style.align==='general'?(typeof value==='number'?'right':'left'):style.align;
 
   if (style.verticalAlign) {
     res.textBaseline =
@@ -54,15 +57,9 @@ export function mapPublishedStyleToVTable(
 
   // 边框映射
   if (style.border) {
-    const borderColor =
-      style.border.top?.color ||
-      style.border.bottom?.color ||
-      style.border.left?.color ||
-      style.border.right?.color;
-    if (borderColor) {
-      res.borderColor = borderColor;
-      res.borderLineWidth = 1;
-    }
+    res.borderColor=BORDER_SIDES.map(side=>style.border?.[side]?.color||'#000000');
+    res.borderLineWidth=BORDER_SIDES.map(side=>borderWidth(style.border?.[side]));
+    res.borderLineDash=BORDER_SIDES.map(side=>borderDash(style.border?.[side]));
   }
 
   return res;

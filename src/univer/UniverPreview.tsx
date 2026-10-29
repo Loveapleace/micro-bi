@@ -10,7 +10,8 @@
  */
 import React, { useRef, useEffect, useImperativeHandle, forwardRef, useState, useMemo } from 'react';
 import type { IWorkbookData } from '@univerjs/core';
-import { isBrowser, initUniver, waitForFormulaSettled, type FUniver } from './adapter.js';
+import { isBrowser, initUniver, waitForFormulaSettled, type FUniver, type UniverInstanceBundle } from './adapter.js';
+import { EditorSessionClosedError, isEditorSessionClosed } from './lifecycle.js';
 import { BiBindingManager } from './BiBindingPlugin.js';
 import { compileReport, type CompileReportResult } from './compileReport.js';
 import { collectStaleCells } from './gridSync.js';
@@ -65,9 +66,10 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
     const univerAPIRef = useRef<FUniver | null>(null);
-    const disposeFnRef = useRef<(() => void) | null>(null);
+    const bundleRef=useRef<UniverInstanceBundle|null>(null);
     const bindingManagerRef = useRef<BiBindingManager | null>(null);
     const [isInitialized, setIsInitialized] = useState(false);
+    const [initializationError,setInitializationError]=useState<string|undefined>();
     const lastGridRef = useRef<BiGridModel | undefined>(initialGrid);
 
     const onBindingsChangeRef = useRef(onBindingsChange);
@@ -101,7 +103,10 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
           },
         };
       }
-      return undefined;
+      // 未提供输入时也创建显式空白页，否则SDK没有工作簿、永远到不了Rendered。
+      return {id:documentId||'workbook-analysis',sheetOrder:['sheet-1'],sheets:{'sheet-1':{
+        id:'sheet-1',name:'分析工作表',rowCount:25,columnCount:15,cellData:{},
+      }}};
     }, [initialSnapshot, initialGrid, documentId]);
 
     // 实例挂载：独立于数据刷新生命周期 (MBI-18: 独立子容器与微任务异步清理，杜绝 React StrictMode 同步卸载警告与画布丢失)
@@ -113,7 +118,10 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
       subContainer.style.width = '100%';
       subContainer.style.height = '100%';
       subContainer.style.position = 'relative';
+      subContainer.style.visibility='hidden';
+      subContainer.setAttribute('inert','');
       container.appendChild(subContainer);
+      setIsInitialized(false);setInitializationError(undefined);
 
       let isDisposed = false;
       const bundle = initUniver(subContainer, {
@@ -121,43 +129,42 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
       });
 
       if (!bundle) {
+        setInitializationError('报表编辑器初始化失败，请关闭后重试');
         try {
           subContainer.remove();
         } catch {}
         return;
       }
 
-      univerAPIRef.current = bundle.univerAPI;
-      disposeFnRef.current = bundle.dispose;
-
-      // 初始化业务绑定管理器 (MBI-04, MBI-05, R18-05: 闭包代理保障最新引用)
-      const bm = new BiBindingManager({
-        bindings: effectiveBindings,
-        onBindingsChange: (b) => onBindingsChangeRef.current?.(b),
-        onManualOverride: (id, ov) => onManualOverrideRef.current?.(id, ov),
-      });
-      bm.attach(bundle.univerAPI);
-      bindingManagerRef.current = bm;
-
-      // 若首次生成了有效绑定且外部尚无绑定，通知外部持久化
-      if (bindings.length === 0 && effectiveBindings.length > 0) {
-        onBindingsChangeRef.current?.(effectiveBindings);
-      }
-
-      setIsInitialized(true);
-      if (typeof window !== 'undefined') {
-        (window as any).__UNIVER_API__ = bundle.univerAPI;
-      }
-      onReadyRef.current?.(bundle.univerAPI);
-      if (initialGrid && !initialSnapshot) onGridAppliedRef.current?.(initialGrid);
-
+      bundleRef.current=bundle;
       const localBundle = bundle;
-      const localBm = bm;
+      let localBm:BiBindingManager|null=null;
       const localSubContainer = subContainer;
+      bundle.ready.then(ready=>{
+        if(!ready||isDisposed||bundleRef.current!==bundle)return;
+        const bm=new BiBindingManager({bindings:effectiveBindings,
+          onBindingsChange:b=>{if(bundle.session.ready)onBindingsChangeRef.current?.(b);},
+          onManualOverride:(id,ov)=>{if(bundle.session.ready)onManualOverrideRef.current?.(id,ov);},
+        });
+        localBm=bm;bm.attach(bundle.univerAPI);bindingManagerRef.current=bm;
+        univerAPIRef.current=bundle.univerAPI;
+        subContainer.style.visibility='visible';subContainer.removeAttribute('inert');
+        setIsInitialized(true);
+        (window as any).__UNIVER_API__=bundle.univerAPI;
+        if(bindings.length===0&&effectiveBindings.length>0)onBindingsChangeRef.current?.(effectiveBindings);
+        onReadyRef.current?.(bundle.univerAPI);
+        if(initialGrid&&!initialSnapshot)onGridAppliedRef.current?.(initialGrid);
+      }).catch(error=>{
+        if(isDisposed||isEditorSessionClosed(error))return;
+        setInitializationError('报表编辑器初始化失败，请关闭后重试');
+        console.error('[UniverPreview] 渲染初始化失败:',error);
+      });
 
       return () => {
         if (isDisposed) return;
         isDisposed = true;
+        localBundle.beginDispose();
+        if(bundleRef.current===localBundle)bundleRef.current=null;
 
         if (bindingManagerRef.current === localBm) {
           bindingManagerRef.current = null;
@@ -165,17 +172,13 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
         if (univerAPIRef.current === localBundle.univerAPI) {
           univerAPIRef.current = null;
         }
-        if (disposeFnRef.current === localBundle.dispose) {
-          disposeFnRef.current = null;
-        }
-        setIsInitialized(false);
-
-        localBm.dispose();
+        if((window as any).__UNIVER_API__===localBundle.univerAPI)(window as any).__UNIVER_API__=null;
+        localBm?.dispose();
         // 延迟至微任务执行 Univer 销毁，避免在 React 渲染批次中同步触发嵌套 root 卸载
         queueMicrotask(() => {
           try {
             localBundle.dispose();
-          } catch {}
+          } catch (error) {console.error('[UniverPreview] 编辑器释放失败:',error);}
           try {
             localSubContainer.remove();
           } catch {}
@@ -518,20 +521,25 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
       ref,
       () => ({
         getWorkbookSnapshot: () => {
-          if (!univerAPIRef.current) return null;
+          if (!univerAPIRef.current||!bundleRef.current?.session.ready) return null;
           const activeWorkbook = univerAPIRef.current.getActiveWorkbook();
           return activeWorkbook ? activeWorkbook.save() : null;
         },
-        getUniverAPI: () => univerAPIRef.current,
+        getUniverAPI: () => bundleRef.current?.session.ready?univerAPIRef.current:null,
         waitForFormulaSettled: async () => {
-          if (univerAPIRef.current) {
-            await waitForFormulaSettled(univerAPIRef.current);
-          }
+          const bundle=bundleRef.current;
+          if(!bundle)throw new EditorSessionClosedError();
+          if(!await bundle.ready||bundleRef.current!==bundle)throw new EditorSessionClosedError();
+          await waitForFormulaSettled(bundle.univerAPI);
+          if(bundleRef.current!==bundle)throw new EditorSessionClosedError();
         },
         compileReport: async (options = {}) => {
-          if (univerAPIRef.current) {
-            await waitForFormulaSettled(univerAPIRef.current);
-            const activeWorkbook = univerAPIRef.current.getActiveWorkbook();
+          const bundle=bundleRef.current;
+          if(bundle){
+            if(!await bundle.ready||bundleRef.current!==bundle)throw new EditorSessionClosedError();
+            await waitForFormulaSettled(bundle.univerAPI);
+            if(bundleRef.current!==bundle)throw new EditorSessionClosedError();
+            const activeWorkbook = bundle.univerAPI.getActiveWorkbook();
             if (activeWorkbook) {
               return compileReport(activeWorkbook, options);
             }
@@ -545,6 +553,8 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
     return (
       <div
         className={className}
+        data-univer-state={initializationError?'error':isInitialized?'ready':'starting'}
+        aria-busy={!isInitialized&&!initializationError}
         style={{
           width: '100%',
           height,
@@ -554,6 +564,7 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
           ...style,
         }}
       >
+        {!isInitialized&&<div role={initializationError?'alert':'status'} style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',zIndex:1,background:'inherit',color:initializationError?'#cf1322':'#595959'}}>{initializationError||'正在初始化报表编辑器…'}</div>}
         <div ref={containerRef} style={{flex:1,minHeight:0,position:'relative',overflow:'hidden'}} />
       </div>
     );

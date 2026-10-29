@@ -3,6 +3,7 @@
  * 遵循 Section 15.2: 仅配置端使用，包含类 Excel 画布与公式计算支持。
  */
 export * from './adapter.js';
+export * from './lifecycle.js';
 export * from './BiBindingPlugin.js';
 export * from './compileReport.js';
 export * from './gridSync.js';

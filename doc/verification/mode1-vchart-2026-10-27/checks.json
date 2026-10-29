@@ -1,0 +1,130 @@
+{
+  "verifiedAt": "2026-10-27T09:02:06.186Z",
+  "baseHead": "67e0410cdab49190be03ccdef0f2aaf23e2c16d8",
+  "scope": "Mode1 chart-only source/editor/renderer; no old panel compatibility. Mode2/3 source protocols retained.",
+  "libraryBuild": {
+    "esm": true,
+    "cjs": true,
+    "declarations": true
+  },
+  "hostBuild": true,
+  "unitTests": {
+    "total": 402,
+    "passed": 402,
+    "failed": 0,
+    "newChartTests": 29
+  },
+  "browser": {
+    "total": 15,
+    "passed": 15,
+    "pageErrors": [],
+    "chartOnlyUniverRequests": 0
+  },
+  "example": {
+    "valid": true,
+    "groups": 3
+  },
+  "diffCheck": true,
+  "fingerprints": [
+    {
+      "file": "src/chart/types.ts",
+      "bytes": 1912,
+      "sha256": "0a9558aabc2f0d97ece42d05e695c14a1c0563a968483ec7b30ff61d6dda0c92"
+    },
+    {
+      "file": "src/chart/compileChart.ts",
+      "bytes": 9959,
+      "sha256": "893fdd382bb4389ba8043b7c6327829f3cd29d5eddb8b2d11372355cfc97ade0"
+    },
+    {
+      "file": "src/chart/formulaValidation.ts",
+      "bytes": 665,
+      "sha256": "50db519cb1020344f26b926b974b8541aa596a2f7cda9b71585cf0026e7ac6ed"
+    },
+    {
+      "file": "src/chart/index.ts",
+      "bytes": 63,
+      "sha256": "0df3aad6e5e4fbdb5d91c25b44a56692ae201fb6323267b3f2bee986368abde0"
+    },
+    {
+      "file": "src/index.ts",
+      "bytes": 553,
+      "sha256": "6a7568124c9a4a259824ded09f36f3fb6db43c4c6a72e8461829671aac0bb3d6"
+    },
+    {
+      "file": "src/ui/ChartConfigPanel.tsx",
+      "bytes": 14551,
+      "sha256": "b1d63cc784955f710c60d04059f1d8355f72d65d37609d778c238df478be521c"
+    },
+    {
+      "file": "src/ui/index.ts",
+      "bytes": 636,
+      "sha256": "be69616a5a5ee352d9009946d6f4282001a16702b49f79cc4fb475ea7972f36f"
+    },
+    {
+      "file": "src/ui/components/FormulaEditorModal.tsx",
+      "bytes": 16685,
+      "sha256": "f5ad8a986596250e69452013e7a288d854870c6afad248edc91cd0c7970c4b19"
+    },
+    {
+      "file": "src/ui/presentation/charts/VChartView.tsx",
+      "bytes": 29340,
+      "sha256": "c9512d6c31ffacb28d322d5f15d15ff5c8a7532c1273535ad0d13877baed295a"
+    },
+    {
+      "file": "src/ui/presentation/charts/ChartView.tsx",
+      "bytes": 1853,
+      "sha256": "da6e4efdf3d56e8ef29d3abb9a9a2394924eff4b6e95a84f20a25a0e2f3620b7"
+    },
+    {
+      "file": "src/ui/presentation/charts/chartSpec.ts",
+      "bytes": 3838,
+      "sha256": "5a8c65c300f34567fd6942e707943a92fd3449429d62caacf632c52fc4b3b232"
+    },
+    {
+      "file": "src/ui/presentation/index.ts",
+      "bytes": 689,
+      "sha256": "a7fa271ff195f013528ab0528cec4bd7bd4b390c50c5b64413af1007ec94d56a"
+    },
+    {
+      "file": "test/chart.test.mjs",
+      "bytes": 9173,
+      "sha256": "ce4bf88fb2565bc954c909caefe34735220d4f53483b9068233f3c3ab1cb5e43"
+    },
+    {
+      "file": "examples/charts/workshop-delivery-chart.json",
+      "bytes": 834,
+      "sha256": "9b2e4baf8557816a1216dc4900913bcd4ad7b493c7c59894dd344a374b3e11b5"
+    },
+    {
+      "file": "../dynamic-data-test/src/App.tsx",
+      "bytes": 18909,
+      "sha256": "ab4e3a70b242ab4bc51e455c61071af665cd1d72d222c57823fc956988bcd367"
+    },
+    {
+      "file": "../dynamic-data-test/src/components/DashboardEditModal.tsx",
+      "bytes": 1871,
+      "sha256": "389c97155d9a23ba1dd366ae11733e7d5b704c14242bcf0be7aff04b3ffb6780"
+    },
+    {
+      "file": "../dynamic-data-test/src/components/DashboardCard.tsx",
+      "bytes": 2594,
+      "sha256": "ed2fc5f1cb7c83007ddb3e8ea2253edd019213a909e3814bb9431cb2e5e7be11"
+    },
+    {
+      "file": "../dynamic-data-test/src/components/HeaderBar.tsx",
+      "bytes": 8660,
+      "sha256": "ae5c5798aa5f9d5afa1be67e9996a0f23c294104d68aefc3c82594c3f3e942f2"
+    },
+    {
+      "file": "../dynamic-data-test/src/constants/presets.ts",
+      "bytes": 6240,
+      "sha256": "19e548663a1de0c2ee963f0b5cff6068bc502ed501feea3a68e4668f62915b12"
+    },
+    {
+      "file": "../dynamic-data-test/src/types/dashboard.ts",
+      "bytes": 793,
+      "sha256": "b5ad58b95ca6c9cf8f18cf1bcad5041c4524cd8bcda832173b511658b8b82889"
+    }
+  ]
+}

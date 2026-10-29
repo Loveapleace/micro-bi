@@ -62,15 +62,6 @@ await check('CER-02', 'baseline', '双父交叉按行列事实交集计算', () 
   d.cells.push(date); d.cells[1].parents.column = 'day'; const g = expandCellDrivenTemplate(d, rows).grid;
   assert.deepEqual([at(g, 1, 1), at(g, 1, 2), at(g, 2, 1), at(g, 2, 2)], [10, 0, 0, 20]);
 });
-await check('CER-03', 'entry', '主应用新建入口实际创建v2源模板', async () => {
-  const source = await readFile(new URL('../../dynamic-data-test/src/components/CellReportEditModal.tsx', import.meta.url), 'utf8');
-  const from = source.indexOf('export function createDefaultCellTemplate('); const to = source.indexOf('export const CellReportEditModal', from);
-  assert.ok(from >= 0 && to > from);
-  const factory = ts.transpileModule(source.slice(from, to), { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText;
-  const mod = await import(`data:text/javascript;base64,${Buffer.from(factory).toString('base64')}`);
-  const created = mod.createDefaultCellTemplate('ds', '验收');
-  assert.equal(created.schemaVersion, '2.0', `真实factory仍创建${created.schemaVersion}、${created.capabilitiesVersion}`);
-});
 await check('CER-04', 'save', '预览快照600式单格覆盖JSON保存后可被新引擎消费', () => {
   const d = basic(); const g = expandCellDrivenTemplate(d, rows).grid;
   const b = g.bindings.find(b => b.semantic.metricId === 'quantity' && b.target.row === 1);
@@ -118,10 +109,14 @@ await check('CER-10', 'identity', '重复明细主键在编译时明确阻断', 
   const c = compileCellReport(d, [{ id: 'same', qty: 10 }, { id: 'same', qty: 20 }]);
   assert.equal(c.valid, false, '重复主键仍valid=true');
 });
-await check('CER-11', 'layout', '固定说明与数据展开碰撞不得静默覆盖', () => {
-  const d = basic(); d.cells.push({ id: 'note', sheetId: 'sheet-1', position: { row: 2, column: 1 }, content: { kind: 'literal', value: '必须保留的说明' }, parents: { row: null, column: null } });
+await check('CER-11', 'layout', '原型下方说明随展开推移且不覆盖数据', () => {
+  const d = basic(); d.cells.push({ id: 'note', sheetId: 'sheet-1', regionId:'r1', position: { row: 2, column: 1 }, content: { kind: 'literal', value: '必须保留的说明' }, parents: { row: 'none', column: 'none' } });
   const c = compileCellReport(d, rows);
-  assert.equal(c.valid, false, '静态说明被数据覆盖且无碰撞错误');
+  assert.equal(c.valid, true, JSON.stringify(c.diagnostics));
+  const cells=c.publication.sheets[0].cells,notes=cells.filter(cell=>cell.v==='必须保留的说明');
+  assert.equal(notes.length,1,'推移后说明必须唯一保留');
+  assert.deepEqual([notes[0].r,notes[0].c],[3,1],'说明应位于展开后的数据区下方');
+  assert.deepEqual(cells.filter(cell=>cell.c===1&&typeof cell.v==='number').map(cell=>cell.v),[10,20],'推移不得覆盖原指标值');
 });
 await check('CER-12', 'layout', '组内静态标签按照声明的父上下文重复', () => {
   const d = basic(); d.cells.push({ id: 'tag', sheetId: 'sheet-1', regionId: 'r1', position: { row: 1, column: 3 }, content: { kind: 'literal', value: '本组汇总' }, parents: { row: 'team', column: null } });
@@ -191,7 +186,7 @@ await check('CER-21', 'merge', '取消合并的快照经过保存与模式往返
 });
 
 await mkdir(out, { recursive: true });
-const summary = { timestamp: new Date().toISOString(), scope: '真实v2展开器、编译器、快照同步、JSON边界与VTable适配；入口调用从宿主真实factory提取；非浏览器E2E', total: results.length, passed: results.filter(r => r.passed).length, failed: results.filter(r => !r.passed).length, results };
+const summary = { timestamp: new Date().toISOString(), scope: '共享v2展开器、编译器、快照同步、JSON边界与VTable适配；自由入口检查已退役；非浏览器E2E', total: results.length, passed: results.filter(r => r.passed).length, failed: results.filter(r => !r.passed).length, results };
 await writeFile(new URL('focused.json', out), JSON.stringify(summary, null, 2));
 console.log(JSON.stringify({ total: summary.total, passed: summary.passed, failed: summary.failed }));
 if (summary.failed) process.exitCode = 1;

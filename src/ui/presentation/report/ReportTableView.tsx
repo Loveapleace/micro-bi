@@ -131,12 +131,23 @@ export const ReportTableView: React.FC<ReportTableViewProps> = ({
     };
   }, [currentSheet, report.styles]);
 
+  // React布局提交后同步Canvas布局。弹窗开关/外层样式变化时，单次resize可能
+  // 留下旧的文字绘制缓存；重建可见单元格而不改写数据、滚动或源配置。
+  useEffect(() => {
+    const frame=requestAnimationFrame(()=>{
+      const table=tableInstanceRef.current;
+      if(table){table.resize();table.renderWithRecreateCells();}
+    });
+    return ()=>cancelAnimationFrame(frame);
+  },[height,style,className]);
+
   // 监听容器大小变化自动调整
   useEffect(() => {
     if (!containerRef.current) return;
     const ro = new ResizeObserver(() => {
       if (tableInstanceRef.current) {
         tableInstanceRef.current.resize();
+        tableInstanceRef.current.renderWithRecreateCells();
       }
     });
     ro.observe(containerRef.current);

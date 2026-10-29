@@ -9,6 +9,7 @@ import type { BiGridModel, PublishedCellStyle } from './types.js';
 import { normalizeAxes } from './normalizeAxes.js';
 import { projectGroupedReport } from './groupedProjector.js';
 import { projectPivotReport } from './pivotProjector.js';
+import { cellStyleToUniver } from './cellStyle.js';
 
 export function buildBiGrid(
   config: DynamicTransformConfig,
@@ -51,18 +52,7 @@ export function toExcelPattern(format?: string): string | undefined {
 /** 纯数据样式转换；保持原始数值供公式计算，数字格式由工作表负责。 */
 export function publishedStyleToUniver(style: PublishedCellStyle): Record<string, unknown> {
   const pat = toExcelPattern(style.format);
-  return {
-    ...(style.fontFamily ? { ff: style.fontFamily } : {}),
-    ...(style.fontSize ? { fs: style.fontSize } : {}),
-    ...(style.bold !== undefined ? { bl: style.bold ? 1 : 0 } : {}),
-    ...(style.italic !== undefined ? { it: style.italic ? 1 : 0 } : {}),
-    ...(style.color ? { cl: { rgb: style.color } } : {}),
-    ...(style.bgColor ? { bg: { rgb: style.bgColor } } : {}),
-    ...(style.align ? { ht: { left: 1, center: 2, right: 3 }[style.align] } : {}),
-    ...(style.verticalAlign ? { vt: { top: 1, middle: 2, bottom: 3 }[style.verticalAlign] } : {}),
-    ...(style.wrapText !== undefined ? { tb: style.wrapText ? 2 : 1 } : {}),
-    ...(pat ? { n: { pattern: pat } } : {}),
-  };
+  return {...cellStyleToUniver(style),n:{pattern:pat||'General'}};
 }
 
 /** 将 BiGridModel 转换为符合 Univer IWorksheetData 规范的纯 JSON 数据结构。 */

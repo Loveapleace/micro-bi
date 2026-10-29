@@ -40,6 +40,8 @@ export function collectHybridExtras(
       const existing = previousById.get(identity(managed));
       const painted = renderedTemplate?.cells.find((p) => p.id === managed.id);
       const pendingSpan = existing && painted && JSON.stringify(existing.staticSpan) !== JSON.stringify(painted.staticSpan);
+      const pendingContent=existing&&painted&&JSON.stringify(existing.content)!==JSON.stringify(painted.content);
+      const pendingFormat=existing&&painted&&JSON.stringify(existing.formatOptions)!==JSON.stringify(painted.formatOptions);
       const canvasTextEdited = c.content.kind === 'literal' && painted?.content.kind === 'literal' && c.content.value !== painted.content.value;
       const disabled = syncedDoc.hybridConfig?.version === 2 ? syncedDoc.hybridConfig.disabledLayoutRuleIds || [] : [];
       const legacyMergeDisabled = activePanel.layoutRules.some((r) => r.kind === 'merge' && disabled.includes(r.id) &&
@@ -56,7 +58,8 @@ export function collectHybridExtras(
         staticSpan: pendingSpan ? existing.staticSpan : c.staticSpan ?? existing?.staticSpan ?? inheritedSpan,
         literalOverride: canvasTextEdited || existing?.literalOverride || c.literalOverride,
         style: { ...existing?.style, ...c.style },
-        content: { ...c.content, ...existing?.content, ...(canvasTextEdited && c.content.kind === 'literal' ? { value: c.content.value } : {}) } as CellDefinition['content'],
+        formatOptions:pendingFormat?existing.formatOptions:c.formatOptions,
+        content: { ...c.content, ...(pendingContent?existing.content:{}), ...(canvasTextEdited && c.content.kind === 'literal' ? { value: c.content.value } : {}) } as CellDefinition['content'],
       });
     } else if (!c.panelOwner && !isLegacyTotal(c)) {
       // 不按显示文字过滤；用户自己输入“行总计”也是合法备注。
@@ -162,5 +165,6 @@ export function readHybridFormatPreset(cell: CellDefinition): HybridFormatPreset
 /** 显式选择预设只替换数值格式，单位、缩放等高级属性保持。 */
 export function applyHybridFormatPreset(cell: CellDefinition, format: HybridFormatPreset): CellDefinition {
   const formatOptions: CellFormatOptions = { ...resolveCellFormatOptions(cell), format, ...presets[format] };
+  delete formatOptions.numberFormat;
   return { ...cell, formatOptions, content: { ...cell.content, format, formatOptions } };
 }

@@ -1,11 +1,12 @@
 import type { CellDefinition, CellStyleDefinition, StyleRule } from './types.js';
 export type ConditionOperator = 'gt' | 'gte' | 'lt' | 'lte' | 'eq' | 'ne' | 'between' | 'contains' | 'startsWith' | 'endsWith' | 'in' | 'notIn' | 'empty' | 'notEmpty';
+export type RuleValueType = 'number' | 'text' | 'date' | 'boolean' | 'unknown';
 export type RuleOperand = {
     kind: 'current';
     basis?: 'value' | 'display-number' | 'text' | undefined;
 } | {
     kind: 'literal';
-    valueType?: 'list' | undefined;
+    valueType?: 'list' | 'date' | undefined;
     value: string | number | boolean | null | (string | number | boolean)[];
 } | {
     kind: 'field';
@@ -21,6 +22,7 @@ export type RulePredicate = {
     children: RulePredicate[];
 } | {
     kind: 'comparison';
+    valueType?: RuleValueType | undefined;
     left: RuleOperand;
     operator: ConditionOperator;
     right?: RuleOperand | undefined;

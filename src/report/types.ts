@@ -61,7 +61,7 @@ export interface ReportCellMerge {
 }
 
 export interface BorderStyle {
-  style?: 'thin' | 'medium' | 'thick' | 'dashed' | 'dotted' | 'double' | 'none' | undefined;
+  style?: 'none' | 'thin' | 'hair' | 'dotted' | 'dashed' | 'dash-dot' | 'dash-dot-dot' | 'double' | 'medium' | 'medium-dashed' | 'medium-dash-dot' | 'medium-dash-dot-dot' | 'slant-dash-dot' | 'thick' | undefined;
   color?: string | undefined;
 }
 
@@ -81,7 +81,7 @@ export interface PublishedCellStyle {
   strikethrough?: boolean | undefined;
   color?: string | undefined;
   bgColor?: string | undefined;
-  align?: 'left' | 'center' | 'right' | undefined;
+  align?: 'general' | 'left' | 'center' | 'right' | undefined;
   verticalAlign?: 'top' | 'middle' | 'bottom' | undefined;
   wrapText?: boolean | undefined;
   border?: CellBorderConfig | undefined;

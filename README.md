@@ -9,6 +9,8 @@
 [![Rendering: VisActor](https://img.shields.io/badge/Rendering-VisActor%20Canvas-cyan.svg)](https://www.visactor.io/)
 [![Tests: Passing](https://img.shields.io/badge/Tests-Passing-brightgreen.svg)]()
 
+当前产品入口为模式一VChart图表配置与模式三受控表格配置。模式二自由设计器已移除，不读取或迁移其报表配置；模式三通过面板管理数据结构，保留Univer外观、静态内容与合并配置，正式表格由VTable展示。使用边界与最新验收见[文档导航](doc/README.md)。
+
 ---
 
 ## 🌟 为什么选择 MicroBI？

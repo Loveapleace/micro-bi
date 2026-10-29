@@ -1,0 +1,150 @@
+{
+  "date": "2026-10-28",
+  "entry": "http://localhost:5174/ main mode3 designer",
+  "isolation": "Independent Playwright contexts and local storage; original user browser and dataset source unchanged",
+  "audit": {
+    "removed": [
+      "emptyDisplay editor for static role",
+      "automatic creation of blank source by double click"
+    ],
+    "alreadyRestricted": [
+      "aggregation",
+      "field rebinding",
+      "free parents and expansion"
+    ],
+    "retained": [
+      "literal content",
+      "tooltip",
+      "valid typed number/date display",
+      "normal cell/row style",
+      "data-driven conditions",
+      "dynamic static spans and merge cancellation"
+    ]
+  },
+  "checks": {
+    "libraryBuild": true,
+    "hostBuild": true,
+    "allTests": {
+      "passed": 441,
+      "failed": 0,
+      "newCases": [
+        "AC-29",
+        "AC-30",
+        "AC-31",
+        "AC-32"
+      ]
+    },
+    "blankRepeatedDoubleClickNoModal": true,
+    "blankDoubleClickCellDataUnchanged": true,
+    "typedTextBeforeAdvancedRequired": true,
+    "textSavedReopenedAndPublished": true,
+    "zeroOpens": true,
+    "typedFalseOpensWithoutNumericControls": true,
+    "formulaWithEmptyResultOpens": true,
+    "styledBlankDoesNotOpen": true,
+    "whitespaceDoesNotOpen": true,
+    "dimensionEmptyDisplayRetained": true,
+    "metricAggregationRetained": true,
+    "mergedTitleOpens": true,
+    "savedBooleanTypeRetained": true
+  },
+  "sourceExample": {
+    "id": "c-sheet-1-19-9-mvrrus1x-1",
+    "sheetId": "sheet-1",
+    "position": {
+      "row": 19,
+      "column": 9
+    },
+    "content": {
+      "kind": "literal",
+      "value": "新增静态说明",
+      "formatOptions": {
+        "tooltip": "静态格精简验收"
+      },
+      "tooltip": "静态格精简验收"
+    },
+    "parents": {
+      "row": "none",
+      "column": "none"
+    },
+    "regionId": "region-1",
+    "formatOptions": {
+      "tooltip": "静态格精简验收"
+    }
+  },
+  "publishedNote": [
+    {
+      "r": 23,
+      "c": 13,
+      "v": "新增静态说明",
+      "displayText": "新增静态说明",
+      "styleId": "s_2",
+      "role": "custom",
+      "tooltip": "静态格精简验收"
+    }
+  ],
+  "boundarySaved": [
+    {
+      "id": "audit-zero",
+      "content": {
+        "kind": "literal",
+        "value": 0
+      }
+    },
+    {
+      "id": "audit-false",
+      "content": {
+        "kind": "literal",
+        "value": false
+      }
+    },
+    {
+      "id": "audit-empty-formula",
+      "content": {
+        "kind": "sheet-formula",
+        "formula": "=\"\""
+      }
+    },
+    {
+      "id": "audit-blank-style",
+      "content": {
+        "kind": "literal",
+        "value": ""
+      }
+    },
+    {
+      "id": "audit-whitespace",
+      "content": {
+        "kind": "literal",
+        "value": " \n "
+      }
+    }
+  ],
+  "publishedFalse": [
+    {
+      "r": 25,
+      "c": 13,
+      "v": false,
+      "displayText": "false",
+      "styleId": "s_3",
+      "role": "custom"
+    }
+  ],
+  "runtime": {
+    "mainPageErrors": [
+      "[redi]: Cannot find \"SheetsScrollRenderController2\" registered by any injector. The stack of dependencies is: \"\"."
+    ],
+    "firstFixturePageErrors": [],
+    "finalMonitoredPageErrors": [],
+    "knownObservation": "H3-OBS01 remains open; no lifecycle fix claimed"
+  },
+  "codeHashes": {
+    "src/report-template/cellCapabilities.ts": "57962d77d6b93ceb795de840f711064e509914c58e8d43b132a43fb6cf1d56ef",
+    "src/cell-designer/CellAdvancedSettings.tsx": "913e1a43cc9620d658e5c8f20f015890d0648921f5e88d87510db70ebc1e1f67",
+    "src/cell-designer/HybridCellDesigner.tsx": "f9b20d75d3b6e646324573cac8516bccf148f29937ecdab26f0eb9ae30aad2c2",
+    "src/cell-designer/univerValues.ts": "580f8c32c126814fcad52e19fa4879e4f9c7e6a0f1507d53a9d8946812b7ea84",
+    "src/cell-designer/univerEvents.ts": "3dffe97a60ae947c16d77763cdd2e42b4d28b7f245d13c6848ac6ea6add44654",
+    "src/cell-designer/syncWorkbookToTemplate.ts": "554ac0a7f4c7448f967348ef6e6ec19b1e17beab3ff6bbbcccf0161ae5f4c4f4",
+    "test/advanced-cell-capabilities.test.mjs": "916c45d86892ea5e1f94c491278130ffd0054eb7872e7fbd7dae89fc139bd221"
+  }
+}

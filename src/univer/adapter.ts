@@ -7,16 +7,39 @@
  * 4. 实例与事件完整释放清理 (dispose)
  */
 import { LocaleType, CommandType, CellValueType, InterceptorEffectEnum, ICommandService, IUndoRedoService, IContextService, IUniverInstanceService,
-  EDITOR_ACTIVATED, FOCUSING_SHEET, type IWorkbookData, type Univer } from '@univerjs/core';
+  EDITOR_ACTIVATED, FOCUSING_SHEET, LifecycleService, LifecycleStages, type IWorkbookData, type Univer } from '@univerjs/core';
 import { createUniver } from '@univerjs/presets';
-import { UniverSheetsCorePreset } from '@univerjs/preset-sheets-core';
+import { UniverSheetsCorePreset, IMenuManagerService, RibbonPosition, type MenuSchemaType, type IMenuSchema } from '@univerjs/preset-sheets-core';
 import zhCN from '@univerjs/preset-sheets-core/lib/es/locales/zh-CN.js';
 import { INTERCEPTOR_POINT, SheetInterceptorService } from '@univerjs/sheets';
+import { EditorSession, EditorSessionClosedError, readyAfterRender, waitForOwnedEvent } from './lifecycle.js';
 
 export type FUniver = ReturnType<typeof createUniver>['univerAPI'];
-const instances = new WeakMap<FUniver, Univer>();
+const instances = new WeakMap<FUniver, {univer:Univer;session:EditorSession;ready:Promise<boolean>}>();
+const closedInstances=new WeakSet<FUniver>();
+const REPORT_TOOLBAR_MENU = {
+  'sheet.command.set-text-rotation':{hidden:true},
+  'sheet.command.set-shrink-to-fit':{hidden:true},
+};
+function restrictWrapMenu(univer:Univer):void{
+  const manager=univer.__getInjector().get(IMenuManagerService);
+  const visit=(nodes:IMenuSchema[],path:string[])=>{
+    for(const node of nodes){
+      const next=[...path,node.key],item=node.item;
+      if(item?.id==='sheet.command.set-text-wrap'&&'selections' in item&&Array.isArray(item.selections)){
+        const replacement={...item,selections:item.selections.filter(s=>s.value!==1)};
+        let schema:MenuSchemaType={menuItemFactory:()=>replacement};
+        for(const key of [...next].reverse())schema={[key]:schema};
+        manager.mergeMenu(schema);return true;
+      }
+      if(node.children&&visit(node.children,next))return true;
+    }return false;
+  };
+  visit(manager.getMenuByPositionKey(RibbonPosition.START),[RibbonPosition.START]);
+}
 
 export function univerSelectionTsv(api: FUniver, mode:'display'|'raw'): string {
+  if(closedInstances.has(api))return '';
   const workbook=api.getActiveWorkbook(),sheet=workbook?.getActiveSheet();
   const range=sheet?.getSelection()?.getActiveRange()?.getRange();
   if(!sheet||!range)return '';
@@ -33,7 +56,9 @@ export function univerSelectionTsv(api: FUniver, mode:'display'|'raw'): string {
 /** 用SDK公共历史服务注册源快照mutation，原生工具栏与Ctrl+Z/Y共用同一栈。 */
 export function bindSourceHistory(api: FUniver, source: { readonly count: number; readonly index: number; moveTo(index: number): boolean }):
   { sync: () => void; dispose: () => void } | undefined {
-  const instance = instances.get(api);
+  const owner = instances.get(api);
+  if(!owner?.session.ready)return undefined;
+  const instance=owner?.univer;
   const unitId = api.getActiveWorkbook()?.getId();
   if (!instance || !unitId) return undefined;
   const injector = instance.__getInjector();
@@ -41,9 +66,11 @@ export function bindSourceHistory(api: FUniver, source: { readonly count: number
   const context = injector.get(IContextService), units = injector.get(IUniverInstanceService);
   const id = 'micro-bi.mutation.restore-hybrid-source';
   const registration = commands.registerCommand({ id, type: CommandType.MUTATION,
-    handler: (_accessor: unknown, params: any) => source.moveTo(params.index) });
+    handler: (_accessor: unknown, params: any) => owner?.session.ready?source.moveTo(params.index):false });
+  let closed=false;
   return {
     sync: () => {
+      if(closed||!owner?.session.ready||commands.disposed())return;
       history.clearUndoRedo(unitId);
       for (let i = 0; i < source.count; i++) history.pushUndoRedo({ unitID: unitId,
         undoMutations: [{ id, params: { index: i } }], redoMutations: [{ id, params: { index: i + 1 } }] });
@@ -60,7 +87,7 @@ export function bindSourceHistory(api: FUniver, source: { readonly count: number
         context.setContextValue(EDITOR_ACTIVATED, editing); context.setContextValue(FOCUSING_SHEET, sheet);
       }
     },
-    dispose: () => registration.dispose(),
+    dispose: () => {if(closed)return;closed=true;registration.dispose();},
   };
 }
 
@@ -72,6 +99,9 @@ export const isBrowser =
 export interface UniverInstanceBundle {
   univer: Univer;
   univerAPI: FUniver;
+  session:EditorSession;
+  ready:Promise<boolean>;
+  beginDispose:()=>void;
   dispose: () => void;
 }
 
@@ -96,6 +126,8 @@ export function initUniver(
         UniverSheetsCorePreset({
           container,
           header: true,
+          disableAutoFocus:true,
+          menu:REPORT_TOOLBAR_MENU,
         }),
       ],
     });
@@ -104,6 +136,7 @@ export function initUniver(
     if (options.initialSnapshot) {
       univerAPI.createWorkbook(options.initialSnapshot);
     }
+    restrictWrapMenu(univer);
     // 与SDK数值格式相同的只读呈现投影。工作簿v/f、公式依赖及save快照保持原始类型。
     const display = options.initialSnapshot ? univer.__getInjector().get(SheetInterceptorService).intercept(INTERCEPTOR_POINT.CELL_CONTENT, {
       effect: InterceptorEffectEnum.Value | InterceptorEffectEnum.Style,
@@ -118,21 +151,32 @@ export function initUniver(
       },
     }) : undefined;
 
-    instances.set(univerAPI, univer);
+    const session=new EditorSession();
+    // Ready阶段尚未注册滚动/缩放等渲染控制器；onStage返回后再发布可交互状态。
+    const ready=readyAfterRender(session,univer.__getInjector().get(LifecycleService).onStage(LifecycleStages.Rendered));
+    instances.set(univerAPI,{univer,session,ready});
+    const commandGate=univerAPI.addEvent(univerAPI.Event.BeforeCommandExecute,(event:{id:string;cancel?:boolean})=>{
+      if(!session.allowsCommand(event.id))event.cancel=true;
+    });
+    let disposed=false;
 
     const dispose = () => {
+      if(disposed)return;disposed=true;closedInstances.add(univerAPI);session.close();
       instances.delete(univerAPI);
-      display?.dispose();
       try {
+        display?.dispose();
         univer.dispose();
-      } catch (err) {
-        console.warn('[UniverAdapter] 释放实例出现警告:', err);
+      } finally {
+        commandGate.dispose();session.dispose();
       }
     };
 
     return {
       univer,
       univerAPI,
+      session,
+      ready,
+      beginDispose:()=>{closedInstances.add(univerAPI);session.close();},
       dispose,
     };
   } catch (error) {
@@ -143,61 +187,20 @@ export function initUniver(
 
 /**
  * 等待公式引擎计算完成并落地至单元格 (MBI-09)
- * 优先监听公式引擎 onCalculationResultApplied 事件，并提供安全超时保护
+ * 使用可释放的calculationResultApplied订阅，并提供超时与会话取消保护。
  */
 export async function waitForFormulaSettled(
   univerAPI?: FUniver,
   timeoutMs = 300
 ): Promise<void> {
   if (!univerAPI) return;
-
-  try {
-    const formulaApi = (univerAPI as any).getFormula?.();
-    if (formulaApi && typeof formulaApi.onCalculationResultApplied === 'function') {
-      return await new Promise<void>((resolve) => {
-        let resolved = false;
-        const timer = setTimeout(() => {
-          if (!resolved) {
-            resolved = true;
-            resolve();
-          }
-        }, timeoutMs);
-
-        try {
-          const res = formulaApi.onCalculationResultApplied(() => {
-            if (!resolved) {
-              resolved = true;
-              clearTimeout(timer);
-              resolve();
-            }
-          });
-          if (res && typeof res.then === 'function') {
-            res
-              .then(() => {
-                if (!resolved) {
-                  resolved = true;
-                  clearTimeout(timer);
-                  resolve();
-                }
-              })
-              .catch(() => {
-                if (!resolved) {
-                  resolved = true;
-                  clearTimeout(timer);
-                  resolve();
-                }
-              });
-          }
-        } catch {
-          // 若注册失败直接回退定时器
-        }
-      });
-    }
-  } catch {
-    // fallback
-  }
-
-  return new Promise((resolve) => {
-    setTimeout(resolve, Math.min(timeoutMs, 150));
-  });
+  if(closedInstances.has(univerAPI))throw new EditorSessionClosedError();
+  const owner=instances.get(univerAPI);
+  if(owner){await owner.session.wait(owner.ready);owner.session.assertActive();}
+  const formulaApi=univerAPI.getFormula?.();
+  // 当前SDK的onCalculationResultApplied参数是timeout，不是callback。
+  // 使用可释放的结果订阅，关闭/通知/超时都立即取消监听和定时器。
+  const register=formulaApi?((done:()=>void)=>formulaApi.calculationResultApplied(done)):undefined;
+  await waitForOwnedEvent(register,register?timeoutMs:Math.min(timeoutMs,150),owner?.session.signal);
+  owner?.session.assertActive();
 }

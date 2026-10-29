@@ -1,0 +1,46 @@
+{
+  "date": "2026-10-28",
+  "entry": "http://localhost:5174/ existing main mode3 dialog",
+  "isolation": "Independent headless browser/storage; original user browser untouched",
+  "beforeRemoval": {
+    "marker": "悬浮备注实际链路验证-20261028",
+    "publishedTooltipCellCount": 1,
+    "univerHoverDisplayedMarker": false,
+    "vtableHoverDisplayedMarker": false,
+    "codeFinding": "column.tooltip callback absent from installed VTable column type/API; no hover listener consumes note in ReportTableView; Univer only carries custom metadata"
+  },
+  "afterRemoval": {
+    "staticInputAbsent": true,
+    "dimensionInputAbsent": true,
+    "measureInputAbsent": true,
+    "staticTab": "内容",
+    "dimensionEmptyDisplayPreserved": true,
+    "measureAggregationPreserved": true,
+    "contentEditableSavedReopened": true,
+    "previewAndVTablePublication": true,
+    "numericPublishedCellsUnchanged": true,
+    "obsoleteColumnCallbackRemoved": true
+  },
+  "checks": {
+    "libraryBuild": true,
+    "hostBuild": true,
+    "allTests": {
+      "passed": 441,
+      "failed": 0
+    },
+    "newTests": 0,
+    "existingAssertionsUpdatedForRemovedEditorCapability": true
+  },
+  "runtime": {
+    "pageErrors": [],
+    "knownObservation": "H3-OBS01 remains open; no lifecycle fix claimed"
+  },
+  "sourceHashes": {
+    "src/cell-designer/CellAdvancedSettings.tsx": "deb0be08416f914d9ed8fb8bb9d5b0f24b03baef1c5e8db2efe0dafbfad4019d",
+    "src/cell-designer/advancedCellState.ts": "12699d4dff530213d39ca86bc3d827428fcee0389a2f103d04270ce3bfd6721f",
+    "src/report-template/cellCapabilities.ts": "b20eefb658a8c61a5bebacc6cf2c812d108ebcd2737f8dd2d5c0e2d4ef345ca7",
+    "src/report-template/staticSpans.ts": "152d43f7ff951bcffb325a07263a2c360827d3fd51b23f81067c637503ef263a",
+    "src/ui/presentation/report/gridAdapter.ts": "9d411e0630949203d2325acec6ae1512939d98b19d4b4e92c111aa36f5c1d6f2",
+    "test/advanced-cell-capabilities.test.mjs": "47f4949463f37452ba54d7071429e86d2c4cfe20d96914c5d84660267056ca65"
+  }
+}

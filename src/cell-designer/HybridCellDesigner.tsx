@@ -9,7 +9,6 @@ import {
   Tag,
   Divider,
   Segmented,
-  Tooltip,
   message,
   Alert,
   theme,
@@ -30,7 +29,6 @@ import { addStaticSpanDesignMerges } from '../report-template/staticSpans.js';
 import { captureHybridPreviewMerges, mergeRetainedHybridConfig, rebindHybridMergeConfig } from './hybridMergeState.js';
 import { expandCellDrivenTemplate } from '../report-template/cellExpansionEngine.js';
 import { compileCellReport, type CompileCellReportResult } from '../report-template/compileCellReport.js';
-import { generateTemplateCellId } from '../report-template/identity.js';
 import { attachUniverDesignerEvents } from './univerEvents.js';
 import { emptyPresentationRules } from '../report-template/presentationTypes.js';
 import { applyPresentationRules } from '../report-template/presentationRules.js';
@@ -38,7 +36,12 @@ import { HybridHistory, isHybridHistoryCommand } from './hybridHistory.js';
 import { syncDocumentFromWorkbookSnapshot } from './syncWorkbookToTemplate.js';
 import { applyHybridFormatPreset, collectHybridExtras, mergeHybridCells, mergeHybridLayoutRules, preserveHybridDocumentMetadata, readHybridFormatPreset, readHybridRowTotals, type HybridFormatPreset } from './hybridTemplateState.js';
 import { CellAdvancedSettings } from './CellAdvancedSettings.js';
+import { cellFormatOptions, changeMetricAggregation, validateAdvancedCellUpdate } from './advancedCellState.js';
+import { canOpenCellAdvancedSettings, fieldValueType, getCellCapabilities, metricAggregations } from '../report-template/cellCapabilities.js';
+import {isGuidedSourceDocument} from '../report-template/guidedSource.js';
+import {attachGuidedEditingGuard,guidedCellProtected,guidedCellContentProtected,protectGuidedSnapshot} from './guidedEditing.js';
 import { bindSourceHistory, type FUniver } from '../univer/adapter.js';
+import { EditorSession, EditorSessionClosedError, isEditorSessionClosed } from '../univer/lifecycle.js';
 import {
   useRegisteredDatasets,
   useDatasetData,
@@ -48,7 +51,7 @@ import {
 } from '../core/datasetRegistry.js';
 import { UniverPreview, type UniverPreviewRef } from '../univer/UniverPreview.js';
 import type { BiGridModel } from '../report/types.js';
-import type { FieldItem } from './CellInspector.js';
+interface FieldItem { key: string; label: string; type?: string; sample?: unknown }
 
 const { Text } = Typography;
 
@@ -61,7 +64,6 @@ export interface HybridCellDesignerProps {
   height?: string | number | undefined;
   onSave?: ((report: CompileCellReportResult) => void) | undefined;
   onCancel?: (() => void) | undefined;
-  onEjectToFreeDesigner?: ((template: CellTemplateDocumentV1) => void) | undefined;
   isDark?: boolean | undefined;
 }
 
@@ -74,18 +76,17 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
   function HybridCellDesigner(
     {
       initialConfig,
-      initialDocument,
+      initialDocument: providedDocument,
       datasetId,
       datasets,
       rawDataset,
       height = '100%',
-      onSave,
-      onCancel,
-      onEjectToFreeDesigner,
       isDark = false,
     },
     ref
   ) {
+    const initialDocument=isGuidedSourceDocument(providedDocument)?providedDocument:undefined;
+    const unsupportedSource=Boolean(providedDocument&&!initialDocument);
     const univerPreviewRef = useRef<UniverPreviewRef>(null);
 
     // 1. 数据集列表与当前选中数据集
@@ -124,12 +125,9 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
       }
 
       return Array.from(keys).map((k) => {
-        const sampleVal = activeData[0]?.[k];
-        let typeStr: string = typeof sampleVal;
-        if (typeof sampleVal === 'number') typeStr = 'number';
-        else if (sampleVal instanceof Date || (typeof sampleVal === 'string' && /^\d{4}-\d{2}/.test(sampleVal))) {
-          typeStr = 'date';
-        }
+        const sampleVal = activeData.find(row=>row[k]!==null&&row[k]!==undefined&&row[k]!=='')?.[k];
+        const detected = fieldValueType(undefined,sampleVal);
+        const typeStr = detected==='text'?'string':detected;
         return {
           key: k,
           label: headers[k] || k,
@@ -678,6 +676,16 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
     const flushRef = useRef<() => void>(() => {});
     const pendingBeforeRef = useRef<EditSnapshot | undefined>(undefined);
     const historyTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+    const requestScopeRef=useRef<EditorSession|null>(null);
+    const modeSwitchPendingRef=useRef(false);
+    useEffect(()=>{
+      const scope=new EditorSession();requestScopeRef.current=scope;
+      return()=>{
+        scope.close();pendingBeforeRef.current=undefined;modeSwitchPendingRef.current=false;
+        if(historyTimerRef.current)clearTimeout(historyTimerRef.current);
+        historyTimerRef.current=undefined;
+      };
+    },[]);
     const captureEdit = useCallback((): EditSnapshot => {
       const workbook = univerPreviewRef.current?.getWorkbookSnapshot();
       return { ...editStateRef.current,
@@ -707,8 +715,7 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
     }, [finishSourceEdit]);
     const runSourceEdit = (change: () => void) => { beginSourceEdit(); change(); scheduleSourceEdit(); };
 
-    const templateErrors = useMemo(() => validateCellTemplateDocument(currentTemplate, fieldItems.map((f) => f.key)).diagnostics
-      .filter((d) => d.severity === 'error'), [currentTemplate, fieldItems]);
+    const templateErrors = useMemo(() => [...validateCellTemplateDocument(currentTemplate, fieldItems.map((f) => f.key)).diagnostics.filter((d) => d.severity === 'error'),...(unsupportedSource?[{severity:'error' as const,code:'ERR_GUIDED_SOURCE',message:'仅支持模式三生成的受控报表，请通过面板新建；不读取自由模式配置'}]:[])], [currentTemplate,fieldItems,unsupportedSource]);
 
     // 5. 根据当前 mode (design vs preview) 构造 Univer 渲染矩阵
     const currentGrid = useMemo<BiGridModel>(() => {
@@ -778,7 +785,7 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
         cells.push({
           row: c.position.row,
           col: c.position.column,
-          value: c.content.kind === 'sheet-formula' ? c.content.formula : display,
+          value: c.content.kind === 'literal' ? c.content.value ?? null : display,
           displayText: display,
           role: 'custom',
           tooltip: cellTooltip,
@@ -787,11 +794,15 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
             fontSize: c.style?.fontSize,
             bold: c.style?.bold ?? (c.content.kind === 'field'),
             italic: c.style?.italic,
+            underline: c.style?.underline,
+            strikethrough: c.style?.strikethrough,
+            border: c.style?.border,
             color: cellColor,
             align: c.style?.textAlign ?? (c.content.kind === 'field' && c.content.role === 'measure' ? 'right' : undefined),
             verticalAlign: c.style?.verticalAlign ?? 'middle',
             bgColor: cellBgColor,
             wrapText: c.style?.wrapText,
+            format:cellFmtOpts?.numberFormat||(c.content as any).format,
           },
         });
       }
@@ -876,7 +887,7 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
       setDesignSize(s.designSize); setPresentationModel(s.presentationModel); setVisualStyleRules(s.visualStyleRules);
     };
 
-    // 6. 全量快照同步管道：在保存或切换视图前，深度抓取画布上的自由输入、样式与合并选区
+    // 6. 保存或切换视图前采集静态内容、样式与合并意图；受控数据内容不接受快照覆盖。
     const flushCanvasToTemplate = useCallback(() => {
       const snapshot = univerPreviewRef.current?.getWorkbookSnapshot();
       if (!snapshot) return;
@@ -905,7 +916,7 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
       }
       const syncedDoc = syncDocumentFromWorkbookSnapshot(
         rendered.template,
-        snapshot,
+        protectGuidedSnapshot(snapshot,rendered.panel,rendered.grid,'design'),
         'design',
         rendered.grid
       );
@@ -945,6 +956,11 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
     }, []);
     flushRef.current = flushCanvasToTemplate;
 
+    useEffect(()=>{
+      if(!univerAPI)return;
+      return attachGuidedEditingGuard(univerAPI,()=>({panel:panelGeneratedTemplateRef.current,mode:modeRef.current}),()=>message.info({key:'guided-data-protection',content:'数据区由面板生成；请通过字段/指标配置修改内容与结构，预览中的数据仅供查看。'}),reason=>message.warning({key:'unsupported-report-format',content:reason}));
+    },[univerAPI]);
+
     useEffect(() => {
       if (!univerAPI) return;
       const api = univerAPI as any;
@@ -953,10 +969,11 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
       bridge?.sync();
       let activeCommand: string | undefined;
       const before = api.addEvent(api.Event.BeforeCommandExecute, (event: any) => {
-        if (activeCommand || api.__isProgrammaticWrite || api.__biTransaction || api.__biSourceHistoryReplay ||
+        if (event.cancel || activeCommand || api.__isProgrammaticWrite || api.__biTransaction || api.__biSourceHistoryReplay ||
             !isHybridHistoryCommand(event.id, event.type)) return;
         activeCommand = event.id;
-        beginSourceEdit(false);
+        // 同一同步调用栈内的值+样式命令合并捕获，避免前一条flush触发投影抢写后一条。
+        if(!pendingBeforeRef.current)beginSourceEdit(false);
       });
       const after = api.addEvent(api.Event.CommandExecuted, (event: any) => {
         if (event.id !== activeCommand) return;
@@ -979,37 +996,36 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
 
     const advancedPreviewGrid = useMemo(()=>advancedModalOpen ? expandCellDrivenTemplate(currentTemplate,activeData).grid : undefined,[advancedModalOpen,currentTemplate,activeData]);
 
-    // 7. 挂载 Univer 画布原生事件监听，支持自由单元格驱动、行列结构平移与受控格防篡改保护
+    // 7. 静态内容和安全布局平移可编辑，数据区受控生成。
     useEffect(() => {
       const api = univerAPI || univerPreviewRef.current?.getUniverAPI();
       if (!api) return;
 
       const dispose = attachUniverDesignerEvents(api, {
         onDoubleClicked: (pos) => {
-          if (modeRef.current !== 'design') return;
+          if (modeRef.current !== 'design') return true;
           flushCanvasToTemplate();
-          const target = currentTemplateRef.current.cells.find(
+          const found = currentTemplateRef.current.cells.find(
             (c) => c.sheetId === (pos.sheetId || 'sheet-1') && c.position.row === pos.row && c.position.column === pos.column
-          ) || { id: generateTemplateCellId(), sheetId: pos.sheetId || 'sheet-1', regionId: currentTemplateRef.current.regions[0]?.id,
-            position: { row: pos.row, column: pos.column }, content: { kind: 'literal' as const, value: '' }, parents: { row: 'none', column: 'none' } };
-          setSelectedCellForAdvanced(target);
+          );
+          if (!canOpenCellAdvancedSettings(found)) {
+            if(guidedCellContentProtected(panelGeneratedTemplateRef.current,pos.row,pos.column,pos.sheetId||'sheet-1')){
+              message.info('数据区通过左侧面板添加维度和指标');return true;
+            }
+            return false;
+          }
+          setSelectedCellForAdvanced(found);
           setAdvancedModalOpen(true);
+          return true;
         },
         onCellEdited: (edit) => {
           if (modeRef.current !== 'design') return;
-          const { row, column, sheetId, value, formula } = edit;
+          const { row, column, sheetId } = edit;
           const targetSheetId = sheetId || 'sheet-1';
 
           // 核心保护：若为受控字段或向导配置格，严格禁止将其覆写为静态纯文本并立即恢复原值
-          const managedCell = panelGeneratedTemplateRef.current.cells.find(
-            (c) =>
-              (c.sheetId || 'sheet-1') === targetSheetId &&
-              c.position.row === row &&
-              c.position.column === column
-          );
-
-          if (managedCell && managedCell.content.kind !== 'literal') {
-            message.info('该单元格为系统受控指标/维度格，字段绑定受保护；您可在空白区域自由录入文本与公式。');
+          if (guidedCellContentProtected(panelGeneratedTemplateRef.current,row,column,targetSheetId)) {
+            message.info('数据区内容由面板生成；标题与备注请在静态区域编辑。');
 
             // 提取该受控单元格的标准原值与显示文本进行还原
             const targetOriginalCell = currentGridRef.current?.cells?.find(
@@ -1018,7 +1034,7 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
             const origDisplay =
               targetOriginalCell?.value ??
               targetOriginalCell?.displayText ??
-              `{${(managedCell.content as any).displayName || (managedCell.content as any).fieldKey || ''}}`;
+              null;
 
             // 调度异步恢复以确保在 Univer 自身事件流完成后精准回滚画布单元格
             setTimeout(() => {
@@ -1055,35 +1071,9 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
             return;
           }
 
-          const strVal = String(value ?? '').trim();
-          const isFormula = Boolean(formula || strVal.startsWith('='));
-
-          const existingCell = currentTemplateRef.current.cells.find((c) => c.sheetId === targetSheetId && c.position.row === row && c.position.column === column);
-          if ((value === null || value === undefined || value === '') && !formula && !existingCell?.staticSpan && !existingCell?.panelOwner) {
-            setExtraCustomCells((prev) =>
-              prev.filter((c) => !(c.sheetId === targetSheetId && c.position.row === row && c.position.column === column))
-            );
-            return;
-          }
-
-          const updatedCell: CellDefinition = {
-            ...existingCell,
-            id: existingCell?.id || generateTemplateCellId(`c-${targetSheetId}-${row}-${column}`),
-            literalOverride: Boolean(existingCell?.panelOwner) || existingCell?.literalOverride,
-            sheetId: targetSheetId,
-            position: { row, column },
-            content: isFormula
-              ? { kind: 'sheet-formula', formula: formula || strVal }
-              : { ...existingCell?.content, kind: 'literal', value: value ?? '' },
-            parents: existingCell?.parents || { row: 'none', column: 'none' },
-          };
-
-          setExtraCustomCells((prev) => {
-            const remaining = prev.filter(
-              (c) => !(c.sheetId === targetSheetId && c.position.row === row && c.position.column === column)
-            );
-            return [...remaining, updatedCell];
-          });
+          // 内容和格式由同一命令完成后的快照原子捕获。逐条setState会抢先重绘，
+          // 把紧接着输入的数字格式、格式刷结果或公式清回上一帧。
+          scheduleSourceEdit();
         },
         onRowsRemoved: (e) => {
           if (modeRef.current !== 'design') return;
@@ -1335,23 +1325,29 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
       };
     }, [univerAPI]);
 
-    const handleSaveAdvancedSettings = (updated: AdvancedCellUpdate) => {
+    const handleSaveAdvancedSettings = (proposal: AdvancedCellUpdate) => {
       if (!selectedCellForAdvanced) return;
+      const existing=currentTemplateRef.current.cells.find(c=>c.id===selectedCellForAdvanced.id);
+      const source=existing||selectedCellForAdvanced;
+      const capabilityContext={fields:fieldItems,grid:advancedPreviewGrid,contentReadOnly:guidedCellProtected(panelGeneratedTemplateRef.current,source.position.row,source.position.column,source.sheetId)};
+      const updated=validateAdvancedCellUpdate(currentTemplateRef.current,source,proposal,capabilityContext);
+      if(!Object.keys(updated).length){setAdvancedModalOpen(false);return;}
+      const capabilities=getCellCapabilities(source,capabilityContext);
       beginSourceEdit();
       const { presentationRules: newRules, visualStyleRules: newStyles, ...cellUpdate } = updated;
-      if(newRules)setPresentationModel(newRules);
-      if(newStyles)setVisualStyleRules(newStyles);
       const { row, column } = selectedCellForAdvanced.position;
 
       // 1. 同步格式与聚合操作到左侧控制面板
-      const targetFmt = updated.formatOptions?.format || (updated.content as any)?.formatOptions?.format || (updated.content as any)?.format;
+      const nextFormat=updated.formatOptions||(updated.content as any)?.formatOptions;
+      const targetFmt=nextFormat?.format;
+      const formatChanged=Boolean(nextFormat&&Object.prototype.hasOwnProperty.call(nextFormat,'format')&&targetFmt!==cellFormatOptions(source).format);
       const targetOp = (updated.content as any)?.operation;
       const fieldKey =
-        (selectedCellForAdvanced.content as any)?.fieldKey ||
-        (selectedCellForAdvanced.content as any)?.fieldId;
+        (source.content as any)?.fieldKey ||
+        (source.content as any)?.fieldId;
 
       if (fieldKey) {
-        if (targetFmt !== undefined) {
+        if (formatChanged&&['measure','detail'].includes(capabilities.role)) {
           setMeasureFormats((prev) => {
             const next = { ...prev };
             if (targetFmt) next[fieldKey] = targetFmt;
@@ -1359,42 +1355,38 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
             return next;
           });
         }
-        if (targetOp && ['sum', 'count', 'avg', 'max', 'min'].includes(targetOp)) {
+        if (capabilities.canEditAggregation&&targetOp&&(source.content as any).operation!==targetOp) {
           setMeasureAggs((prev) => ({ ...prev, [fieldKey]: targetOp }));
         }
       }
 
       // 2. 单格属性保存到 extras，普通样式和条件规则分别通过源状态原子提交。
-      const prevContent = (selectedCellForAdvanced.content || {}) as any;
+      const prevContent = source.content as any;
       const updatedContent = (updated.content || {}) as any;
-      const mergedFmtOpts = updated.formatOptions || updatedContent?.formatOptions;
-      const mergedMergePolicy = updated.mergePolicy || (updated as any)?.content?.mergePolicy || mergedFmtOpts?.mergePolicy || selectedCellForAdvanced.mergePolicy;
       const mergedContent = {
         ...prevContent,
         ...updatedContent,
-        formatOptions: mergedFmtOpts,
-        tooltip: updatedContent?.tooltip || (updated as any)?.tooltip,
-        mergePolicy: mergedMergePolicy,
       };
 
       const updatedCell: CellDefinition = {
-        ...selectedCellForAdvanced,
+        ...source,
         ...cellUpdate,
-        style: {
-          ...(selectedCellForAdvanced.style || {}),
-          ...(updated.style || {}),
-        },
-        parents: updated.parents !== undefined ? updated.parents : selectedCellForAdvanced.parents,
-        formatOptions: mergedFmtOpts,
-        mergePolicy: mergedMergePolicy,
+        ...(updated.style?{style:{...source.style,...updated.style}}:{}),
         content: mergedContent as any,
       };
 
-      setExtraCustomCells((prev) => {
+      const aggregateChanged=Boolean(capabilities.canEditAggregation&&fieldKey&&targetOp&&(source.content as any).operation!==targetOp);
+      const linked=aggregateChanged?changeMetricAggregation({...currentTemplateRef.current,cells:currentTemplateRef.current.cells.map(c=>c.id===source.id?updatedCell:c),
+        styleRules:newStyles||currentTemplateRef.current.styleRules,presentationRules:newRules||currentTemplateRef.current.presentationRules},fieldKey,targetOp,capabilityContext):undefined;
+      if(newRules||linked)setPresentationModel(linked?.presentationRules||newRules!);
+      if(newStyles||linked)setVisualStyleRules(linked?.styleRules||newStyles!);
+      const replacements=[updatedCell,...(linked?.cells.filter(c=>c.id!==source.id&&c.content.kind==='field'&&c.content.fieldKey===fieldKey&&['measure','total'].includes(c.content.role))||[])];
+
+      if(Object.keys(cellUpdate).length||!existing)setExtraCustomCells((prev) => {
         const remaining = prev.filter(
-          (c) => !(c.sheetId === selectedCellForAdvanced.sheetId && c.position.row === row && c.position.column === column)
+          (c) => !replacements.some(r=>r.id===c.id||r.sheetId===c.sheetId&&r.position.row===c.position.row&&r.position.column===c.position.column)
         );
-        return [...remaining, updatedCell];
+        return [...remaining, ...replacements];
       });
 
       setAdvancedModalOpen(false);
@@ -1403,29 +1395,42 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
     };
 
     const handleModeChange = async (newMode: 'design' | 'preview') => {
-      if (switchingView || mode === newMode) return;
+      if (modeSwitchPendingRef.current || mode === newMode) return;
+      const scope=requestScopeRef.current,preview=univerPreviewRef.current;
+      if(!scope?.active||!preview)return;
+      modeSwitchPendingRef.current=true;
       setSwitchingView(true);
       try {
-        await univerPreviewRef.current?.waitForFormulaSettled();
+        await preview.waitForFormulaSettled();
+        scope.assertActive();
+        if(requestScopeRef.current!==scope||univerPreviewRef.current!==preview)return;
         finishSourceEdit();
         flushCanvasToTemplate();
         setMode(newMode);
-      } finally { setSwitchingView(false); }
+      } catch(error){
+        if(!isEditorSessionClosed(error)){console.error('[HybridCellDesigner] 预览切换失败:',error);message.error('报表预览切换失败，请重试');}
+      } finally {
+        if(requestScopeRef.current===scope&&scope.active){modeSwitchPendingRef.current=false;setSwitchingView(false);}
+      }
     };
 
     const handleMeasureFormatChange = (fieldKey: string, format: HybridFormatPreset) => {
       beginSourceEdit();
       setMeasureFormats((prev) => ({ ...prev, [fieldKey]: format }));
-      setExtraCustomCells((prev) => prev.map((c) => c.content.kind === 'field' && c.content.fieldKey === fieldKey
+      setExtraCustomCells((prev) => prev.map((c) => c.content.kind === 'field' && c.content.fieldKey === fieldKey && ['measure','total','detail-column'].includes(c.content.role)
         ? applyHybridFormatPreset(c, format) : c));
       scheduleSourceEdit();
     };
 
     const handleMeasureAggChange = (fieldKey: string, operation: 'sum' | 'count' | 'avg' | 'max' | 'min') => {
+      let linked:CellTemplateDocumentV1;
+      try{linked=changeMetricAggregation(currentTemplateRef.current,fieldKey,operation,{fields:fieldItems});}
+      catch(e){message.error((e as Error).message);return;}
       beginSourceEdit();
       setMeasureAggs((prev) => ({ ...prev, [fieldKey]: operation }));
-      setExtraCustomCells((prev) => prev.map((c) => c.content.kind === 'field' && c.content.fieldKey === fieldKey
-        ? { ...c, content: { ...c.content, operation } } : c));
+      setPresentationModel(linked.presentationRules||emptyPresentationRules());setVisualStyleRules(linked.styleRules);
+      const replacements=linked.cells.filter(c=>c.content.kind==='field'&&c.content.fieldKey===fieldKey&&['measure','total'].includes(c.content.role));
+      setExtraCustomCells(prev=>[...prev.filter(c=>!replacements.some(r=>r.id===c.id)),...replacements]);
       scheduleSourceEdit();
     };
 
@@ -1434,23 +1439,27 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
       ref,
       () => ({
         getTemplate: () => {
+          requestScopeRef.current?.assertActive();
           finishSourceEdit();
           flushCanvasToTemplate();
           return currentTemplateRef.current;
         },
         validateAndGetReport: async (): Promise<CompileCellReportResult> => {
+          if(unsupportedSource)throw new Error('不读取自由模式报表，请使用模式三面板新建');
           if (dataLoading || dataError) throw new Error(dataLoading ? '数据源正在加载，请完成后再保存' : `数据源加载失败：${dataError?.message}`);
-          try {
-            await univerPreviewRef.current?.waitForFormulaSettled();
-          } catch (e) {
-            console.warn('[HybridCellDesigner] waitForFormulaSettled error ignored:', e);
-          }
+          const scope=requestScopeRef.current,preview=univerPreviewRef.current;
+          if(!scope||!preview)throw new EditorSessionClosedError();
+          scope.assertActive();
+          await preview.waitForFormulaSettled();
+          scope.assertActive();
+          if(requestScopeRef.current!==scope||univerPreviewRef.current!==preview)throw new EditorSessionClosedError();
+          finishSourceEdit();
           flushCanvasToTemplate();
           const doc = currentTemplateRef.current;
           return compileCellReport(doc, activeData, { availableFields: fieldItems.map((f) => f.key) });
         },
       }),
-      [activeData, flushCanvasToTemplate, fieldItems, dataLoading, dataError, finishSourceEdit]
+      [activeData, flushCanvasToTemplate, fieldItems, dataLoading, dataError, finishSourceEdit, unsupportedSource]
     );
 
     return (
@@ -1818,7 +1827,7 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
                               { value: 'avg', label: '平均' },
                               { value: 'max', label: '最大' },
                               { value: 'min', label: '最小' },
-                            ]}
+                            ].map(option=>({...option,disabled:!metricAggregations(fieldValueType(f.type,f.sample)).includes(option.value as any)}))}
                           />
                           <Select
                             size="small"
@@ -1988,6 +1997,8 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
             open={advancedModalOpen}
             cell={selectedCellForAdvanced}
             document={currentTemplate}
+            structureReadOnly
+            contentReadOnly={Boolean(selectedCellForAdvanced&&guidedCellProtected(panelGeneratedTemplateRef.current,selectedCellForAdvanced.position.row,selectedCellForAdvanced.position.column,selectedCellForAdvanced.sheetId))}
             fields={fieldItems}
             previewGrid={advancedPreviewGrid}
             onSave={handleSaveAdvancedSettings}

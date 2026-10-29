@@ -1,0 +1,237 @@
+{
+  "url": "http://localhost:5174/",
+  "isolatedBrowserContext": true,
+  "configuredThroughProductUI": true,
+  "total": 15,
+  "passed": 15,
+  "checks": [
+    {
+      "id": "UI-01",
+      "name": "三张新图表预设真实Canvas",
+      "passed": true
+    },
+    {
+      "id": "UI-02",
+      "name": "模式一无table/双向交叉/工作簿入口",
+      "passed": true
+    },
+    {
+      "id": "UI-03",
+      "name": "初始页面及模式一打开不请求Univer",
+      "passed": true
+    },
+    {
+      "id": "UI-04",
+      "name": "新建分类维度及统计指标",
+      "passed": true
+    },
+    {
+      "id": "UI-05",
+      "name": "业务公式和右轴保存重开",
+      "passed": true
+    },
+    {
+      "id": "UI-06",
+      "name": "系列/筛选/排序/TopN保存",
+      "passed": true
+    },
+    {
+      "id": "UI-07",
+      "name": "折线和平滑设置",
+      "passed": true
+    },
+    {
+      "id": "UI-08",
+      "name": "饼图限制及合法配置保存",
+      "passed": true
+    },
+    {
+      "id": "UI-09",
+      "name": "实际调色盘自定义颜色往返",
+      "passed": true
+    },
+    {
+      "id": "UI-10",
+      "name": "动态数据新增/删除/逆序/清空/原值变化/恢复",
+      "passed": true
+    },
+    {
+      "id": "UI-11",
+      "name": "异步加载时阻止保存",
+      "passed": true
+    },
+    {
+      "id": "UI-12",
+      "name": "晚返回异步源不覆盖当前源",
+      "passed": true
+    },
+    {
+      "id": "UI-13",
+      "name": "1366×768配置界面",
+      "passed": true
+    },
+    {
+      "id": "UI-14",
+      "name": "旧模式一忽略，新图表和已有模式三保留",
+      "passed": true
+    },
+    {
+      "id": "UI-15",
+      "name": "模式二/三原入口保存回归",
+      "passed": true
+    }
+  ],
+  "oldMode1Policy": {
+    "oldPanelVisible": 0,
+    "existingReportVisible": 1,
+    "newChartVisible": 1,
+    "persisted": [
+      {
+        "mode": "hybrid",
+        "hasChart": false,
+        "hasReport": true
+      },
+      {
+        "mode": "chart",
+        "hasChart": true,
+        "hasReport": false
+      }
+    ]
+  },
+  "chartOnlyUniverRequests": 0,
+  "dataChanges": [
+    {
+      "name": "新增",
+      "rows": 14,
+      "actualSummary": "来源 14 条 · 筛选后 14 条 · 分组 4",
+      "compiledValid": true,
+      "groupCount": 4,
+      "values": [
+        [
+          "1号五轴切削车间",
+          4400
+        ],
+        [
+          "2号重型冲压车间",
+          4550
+        ],
+        [
+          "3号智能装配车间",
+          1900
+        ],
+        [
+          "新增车间",
+          321
+        ]
+      ],
+      "total": 11171
+    },
+    {
+      "name": "逆序",
+      "rows": 14,
+      "actualSummary": "来源 14 条 · 筛选后 14 条 · 分组 4",
+      "compiledValid": true,
+      "groupCount": 4,
+      "values": [
+        [
+          "1号五轴切削车间",
+          4400
+        ],
+        [
+          "2号重型冲压车间",
+          4550
+        ],
+        [
+          "3号智能装配车间",
+          1900
+        ],
+        [
+          "新增车间",
+          321
+        ]
+      ],
+      "total": 11171
+    },
+    {
+      "name": "删除首车间",
+      "rows": 8,
+      "actualSummary": "来源 8 条 · 筛选后 8 条 · 分组 3",
+      "compiledValid": true,
+      "groupCount": 3,
+      "values": [
+        [
+          "2号重型冲压车间",
+          4550
+        ],
+        [
+          "3号智能装配车间",
+          1900
+        ],
+        [
+          "新增车间",
+          321
+        ]
+      ],
+      "total": 6771
+    },
+    {
+      "name": "清空",
+      "rows": 0,
+      "actualSummary": "来源 0 条 · 筛选后 0 条 · 分组 0",
+      "compiledValid": true,
+      "groupCount": 0,
+      "values": [],
+      "total": 0
+    },
+    {
+      "name": "修改原值",
+      "rows": 13,
+      "actualSummary": "来源 13 条 · 筛选后 13 条 · 分组 3",
+      "compiledValid": true,
+      "groupCount": 3,
+      "values": [
+        [
+          "1号五轴切削车间",
+          5400
+        ],
+        [
+          "2号重型冲压车间",
+          4550
+        ],
+        [
+          "3号智能装配车间",
+          1900
+        ]
+      ],
+      "total": 11850
+    },
+    {
+      "name": "恢复",
+      "rows": 13,
+      "actualSummary": "来源 13 条 · 筛选后 13 条 · 分组 3",
+      "compiledValid": true,
+      "groupCount": 3,
+      "values": [
+        [
+          "1号五轴切削车间",
+          4400
+        ],
+        [
+          "2号重型冲压车间",
+          4550
+        ],
+        [
+          "3号智能装配车间",
+          1900
+        ]
+      ],
+      "total": 10850
+    }
+  ],
+  "numericVerification": "Same public compiler with the UI-saved config; browser source/filter/group counts and final chart screenshots inspected",
+  "pageErrors": [],
+  "consoleNotes": [
+    "Warning: [antd: message] Static function can not consume context like dynamic theme. Please use 'App' component instead.",
+    "Warning: [antd: Modal] `destroyOnClose` is deprecated. Please use `destroyOnHidden` instead."
+  ]
+}

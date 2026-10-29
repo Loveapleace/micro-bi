@@ -20,7 +20,8 @@ import { validateCellTemplateDocument } from './validator.js';
 import { normalizeCellTemplate } from './normalizeCellTemplate.js';
 import { expandCellTemplate } from './expandTemplate.js';
 import { expandCellDrivenTemplate } from './cellExpansionEngine.js';
-import { applyPresentationRules } from './presentationRules.js';
+import { applyPresentationRules, validatePresentationRules } from './presentationRules.js';
+import { fieldValueType } from './cellCapabilities.js';
 
 export interface CompileCellReportResult {
   publication: PublishedReport;
@@ -104,6 +105,11 @@ export function compileCellReport(
 
   // 1. 结构与语义校验
   const validation = validateCellTemplateDocument(doc, availableFields);
+  if (validation.valid) {
+    const typed = validatePresentationRules(doc,availableFields,{fields:availableFields.map(key=>({key,type:fieldValueType(undefined,rawDataset.find(row=>row[key]!==null&&row[key]!==undefined&&row[key]!=='')?.[key])}))});
+    const errors=typed.filter(d=>d.severity==='error');
+    if(errors.length){validation.valid=false;validation.diagnostics.push(...errors);}
+  }
   if (!validation.valid) {
     const emptySheet: PublishedSheet = {
       id: doc.sheets?.[0]?.id || 'sheet-1',

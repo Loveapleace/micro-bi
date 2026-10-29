@@ -20,11 +20,11 @@ test('reportCompiler: 将 Univer 快照规范化编译为 PublishedReport 并生
         it: 1, // italic
         ht: 2, // center align
         vt: 2, // middle vertical align
-        tb: 2, // wrap text
+        tb: 3, // installed SDK WrapStrategy.WRAP
         cl: { rgb: '#1e293b' },
         bg: { rgb: '#f1f5f9' },
         bd: {
-          b: { cl: { rgb: '#cbd5e1' } },
+          b: { s:1, cl: { rgb: '#cbd5e1' } },
         },
       },
     },

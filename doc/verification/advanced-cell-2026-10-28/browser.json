@@ -1,0 +1,500 @@
+{
+  "date": "2026-10-28",
+  "entry": "http://localhost:5174/ main Mode3 configuration dialog",
+  "isolation": "Independent browser contexts and storage; mock response overrides only in test pages; original user browser/storage untouched",
+  "roles": {
+    "textDimension": {
+      "numericControls": 0,
+      "readOnlyStructure": true,
+      "noDefaultPrecisionSaved": true
+    },
+    "numberDimension": {
+      "numericControls": true,
+      "aggregationControls": 0,
+      "scaleControls": 0
+    },
+    "textCount": {
+      "resultType": "number",
+      "aggregationOptions": [
+        "计数 COUNT"
+      ]
+    },
+    "date": {
+      "numericControls": 0,
+      "datePicker": true,
+      "aggregationControls": 0,
+      "memberCount": 5,
+      "matchedDateHeaders": 4
+    },
+    "header": {
+      "text": "单元格高级配置\n生成表头\nR3C1\n静态文字\n表头内容由左侧配置生成；这里调整表头的显示和样式。\n显示格式\n样式\n条件规则\n合并与范围\n字段信息\n按文本显示，保留编号、前导零和分类标签；可在条件规则中替换最终显示文字。\n空值显示\n保持空白\n说明 / 悬浮备注\n取 消\n应用配置",
+      "literalEditor": 0,
+      "aggregation": 0
+    },
+    "formula": {
+      "text": "单元格高级配置\n公式结果\nR20C10\n公式\n显示设置只影响公式结果；原公式和计算值保持不变。\n显示格式\n样式\n条件规则\n字段信息\n数字展示格式\n常规（不指定预设）\n小数位数\n千分位分隔\n显示缩放\n原始数值\n负数显示\n常规负号\n前缀\n单位 / 后缀\n零值显示\n正常显示\n空值显示\n保持空白\n说明 / 悬浮备注\n取 消\n应用配置",
+      "agg": 0
+    },
+    "total": {
+      "text": "单元格高级配置\n总计 / 小计\nR4C4\n行总计-交付件数\n字段、分组粒度和展开结构由左侧面板维护；以下仅显示当前单元格适用的选项。\n显示格式\n样式\n条件规则\n合并与范围\n字段信息\n数字展示格式\n千分数值\n小数位数\n千分位分隔\n显示缩放\n原始数值\n负数显示\n常规负号\n前缀\n单位 / 后缀\n零值显示\n正常显示\n空值显示\n保持空白\n汇总口径继承对应指标，不在此处另设聚合；可单独设置总计的显示格式。\n说明 / 悬浮备注\n取 消\n应用配置",
+      "agg": 0
+    },
+    "textDetail": {
+      "text": "单元格高级配置\n明细列\nR4C1\n工单流水号\n字段、分组粒度和展开结构由左侧面板维护；以下仅显示当前单元格适用的选项。\n显示格式\n样式\n条件规则\n合并与范围\n字段信息\n按文本显示，保留编号、前导零和分类标签；可在条件规则中替换最终显示文字。\n空值显示\n保持空白\n说明 / 悬浮备注\n取 消\n应用配置",
+      "numeric": 0,
+      "agg": 0
+    },
+    "booleanDetail": {
+      "text": "单元格高级配置\n明细列\nR4C2\nis_active\n字段、分组粒度和展开结构由左侧面板维护；以下仅显示当前单元格适用的选项。\n显示格式\n样式\n条件规则\n合并与范围\n字段信息\n按布尔值显示；可用条件规则将是 / 否替换为业务文案。\n空值显示\n保持空白\n说明 / 悬浮备注\n取 消\n应用配置",
+      "numeric": 0,
+      "agg": 0
+    }
+  },
+  "textOperatorOptions": [
+    "等于",
+    "不等于",
+    "属于集合",
+    "不属于集合",
+    "为空",
+    "不为空",
+    "包含",
+    "开头为",
+    "结尾为"
+  ],
+  "mainSource": {
+    "format": {
+      "format": "number",
+      "precision": 1,
+      "scale": 1000,
+      "suffix": "千件",
+      "tooltip": "交付原值保持，按千件展示"
+    },
+    "operations": [
+      {
+        "id": "meas-output_qty",
+        "operation": "avg"
+      },
+      {
+        "id": "meas-rowtotal-output_qty",
+        "operation": "avg"
+      }
+    ],
+    "styles": [
+      {
+        "id": "visual-meas-output_qty",
+        "sheetId": "sheet-1",
+        "targetId": "meas-output_qty",
+        "target": {
+          "sheetId": "sheet-1",
+          "regionId": "region-1",
+          "cellId": "meas-output_qty",
+          "contentKind": "field",
+          "roles": [
+            "data"
+          ],
+          "field": "output_qty",
+          "role": "measure",
+          "operation": "avg"
+        },
+        "scope": "template-cell",
+        "style": {
+          "fontSize": 18
+        },
+        "priority": 0,
+        "regionId": "region-1"
+      }
+    ],
+    "presentationRules": {
+      "version": 1,
+      "revision": 6,
+      "ruleSets": [
+        {
+          "id": "rule-set-mvrka2oh-2",
+          "order": 0,
+          "target": {
+            "sheetId": "sheet-1",
+            "regionId": "region-1",
+            "cellId": "meas-output_qty",
+            "contentKind": "field",
+            "roles": [
+              "data"
+            ],
+            "field": "output_qty",
+            "role": "measure",
+            "operation": "avg"
+          },
+          "rules": [
+            {
+              "id": "rule-mvrka2q0-3",
+              "name": "规则1",
+              "enabled": true,
+              "order": 0,
+              "predicate": {
+                "kind": "group",
+                "mode": "and",
+                "children": [
+                  {
+                    "kind": "comparison",
+                    "left": {
+                      "kind": "current"
+                    },
+                    "valueType": "number",
+                    "operator": "lt",
+                    "right": {
+                      "kind": "literal",
+                      "value": 700
+                    }
+                  },
+                  {
+                    "kind": "comparison",
+                    "left": {
+                      "kind": "current"
+                    },
+                    "valueType": "number",
+                    "operator": "lt",
+                    "right": {
+                      "kind": "literal",
+                      "value": 2000
+                    }
+                  }
+                ]
+              },
+              "style": {
+                "scope": "cell",
+                "style": {
+                  "color": "#CF1322",
+                  "backgroundColor": "#FFF1F0",
+                  "bold": true
+                }
+              },
+              "stopIfTrue": true,
+              "text": "低产（{formatted}）"
+            }
+          ]
+        },
+        {
+          "id": "rule-set-mvrkddeu-5",
+          "order": 1,
+          "target": {
+            "sheetId": "sheet-1",
+            "regionId": "region-1",
+            "cellId": "cell-col-plan_start_time",
+            "contentKind": "field",
+            "roles": [
+              "dimension"
+            ],
+            "field": "plan_start_time",
+            "role": "column-dimension",
+            "operation": "group"
+          },
+          "rules": [
+            {
+              "id": "rule-mvrkddgi-6",
+              "name": "规则1",
+              "enabled": true,
+              "order": 0,
+              "predicate": {
+                "kind": "group",
+                "mode": "and",
+                "children": [
+                  {
+                    "kind": "comparison",
+                    "left": {
+                      "kind": "current"
+                    },
+                    "valueType": "date",
+                    "operator": "gte",
+                    "right": {
+                      "kind": "literal",
+                      "value": "2026-08-02 00:00:00",
+                      "valueType": "date"
+                    }
+                  }
+                ]
+              },
+              "style": {
+                "scope": "cell",
+                "style": {
+                  "color": "#CF1322",
+                  "backgroundColor": "#FFF1F0",
+                  "bold": true
+                }
+              },
+              "stopIfTrue": true,
+              "text": "目标日 {formatted}"
+            }
+          ]
+        },
+        {
+          "id": "rule-set-mvrkt0me-2",
+          "order": 2,
+          "target": {
+            "sheetId": "sheet-1",
+            "regionId": "region-1",
+            "cellId": "cell-row-workshop",
+            "contentKind": "field",
+            "roles": [
+              "dimension"
+            ],
+            "field": "workshop",
+            "role": "row-dimension",
+            "operation": "group"
+          },
+          "rules": [
+            {
+              "id": "rule-mvrkt0xo-3",
+              "name": "规则1",
+              "enabled": true,
+              "order": 0,
+              "predicate": {
+                "kind": "group",
+                "mode": "or",
+                "children": [
+                  {
+                    "kind": "comparison",
+                    "left": {
+                      "kind": "current"
+                    },
+                    "valueType": "text",
+                    "operator": "contains",
+                    "right": {
+                      "kind": "literal",
+                      "value": "1号"
+                    }
+                  },
+                  {
+                    "kind": "group",
+                    "mode": "or",
+                    "children": [
+                      {
+                        "kind": "comparison",
+                        "left": {
+                          "kind": "field",
+                          "field": "output_qty",
+                          "agg": "sum"
+                        },
+                        "valueType": "number",
+                        "operator": "gt",
+                        "right": {
+                          "kind": "literal",
+                          "value": 4500
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              "style": {
+                "scope": "cell",
+                "style": {
+                  "color": "#CF1322",
+                  "backgroundColor": "#FFF1F0",
+                  "bold": true
+                }
+              },
+              "stopIfTrue": true,
+              "text": "重点车间"
+            }
+          ]
+        }
+      ]
+    },
+    "formula": {
+      "id": "c-sheet-1-19-9-mvrknd4q-1",
+      "sheetId": "sheet-1",
+      "position": {
+        "row": 19,
+        "column": 9
+      },
+      "content": {
+        "kind": "sheet-formula",
+        "formula": "=SUM(C4:D4)",
+        "formatOptions": {
+          "precision": 3
+        }
+      },
+      "parents": {
+        "row": "none",
+        "column": "none"
+      },
+      "regionId": "region-1",
+      "formatOptions": {
+        "precision": 3
+      }
+    },
+    "title": {
+      "id": "title",
+      "sheetId": "sheet-1",
+      "regionId": "region-1",
+      "position": {
+        "row": 0,
+        "column": 0
+      },
+      "content": {
+        "kind": "literal",
+        "value": "高级配置验收"
+      },
+      "parents": {
+        "row": "none",
+        "column": "none"
+      },
+      "style": {
+        "bold": true,
+        "fontSize": 14,
+        "color": "#1677ff"
+      },
+      "panelOwner": {
+        "generator": "hybrid-panel",
+        "cellId": "title",
+        "generation": "panel-cd3276d7"
+      },
+      "staticSpan": {
+        "id": "span-title",
+        "enabled": true,
+        "regionId": "region-1",
+        "scope": "report",
+        "placement": "template",
+        "repeat": "once",
+        "rowOffset": 0,
+        "height": 1,
+        "includeTotals": true,
+        "merge": false,
+        "suppressions": [],
+        "templateRange": {
+          "startRow": 0,
+          "startColumn": 0,
+          "endRow": 0,
+          "endColumn": 0
+        }
+      },
+      "literalOverride": true
+    },
+    "mergeSuppressions": [
+      {
+        "id": "unmerge:merge-policy-cell-row-workshop:grp::region-1::row::workshop::s:1%E5%8F%B7%E4%BA%94%E8%BD%B4%E5%88%87%E5%89%8A%E8%BD%A6%E9%97%B4",
+        "policyId": "merge-policy-cell-row-workshop",
+        "policyKind": "group-span",
+        "scope": "group-context",
+        "groupContextKey": "grp::region-1::row::workshop::s:1%E5%8F%B7%E4%BA%94%E8%BD%B4%E5%88%87%E5%89%8A%E8%BD%A6%E9%97%B4",
+        "source": "user",
+        "sequence": 1
+      }
+    ],
+    "manualMerges": [
+      {
+        "id": "hybrid-merge:sheet-1:3:3:2:3",
+        "kind": "merge",
+        "sheetId": "sheet-1",
+        "range": {
+          "startRow": 3,
+          "endRow": 3,
+          "startColumn": 2,
+          "endColumn": 3
+        },
+        "source": "user",
+        "semanticSelector": {
+          "regionId": "region-1",
+          "masterSignature": "{\"role\":\"metric-value\",\"metric\":\"metric-output_qty\",\"row\":[[\"workshop\",\"s:1%E5%8F%B7%E4%BA%94%E8%BD%B4%E5%88%87%E5%89%8A%E8%BD%A6%E9%97%B4\"]],\"col\":[[\"plan_start_time\",\"s:2026-08-01\"]]}",
+          "coveredSignatures": [
+            "{\"role\":\"metric-value\",\"metric\":\"metric-output_qty\",\"row\":[[\"workshop\",\"s:1%E5%8F%B7%E4%BA%94%E8%BD%B4%E5%88%87%E5%89%8A%E8%BD%A6%E9%97%B4\"]],\"col\":[[\"plan_start_time\",\"s:2026-08-01\"]]}",
+            "{\"role\":\"metric-value\",\"metric\":\"metric-output_qty\",\"row\":[[\"workshop\",\"s:1%E5%8F%B7%E4%BA%94%E8%BD%B4%E5%88%87%E5%89%8A%E8%BD%A6%E9%97%B4\"]],\"col\":[[\"plan_start_time\",\"s:2026-08-02\"]]}"
+          ]
+        }
+      }
+    ]
+  },
+  "rawAndDisplay": {
+    "originalQuantity": 600,
+    "formattedQuantity": "低产（0.6千件）",
+    "avgDayValue": 375,
+    "avgGrandRowValue": 733.3333333333334,
+    "formula": [
+      {
+        "r": "23",
+        "c": "13",
+        "f": "=SUM(C4:D4)",
+        "v": 975,
+        "text": "975.000"
+      }
+    ],
+    "manualMergeRawValues": [
+      600,
+      375
+    ]
+  },
+  "typedDetail": {
+    "id": {
+      "r": 3,
+      "c": 0,
+      "v": "0012",
+      "displayText": "0012",
+      "styleId": "s_2",
+      "role": "dimension-member"
+    },
+    "booleans": [
+      {
+        "raw": true,
+        "display": "启用"
+      },
+      {
+        "raw": false,
+        "display": "false"
+      },
+      {
+        "raw": true,
+        "display": "启用"
+      },
+      {
+        "raw": false,
+        "display": "false"
+      },
+      {
+        "raw": true,
+        "display": "启用"
+      },
+      {
+        "raw": false,
+        "display": "false"
+      },
+      {
+        "raw": true,
+        "display": "启用"
+      },
+      {
+        "raw": false,
+        "display": "false"
+      },
+      {
+        "raw": true,
+        "display": "启用"
+      },
+      {
+        "raw": false,
+        "display": "false"
+      },
+      {
+        "raw": true,
+        "display": "启用"
+      },
+      {
+        "raw": false,
+        "display": "false"
+      },
+      {
+        "raw": true,
+        "display": "启用"
+      }
+    ]
+  },
+  "savedAndReopened": true,
+  "VTablePublicationVerified": true,
+  "errors": {
+    "main": [],
+    "typedFixtures": []
+  },
+  "environmentNote": "The previous local dev process was no longer running; Vite was started hidden on 5174 before acceptance.",
+  "openObservations": [
+    "H3-OBS01 remains open",
+    "H3-DRILL-01 remains TODO"
+  ]
+}

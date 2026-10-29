@@ -1,0 +1,14 @@
+{
+  "entryStaticImports": [
+    "index.html"
+  ],
+  "chartEditorStaticImports": [
+    "src/components/DashboardEditModal.tsx",
+    "index.html",
+    "_ColorPicker-BIDFFAw5.js",
+    "_CheckCircleOutlined-BoE2BeQG.js"
+  ],
+  "entryUniverMarkers": [],
+  "chartEditorUniverMarkers": [],
+  "editorCSS": []
+}

@@ -1,0 +1,645 @@
+{
+  "date": "2026-10-29",
+  "status": "implemented-and-accepted",
+  "scope": "Native text editing for generated headers and metric captions; existing role settings retained",
+  "environment": {
+    "url": "http://localhost:5174/",
+    "isolatedBrowserContext": true,
+    "userStorageChanged": false
+  },
+  "nativeRouting": [
+    {
+      "row": 2,
+      "col": 1,
+      "type": 3
+    },
+    {
+      "started": true,
+      "row": 2,
+      "col": 1
+    }
+  ],
+  "noAdvancedDialogForCaptions": true,
+  "renamedCaption": "统计项目",
+  "undo": true,
+  "redo": true,
+  "repeatedNativeEdits": true,
+  "clearAndReenter": {
+    "savedValue": null,
+    "literalOverride": true,
+    "reopenValue": null,
+    "reentered": true,
+    "sdkClearShape": {
+      "hasRow": true,
+      "hasCell": true,
+      "cell": {
+        "s": {
+          "ff": "Arial",
+          "fs": 11,
+          "bl": 1,
+          "it": 0,
+          "ul": {
+            "s": 0
+          },
+          "st": {
+            "s": 0
+          },
+          "cl": {
+            "rgb": "#000000"
+          },
+          "bg": {
+            "rgb": "#FAFAFA"
+          },
+          "ht": 0,
+          "vt": 2,
+          "tb": 2,
+          "bd": {
+            "t": {
+              "s": 0,
+              "cl": {
+                "rgb": "#000000"
+              }
+            },
+            "r": {
+              "s": 0,
+              "cl": {
+                "rgb": "#000000"
+              }
+            },
+            "b": {
+              "s": 0,
+              "cl": {
+                "rgb": "#000000"
+              }
+            },
+            "l": {
+              "s": 0,
+              "cl": {
+                "rgb": "#000000"
+              }
+            }
+          },
+          "n": {
+            "pattern": "General"
+          }
+        }
+      },
+      "rowCount": 25,
+      "columnCount": 15
+    }
+  },
+  "preview": {
+    "captions": [
+      "责任车间",
+      "统计项目",
+      "合计",
+      "交付数量（件）",
+      "交付数量（件）",
+      "交付数量（件）"
+    ],
+    "quantities": [
+      600,
+      750,
+      1200,
+      1500
+    ]
+  },
+  "templateRegeneration": {
+    "addedRowDimension": "part_name",
+    "afterAdd": [
+      {
+        "r": 2,
+        "c": 0,
+        "v": "责任车间"
+      },
+      {
+        "r": 2,
+        "c": 2,
+        "v": "统计项目"
+      },
+      {
+        "r": 2,
+        "c": 4,
+        "v": "合计"
+      },
+      {
+        "r": 3,
+        "c": 2,
+        "v": "交付数量（件）"
+      }
+    ],
+    "returnedToOriginalAxes": true
+  },
+  "savedCustomSources": [
+    {
+      "id": "hdr-row-name",
+      "kind": "literal",
+      "value": "责任车间",
+      "position": {
+        "row": 2,
+        "column": 0
+      },
+      "panelOwner": {
+        "generator": "hybrid-panel",
+        "cellId": "hdr-row-name",
+        "generation": "panel-cd3276d7",
+        "semanticKey": "label:row:workshop:category"
+      },
+      "literalOverride": true,
+      "parents": {
+        "row": "none",
+        "column": "none"
+      }
+    },
+    {
+      "id": "hdr-metric-name",
+      "kind": "literal",
+      "value": "统计项目",
+      "position": {
+        "row": 2,
+        "column": 1
+      },
+      "panelOwner": {
+        "generator": "hybrid-panel",
+        "cellId": "hdr-metric-name",
+        "generation": "panel-cd3276d7"
+      },
+      "literalOverride": true,
+      "parents": {
+        "row": "none",
+        "column": "none"
+      }
+    },
+    {
+      "id": "lbl-metric-output_qty",
+      "kind": "literal",
+      "value": "交付数量（件）",
+      "position": {
+        "row": 3,
+        "column": 1
+      },
+      "panelOwner": {
+        "generator": "hybrid-panel",
+        "cellId": "lbl-metric-output_qty",
+        "generation": "panel-cd3276d7",
+        "semanticKey": "label:metric:output_qty"
+      },
+      "literalOverride": true,
+      "parents": {
+        "row": "cell-row-workshop",
+        "column": "none"
+      }
+    },
+    {
+      "id": "hdr-row-total",
+      "kind": "literal",
+      "value": "合计",
+      "position": {
+        "row": 2,
+        "column": 3
+      },
+      "panelOwner": {
+        "generator": "hybrid-panel",
+        "cellId": "hdr-row-total",
+        "generation": "panel-cd3276d7"
+      },
+      "literalOverride": true,
+      "parents": {
+        "row": "none",
+        "column": "none"
+      }
+    }
+  ],
+  "existingDataTabs": [
+    "指标设置",
+    "条件规则",
+    "整行样式",
+    "动态合并",
+    "字段信息"
+  ],
+  "titleTabs": [
+    "内容",
+    "合并与范围"
+  ],
+  "reopen": {
+    "row": "责任车间",
+    "indicator": "统计项目",
+    "total": "合计",
+    "metric": "交付数量（件）"
+  },
+  "sourceAfterRefreshEqual": true,
+  "savedSourceSha256": "d47fdf99569b4842152f5a728ee71dc89ab55d4a9208ca687a0d110124b9bfa2",
+  "afterRefreshSourceSha256": "d47fdf99569b4842152f5a728ee71dc89ab55d4a9208ca687a0d110124b9bfa2",
+  "sourceBindings": [
+    {
+      "id": "cell-row-workshop",
+      "sheetId": "sheet-1",
+      "regionId": "region-1",
+      "position": {
+        "row": 3,
+        "column": 0
+      },
+      "content": {
+        "kind": "field",
+        "fieldId": "workshop",
+        "fieldKey": "workshop",
+        "role": "row-dimension",
+        "operation": "group",
+        "expand": "down",
+        "displayName": "承制车间"
+      },
+      "parents": {
+        "row": "none",
+        "column": "none"
+      },
+      "style": {
+        "bold": true,
+        "color": "#0958d9",
+        "backgroundColor": "#e6f7ff",
+        "verticalAlign": "top"
+      },
+      "panelOwner": {
+        "generator": "hybrid-panel",
+        "cellId": "cell-row-workshop",
+        "generation": "panel-cd3276d7"
+      }
+    },
+    {
+      "id": "cell-col-plan_start_time",
+      "sheetId": "sheet-1",
+      "regionId": "region-1",
+      "position": {
+        "row": 2,
+        "column": 2
+      },
+      "content": {
+        "kind": "field",
+        "fieldId": "plan_start_time",
+        "fieldKey": "plan_start_time",
+        "role": "column-dimension",
+        "operation": "group",
+        "expand": "right",
+        "displayName": "计划投产时间",
+        "timeBucket": {
+          "granularity": "day"
+        }
+      },
+      "parents": {
+        "row": "none",
+        "column": "none"
+      },
+      "style": {
+        "bold": true,
+        "color": "#531dab",
+        "backgroundColor": "#f9f0ff",
+        "textAlign": "center",
+        "verticalAlign": "middle"
+      },
+      "panelOwner": {
+        "generator": "hybrid-panel",
+        "cellId": "cell-col-plan_start_time",
+        "generation": "panel-cd3276d7"
+      }
+    },
+    {
+      "id": "meas-output_qty",
+      "sheetId": "sheet-1",
+      "regionId": "region-1",
+      "position": {
+        "row": 3,
+        "column": 2
+      },
+      "content": {
+        "kind": "field",
+        "fieldId": "output_qty",
+        "fieldKey": "output_qty",
+        "metricId": "metric-output_qty",
+        "role": "measure",
+        "operation": "sum",
+        "expand": "inherit",
+        "displayName": "交付件数",
+        "format": "number"
+      },
+      "parents": {
+        "row": "cell-row-workshop",
+        "column": "cell-col-plan_start_time"
+      },
+      "style": {
+        "textAlign": "right",
+        "color": "#d46b08",
+        "backgroundColor": "#fff7e6"
+      },
+      "panelOwner": {
+        "generator": "hybrid-panel",
+        "cellId": "meas-output_qty",
+        "generation": "panel-cd3276d7"
+      }
+    },
+    {
+      "id": "meas-rowtotal-output_qty",
+      "sheetId": "sheet-1",
+      "regionId": "region-1",
+      "position": {
+        "row": 3,
+        "column": 3
+      },
+      "content": {
+        "kind": "field",
+        "fieldId": "output_qty",
+        "fieldKey": "output_qty",
+        "metricId": "metric-rowtotal-output_qty",
+        "role": "measure",
+        "operation": "sum",
+        "expand": "inherit",
+        "displayName": "行总计-交付件数",
+        "format": "number"
+      },
+      "parents": {
+        "row": "default",
+        "column": "none"
+      },
+      "style": {
+        "bold": true,
+        "textAlign": "right",
+        "color": "#0958d9",
+        "backgroundColor": "#f0f5ff"
+      },
+      "panelOwner": {
+        "generator": "hybrid-panel",
+        "cellId": "meas-rowtotal-output_qty",
+        "generation": "panel-cd3276d7"
+      }
+    },
+    {
+      "id": "meas-defect_count",
+      "sheetId": "sheet-1",
+      "regionId": "region-1",
+      "position": {
+        "row": 4,
+        "column": 2
+      },
+      "content": {
+        "kind": "field",
+        "fieldId": "defect_count",
+        "fieldKey": "defect_count",
+        "metricId": "metric-defect_count",
+        "role": "measure",
+        "operation": "sum",
+        "expand": "inherit",
+        "displayName": "缺陷零件数",
+        "format": "number"
+      },
+      "parents": {
+        "row": "cell-row-workshop",
+        "column": "cell-col-plan_start_time"
+      },
+      "style": {
+        "textAlign": "right",
+        "color": "#d46b08",
+        "backgroundColor": "#fff7e6"
+      },
+      "panelOwner": {
+        "generator": "hybrid-panel",
+        "cellId": "meas-defect_count",
+        "generation": "panel-cd3276d7"
+      }
+    },
+    {
+      "id": "meas-rowtotal-defect_count",
+      "sheetId": "sheet-1",
+      "regionId": "region-1",
+      "position": {
+        "row": 4,
+        "column": 3
+      },
+      "content": {
+        "kind": "field",
+        "fieldId": "defect_count",
+        "fieldKey": "defect_count",
+        "metricId": "metric-rowtotal-defect_count",
+        "role": "measure",
+        "operation": "sum",
+        "expand": "inherit",
+        "displayName": "行总计-缺陷零件数",
+        "format": "number"
+      },
+      "parents": {
+        "row": "default",
+        "column": "none"
+      },
+      "style": {
+        "bold": true,
+        "textAlign": "right",
+        "color": "#0958d9",
+        "backgroundColor": "#f0f5ff"
+      },
+      "panelOwner": {
+        "generator": "hybrid-panel",
+        "cellId": "meas-rowtotal-defect_count",
+        "generation": "panel-cd3276d7"
+      }
+    }
+  ],
+  "dataStages": [
+    {
+      "kind": "add",
+      "rows": 14,
+      "sourceEqual": true,
+      "labels": [
+        "责任车间",
+        "统计项目",
+        "合计",
+        "交付数量（件）",
+        "交付数量（件）",
+        "交付数量（件）",
+        "交付数量（件）"
+      ],
+      "overrides": [
+        {
+          "id": "hdr-row-name",
+          "value": "责任车间"
+        },
+        {
+          "id": "hdr-metric-name",
+          "value": "统计项目"
+        },
+        {
+          "id": "lbl-metric-output_qty",
+          "value": "交付数量（件）"
+        },
+        {
+          "id": "hdr-row-total",
+          "value": "合计"
+        }
+      ],
+      "newValue": 2400,
+      "publicationMatchesExpected": true
+    },
+    {
+      "kind": "reverse",
+      "rows": 14,
+      "sourceEqual": true,
+      "labels": [
+        "责任车间",
+        "统计项目",
+        "合计",
+        "交付数量（件）",
+        "交付数量（件）",
+        "交付数量（件）",
+        "交付数量（件）"
+      ],
+      "overrides": [
+        {
+          "id": "hdr-row-name",
+          "value": "责任车间"
+        },
+        {
+          "id": "hdr-metric-name",
+          "value": "统计项目"
+        },
+        {
+          "id": "lbl-metric-output_qty",
+          "value": "交付数量（件）"
+        },
+        {
+          "id": "hdr-row-total",
+          "value": "合计"
+        }
+      ],
+      "newValue": 2400,
+      "publicationMatchesExpected": true
+    },
+    {
+      "kind": "delete",
+      "rows": 7,
+      "sourceEqual": true,
+      "labels": [
+        "责任车间",
+        "统计项目",
+        "合计",
+        "交付数量（件）",
+        "交付数量（件）"
+      ],
+      "overrides": [
+        {
+          "id": "hdr-row-name",
+          "value": "责任车间"
+        },
+        {
+          "id": "hdr-metric-name",
+          "value": "统计项目"
+        },
+        {
+          "id": "lbl-metric-output_qty",
+          "value": "交付数量（件）"
+        },
+        {
+          "id": "hdr-row-total",
+          "value": "合计"
+        }
+      ],
+      "publicationMatchesExpected": true
+    },
+    {
+      "kind": "empty",
+      "rows": 0,
+      "sourceEqual": true,
+      "labels": [
+        "责任车间",
+        "统计项目",
+        "合计"
+      ],
+      "overrides": [
+        {
+          "id": "hdr-row-name",
+          "value": "责任车间"
+        },
+        {
+          "id": "hdr-metric-name",
+          "value": "统计项目"
+        },
+        {
+          "id": "lbl-metric-output_qty",
+          "value": "交付数量（件）"
+        },
+        {
+          "id": "hdr-row-total",
+          "value": "合计"
+        }
+      ],
+      "publicationMatchesExpected": true
+    },
+    {
+      "kind": "restore",
+      "rows": 13,
+      "sourceEqual": true,
+      "labels": [
+        "责任车间",
+        "统计项目",
+        "合计",
+        "交付数量（件）",
+        "交付数量（件）",
+        "交付数量（件）"
+      ],
+      "overrides": [
+        {
+          "id": "hdr-row-name",
+          "value": "责任车间"
+        },
+        {
+          "id": "hdr-metric-name",
+          "value": "统计项目"
+        },
+        {
+          "id": "lbl-metric-output_qty",
+          "value": "交付数量（件）"
+        },
+        {
+          "id": "hdr-row-total",
+          "value": "合计"
+        }
+      ],
+      "publicationMatchesExpected": true
+    }
+  ],
+  "validation": {
+    "tests": 518,
+    "passed": 518,
+    "failed": 0,
+    "newTests": 11,
+    "libraryBuild": "ESM/CJS/types passed",
+    "hostBuild": "TypeScript/Vite passed",
+    "unitLogSha256": "5517cb920247a967c8f5182f14f806c087cf376da062f08a8d85a122fb7aa44c",
+    "hostBuildLogSha256": "83327416268b5a0ad17f9954cc1b0e9675c2466dadd475f45b6f0e4215db2596"
+  },
+  "unchangedSection54Ui": {
+    "src/cell-designer/CellAdvancedSettings.tsx": true,
+    "src/cell-designer/StyleEffectEditor.tsx": true,
+    "src/cell-designer/StaticSpanSettings.tsx": true,
+    "src/cell-designer/PresentationRuleEditor.tsx": true
+  },
+  "pageErrors": [],
+  "sourceSha256": {
+    "src/report-template/guidedSource.ts": "ae505ff4ac8a856e559e3a2d6c6e59f5eb8a25209eab71de59e32ffe7f330e0a",
+    "src/report-template/cellCapabilities.ts": "d150f6dbec332573b220f65b424b309dcbdf98567454ebd0689441451303fa63",
+    "src/cell-designer/guidedEditing.ts": "bfd852f4aa0fdc1fe7c6ddc0ecfdb71753d1a8ac8829153736322c3543b6a09b",
+    "src/cell-designer/univerValues.ts": "715a402dea6f70c27fdd908a4c2287fc1f80cc50e96ec9b5b0f59a2b4c0ddbcf",
+    "src/cell-designer/HybridCellDesigner.tsx": "8957bcb4ce59584aae05cd3a20bd7916b8b02e514cd3e209520271efd591a6e4",
+    "src/cell-designer/syncWorkbookToTemplate.ts": "8142a25e178a2afe231a7a417fa7f97f665393723840c58d0115e63d64923747",
+    "test/guided-editing.test.mjs": "91a6698dfdf994fa8997b05502ab6fd4f6e45cd1b7dbd891497935d8be0da2f8",
+    "test/generated-label-editing.test.mjs": "b19d6ab565a9c7ee7191e2fbbce72a9be6e678ef596776d899fad58b1ce5bac8"
+  },
+  "evidenceFiles": [
+    "01-edited-template-labels.png",
+    "02-vtable-edited-labels.png"
+  ],
+  "notes": [
+    "Generated text is identified from literal content and explicit panel ownership, not the displayed text. The main title retains its content/span advanced settings.",
+    "Empty-data stages retain the caption overrides even when metric-label instances do not exist.",
+    "Complete SDK snapshots may omit v and custom after clearing and contain only style. Such cells persist as empty caption overrides; partial style snapshots do not clear text.",
+    "No new legacy migration and no restoration of the rejected information-simplification UI."
+  ],
+  "evidenceNotes": [
+    "保存与数据恢复后的VTable截图SHA-256相同，共用02-vtable-edited-labels.png；各阶段计算和源保留断言继续见本记录。"
+  ]
+}

@@ -10,3 +10,5 @@ export * from './compileCellReport.js';
 export * from './panelToTemplateAdapter.js';
 export * from './presentationTypes.js';
 export * from './presentationRules.js';
+export * from './guidedSource.js';
+export * from './cellCapabilities.js';

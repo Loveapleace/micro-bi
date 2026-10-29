@@ -8,6 +8,7 @@ import { parseFormula, extractReferencedFields } from '../engine/formula/parser.
 import { validateHybridAxes } from './hybridAxes.js';
 import { validateStaticSpans } from './staticSpans.js';
 import { validatePresentationRules } from './presentationRules.js';
+import { isValidNumberFormat } from '../report/numberFormat.js';
 
 export interface ValidationResult {
   valid: boolean;
@@ -25,6 +26,10 @@ export function validateCellTemplateDocument(
 ): ValidationResult {
   const diagnostics: TemplateDiagnostic[] = [...validateHybridAxes(doc), ...validateStaticSpans(doc), ...validatePresentationRules(doc, availableFields)];
   const occupied = new Map<string, string>();
+  for(const cell of doc.cells||[]){
+    const pattern=((cell.content as any)?.formatOptions||cell.formatOptions)?.numberFormat;
+    if(pattern!==undefined&&!isValidNumberFormat(pattern))diagnostics.push({severity:'error',code:'ERR_NUMBER_FORMAT',targetId:cell.id,message:'Excel数字格式模式串无效'});
+  }
   if (doc.hybridConfig?.version === 2) {
     for (const cell of doc.cells || []) {
       const key = `${cell.sheetId}:${cell.position.row}:${cell.position.column}`;

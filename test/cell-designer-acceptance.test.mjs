@@ -2,7 +2,6 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { compileCellReport, normalizeCellTemplate, expandCellTemplate } from '../dist/esm/report-template/index.js';
-import { designerReducer, createInitialDesignerState } from '../dist/esm/cell-designer/designerReducer.js';
 import { attachUniverDesignerEvents } from '../dist/esm/cell-designer/univerEvents.js';
 import { syncDocumentFromWorkbookSnapshot } from '../dist/esm/cell-designer/syncWorkbookToTemplate.js';
 import { adaptPublishedSheetToVTable } from '../dist/esm/ui/presentation/report/gridAdapter.js';
@@ -31,39 +30,12 @@ function metric(grid, metricId, workshop, month) {
     (month === undefined ? !(c.colPath || c.columnPath || []).length : (c.colPath || c.columnPath || []).some((p) => p.memberKey === month)));
 }
 
-test('cell designer: save commits a focused inspector draft before reading the template', () => {
-  let state = createInitialDesignerState(clone());
-  state = designerReducer(state, { type: 'UPDATE_DRAFT_CONTENT', content: { value: '已编辑标题' } });
-  const committed = designerReducer(state, { type: 'APPLY_DRAFT' });
-  assert.equal(committed.document.cells.find((c) => c.id === 'title').content.value, '已编辑标题');
-  assert.equal(committed.document.templateRevision, 2);
-  assert.equal(designerReducer(committed, { type: 'APPLY_DRAFT' }), committed);
-});
-
-test('cell designer: changing selection commits to the previous cell and undo restores it', () => {
-  let state = createInitialDesignerState(clone());
-  state = designerReducer(state, { type: 'UPDATE_DRAFT_CONTENT', content: { value: '原目标编辑' } });
-  state = designerReducer(state, { type: 'SELECT_CELL', position: { row: 4, column: 2 }, sheetId: 'sheet-1' });
-  assert.equal(state.document.cells.find((c) => c.id === 'title').content.value, '原目标编辑');
-  assert.equal(state.selectedCell.id, 'quantity');
-  state = designerReducer(state, { type: 'UNDO' });
-  assert.equal(state.document.cells.find((c) => c.id === 'title').content.value, example.cells[0].content.value);
-});
-
-test('cell designer: region layout and metric direction remain in the source document', () => {
-  let state = createInitialDesignerState(clone());
-  state = designerReducer(state, { type: 'UPDATE_REGION', changes: { layoutKind: 'grouped', metricDirection: 'columns' } });
-  assert.equal(state.document.regions[0].layoutKind, 'grouped');
-  assert.equal(state.document.regions[0].metricDirection, 'columns');
-  assert.equal(designerReducer(state, { type: 'UNDO' }).document.regions[0].layoutKind, 'pivot');
-});
-
 test('cell designer: SDK double click cancels native editing, F2 remains available, events dispose', () => {
   const listeners = new Map();
   let selected;
   let advanced = 0;
   const api = { Event: { SelectionChanged: 'selection', BeforeSheetEditStart: 'edit' }, addEvent(name, fn) { listeners.set(name, fn); return { dispose: () => listeners.delete(name) }; } };
-  const dispose = attachUniverDesignerEvents(api, { onSelectCell: (p) => { selected = p; }, onDoubleClicked: () => { advanced++; } });
+  const dispose = attachUniverDesignerEvents(api, { onSelectCell: (p) => { selected = p; }, onDoubleClicked: () => { advanced++; return true; } });
   listeners.get('selection')({ selections: [{ startRow: 4, startColumn: 2 }], worksheet: { getSheetId: () => 'sheet-1' } });
   assert.deepEqual(selected, { row: 4, column: 2, sheetId: 'sheet-1' });
   const doubleClick = { eventType: 3, row: 4, column: 2 };
@@ -147,48 +119,7 @@ test('cell template example: template numeric values and styles transfer into th
   assert.equal(cell.v, rate.value);
   assert.equal(cell.t, 2);
   assert.equal(cell.s.n.pattern, '0.00%');
-  assert.equal(cell.s.cl.rgb, '#d46b08');
-});
-
-test('DCR-09: CommandExecuted set-range-values captures native F2 cell edits and dispatches to template', () => {
-  const listeners = new Map();
-  const edits = [];
-  const api = {
-    Event: { SelectionChanged: 'selection', BeforeSheetEditStart: 'edit', CommandExecuted: 'command' },
-    addEvent(name, fn) { listeners.set(name, fn); return { dispose: () => listeners.delete(name) }; },
-  };
-  const dispose = attachUniverDesignerEvents(api, {
-    onCellEdited: (e) => edits.push(e),
-  });
-
-  // 模拟 F2 编辑单元格并回车提交：CommandExecuted sheet.command.set-range-values
-  listeners.get('command')({
-    id: 'sheet.command.set-range-values',
-    params: {
-      subUnitId: 'sheet-1',
-      range: { startRow: 0, startColumn: 0, endRow: 0, endColumn: 0 },
-      value: { v: '画布编辑验收' },
-    },
-  });
-
-  assert.equal(edits.length, 1);
-  assert.equal(edits[0].row, 0);
-  assert.equal(edits[0].column, 0);
-  assert.equal(edits[0].value, '画布编辑验收');
-
-  // Reducer 应用该原生编辑
-  let state = createInitialDesignerState(clone());
-  state = designerReducer(state, {
-    type: 'APPLY_NATIVE_CELL_EDIT',
-    row: 0,
-    column: 0,
-    sheetId: 'sheet-1',
-    value: '画布编辑验收',
-  });
-  assert.equal(state.document.cells.find((c) => c.position.row === 0 && c.position.column === 0).content.value, '画布编辑验收');
-  assert.equal(state.selectedCell.content.value, '画布编辑验收');
-
-  dispose();
+  assert.equal(cell.s.cl.rgb, '#D46B08');
 });
 
 test('DCR-09: syncDocumentFromWorkbookSnapshot accurately syncs canvas edits, merges, and styles back into template', () => {
@@ -219,7 +150,7 @@ test('DCR-09: syncDocumentFromWorkbookSnapshot accurately syncs canvas edits, me
   const titleCell = synced.cells.find((c) => c.position.row === 0 && c.position.column === 0);
   assert.equal(titleCell.content.value, '画布编辑验收');
   assert.equal(titleCell.style.bold, true);
-  assert.equal(titleCell.style.color, '#ff0000');
+  assert.equal(titleCell.style.color, '#FF0000');
   assert.equal(titleCell.style.textAlign, 'center');
 
   const newFreeCell = synced.cells.find((c) => c.position.row === 1 && c.position.column === 2);
@@ -234,97 +165,6 @@ test('DCR-09: syncDocumentFromWorkbookSnapshot accurately syncs canvas edits, me
   // 编译确认 VTable 发布模型体现该标题
   const compiled = compileCellReport(synced, rows);
   assert.equal(compiled.publication.sheets[0].cells.find((c) => c.r === 0 && c.c === 0).v, '画布编辑验收');
-});
-
-test('cell designer: switching literal -> field -> literal preserves text and leaves draft clean', () => {
-  const docWithLabel = clone();
-  docWithLabel.cells.push({
-    id: 'qty-header',
-    sheetId: 'sheet-1',
-    position: { row: 4, column: 1 },
-    content: { kind: 'literal', value: '交付件数' },
-    parents: { row: null, column: null },
-  });
-
-  let state = createInitialDesignerState(docWithLabel);
-  // Select B5 (row 4, col 1)
-  state = designerReducer(state, { type: 'SELECT_CELL', position: { row: 4, column: 1 }, sheetId: 'sheet-1' });
-  assert.equal(state.draftDirty, false);
-  assert.equal(state.selectedCell.content.value, '交付件数');
-
-  // User accidentally switches to field
-  state = designerReducer(state, {
-    type: 'UPDATE_DRAFT_CONTENT',
-    content: {
-      kind: 'field',
-      fieldId: 'f-output_qty',
-      fieldKey: 'output_qty',
-      role: 'measure',
-      operation: 'sum',
-      expand: 'inherit',
-      displayName: '交付件数',
-    },
-  });
-  assert.equal(state.draftDirty, true);
-
-  // User realizes mistake and switches back to literal with original value
-  state = designerReducer(state, {
-    type: 'UPDATE_DRAFT_CONTENT',
-    content: {
-      kind: 'literal',
-      value: '交付件数',
-    },
-  });
-  // Should be recognized as idempotent / clean
-  assert.equal(state.draftDirty, false);
-
-  // Clicking another blank cell (e.g. H12: row 11, col 7) should NOT overwrite B5
-  state = designerReducer(state, { type: 'SELECT_CELL', position: { row: 11, column: 7 }, sheetId: 'sheet-1' });
-  const b5After = state.document.cells.find((c) => c.position.row === 4 && c.position.column === 1);
-  assert.equal(b5After.content.kind, 'literal');
-  assert.equal(b5After.content.value, '交付件数');
-});
-
-test('cell designer: REVERT_DRAFT restores original cell and prevents accidental commit on selection change', () => {
-  const docWithLabel = clone();
-  docWithLabel.cells.push({
-    id: 'qty-header',
-    sheetId: 'sheet-1',
-    position: { row: 4, column: 1 },
-    content: { kind: 'literal', value: '交付件数' },
-    parents: { row: null, column: null },
-  });
-
-  let state = createInitialDesignerState(docWithLabel);
-  // Select B5
-  state = designerReducer(state, { type: 'SELECT_CELL', position: { row: 4, column: 1 }, sheetId: 'sheet-1' });
-
-  // Accidentally change to field
-  state = designerReducer(state, {
-    type: 'UPDATE_DRAFT_CONTENT',
-    content: {
-      kind: 'field',
-      fieldId: 'f-order_code',
-      fieldKey: 'order_code',
-      role: 'measure',
-      operation: 'sum',
-      expand: 'inherit',
-      displayName: '工单流水号',
-    },
-  });
-  assert.equal(state.draftDirty, true);
-
-  // User clicks Revert button
-  state = designerReducer(state, { type: 'REVERT_DRAFT' });
-  assert.equal(state.draftDirty, false);
-  assert.equal(state.selectedCell.content.kind, 'literal');
-  assert.equal(state.selectedCell.content.value, '交付件数');
-
-  // Clicking another cell does not commit the reverted change
-  state = designerReducer(state, { type: 'SELECT_CELL', position: { row: 11, column: 7 }, sheetId: 'sheet-1' });
-  const b5After = state.document.cells.find((c) => c.position.row === 4 && c.position.column === 1);
-  assert.equal(b5After.content.kind, 'literal');
-  assert.equal(b5After.content.value, '交付件数');
 });
 
 test('Report wizard template: generates repeating metric labels, group-span merge, and compact published bounds', () => {
@@ -416,193 +256,6 @@ test('Report wizard template: generates repeating metric labels, group-span merg
   // 4. 验证列宽规则生效
   assert.equal(sheet.colWidths?.[0], 160);
   assert.equal(sheet.colWidths?.[1], 130);
-});
-
-test('cell designer: INSERT_COLUMNS shifts cells/layout/regions and expands hierarchical pivot correctly', () => {
-  // 1. Initial template: A: workshop (row 2, col 0), B: date (row 1, col 1), B: delivered (row 2, col 1)
-  const initialDoc = {
-    documentType: 'cell-template',
-    schemaVersion: '2.0',
-    capabilitiesVersion: 'cell-expansion-v2',
-    id: 'tpl-insert-col-test',
-    title: '插入列测试',
-    sheets: [{ id: 'sheet-1', name: 'Sheet1' }],
-    regions: [{ id: 'r1', datasetId: 'ds-1', sheetId: 'sheet-1', anchor: { row: 2, column: 0 }, filters: [] }],
-    cells: [
-      {
-        id: 'c-workshop',
-        sheetId: 'sheet-1',
-        regionId: 'r1',
-        position: { row: 2, column: 0 },
-        parents: { row: 'default', column: 'default' },
-        content: { kind: 'field', fieldId: 'workshop', fieldKey: 'workshop', role: 'row-dimension', operation: 'group', expand: 'down' },
-      },
-      {
-        id: 'c-date',
-        sheetId: 'sheet-1',
-        regionId: 'r1',
-        position: { row: 1, column: 1 },
-        parents: { row: 'default', column: 'default' },
-        content: { kind: 'field', fieldId: 'plan_date', fieldKey: 'plan_date', role: 'column-dimension', operation: 'group', expand: 'right' },
-      },
-      {
-        id: 'c-delivered',
-        sheetId: 'sheet-1',
-        regionId: 'r1',
-        position: { row: 2, column: 1 },
-        parents: { row: 'default', column: 'default' },
-        content: { kind: 'field', fieldId: 'delivered', fieldKey: 'delivered', role: 'measure', operation: 'sum', expand: 'none' },
-      },
-    ],
-    layoutRules: [
-      { id: 'w0', kind: 'column-width', sheetId: 'sheet-1', index: 0, size: 150 },
-      { id: 'w1', kind: 'column-width', sheetId: 'sheet-1', index: 1, size: 100 },
-    ],
-  };
-
-  let state = createInitialDesignerState(initialDoc);
-
-  // 2. Dispatch INSERT_COLUMNS at column 1 (1 column)
-  state = designerReducer(state, {
-    type: 'INSERT_COLUMNS',
-    sheetId: 'sheet-1',
-    startIndex: 1,
-    count: 1,
-  });
-
-  // Verify shifting
-  const workshopCell = state.document.cells.find((c) => c.id === 'c-workshop');
-  const dateCell = state.document.cells.find((c) => c.id === 'c-date');
-  const deliveredCell = state.document.cells.find((c) => c.id === 'c-delivered');
-
-  assert.equal(workshopCell.position.column, 0);
-  assert.equal(dateCell.position.column, 2);
-  assert.equal(deliveredCell.position.column, 2);
-  const shiftedWidthRule = state.document.layoutRules.find((r) => r.id === 'w1');
-  assert.equal(shiftedWidthRule.index, 2);
-  assert.equal(shiftedWidthRule.size, 100);
-
-  // 3. User selects newly inserted column B (row 2, col 1) and sets it to part_name
-  state = designerReducer(state, {
-    type: 'SELECT_CELL',
-    sheetId: 'sheet-1',
-    position: { row: 2, column: 1 },
-  });
-  state = designerReducer(state, {
-    type: 'UPDATE_DRAFT_CONTENT',
-    content: {
-      kind: 'field',
-      fieldId: 'f-part_name',
-      fieldKey: 'part_name',
-      displayName: '加工工件名称',
-      role: 'row-dimension',
-      operation: 'group',
-      expand: 'down',
-    },
-  });
-  state = designerReducer(state, { type: 'APPLY_DRAFT' });
-
-  const partCell = state.document.cells.find((c) => c.content.kind === 'field' && c.content.fieldKey === 'part_name');
-  assert.ok(partCell);
-  assert.equal(partCell.position.column, 1);
-  assert.equal(partCell.parents.row, 'default');
-
-  // 4. Test snapshot sync: placeholder like "{计划投产时间 →}" in workbook snapshot must NOT be saved as literal
-  const mockSnapshot = {
-    sheets: {
-      'sheet-1': {
-        cellData: {
-          '1': {
-            '2': { v: '{计划投产时间 →}' },
-            '3': { v: '{计划投产时间 →}' },
-          },
-        },
-      },
-    },
-  };
-  const syncedDoc = syncDocumentFromWorkbookSnapshot(state.document, mockSnapshot);
-  // Ensure no cell with literal "{计划投产时间 →}" was created
-  const leakedPlaceholder = syncedDoc.cells.find((c) => c.content.kind === 'literal' && c.content.value === '{计划投产时间 →}');
-  assert.equal(leakedPlaceholder, undefined, '占位符字符串绝不应被固化为静态单元格');
-
-  // 5. Expand with multi-level data
-  const testData = [
-    { workshop: '一车间', part_name: '齿轮', plan_date: '2026-08', delivered: 50 },
-    { workshop: '一车间', part_name: '轴承', plan_date: '2026-08', delivered: 30 },
-    { workshop: '一车间', part_name: '齿轮', plan_date: '2026-09', delivered: 70 },
-    { workshop: '二车间', part_name: '法兰', plan_date: '2026-08', delivered: 100 },
-  ];
-
-  const compiled = compileCellReport(state.document, testData);
-  assert.equal(compiled.valid, true);
-  const outSheet = compiled.publication.sheets[0];
-
-  // 验证日期列在横向展开，无未编译模板占位符
-  const placeholderCell = outSheet.cells.find((c) => String(c.displayText || c.raw).includes('{计划投产时间'));
-  assert.equal(placeholderCell, undefined, '展开后不应存在未编译的 {计划投产时间}');
-
-  // 验证车间与工件层级展开正确
-  const workshop1Cells = outSheet.cells.filter((c) => c.displayText === '一车间');
-  assert.ok(workshop1Cells.length > 0);
-  const gearCells = outSheet.cells.filter((c) => c.displayText === '齿轮');
-  assert.ok(gearCells.length > 0);
-  const bearingCells = outSheet.cells.filter((c) => c.displayText === '轴承');
-  assert.ok(bearingCells.length > 0);
-});
-
-test('cell designer: SET_DYNAMIC_MERGE_POLICY normalizes mismatched regionId and passes validator', () => {
-  const doc = {
-    id: 'test-wizard-doc',
-    title: '向导报表',
-    documentType: 'cell-template',
-    schemaVersion: '2.0',
-    capabilitiesVersion: 'cell-expansion-v2',
-    sheets: [{ id: 'sheet-1', name: 'Sheet1' }],
-    regions: [{ id: 'region-1', sheetId: 'sheet-1', datasetId: 'ds-1' }],
-    cells: [
-      {
-        id: 'c-order',
-        sheetId: 'sheet-1',
-        regionId: 'region-1',
-        position: { row: 3, column: 0 },
-        content: { kind: 'field', role: 'row-dimension', fieldKey: 'order_code', expand: 'down', operation: 'group' },
-      },
-    ],
-  };
-
-  const state = createInitialDesignerState(doc);
-
-  // 模拟用户在新增列上绑定承制车间，但传入了未对齐的 regionId 'r1'
-  const nextState = designerReducer(state, {
-    type: 'SET_DYNAMIC_MERGE_POLICY',
-    policy: {
-      id: 'merge-c-mvhqyyos-c',
-      sheetId: 'sheet-1',
-      regionId: 'r1', // 模拟旧 Inspector 传入的 r1
-      target: {
-        kind: 'template-cell',
-        templateCellId: 'c-workshop',
-        subject: 'row-member-label',
-      },
-      kind: 'group-span',
-      direction: 'vertical',
-      enabled: true,
-      boundary: 'parent-group',
-      source: 'user',
-      sequence: 10,
-    },
-  });
-
-  const updatedPolicy = nextState.document.mergeConfig.policies.find((p) => p.id === 'merge-c-mvhqyyos-c');
-  assert.ok(updatedPolicy, '策略应当存在');
-  assert.equal(updatedPolicy.regionId, 'region-1', '应当自动归一化为当前文档的活动区域 region-1，而不是残留 r1');
-
-  // 验证 compileCellReport 编译通过，无 ERR_POLICY_INVALID_REGION
-  const compiled = compileCellReport(nextState.document, [
-    { order_code: 'WO01', workshop: '车间A' },
-  ]);
-  const regionErr = compiled.diagnostics.find((d) => d.code === 'ERR_POLICY_INVALID_REGION');
-  assert.equal(regionErr, undefined, '不应报 ERR_POLICY_INVALID_REGION 错误');
 });
 
 test('Pivot table: adding 3rd custom metric row repeats label and formula across all row instances', () => {

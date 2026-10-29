@@ -28,5 +28,5 @@ export class HybridHistory<T> {
 /** 非变更命令（选区、滚动、复制等）不启动源事务；内部mutation由外层command归并。 */
 export function isHybridHistoryCommand(id: string, type: number): boolean {
   return type === 0 && id.startsWith('sheet.command.') &&
-    /(?:set-range|clear-|paste|cut|merge|insert-row|remove-row|insert-col|remove-col|row-height|col-width|column-width|auto-height|auto-width)/.test(id);
+    /(?:set-style|set-font|set-text|set-bold|set-italic|set-underline|set-strike|set-border|numfmt\.|apply-format-painter|set-range|clear-|paste|cut|merge|insert-row|remove-row|insert-col|remove-col|row-height|col-width|column-width|auto-height|auto-width)/.test(id);
 }

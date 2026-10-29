@@ -4,7 +4,6 @@
  * - 原生支持柱状图 (Bar)、折线图 (Line)、饼图 (Pie) 及 Pareto 双 Y 轴 (Dual Axis) 柱线复合图
  * - 声明式 Spec 驱动，支持微任务级极速响应与平滑交互
  * - 与 VTableView 共享底层 VRender 引擎，实现统一的视觉样式与色彩主题
- * - 与 VTableView 共享底层 VRender 引擎，实现统一的视觉样式与色彩主题
  */
 import React, { useRef, useEffect, useMemo } from 'react';
 import * as VChartPkg from '@visactor/vchart';
@@ -12,7 +11,7 @@ import type { ISpec, IVChart } from '@visactor/vchart';
 const vchartMod: any = VChartPkg;
 const vchartActual = vchartMod.VChart ? vchartMod : (vchartMod['def' + 'ault'] || vchartMod);
 const VChart = vchartActual.VChart || vchartActual;
-import type { TransformResult, DataRecord, OutputColumnMeta } from '../../../engine/types.js';
+import type { TransformResult, OutputColumnMeta } from '../../../engine/types.js';
 import type { ResolvedThemeConfig } from '../theme.js';
 import { isRateOrRatioMetric, isPerMilleMetric } from './metricUtils.js';
 import { useDynamicDataLocale } from '../../../locale/index.js';
@@ -31,6 +30,8 @@ export interface VChartViewProps {
   theme: ResolvedThemeConfig;
   /** 外部高级 VChart Spec 规范覆盖 (最高优先级覆盖) */
   vchartSpec?: Partial<ISpec> | undefined;
+  /** 独立图表协议已生成完整spec时，复用渲染生命周期而不叠加旧投影配置。 */
+  specMode?: 'merge' | 'replace' | undefined;
   /** 容器外层样式覆盖 */
   chartStyle?: React.CSSProperties | undefined;
   /** 自定义国际化语言包或局部文案覆盖 */
@@ -44,6 +45,7 @@ export const VChartView: React.FC<VChartViewProps> = ({
   activeMetrics,
   theme,
   vchartSpec,
+  specMode = 'merge',
   chartStyle,
   locale: propLocale,
 }) => {
@@ -63,6 +65,7 @@ export const VChartView: React.FC<VChartViewProps> = ({
 
   // 1. 构建 VChart 声明式 Spec
   const generatedSpec = useMemo<ISpec>(() => {
+    if(specMode==='replace'&&vchartSpec)return vchartSpec as ISpec;
     const { data, columns } = result;
     const titleMap: Record<string, string> = {};
     columns.forEach((c: OutputColumnMeta) => {
@@ -760,7 +763,7 @@ export const VChartView: React.FC<VChartViewProps> = ({
       },
       theme: isDark ? 'dark' : 'light',
     } as any;
-  }, [viewType, result, dimensionField, activeMetrics, theme, isDark]);
+  }, [viewType, result, dimensionField, activeMetrics, theme, isDark, specMode, vchartSpec]);
 
   // 2. 初始化 VChart 实例与事件监听
   useEffect(() => {
@@ -768,7 +771,7 @@ export const VChartView: React.FC<VChartViewProps> = ({
     if (!dom) return;
 
     // 外部高级 Spec 覆盖
-    const finalSpec: any = vchartSpec ? { ...generatedSpec, ...vchartSpec } : generatedSpec;
+    const finalSpec: any = vchartSpec ? specMode==='replace'?vchartSpec:{ ...generatedSpec, ...vchartSpec } : generatedSpec;
 
     const vchart = new VChart(finalSpec, {
       dom,
@@ -818,9 +821,9 @@ export const VChartView: React.FC<VChartViewProps> = ({
     const vchart = chartRef.current;
     if (!vchart) return;
 
-    const finalSpec: any = vchartSpec ? { ...generatedSpec, ...vchartSpec } : generatedSpec;
+    const finalSpec: any = vchartSpec ? specMode==='replace'?vchartSpec:{ ...generatedSpec, ...vchartSpec } : generatedSpec;
     vchart.updateSpec(finalSpec);
-  }, [generatedSpec, vchartSpec]);
+  }, [generatedSpec, vchartSpec, specMode]);
 
 
 

@@ -1,0 +1,151 @@
+{
+  "date": "2026-10-28",
+  "scope": "Visible labels, grouped controls, explicit inherit/off choices and live style examples; same saved model",
+  "builds": {
+    "typescript": true,
+    "libraryEsmCjsDeclarations": true,
+    "hostVite": true
+  },
+  "tests": {
+    "command": "node --test test/presentation-rules.test.mjs test/advanced-cell-capabilities.test.mjs",
+    "passed": 69,
+    "failed": 0,
+    "newTests": 0
+  },
+  "browser": {
+    "origin": "http://localhost:5174/",
+    "isolated": true,
+    "pageErrors": [],
+    "selectedPreview": {
+      "box": {
+        "alignItems": "flex-end",
+        "fontStyle": "italic"
+      },
+      "text": {
+        "textAlign": "right",
+        "whiteSpace": "normal",
+        "height": 44
+      }
+    },
+    "reopenedPreview": {
+      "box": {
+        "alignItems": "flex-end",
+        "fontStyle": "italic"
+      },
+      "text": {
+        "textAlign": "right",
+        "whiteSpace": "normal",
+        "height": 37.349853515625
+      }
+    },
+    "inheritAndOffPreview": {
+      "box": {
+        "alignItems": "flex-start",
+        "fontStyle": "normal"
+      },
+      "text": {
+        "textAlign": "left",
+        "whiteSpace": "nowrap",
+        "height": 22
+      }
+    },
+    "normalSaved": [
+      {
+        "id": "visual-cell-row-workshop",
+        "sheetId": "sheet-1",
+        "targetId": "cell-row-workshop",
+        "target": {
+          "sheetId": "sheet-1",
+          "regionId": "region-1",
+          "cellId": "cell-row-workshop",
+          "contentKind": "field",
+          "roles": [
+            "dimension"
+          ],
+          "field": "workshop",
+          "role": "row-dimension",
+          "operation": "group"
+        },
+        "scope": "template-cell",
+        "style": {
+          "textAlign": "right",
+          "verticalAlign": "bottom",
+          "italic": true,
+          "wrapText": true
+        },
+        "priority": 0,
+        "regionId": "region-1"
+      }
+    ],
+    "inheritAndOffSaved": [
+      {
+        "id": "visual-cell-row-workshop",
+        "sheetId": "sheet-1",
+        "targetId": "cell-row-workshop",
+        "target": {
+          "sheetId": "sheet-1",
+          "regionId": "region-1",
+          "cellId": "cell-row-workshop",
+          "contentKind": "field",
+          "roles": [
+            "dimension"
+          ],
+          "field": "workshop",
+          "role": "row-dimension",
+          "operation": "group"
+        },
+        "scope": "template-cell",
+        "style": {
+          "italic": false,
+          "wrapText": false
+        },
+        "priority": 0,
+        "regionId": "region-1"
+      }
+    ],
+    "conditionalPreview": {
+      "box": {
+        "alignItems": "center",
+        "fontStyle": "italic"
+      },
+      "text": {
+        "textAlign": "center",
+        "whiteSpace": "normal",
+        "height": 44
+      }
+    },
+    "conditionalPublished": [
+      {
+        "raw": "1号五轴切削车间",
+        "style": {
+          "verticalAlign": "middle",
+          "bold": true,
+          "color": "#CF1322",
+          "bgColor": "#FFF1F0",
+          "italic": true,
+          "wrapText": true,
+          "align": "center"
+        }
+      },
+      {
+        "raw": "2号重型冲压车间",
+        "style": {
+          "verticalAlign": "top",
+          "bold": true,
+          "color": "#0958d9",
+          "bgColor": "#e6f7ff",
+          "italic": false,
+          "wrapText": false
+        }
+      }
+    ]
+  },
+  "source": {
+    "path": "src/cell-designer/StyleEffectEditor.tsx",
+    "sha256": "ebef920487f7d30b5dede9204d1359d0fc3e8ad0bffdbedfa0106f7116c8c1f9"
+  },
+  "modelChanged": false,
+  "originalUserBrowserOrStorageModified": false,
+  "automaticCommit": false,
+  "logs": "System temporary directory: micro-bi-style-clarity-*-2026-10-28.log"
+}

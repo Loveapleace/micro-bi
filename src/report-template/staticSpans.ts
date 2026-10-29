@@ -2,6 +2,7 @@ import type { BiGridCell, BiGridModel, ReportBinding, ReportCellMerge } from '..
 import type { CellDefinition, CellMergeRange, CellTemplateDocumentV1, StaticSpanConfig, TemplateDiagnostic } from './types.js';
 import { createReportBinding } from '../report/bindings.js';
 import { buildInstanceKey, encodeMemberTuple } from './identity.js';
+import { sourceStyleToPublished } from '../report/cellStyle.js';
 
 export interface SpanDriverInstance {
   templateCellId: string;
@@ -98,8 +99,7 @@ export function addStaticSpanDesignMerges(doc: CellTemplateDocumentV1, grid: BiG
   const merges = grid.merges.filter((m) => !doc.layoutRules.some((r) => owned.has(r.id) && r.range && r.range.startRow === m.startRow && r.range.endRow === m.endRow && r.range.startColumn === m.startCol && r.range.endColumn === m.endCol));
   const cells = grid.cells.map((c) => {
     const owner = sources.find((s) => s.position.row === c.row && s.position.column === c.col);
-    return owner ? { ...c, style: { ...c.style, align: owner.style?.textAlign || 'center', verticalAlign: owner.style?.verticalAlign || 'middle' },
-      tooltip: `范围跟随：${owner.staticSpan!.scope} / ${owner.staticSpan!.placement}` } : c;
+    return owner ? { ...c, style: { ...c.style, align: owner.style?.textAlign || 'center', verticalAlign: owner.style?.verticalAlign || 'middle' } } : c;
   });
   return { ...grid, cells, merges: [...merges, ...ranges.filter(({ cell: c, range: r }) => c.staticSpan!.merge && (r.startRow !== r.endRow || r.startCol !== r.endCol)).map((x) => x.range)],
     staticSpanInstances: ranges.map(({ cell: c, range }) => ({ ruleId: c.staticSpan!.id, templateCellId: c.id, regionId: c.staticSpan!.regionId, instanceKey: `design:${c.id}`, range,
@@ -285,9 +285,7 @@ export function applyStaticSpans(doc: CellTemplateDocumentV1, input: BiGridModel
       sourceCellId: cell.id, regionId: config.regionId,
       rowPath: inst.rowPath.map(p=>({axisId:'rows',field:p.field,memberKey:p.memberKey,label:String(p.memberKey)})),
       columnPath: inst.columnPath.map(p=>({axisId:'columns',field:p.field,memberKey:p.memberKey,label:String(p.memberKey)})),
-      style: { fontFamily: style?.fontFamily, fontSize: style?.fontSize, bold: style?.bold, italic: style?.italic,
-        color: style?.color, bgColor: style?.backgroundColor, align: style?.textAlign || 'center', verticalAlign: style?.verticalAlign || 'middle', wrapText: style?.wrapText,
-        border: style?.border ? Object.fromEntries((['top', 'bottom', 'left', 'right'] as const).filter((side) => style.border?.[side]).map((side) => [side, { style: 'thin' as const, color: style.border!.color || '#d9d9d9' }])) : undefined,
+      style: { ...sourceStyleToPublished(style),align: style?.textAlign || 'center', verticalAlign: style?.verticalAlign || 'middle',
         ...Object.fromEntries(Object.entries(formatted?.style || {}).filter(([, v]) => v !== undefined)) } };
     if (typeof value === 'number' && textCell.displayText !== String(value)) (textCell as any).hasAdvancedFormat = true;
     cells.push(textCell); indexRow(textCell);

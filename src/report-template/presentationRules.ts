@@ -1,9 +1,12 @@
 import type { CellDefinition, CellStyleDefinition, CellTemplateDocumentV1, StyleRule, TemplateDiagnostic } from './types.js';
 import type { BiGridCell, BiGridModel, PublishedCellStyle } from '../report/types.js';
-import type { PresentationTarget, PresentationRule, RuleOperand, RulePredicate, RuleStatistics, VisualStyleAction } from './presentationTypes.js';
-import { emptyPresentationRules } from './presentationTypes.js';
+import type { PresentationTarget, RuleOperand, RulePredicate, RuleStatistics, VisualStyleAction } from './presentationTypes.js';
+import { emptyPresentationRules, targetForCell } from './presentationTypes.js';
 import { decodeMemberValue, parseInstanceKey } from './identity.js';
 import { formatTimeBucket } from '../engine/bucketing.js';
+import { conditionOperators, dateComparable, fieldValueType, getCellCapabilities, getOperandValueType, metricAggregations, type CapabilityContext } from './cellCapabilities.js';
+import { sourceStyleToPublished } from '../report/cellStyle.js';
+import { displayedNumber, excelFormatColor } from '../report/numberFormat.js';
 
 const operators = new Set(['gt','gte','lt','lte','eq','ne','between','contains','startsWith','endsWith','in','notIn','empty','notEmpty']);
 const key = (c: { row: number; col: number }) => `${c.row}:${c.col}`;
@@ -31,11 +34,11 @@ export function resolvePresentationTarget(target: PresentationTarget, doc: CellT
     (target.kind==='field'||target.role!=='measure'||c.content.role!=='measure'||!target.operation||c.content.operation===target.operation));
   return target.kind === 'field' || candidates.length === 1 ? candidates : [];
 }
-export function visualStyleForCell(doc:CellTemplateDocumentV1,cell:CellDefinition):StyleRule|undefined {
-  return doc.styleRules.filter(r=>['row','template-cell'].includes(r.scope)&&(r.targetId===cell.id||r.target&&resolvePresentationTarget(r.target,doc).some(c=>c.id===cell.id)))
+export function visualStyleForCell(doc:CellTemplateDocumentV1,cell:CellDefinition,scope?:'row'|'template-cell'):StyleRule|undefined {
+  return doc.styleRules.filter(r=>(scope?r.scope===scope:['row','template-cell'].includes(r.scope))&&(r.targetId===cell.id||r.target&&resolvePresentationTarget(r.target,doc).some(c=>c.id===cell.id)))
     .sort((a,b)=>(b.scope==='template-cell'?1:0)-(a.scope==='template-cell'?1:0)||b.priority-a.priority||b.id.localeCompare(a.id))[0];
 }
-export function validatePresentationRules(doc: CellTemplateDocumentV1, fields?: readonly string[]): TemplateDiagnostic[] {
+export function validatePresentationRules(doc: CellTemplateDocumentV1, fields?: readonly string[], context: CapabilityContext = {}): TemplateDiagnostic[] {
   const out: TemplateDiagnostic[] = [];
   const error = (code: string, message: string, targetId?: string) => out.push({ severity: 'error', code, message, targetId });
   const model = doc.presentationRules || emptyPresentationRules();
@@ -44,6 +47,7 @@ export function validatePresentationRules(doc: CellTemplateDocumentV1, fields?: 
   }
   const ids = new Set<string>();
   let checkReferences = true;
+  let currentSources: CellDefinition[] = [];
   const fieldSet = new Set([...(fields || []), ...doc.cells.filter(c=>c.content.kind==='field').map(c=>(c.content as any).fieldKey)]);
   const unique = (id: string) => { if (typeof id!=='string'||!id || ids.has(id)) error('ERR_RULE_ID', '规则集和规则ID必须存在且唯一', typeof id==='string'?id:undefined); ids.add(id); };
   const operand = (o: RuleOperand | undefined, id: string) => {
@@ -52,6 +56,7 @@ export function validatePresentationRules(doc: CellTemplateDocumentV1, fields?: 
     if (checkReferences && o.kind === 'metric' && !doc.cells.some(c=>(c.content as any).metricId===o.metricId)) error('ERR_RULE_METRIC',`条件指标不存在：${o.metricId}`,id);
     if(o.kind==='current'&&o.basis&&!['value','display-number','text'].includes(o.basis))error('ERR_RULE_BASIS','比较依据无效',id);
     if(o.kind==='field'&&o.agg&&!['sum','avg','min','max','count'].includes(o.agg))error('ERR_RULE_AGG','字段聚合方式无效',id);
+    if(o.kind==='field'&&o.agg&&checkReferences){const field=context.fields?.find(f=>f.key===o.field);if(!metricAggregations(fieldValueType(field?.type,field?.sample)).includes(o.agg))error('ERR_RULE_AGG','当前字段类型不支持该条件聚合方式',id);}
     if (o.kind === 'literal' && typeof o.value === 'number' && !Number.isFinite(o.value)) error('ERR_RULE_VALUE','条件数值必须有限',id);
     if(o.kind==='literal'&&o.valueType==='list'&&!Array.isArray(o.value))error('ERR_RULE_LIST','请输入有效JSON值列表',id);
   };
@@ -65,7 +70,30 @@ export function validatePresentationRules(doc: CellTemplateDocumentV1, fields?: 
     operand(p.left,id);
     if (!['empty','notEmpty'].includes(p.operator)) operand(p.right,id);
     if (p.operator === 'between') operand(p.upper,id);
-    if (['gt','gte','lt','lte','between'].includes(p.operator)) {
+    if (p.valueType !== undefined) {
+      if (!['number','text','date','boolean','unknown'].includes(p.valueType) || !conditionOperators(p.valueType).includes(p.operator)) error('ERR_RULE_TYPE','比较方式不适用于当前值类型',id);
+      if(['in','notIn'].includes(p.operator)&&p.right?.kind!=='literal')error('ERR_RULE_LIST','集合比较需要显式值列表',id);
+      if (checkReferences && p.left) for(const source of currentSources) {
+        const actual = getOperandValueType(p.left,source,doc,context);
+        if (p.valueType!=='unknown' && actual !== 'unknown' && actual !== p.valueType) error('ERR_RULE_TYPE','条件左值类型与比较类型不一致，请重新选择条件',id);
+      }
+      if (!['empty','notEmpty'].includes(p.operator)) for (const o of [p.right,...(p.operator==='between'?[p.upper]:[])]) {
+        if (o?.kind === 'literal') {
+          const values = Array.isArray(o.value) ? o.value : [o.value];
+          if (Array.isArray(o.value) && !['in','notIn'].includes(p.operator)) error('ERR_RULE_TYPE','值列表只适用于集合比较',id);
+          if (p.valueType === 'date' && values.some(v=>dateComparable(v)===undefined)) error('ERR_RULE_DATE','日期条件需要有效日期或时间',id);
+          if (p.valueType === 'number' && values.some(v=>!numeric(v))) error('ERR_RULE_TYPE','数值条件需要数值比较值',id);
+          if (p.valueType === 'text' && values.some(v=>typeof v!=='string')) error('ERR_RULE_TYPE','文本条件需要文字比较值',id);
+          if (p.valueType === 'boolean' && values.some(v=>typeof v!=='boolean')) error('ERR_RULE_TYPE','布尔条件需要是/否比较值',id);
+        } else if (o && checkReferences) for(const source of currentSources) {
+          const actual = getOperandValueType(o,source,doc,context);
+          if (p.valueType!=='unknown' && actual !== 'unknown' && actual !== p.valueType) error('ERR_RULE_TYPE','条件左右值类型不一致',id);
+        }
+      }
+      if (p.valueType==='date' && p.operator==='between' && p.right?.kind==='literal' && p.upper?.kind==='literal' &&
+        dateComparable(p.right.value)!==undefined && dateComparable(p.upper.value)!==undefined && dateComparable(p.right.value)!>dateComparable(p.upper.value)!) error('ERR_RULE_RANGE','日期区间开始不能晚于结束',id);
+    }
+    if (p.valueType !== 'date' && ['gt','gte','lt','lte','between'].includes(p.operator)) {
       for (const o of [p.right,...(p.operator==='between'?[p.upper]:[])]) if(o?.kind==='literal' && !numeric(o.value)) error('ERR_RULE_THRESHOLD','数值比较的阈值必须为数值',id);
       if(p.operator==='between'&&p.right?.kind==='literal'&&p.upper?.kind==='literal'&&numeric(p.right.value)&&numeric(p.upper.value)&&p.right.value>p.upper.value)error('ERR_RULE_RANGE','区间下限不能大于上限',id);
     }
@@ -88,6 +116,8 @@ export function validatePresentationRules(doc: CellTemplateDocumentV1, fields?: 
     if(!set.target||!doc.sheets.some(s=>s.id===set.target.sheetId)||!Array.isArray(set.rules)||!Number.isFinite(set.order)){error('ERR_RULE_TARGET','规则目标或执行顺序无效',set.id);continue;}
     if(set.target.regionId&&!doc.regions.some(r=>r.id===set.target.regionId&&r.sheetId===set.target.sheetId))error('ERR_RULE_REGION','规则目标区域不存在',set.id);
     const sources=resolvePresentationTarget(set.target,doc);
+    if(sources.some(c=>getCellCapabilities(c).role==='static'))error('ERR_STATIC_CONDITION','静态内容不支持条件规则',set.id);
+    currentSources=sources.filter(c=>!set.target.roles?.length||targetForCell(c).roles?.some(role=>set.target.roles!.includes(role)));
     checkReferences = sources.length > 0;
     if(set.target.kind==='field'&&!set.target.field)error('ERR_RULE_TARGET','同字段目标必须指定字段',set.id);
     if(set.target.roles!==undefined&&(!Array.isArray(set.target.roles)||set.target.roles.some(r=>!['data','total','dimension','header','static'].includes(r))))error('ERR_RULE_ROLE','触发角色无效',set.id);
@@ -157,7 +187,7 @@ export function applyPresentationRules(doc: CellTemplateDocumentV1, input: BiGri
     if(o.kind==='literal')return o.value;
     if(o.kind==='current'){
       if(o.basis==='text')return c.baseDisplayText??String(c.value??'');
-      if(o.basis==='display-number'&&numeric(c.value)){const s=origin(c);const f=(s as any)?.formatOptions||(s?.content as any)?.formatOptions||{};return c.value/(f.scale||1)*(['percent','percentage'].includes(f.format||(s?.content as any)?.format)?100:1);}
+      if(o.basis==='display-number'&&numeric(c.value)){const s=origin(c);const f=(s?.content as any)?.formatOptions||(s as any)?.formatOptions||{};return displayedNumber(c.value,{format:(s?.content as any)?.format,...f});}
       return c.value;
     }
     if(o.kind==='metric'){
@@ -176,6 +206,15 @@ export function applyPresentationRules(doc: CellTemplateDocumentV1, input: BiGri
   const test=(p:RulePredicate,c:BiGridCell):boolean=>{
     if(p.kind==='group')return p.mode==='and'?p.children.every(x=>test(x,c)):p.children.some(x=>test(x,c));
     const l=getOperand(p.left,c),r=getOperand(p.right,c);
+    if(p.valueType==='date'&&!['empty','notEmpty'].includes(p.operator)){
+      const left=dateComparable(l),right=dateComparable(r);
+      if(left===undefined)return false;
+      if(p.operator==='in'||p.operator==='notIn')return Array.isArray(r)&&(p.operator==='in'?r.some(v=>dateComparable(v)===left):r.every(v=>dateComparable(v)!==left));
+      if(right===undefined)return false;
+      if(p.operator==='eq')return left===right;if(p.operator==='ne')return left!==right;
+      if(p.operator==='lt')return left<right;if(p.operator==='lte')return left<=right;if(p.operator==='gt')return left>right;if(p.operator==='gte')return left>=right;
+      const upper=dateComparable(getOperand(p.upper,c));return p.operator==='between'&&upper!==undefined&&left>=right&&left<=upper;
+    }
     switch(p.operator){
       case'empty':return empty(l);case'notEmpty':return !empty(l);case'eq':return Object.is(l,r);case'ne':return !Object.is(l,r);
       case'in':return Array.isArray(r)&&r.some(x=>Object.is(x,l));case'notIn':return Array.isArray(r)&&!r.some(x=>Object.is(x,l));
@@ -206,7 +245,7 @@ export function applyPresentationRules(doc: CellTemplateDocumentV1, input: BiGri
   const affected=new Map<RuleStatistics,Set<string>>();
   if(options.conditions!==false)for(const set of [...(doc.presentationRules?.ruleSets||[])].sort((a,b)=>a.order-b.order||a.id.localeCompare(b.id))){
     if(set.target.sheetId!==sheetId)continue;
-    const ids=new Set(resolvePresentationTarget(set.target,doc).map(c=>c.id));
+    const ids=new Set(resolvePresentationTarget(set.target,doc).filter(c=>getCellCapabilities(c).role!=='static').map(c=>c.id));
     const targets=[...ids].flatMap(id=>cellsBySource.get(id)||[]).filter(c=>!set.target.roles?.length||set.target.roles.includes(role(c)));
     if(!targets.length)warn('WARN_RULE_DORMANT','当前数据没有目标实例，规则仍保留',set.id);
     const stopped=new Set<string>(),matchedAny=new Set<string>();
@@ -227,9 +266,7 @@ export function applyPresentationRules(doc: CellTemplateDocumentV1, input: BiGri
     if(set.otherwise?.text!==undefined)for(const c of fallback){c.displayText=template(set.otherwise.text,c);c.displaySource='conditional';}
     if(set.otherwise?.style)layers[set.otherwise.style.scope==='row'?2:3]!.push({action:set.otherwise.style,triggers:fallback,regionId:set.otherwise.style.regionId||set.target.regionId,id:set.id});
   }
-  const pub=(s:CellStyleDefinition):PublishedCellStyle=>({...(s.fontFamily!==undefined?{fontFamily:s.fontFamily}:{}),...(s.fontSize!==undefined?{fontSize:s.fontSize}:{}),
-    ...(s.bold!==undefined?{bold:s.bold}:{}),...(s.italic!==undefined?{italic:s.italic}:{}),...(s.color!==undefined?{color:normalizeRuleColor(s.color)||s.color}:{}),
-    ...(s.backgroundColor!==undefined?{bgColor:normalizeRuleColor(s.backgroundColor)||s.backgroundColor}:{}),...(s.textAlign?{align:s.textAlign}:{}),...(s.verticalAlign?{verticalAlign:s.verticalAlign}:{}),...(s.wrapText!==undefined?{wrapText:s.wrapText}:{})});
+  const pub=(s:CellStyleDefinition):PublishedCellStyle=>sourceStyleToPublished({...s,...(s.color?{color:normalizeRuleColor(s.color)||s.color}:{}),...(s.backgroundColor?{backgroundColor:normalizeRuleColor(s.backgroundColor)||s.backgroundColor}:{})});
 
   const paint=(cell:BiGridCell,action:VisualStyleAction,previous=cell.style):PublishedCellStyle=>{
     const style:PublishedCellStyle={...previous,...pub(action.style)};
@@ -238,7 +275,12 @@ export function applyPresentationRules(doc: CellTemplateDocumentV1, input: BiGri
     return style;
   };
   const mark=(stats:RuleStatistics|undefined,c:BiGridCell)=>{if(!stats)return;let list=affected.get(stats);if(!list){list=new Set();affected.set(stats,list);}list.add(key(c));};
-  for(const layer of layers){
+  for(const [layerIndex,layer] of layers.entries()){
+    if(layerIndex===2)for(const c of cells){
+      const s=origin(c),format=(s?.content as any)?.formatOptions||s?.formatOptions;
+      const color=excelFormatColor(typeof c.value==='number'?c.value/(format?.scale||1):c.value,format?.numberFormat);
+      if(color)c.style={...c.style,color};
+    }
     const proposals=new Map<string,{range:typeof input.merges[number];master:BiGridCell;base:PublishedCellStyle;styles:Map<string,PublishedCellStyle>;stats:Map<RuleStatistics,Set<string>>}>();
     for(const e of layer){
       const destinations=new Map<string,BiGridCell>(),rows=new Set<number>();

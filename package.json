@@ -138,16 +138,16 @@
   },
   "peerDependencies": {
     "@ant-design/icons": ">=5.0.0",
-    "@univerjs/core": ">=1.0.4",
-    "@univerjs/preset-sheets-core": ">=1.0.4",
-    "@univerjs/presets": ">=1.0.4",
+    "@univerjs/core": ">=1.1.0",
+    "@univerjs/preset-sheets-core": ">=1.1.0",
+    "@univerjs/presets": ">=1.1.0",
+    "@univerjs/sheets": ">=1.1.0",
     "@visactor/vchart": ">=2.0.0",
     "@visactor/vtable": ">=1.26.0",
     "antd": ">=5.24.0 <6",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "rxjs": ">=7.0.0",
-    "@univerjs/sheets": ">=1.0.4"
+    "rxjs": ">=7.0.0"
   },
   "peerDependenciesMeta": {
     "@ant-design/icons": {
@@ -210,19 +210,20 @@
     "@ant-design/icons": "^5.6.0",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
-    "@univerjs/core": "^1.0.4",
-    "@univerjs/preset-sheets-core": "^1.0.4",
-    "@univerjs/presets": "^1.0.4",
+    "@univerjs/core": "^1.1.0",
+    "@univerjs/preset-sheets-core": "^1.1.0",
+    "@univerjs/presets": "^1.1.0",
+    "@univerjs/sheets": "^1.1.0",
     "@visactor/vchart": "^2.1.7",
     "@visactor/vtable": "^1.26.8",
     "antd": "^5.24.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "rxjs": "^7.8.1",
-    "typescript": "^5.6.3",
-    "@univerjs/sheets": "^1.0.4"
+    "typescript": "^5.6.3"
   },
   "dependencies": {
-    "dayjs": "^1.11.23"
+    "dayjs": "^1.11.23",
+    "numfmt": "4.1.1"
   }
 }

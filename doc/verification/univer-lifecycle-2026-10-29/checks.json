@@ -1,0 +1,747 @@
+{
+  "date": "2026-10-29",
+  "issue": "H3-OBS01",
+  "status": "reproduced-scroll-race-fixed-and-verified",
+  "environment": {
+    "url": "http://localhost:5174/",
+    "react": "18.3.1",
+    "univer": "1.1.0",
+    "sdkMinimumDeclared": "1.1.0",
+    "resolvedExistingPackageVersionChanges": {
+      "library": [],
+      "host": []
+    },
+    "isolatedBrowserContexts": true,
+    "userStorageChanged": false
+  },
+  "beforeFix": {
+    "normalCycles": 10,
+    "earlyAddressCycles": 6,
+    "earlyAddressFailures": 6,
+    "initialLifecycleStage": 1,
+    "capturedErrors": 7,
+    "evidence": "before-fix.json",
+    "reproduction": "Open the actual mode-three editor; use the native name box for C4 as soon as it appears; close the editor."
+  },
+  "rootCause": {
+    "uiVisibleAt": "Ready (1)",
+    "requiredControllerRegisteredAt": "Rendered (2)",
+    "controller": "SheetsScrollRenderController2",
+    "unguardedCommand": "sheet.command.scroll-to-cell",
+    "formulaApiCorrection": "calculationResultApplied(callback) returns IDisposable; onCalculationResultApplied(timeout) is not a callback registration API"
+  },
+  "stress": {
+    "total": 70,
+    "allPassed": true,
+    "counts": {
+      "early-address": 20,
+      "cancel-pending-save": 10,
+      "cancel-pending-preview": 10,
+      "full-undo-redo-preview": 20,
+      "cancel-initializing": 10
+    },
+    "cycles": [
+      {
+        "kind": "early-address",
+        "stage": 2,
+        "pass": true
+      },
+      {
+        "kind": "early-address",
+        "stage": 2,
+        "pass": true
+      },
+      {
+        "kind": "early-address",
+        "stage": 2,
+        "pass": true
+      },
+      {
+        "kind": "early-address",
+        "stage": 2,
+        "pass": true
+      },
+      {
+        "kind": "early-address",
+        "stage": 2,
+        "pass": true
+      },
+      {
+        "kind": "early-address",
+        "stage": 2,
+        "pass": true
+      },
+      {
+        "kind": "early-address",
+        "stage": 2,
+        "pass": true
+      },
+      {
+        "kind": "early-address",
+        "stage": 2,
+        "pass": true
+      },
+      {
+        "kind": "early-address",
+        "stage": 2,
+        "pass": true
+      },
+      {
+        "kind": "early-address",
+        "stage": 2,
+        "pass": true
+      },
+      {
+        "kind": "cancel-pending-save",
+        "pendingSubscriptions": 1,
+        "sourceUnchanged": true,
+        "activeAfterClose": 0,
+        "pass": true
+      },
+      {
+        "kind": "cancel-pending-save",
+        "pendingSubscriptions": 1,
+        "sourceUnchanged": true,
+        "activeAfterClose": 0,
+        "pass": true
+      },
+      {
+        "kind": "cancel-pending-preview",
+        "pendingSubscriptions": 1,
+        "sourceUnchanged": true,
+        "activeAfterClose": 0,
+        "pass": true
+      },
+      {
+        "kind": "cancel-pending-preview",
+        "pendingSubscriptions": 1,
+        "sourceUnchanged": true,
+        "activeAfterClose": 0,
+        "pass": true
+      },
+      {
+        "kind": "early-address",
+        "stage": 2,
+        "pass": true
+      },
+      {
+        "kind": "early-address",
+        "stage": 2,
+        "pass": true
+      },
+      {
+        "kind": "early-address",
+        "stage": 2,
+        "pass": true
+      },
+      {
+        "kind": "early-address",
+        "stage": 2,
+        "pass": true
+      },
+      {
+        "kind": "early-address",
+        "stage": 2,
+        "pass": true
+      },
+      {
+        "kind": "early-address",
+        "stage": 2,
+        "pass": true
+      },
+      {
+        "kind": "early-address",
+        "stage": 2,
+        "pass": true
+      },
+      {
+        "kind": "early-address",
+        "stage": 2,
+        "pass": true
+      },
+      {
+        "kind": "early-address",
+        "stage": 2,
+        "pass": true
+      },
+      {
+        "kind": "early-address",
+        "stage": 2,
+        "pass": true
+      },
+      {
+        "kind": "full-undo-redo-preview",
+        "stage": 2,
+        "undoFont": 14,
+        "redoFont": 22,
+        "sameInstance": true,
+        "pass": true
+      },
+      {
+        "kind": "full-undo-redo-preview",
+        "stage": 2,
+        "undoFont": 14,
+        "redoFont": 22,
+        "sameInstance": true,
+        "pass": true
+      },
+      {
+        "kind": "full-undo-redo-preview",
+        "stage": 2,
+        "undoFont": 14,
+        "redoFont": 22,
+        "sameInstance": true,
+        "pass": true
+      },
+      {
+        "kind": "full-undo-redo-preview",
+        "stage": 2,
+        "undoFont": 14,
+        "redoFont": 22,
+        "sameInstance": true,
+        "pass": true
+      },
+      {
+        "kind": "full-undo-redo-preview",
+        "stage": 2,
+        "undoFont": 14,
+        "redoFont": 22,
+        "sameInstance": true,
+        "pass": true
+      },
+      {
+        "kind": "full-undo-redo-preview",
+        "stage": 2,
+        "undoFont": 14,
+        "redoFont": 22,
+        "sameInstance": true,
+        "pass": true
+      },
+      {
+        "kind": "full-undo-redo-preview",
+        "stage": 2,
+        "undoFont": 14,
+        "redoFont": 22,
+        "sameInstance": true,
+        "pass": true
+      },
+      {
+        "kind": "full-undo-redo-preview",
+        "stage": 2,
+        "undoFont": 14,
+        "redoFont": 22,
+        "sameInstance": true,
+        "pass": true
+      },
+      {
+        "kind": "full-undo-redo-preview",
+        "stage": 2,
+        "undoFont": 14,
+        "redoFont": 22,
+        "sameInstance": true,
+        "pass": true
+      },
+      {
+        "kind": "full-undo-redo-preview",
+        "stage": 2,
+        "undoFont": 14,
+        "redoFont": 22,
+        "sameInstance": true,
+        "pass": true
+      },
+      {
+        "kind": "full-undo-redo-preview",
+        "stage": 2,
+        "undoFont": 14,
+        "redoFont": 22,
+        "sameInstance": true,
+        "pass": true
+      },
+      {
+        "kind": "full-undo-redo-preview",
+        "stage": 2,
+        "undoFont": 14,
+        "redoFont": 22,
+        "sameInstance": true,
+        "pass": true
+      },
+      {
+        "kind": "full-undo-redo-preview",
+        "stage": 2,
+        "undoFont": 14,
+        "redoFont": 22,
+        "sameInstance": true,
+        "pass": true
+      },
+      {
+        "kind": "cancel-initializing",
+        "initialState": "starting",
+        "dispatch": "first-frame cancel click",
+        "pass": true
+      },
+      {
+        "kind": "cancel-initializing",
+        "initialState": "starting",
+        "dispatch": "first-frame cancel click",
+        "pass": true
+      },
+      {
+        "kind": "cancel-initializing",
+        "initialState": "starting",
+        "dispatch": "first-frame cancel click",
+        "pass": true
+      },
+      {
+        "kind": "cancel-initializing",
+        "initialState": "starting",
+        "dispatch": "first-frame cancel click",
+        "pass": true
+      },
+      {
+        "kind": "cancel-initializing",
+        "initialState": "starting",
+        "dispatch": "first-frame cancel click",
+        "pass": true
+      },
+      {
+        "kind": "cancel-initializing",
+        "initialState": "starting",
+        "dispatch": "first-frame cancel click",
+        "pass": true
+      },
+      {
+        "kind": "cancel-initializing",
+        "initialState": "starting",
+        "dispatch": "first-frame cancel click",
+        "pass": true
+      },
+      {
+        "kind": "cancel-initializing",
+        "initialState": "starting",
+        "dispatch": "first-frame cancel click",
+        "pass": true
+      },
+      {
+        "kind": "cancel-initializing",
+        "initialState": "starting",
+        "dispatch": "first-frame cancel click",
+        "pass": true
+      },
+      {
+        "kind": "cancel-initializing",
+        "initialState": "starting",
+        "dispatch": "first-frame cancel click",
+        "pass": true
+      },
+      {
+        "kind": "full-undo-redo-preview",
+        "stage": 2,
+        "undoFont": 14,
+        "redoFont": 22,
+        "sameInstance": true,
+        "pass": true
+      },
+      {
+        "kind": "full-undo-redo-preview",
+        "stage": 2,
+        "undoFont": 14,
+        "redoFont": 22,
+        "sameInstance": true,
+        "pass": true
+      },
+      {
+        "kind": "full-undo-redo-preview",
+        "stage": 2,
+        "undoFont": 14,
+        "redoFont": 22,
+        "sameInstance": true,
+        "pass": true
+      },
+      {
+        "kind": "full-undo-redo-preview",
+        "stage": 2,
+        "undoFont": 14,
+        "redoFont": 22,
+        "sameInstance": true,
+        "pass": true
+      },
+      {
+        "kind": "full-undo-redo-preview",
+        "stage": 2,
+        "undoFont": 14,
+        "redoFont": 22,
+        "sameInstance": true,
+        "pass": true
+      },
+      {
+        "kind": "full-undo-redo-preview",
+        "stage": 2,
+        "undoFont": 14,
+        "redoFont": 22,
+        "sameInstance": true,
+        "pass": true
+      },
+      {
+        "kind": "full-undo-redo-preview",
+        "stage": 2,
+        "undoFont": 14,
+        "redoFont": 22,
+        "sameInstance": true,
+        "pass": true
+      },
+      {
+        "kind": "cancel-pending-save",
+        "pendingSubscriptions": 1,
+        "dispatch": "browser-task cancel after listener registered",
+        "sourceUnchanged": true,
+        "activeAfterClose": 0,
+        "pass": true
+      },
+      {
+        "kind": "cancel-pending-save",
+        "pendingSubscriptions": 1,
+        "dispatch": "browser-task cancel after listener registered",
+        "sourceUnchanged": true,
+        "activeAfterClose": 0,
+        "pass": true
+      },
+      {
+        "kind": "cancel-pending-save",
+        "pendingSubscriptions": 1,
+        "dispatch": "browser-task cancel after listener registered",
+        "sourceUnchanged": true,
+        "activeAfterClose": 0,
+        "pass": true
+      },
+      {
+        "kind": "cancel-pending-save",
+        "pendingSubscriptions": 1,
+        "dispatch": "browser-task cancel after listener registered",
+        "sourceUnchanged": true,
+        "activeAfterClose": 0,
+        "pass": true
+      },
+      {
+        "kind": "cancel-pending-preview",
+        "pendingSubscriptions": 1,
+        "dispatch": "browser-task cancel after listener registered",
+        "sourceUnchanged": true,
+        "activeAfterClose": 0,
+        "pass": true
+      },
+      {
+        "kind": "cancel-pending-preview",
+        "pendingSubscriptions": 1,
+        "dispatch": "browser-task cancel after listener registered",
+        "sourceUnchanged": true,
+        "activeAfterClose": 0,
+        "pass": true
+      },
+      {
+        "kind": "cancel-pending-preview",
+        "pendingSubscriptions": 1,
+        "dispatch": "browser-task cancel after listener registered",
+        "sourceUnchanged": true,
+        "activeAfterClose": 0,
+        "pass": true
+      },
+      {
+        "kind": "cancel-pending-preview",
+        "pendingSubscriptions": 1,
+        "dispatch": "browser-task cancel after listener registered",
+        "sourceUnchanged": true,
+        "activeAfterClose": 0,
+        "pass": true
+      },
+      {
+        "kind": "cancel-pending-save",
+        "pendingSubscriptions": 1,
+        "dispatch": "browser-task cancel after listener registered",
+        "sourceUnchanged": true,
+        "activeAfterClose": 0,
+        "pass": true
+      },
+      {
+        "kind": "cancel-pending-save",
+        "pendingSubscriptions": 1,
+        "dispatch": "browser-task cancel after listener registered",
+        "sourceUnchanged": true,
+        "activeAfterClose": 0,
+        "pass": true
+      },
+      {
+        "kind": "cancel-pending-save",
+        "pendingSubscriptions": 1,
+        "dispatch": "browser-task cancel after listener registered",
+        "sourceUnchanged": true,
+        "activeAfterClose": 0,
+        "pass": true
+      },
+      {
+        "kind": "cancel-pending-save",
+        "pendingSubscriptions": 1,
+        "dispatch": "browser-task cancel after listener registered",
+        "sourceUnchanged": true,
+        "activeAfterClose": 0,
+        "pass": true
+      },
+      {
+        "kind": "cancel-pending-preview",
+        "pendingSubscriptions": 1,
+        "dispatch": "browser-task cancel after listener registered",
+        "sourceUnchanged": true,
+        "activeAfterClose": 0,
+        "pass": true
+      },
+      {
+        "kind": "cancel-pending-preview",
+        "pendingSubscriptions": 1,
+        "dispatch": "browser-task cancel after listener registered",
+        "sourceUnchanged": true,
+        "activeAfterClose": 0,
+        "pass": true
+      },
+      {
+        "kind": "cancel-pending-preview",
+        "pendingSubscriptions": 1,
+        "dispatch": "browser-task cancel after listener registered",
+        "sourceUnchanged": true,
+        "activeAfterClose": 0,
+        "pass": true
+      },
+      {
+        "kind": "cancel-pending-preview",
+        "pendingSubscriptions": 1,
+        "dispatch": "browser-task cancel after listener registered",
+        "sourceUnchanged": true,
+        "activeAfterClose": 0,
+        "pass": true
+      }
+    ],
+    "metrics": {
+      "apis": 60,
+      "clears": 60,
+      "stages": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "formula": {
+        "registered": 60,
+        "disposed": 60,
+        "active": 0
+      }
+    },
+    "pageErrors": [],
+    "consoleErrors": [
+      "Warning: [antd: message] Static function can not consume context like dynamic theme. Please use 'App' component instead."
+    ],
+    "interpretation": "Ten startup cancellations publish no API. Sixty exposed APIs were cleared. All sixty formula subscriptions were disposed; active count returned to zero. Four pending-operation cancellations used native mouse clicks (two preview, two save); sixteen used actual button events dispatched in the browser task after listener registration. Ten startup cancellations clicked Cancel in the first frame."
+  },
+  "directAdapterProbe": {
+    "initialStage": 1,
+    "beforeReady": false,
+    "ready": true,
+    "renderedStage": 2,
+    "readyScrollCompleted": true,
+    "closingScroll": false,
+    "afterDisposeWaitError": "EditorSessionClosedError",
+    "afterDisposeCopy": "",
+    "afterDisposeBridge": true,
+    "finalPhase": "disposed"
+  },
+  "defaultBlankPreviewStrictMode": {
+    "readyCallbacks": 1,
+    "stage": 2,
+    "rows": 25,
+    "columns": 15,
+    "apiCleared": true,
+    "closedHandleError": "EditorSessionClosedError"
+  },
+  "saveAndReopen": {
+    "freshHistoryUndoDisabled": true,
+    "mixedPreviewUndo": {
+      "preview": true
+    },
+    "savedTitleFont": 24,
+    "formula": {
+      "r": 23,
+      "c": 13,
+      "v": 1350,
+      "displayText": "1,350.000",
+      "formula": "=SUM(C4:D4)",
+      "styleId": "s_7",
+      "role": "metric-value"
+    },
+    "reopenTitleFont": 24,
+    "reopenFormulaValue": 1350,
+    "afterReloadReadyStage": 2,
+    "sourceAfterReloadEqual": true,
+    "savedSourceSha256": "2a9e92eabba4c814a55224fd01b9f334175ece8f3622d13824fec01cb492378c",
+    "afterReloadSourceSha256": "2a9e92eabba4c814a55224fd01b9f334175ece8f3622d13824fec01cb492378c",
+    "pageErrors": [],
+    "quickPainter": {
+      "stageBefore": 2,
+      "result": {
+        "stage": 3,
+        "style": {
+          "ff": "Arial",
+          "fs": 24,
+          "it": 0,
+          "bl": 1,
+          "ul": {
+            "s": 0,
+            "cl": {
+              "rgb": "#1677FF"
+            }
+          },
+          "st": {
+            "s": 0,
+            "cl": {
+              "rgb": "#1677FF"
+            }
+          },
+          "bd": {
+            "t": {
+              "s": 0,
+              "cl": {
+                "rgb": "#000000"
+              }
+            },
+            "r": {
+              "s": 0,
+              "cl": {
+                "rgb": "#000000"
+              }
+            },
+            "b": {
+              "s": 0,
+              "cl": {
+                "rgb": "#000000"
+              }
+            },
+            "l": {
+              "s": 0,
+              "cl": {
+                "rgb": "#000000"
+              }
+            }
+          },
+          "cl": {
+            "rgb": "#1677FF"
+          },
+          "n": {
+            "pattern": "General"
+          },
+          "ht": 2,
+          "vt": 2,
+          "tb": 2
+        }
+      }
+    }
+  },
+  "directProbeErrors": [],
+  "validation": {
+    "unitTests": {
+      "passed": 486,
+      "total": 486,
+      "newLifecycleTests": 18,
+      "subscriptionCleanupUnitCycles": 100
+    },
+    "libraryBuild": "ESM/CJS/types passed",
+    "hostBuild": "TypeScript/Vite passed",
+    "hostBuildWarning": "Existing large chunk warning remains",
+    "sdkErrorSwallowing": false
+  },
+  "sourceSha256": {
+    "src/univer/lifecycle.ts": "902cca0d1015ed9ec76f55a976fcf17e6de41a55c52376ec672402aa1a720da5",
+    "src/univer/adapter.ts": "cecd9dcde0392a4c25873ab38a908e50d5d63c11ffb3d1f31a0a5f90db1fd06f",
+    "src/univer/UniverPreview.tsx": "bccecf459b481b4cc6eaa68ef1f42937743059a654ff03805f2902f9f064e0f9",
+    "src/univer/index.ts": "744c163f6c8a5b7325934d48c974f3f2b79067b96a89889d0cdfe743f24e0d20",
+    "src/cell-designer/HybridCellDesigner.tsx": "cb5cb9b6c051f32f322fc8b041cdafe00cd36cc95ce9abd21e49a2d1087f0915",
+    "test/univer-lifecycle.test.mjs": "7ab2a2a0f25b24672c9d6c4d014fb48bcd0a3070dbd4f3e353f24792c8d2e11f",
+    "package.json": "1b4836421eddfb1dfeeef4344d486c7c870e529c37b6a8ef667392def274f7cd",
+    "package-lock.json": "656b85af7c4689f9ef32f457bb026bc1d53617af98c967b8f1ebd81947438f1e",
+    "../dynamic-data-test/src/components/HybridReportEditModal.tsx": "deec205a5195f538fe92df4a6fa31b729e0451b930c36b4ee6ecd3faeea9898f",
+    "../dynamic-data-test/package.json": "e52c996644519dc7d34885ac53d5a2ff733f631d990e9986f8613c6b689ea6c5",
+    "../dynamic-data-test/package-lock.json": "b218043284d0a9f315e62ec03d69ddc2ab46cc2e90475ca5ac165a8779067077"
+  },
+  "evidenceFiles": [
+    "before-fix.json",
+    "01-editor-ready.png",
+    "02-vtable-after-save-and-refresh.png"
+  ],
+  "limitations": [
+    "Does not assert that every possible upstream Univer defect is eliminated. Closure is supported by deterministic reproduction, a root-cause fix, and targeted regression.",
+    "Existing AntD static message theme warning remains; no lifecycle page error occurred in the final stress/reopen/probe contexts."
+  ],
+  "observations": {
+    "H3-OBS01-A": {
+      "status": "fixed-and-verified",
+      "error": "SheetsScrollRenderController2 not registered",
+      "basis": "Deterministic 6/6 reproduction, lifecycle-stage probe, SDK source inspection, targeted fix and seventy final regression cycles"
+    },
+    "H3-OBS01-B": {
+      "status": "historical-observation-not-reproduced",
+      "error": "Cannot read properties of null (reading 'row')",
+      "limitation": "Older process stack was removed in earlier project cleanup. No reproduction in this run; no claim that it shares the same root cause or is fixed."
+    }
+  }
+}

@@ -14,13 +14,15 @@ import type {
   BiGridCell,
   ReportCellMerge,
   ReportBinding,
-  PublishedCellStyle,
   AxisMemberRef,
 } from '../report/types.js';
 import { createReportBinding } from '../report/bindings.js';
 import { evaluateFormula } from '../engine/formula/evaluator.js';
 import { roundTo } from '../engine/summary.js';
 import { formatTimeBucket } from '../engine/bucketing.js';
+import { dateComparable } from './cellCapabilities.js';
+import { sourceStyleToPublished } from '../report/cellStyle.js';
+import { formatExcelValue, excelFormatColor } from '../report/numberFormat.js';
 import type {
   CellTemplateDocumentV1,
   CellDefinition,
@@ -28,21 +30,16 @@ import type {
   BusinessFormulaCellContent,
   LiteralCellContent,
   TemplateDiagnostic,
-  CellStyleDefinition,
   CellFormatOptions,
 } from './types.js';
 import {
   buildInstanceKey,
-  parseInstanceKey,
   encodeMemberValue,
   decodeMemberValue,
   encodeMemberTuple,
-  decodeMemberTuple,
-  buildGroupContextKey,
 } from './identity.js';
-import { resolveTemplateMerges, isRangeOverlapping } from './mergeResolver.js';
+import { resolveTemplateMerges } from './mergeResolver.js';
 import { applyRegionFilters } from './regionFilter.js';
-import { evaluateArithmetic } from './arithmeticEval.js';
 import { evaluateSheetFormula as evaluateSheetFormulaEngine } from './sheetFormulaEvaluator.js';
 import { applyPresentationRules } from './presentationRules.js';
 import { activeStaticSpans, applyStaticSpans, prepareStaticSpanTemplate, type SpanDriverInstance } from './staticSpans.js';
@@ -58,33 +55,13 @@ export interface CellExpansionResult {
 // ---------------------------------------------------------------------------
 // 辅助样式转换
 // ---------------------------------------------------------------------------
-function toPublishedStyle(style?: CellStyleDefinition): PublishedCellStyle {
-  if (!style) return {};
-  const res: PublishedCellStyle = {};
-  if (style.fontFamily !== undefined) res.fontFamily = style.fontFamily;
-  if (style.fontSize !== undefined) res.fontSize = style.fontSize;
-  if (style.bold !== undefined) res.bold = style.bold;
-  if (style.italic !== undefined) res.italic = style.italic;
-  if (style.color !== undefined) res.color = style.color;
-  if (style.backgroundColor !== undefined) res.bgColor = style.backgroundColor;
-  if (style.textAlign !== undefined) res.align = style.textAlign;
-  if (style.verticalAlign !== undefined) res.verticalAlign = style.verticalAlign;
-  if (style.wrapText !== undefined) res.wrapText = style.wrapText;
-  if ((style as any)?.format !== undefined) res.format = (style as any).format;
-  return res;
-}
-
-function mergePublishedStyles(base?: PublishedCellStyle, incoming?: PublishedCellStyle): PublishedCellStyle | undefined {
-  if (!base && !incoming) return undefined;
-  if (!base) return incoming;
-  if (!incoming) return base;
-  return { ...base, ...incoming };
-}
+const toPublishedStyle = sourceStyleToPublished;
 
 export function resolveCellFormatOptions(cell: CellDefinition): CellFormatOptions {
   const content = cell.content as any;
   const rawOpts: CellFormatOptions = content?.formatOptions || (cell as any).formatOptions || {};
   return {
+    numberFormat:rawOpts.numberFormat,
     format: rawOpts.format || content?.format || (cell.style as any)?.format,
     precision: rawOpts.precision !== undefined ? rawOpts.precision : content?.precision,
     useGrouping: rawOpts.useGrouping !== undefined ? rawOpts.useGrouping : content?.useGrouping,
@@ -106,22 +83,30 @@ function formatValue(value: any, format?: string, options?: CellFormatOptions): 
   }
 
   // 2. 零值显示处理
-  if (value === 0 || value === '0') {
+  if (value === 0) {
     if (options?.zeroDisplay === 'blank') return '';
     if (options?.zeroDisplay === 'dash') return '-';
+  }
+
+  if(options?.numberFormat){
+    const scaled=typeof value==='number'&&options.scale&&options.scale>0?value/options.scale:value;
+    return `${options.prefix||''}${formatExcelValue(scaled,options.numberFormat)}${options.suffix||''}`;
   }
 
   // 3. 日期时间格式化
   if (options?.dateFormat && (typeof value === 'string' || value instanceof Date || (typeof value === 'number' && value > 1000000000))) {
     try {
-      const d = value instanceof Date ? value : new Date(value);
+      let d = value instanceof Date ? value : new Date(value);
+      const normalized = typeof value==='string'&&isNaN(d.getTime())?dateComparable(value):undefined;
+      const normalizedBucket = normalized!==undefined;
+      if(normalizedBucket)d=new Date(normalized);
       if (!isNaN(d.getTime())) {
-        const year = d.getFullYear();
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        const hours = String(d.getHours()).padStart(2, '0');
-        const minutes = String(d.getMinutes()).padStart(2, '0');
-        const seconds = String(d.getSeconds()).padStart(2, '0');
+        const year = normalizedBucket?d.getUTCFullYear():d.getFullYear();
+        const month = String((normalizedBucket?d.getUTCMonth():d.getMonth()) + 1).padStart(2, '0');
+        const day = String(normalizedBucket?d.getUTCDate():d.getDate()).padStart(2, '0');
+        const hours = String(normalizedBucket?d.getUTCHours():d.getHours()).padStart(2, '0');
+        const minutes = String(normalizedBucket?d.getUTCMinutes():d.getMinutes()).padStart(2, '0');
+        const seconds = String(normalizedBucket?d.getUTCSeconds():d.getSeconds()).padStart(2, '0');
 
         let df = options.dateFormat;
         df = df.replace(/YYYY/g, String(year));
@@ -135,8 +120,11 @@ function formatValue(value: any, format?: string, options?: CellFormatOptions): 
     } catch {}
   }
 
+  // 文本编号和标签保持原类型，不能因空值/样式设置顺带丢掉前导零或改成数字。
+  if (typeof value === 'string') return `${options?.prefix || ''}${value}${options?.suffix || ''}`;
+
   // 4. 数值类型格式化
-  if (typeof value === 'number' || (!isNaN(Number(value)) && typeof value === 'string' && value.trim() !== '')) {
+  if (typeof value === 'number') {
     const rawNum = typeof value === 'number' ? value : Number(value);
 
     // 量级缩放 (例如除以 10000 转换为万元)
@@ -150,7 +138,7 @@ function formatValue(value: any, format?: string, options?: CellFormatOptions): 
     // 小数位数精度
     let prec: number | undefined = undefined;
     if (options?.precision !== undefined) {
-      prec = Math.max(0, Math.min(6, options.precision));
+      prec = Math.max(0, Math.min(20, options.precision));
     } else if (format === 'integer') {
       prec = 0;
     } else if (format === 'number' || format === 'decimal2' || format === 'currency' || isPct) {
@@ -207,17 +195,6 @@ function formatValue(value: any, format?: string, options?: CellFormatOptions): 
 // ---------------------------------------------------------------------------
 function naturalCompare(a: string, b: string): number {
   return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
-}
-
-// ---------------------------------------------------------------------------
-// 将 Excel 风格列标 (如 A, B, Z, AA) 转换为 0-based 列索引
-// ---------------------------------------------------------------------------
-function colLetterToIndex(colStr: string): number {
-  let index = 0;
-  for (let i = 0; i < colStr.length; i++) {
-    index = index * 26 + (colStr.charCodeAt(i) - 64);
-  }
-  return index - 1;
 }
 
 // ---------------------------------------------------------------------------
@@ -631,7 +608,7 @@ export function expandCellDrivenTemplate(
       // 明细列表：按记录逐条展开 (CE-T02, CER-09)。
       // 无主键时退回字段值，并在值重复时追加序号，避免静默身份碰撞导致实例覆盖错位。
       const seenVal = new Map<string, number>();
-      return records.map((rec, idx) => {
+      return records.map((rec) => {
         const rawVal = rec[fieldKey];
         const pk = rec.id ?? rec._id ?? rec.key;
         let memberKey: string;
@@ -983,8 +960,6 @@ export function expandCellDrivenTemplate(
   const footprints = new Map<string, ReportCellMerge>(); // templateCellId -> footprint
   const driverFootprintMerges: ReportCellMerge[] = [];
 
-  const analysisId = `analysis-${primaryRegion?.id || 'main'}`;
-
   // 不继承某一轴的格也必须跟随该轴整个重复块的尺寸推移（如行专属总计）。
   function displacedPosition(cell: CellDefinition): { row: number; column: number } {
     let shiftR = 0;
@@ -1021,13 +996,14 @@ export function expandCellDrivenTemplate(
     const rawVal = sc.content.kind === 'literal' ? (sc.content as LiteralCellContent).value : '';
     const formatOpts = resolveCellFormatOptions(sc);
     const cellStyle = toPublishedStyle(sc.style);
-    if (formatOpts.format) {
-      cellStyle.format = formatOpts.format;
+    if (formatOpts.numberFormat || formatOpts.format) {
+      cellStyle.format = formatOpts.numberFormat || formatOpts.format;
     }
     const numVal = typeof rawVal === 'number' ? rawVal : Number(rawVal);
     if (!isNaN(numVal) && numVal < 0 && (formatOpts.negativeFormat === 'red_minus' || formatOpts.negativeFormat === 'red_bracket')) {
       cellStyle.color = '#cf1322';
     }
+    const nativeColor=excelFormatColor(rawVal,formatOpts.numberFormat);if(nativeColor)cellStyle.color=nativeColor;
     const cell: BiGridCell = {
       row: r,
       col: c,
@@ -1123,7 +1099,7 @@ export function expandCellDrivenTemplate(
       }));
 
       const formatOpts = resolveCellFormatOptions(driver);
-      const dispText = formatOpts.dateFormat || formatOpts.emptyDisplay !== undefined
+      const dispText = formatOpts.numberFormat || formatOpts.dateFormat || formatOpts.emptyDisplay !== undefined
         ? formatValue(n.memberValue, formatOpts.format, formatOpts)
         : n.displayText;
 
@@ -1139,6 +1115,7 @@ export function expandCellDrivenTemplate(
         style: {
           verticalAlign: 'middle',
           ...toPublishedStyle(driver.style),
+          ...(formatOpts.numberFormat?{format:formatOpts.numberFormat}:{}),
         },
         tooltip: formatOpts.tooltip,
       };
@@ -1414,8 +1391,8 @@ export function expandCellDrivenTemplate(
     const formatOpts = resolveCellFormatOptions(dc);
 
     const cellStyle = toPublishedStyle(dc.style);
-    if (formatOpts.format) {
-      cellStyle.format = formatOpts.format;
+    if (formatOpts.numberFormat || formatOpts.format) {
+      cellStyle.format = formatOpts.numberFormat || formatOpts.format;
     }
     const numVal = typeof computedValue === 'number' ? computedValue : Number(computedValue);
     if (
@@ -1437,6 +1414,7 @@ export function expandCellDrivenTemplate(
       formatOpts.negativeFormat === 'red_bracket'
     );
 
+    const nativeColor=excelFormatColor(computedValue,formatOpts.numberFormat);if(nativeColor)cellStyle.color=nativeColor;
     const gridCell: BiGridCell = {
       row: r,
       col: c,
@@ -1623,7 +1601,8 @@ export function expandCellDrivenTemplate(
     const value = source.content.kind === 'literal' ? source.content.value : '';
     const fmt = resolveCellFormatOptions(source);
     const style = toPublishedStyle(source.style);
-    if (fmt.format) style.format = fmt.format;
+    if (fmt.numberFormat || fmt.format) style.format = fmt.numberFormat || fmt.format;
+    const nativeColor=excelFormatColor(value,fmt.numberFormat);if(nativeColor)style.color=nativeColor;
     if (Number(value) < 0 && (fmt.negativeFormat === 'red_minus' || fmt.negativeFormat === 'red_bracket')) style.color = '#cf1322';
     const row = -1 - i, key = `${row}:0`;
     const sample: BiGridCell = { row, col: 0, value, displayText: formatValue(value, fmt.format, fmt), role: 'custom', style, tooltip: fmt.tooltip };
