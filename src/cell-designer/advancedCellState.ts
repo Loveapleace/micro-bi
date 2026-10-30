@@ -2,6 +2,8 @@ import type { AdvancedCellUpdate, CellDefinition, CellFormatOptions, CellMergePo
 import { getCellCapabilities, type CapabilityContext } from '../report-template/cellCapabilities.js';
 import { emptyPresentationRules, targetForCell } from '../report-template/presentationTypes.js';
 import { validatePresentationRules, visualStyleForCell } from '../report-template/presentationRules.js';
+import type { DrillRule } from '../report/drillTypes.js';
+import { drillRuleMatchesCell, drillSourceIdentity } from '../report/drill.js';
 
 export interface AdvancedCellDraft {
   format: CellFormatOptions;
@@ -12,8 +14,9 @@ export interface AdvancedCellDraft {
   style: VisualStyleAction;
   rowStyleEnabled:boolean;
   rules: PresentationRules;
+  drill: DrillRule;
   dirtyFormat: (keyof CellFormatOptions)[];
-  dirty: Partial<Record<'text' | 'operation' | 'mergePolicy' | 'staticSpan' | 'style' | 'rowStyleEnabled' | 'rules', boolean>>;
+  dirty: Partial<Record<'text' | 'operation' | 'mergePolicy' | 'staticSpan' | 'style' | 'rowStyleEnabled' | 'rules' | 'drill', boolean>>;
 }
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 /** 面板和高级配置共用；同字段维度保持group，派生总计继承指标口径并保留外观。 */
@@ -52,6 +55,7 @@ export function createAdvancedCellDraft(doc: CellTemplateDocumentV1, cell: CellD
     style: {scope:'row',regionId:normal?.regionId,presetId:normal?.presetId,style:structuredClone(normal?.style||{}),reset:normal?.reset,noFill:normal?.noFill,rowColumns:normal?.rowColumns},
     rowStyleEnabled:Boolean(normal&&normal.enabled!==false),
     rules: structuredClone(doc.presentationRules||emptyPresentationRules()), dirtyFormat:[],dirty:{},
+    drill: structuredClone(doc.drillRules?.find(r=>drillRuleMatchesCell(r,cell))||{cellId:cell.id,sheetId:cell.sheetId,field:cell.content.kind==='field'?cell.content.fieldKey:undefined,semanticKey:drillSourceIdentity(cell),datasetId:doc.regions.find(r=>r.id===cell.regionId)?.datasetId,enabled:false,columns:[],pageSize:50}),
   };
 }
 
@@ -83,6 +87,7 @@ export function buildAdvancedCellUpdate(doc: CellTemplateDocumentV1, cell: CellD
     update.visualStyleRules=[...doc.styleRules.filter(r=>r.id!==rule.id),rule];
   }
   if(draft.dirty.rules && !same(draft.rules,initial.rules))update.presentationRules={...draft.rules,revision:draft.rules.revision+1};
+  if(draft.dirty.drill&&!same(draft.drill,initial.drill))update.drillRules=[...(doc.drillRules||[]).filter(r=>!drillRuleMatchesCell(r,cell)),{...draft.drill,cellId:cell.id,sheetId:cell.sheetId}];
   // 显式修改聚合是同一源的口径编辑，已有自身规则随新口径重新绑定，其他源保持原身份。
   if(draft.dirty.operation && draft.operation!==initial.operation){
     const rebind=(target:any)=>target?.cellId===cell.id&&target.kind!=='field'?{...target,operation:draft.operation}:target;
@@ -99,6 +104,13 @@ export function buildAdvancedCellUpdate(doc: CellTemplateDocumentV1, cell: CellD
 /** UI和实际源提交共用同一权限检查；不能通过隐藏控件或构造更新修改绑定/父格/公式。 */
 export function validateAdvancedCellUpdate(doc: CellTemplateDocumentV1, cell: CellDefinition, update: AdvancedCellUpdate, context: CapabilityContext = {}): AdvancedCellUpdate {
   const cap=getCellCapabilities(cell,context),base=cellFormatOptions(cell),incoming=update.content as any,original=cell.content as any;
+  if(update.drillRules&&!same(update.drillRules,doc.drillRules)){
+    if(!cap.canDrill)throw new Error('此单元格不支持自动明细下钻');
+    const others=(rules:DrillRule[])=>rules.filter(r=>!drillRuleMatchesCell(r,cell));
+    if(!same(others(update.drillRules),others(doc.drillRules||[])))throw new Error('只能修改当前源格的明细下钻');
+    const rule=update.drillRules.find(r=>drillRuleMatchesCell(r,cell));
+    if(rule&&(!Number.isInteger(rule.pageSize)||rule.pageSize<1||rule.pageSize>100||!Array.isArray(rule.columns)||rule.columns.some(k=>context.fields&&!context.fields.some(f=>f.key===k))))throw new Error('明细字段或分页条数无效');
+  }
   if('style' in update&&!same(update.style,cell.style))throw new Error('普通单元格样式请使用 Excel 工具栏调整');
   if(update.visualStyleRules&&!same(update.visualStyleRules,doc.styleRules)){
     if(!cap.canStyleRow)throw new Error('此单元格的样式请使用 Excel 工具栏调整');

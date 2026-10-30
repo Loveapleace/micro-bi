@@ -9,7 +9,7 @@ const identity = (c: CellDefinition) => c.panelOwner?.semanticKey || hybridAxisK
 /** 新布局不能清空原模板的全局样式、条件及已有实例覆盖记录。 */
 export function preserveHybridDocumentMetadata(current: CellTemplateDocumentV1, original?: CellTemplateDocumentV1): CellTemplateDocumentV1 {
   if (!original) return current;
-  return { ...current, styleRules: original.styleRules, presentationRules: original.presentationRules ?? current.presentationRules,
+  return { ...current, styleRules: original.styleRules, presentationRules: original.presentationRules ?? current.presentationRules, drillRules:original.drillRules??current.drillRules,
     instanceOverrides: original.instanceOverrides, orphanedEdits: original.orphanedEdits };
 }
 

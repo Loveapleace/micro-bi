@@ -1,0 +1,221 @@
+{
+  "date": "2026-10-29",
+  "scope": "typed scope, timezone and double-click temporary detail sheets",
+  "implemented": true,
+  "notImplemented": [
+    "hierarchy drill/expand",
+    "target-report navigation",
+    "host variable insertion"
+  ],
+  "automated": {
+    "newTests": 32,
+    "totalTests": 550,
+    "passed": 550,
+    "failed": 0,
+    "skipped": 0,
+    "libraryBuild": "ESM/CJS/declarations passed",
+    "hostBuild": "TypeScript/Vite passed"
+  },
+  "browser": {
+    "url": "http://localhost:5174/",
+    "isolatedContexts": true,
+    "finalPageErrors": [],
+    "finalContextMenuCycles": 10,
+    "preview": {
+      "sheetOrder": [
+        "sheet-1",
+        "bi-drill-11"
+      ],
+      "active": "bi-drill-11",
+      "rows": [
+        [
+          "交付件数明细"
+        ],
+        [
+          "承制车间=1号五轴切削车间 · 计划投产时间=2026-08-01"
+        ],
+        [
+          "工单流水号",
+          "交付件数"
+        ],
+        [
+          "WO-202608-01",
+          600
+        ]
+      ]
+    },
+    "pagination": {
+      "bar": "第 2 / 2 页，共 26 条；当前页最多 20 条\n与主报表数据一致\n上一页\n下一页\n返回主报表\n关闭明细",
+      "ids": [
+        "QA-020",
+        "QA-021",
+        "QA-022",
+        "QA-023",
+        "QA-024",
+        "QA-025"
+      ]
+    },
+    "vtablePagination": "第 2 / 2 页，共 26 条；当前页最多 20 条\n与主报表数据一致\n上一页\n下一页\n返回主报表\n关闭明细",
+    "grouped": {
+      "bar": "第 1 / 1 页，共 6 条；当前页最多 20 条\n与主报表数据一致\n上一页\n下一页\n返回主报表\n关闭明细",
+      "ids": [
+        "WO-202608-01",
+        "WO-202608-04",
+        "WO-202608-06",
+        "WO-202608-07",
+        "WO-202608-11",
+        "WO-202608-12"
+      ]
+    },
+    "groupedVtable": "第 1 / 1 页，共 6 条；当前页最多 20 条\n与主报表数据一致\n上一页\n下一页\n返回主报表\n关闭明细",
+    "sourceUnchangedDuringDataUpdates": true,
+    "dataChanges": [
+      {
+        "name": "add",
+        "value": 620,
+        "owned": 0
+      },
+      {
+        "name": "reverse",
+        "value": 620,
+        "owned": 0
+      },
+      {
+        "name": "remove",
+        "value": 1200,
+        "owned": 0
+      },
+      {
+        "name": "empty",
+        "value": null,
+        "owned": 0
+      },
+      {
+        "name": "restore",
+        "value": 600,
+        "owned": 0
+      }
+    ],
+    "readOnlyF2Blocked": true,
+    "scrollRestored": true,
+    "savedSourceSheets": [
+      "sheet-1"
+    ],
+    "savedPublishedSheets": [
+      "sheet-1"
+    ],
+    "nativeCopy": {
+      "case": "vtable-native-copy",
+      "containsLast": true,
+      "containsScope": true
+    },
+    "undoRedo": [
+      {
+        "case": "undo-restores-drill",
+        "success": true
+      },
+      {
+        "case": "redo-disables-drill",
+        "runtimeSheets": 0
+      }
+    ],
+    "initialNativeOpenCloseCycles": 5,
+    "firstRowPaint": {
+      "value": "QA-020",
+      "frozenHeight": 78,
+      "actualY": 79,
+      "logicalY": 79,
+      "visible": true
+    },
+    "menuCyclesAfterRowHeightFix": 10
+  },
+  "fixedDuringAcceptance": [
+    {
+      "issue": "VTable menuHandler null after context-menu action",
+      "before": [
+        {
+          "message": "Cannot read properties of null (reading 'menuHandler')",
+          "stack": "TypeError: Cannot read properties of null (reading 'menuHandler')\n    at http://localhost:5174/node_modules/.vite/deps/@visactor_vtable.js?v=6a696557:37154:29"
+        }
+      ],
+      "rootCause": "SDK global pointerup schedules a timer; synchronous/microtask sheet activation releases the source instance before timer completion",
+      "fix": "defer activation to the next task and verify the originating table instance"
+    },
+    {
+      "issue": "Frozen detail headers clipped the first data row",
+      "rootCause": "empty rowHeightConfig activates SDK auto-height while frozen prefix uses default height",
+      "fix": "omit empty row height config; explicit heights share customComputeRowHeight; recreate visible cells on sheet changes",
+      "proof": {
+        "value": "QA-020",
+        "frozenHeight": 78,
+        "actualY": 79,
+        "logicalY": 79,
+        "visible": true
+      }
+    }
+  ],
+  "evidenceFiles": [
+    "01-settings.png",
+    "02-preview-detail.png",
+    "03-preview-page2.png",
+    "04-vtable-page2.png",
+    "05-grouped-preview.png",
+    "06-grouped-vtable.png"
+  ],
+  "sourceHashes": {
+    "src/cell-designer/CellAdvancedSettings.tsx": "b4cb5ce5a6757e727102a4081c0c275e8563a4fd8700ba8880c77ea9d058f329",
+    "src/cell-designer/HybridCellDesigner.tsx": "d2a355626e5e9f37dec7f253e7b769dcd3ea31a0e62c3a35544d1d88cd1fa880",
+    "src/cell-designer/advancedCellState.ts": "66b1504f75d1b6f6234238030490da743256c82c46268e98bbc15dcbd4f99fec",
+    "src/cell-designer/guidedEditing.ts": "4163efd4f71c5be1571dcfb14cac18f0584348bbfd05e1b1c2ef662488d2310c",
+    "src/cell-designer/hybridTemplateState.ts": "3fc9019e3dd6166163d50dbb4fb287d3946c124dd53f56524ba8bb3712dc6841",
+    "src/cell-designer/syncWorkbookToTemplate.ts": "5b0fc1ac508c16d8ee128890843f2ba9477f0ecdb2c146751a829cfb6e4cb835",
+    "src/cell-designer/univerDrillSheets.ts": "2525180568eaa6c243b5045c5be188635cdc02cf762eda4c84c25286de8e344a",
+    "src/engine/bucketing.ts": "ad0f4796beefaa88f0327e68b513cb7e9e609bf39d1093f14bdbef86e9004b47",
+    "src/engine/types.ts": "36916913cff3553ba7ee4df32527b88b2fae17cfbfd252089b752f8b4e8fdfc7",
+    "src/report-template/cellCapabilities.ts": "040cc3a5f83d0e2bf13ed0cd8c0118547a623ead03b369d96e24bbad36a4de0f",
+    "src/report-template/cellExpansionEngine.ts": "0f5b8cbe4e77aeb23eec3d1ed1a8ee5590e9fbd8ef302b37b0e6251040f3d176",
+    "src/report-template/compileCellReport.ts": "4ec528a95dec3be73446f873ccc0224abcaa7bf0d6f28bfaa7f01c51ce73fe45",
+    "src/report-template/presentationTypes.ts": "6ccf7439cbbcec949b1987cc9c6de45a330d8683de3ca5eeb682019385c58e88",
+    "src/report-template/types.ts": "59793c46d31cb49ff37266b5b9d959e077515ce0b1d6d4ccbe00f1c41420f341",
+    "src/report-template/validator.ts": "d56722edd481d5a4abd81f3794b92a98c2cf13a38c13de27dc980370f4693ca8",
+    "src/report/drill.ts": "f3f124876ce08f7fa5763558ecaf4b949e7afe9beb6e404ef5169f75e9e5a04a",
+    "src/report/drillSession.ts": "5687cfe60d5d596f097d18b5ac2afad2dd8f2659e0af5bf6942e60870cefb249",
+    "src/report/drillTypes.ts": "e1f6956788ba8916f9113d3f8c9196bd4ec02dca0f47527c76bd8730d4947b28",
+    "src/report/index.ts": "d60da3412f21aead0ab60adbf4cb93cf71572a92bea0b6d7d35a269d16c893b0",
+    "src/report/runtimeSheets.ts": "723819e5b2e8b4ffbbb221a04c7216126a18acd024f7afe33cb363d14cc33256",
+    "src/report/types.ts": "497b13799ad1e46da976d75f60afeca60058dc7310a2401af1b6d5368b267c4c",
+    "src/ui/presentation/DynamicDataView.tsx": "5a4a63ebfc1fa066b385fc3bd80cc77b38efb8fb306291dbf78feab9068fd60a",
+    "src/ui/presentation/report/DrillSheetBar.tsx": "300d329f7f43e4097d1d2041e7c32724e2ff1187ff6b56d6caf4483ea98fd5e9",
+    "src/ui/presentation/report/ReportTableView.tsx": "4eaad8224df3e8ecd84ef870ed579da1817e6698a2a45190732d943d58ed571f",
+    "src/ui/presentation/report/gridAdapter.ts": "62271d65633a1c0705f9ddf2e05c11689413af590aefefdf4a6314dac09930aa",
+    "src/ui/presentation/report/useDrillRuntime.ts": "e643b8cc8953f3170102e3cb8a00478d028df8f5dc4482c7d0a1ef57a647bdb1",
+    "src/ui/presentation/types.ts": "545636172cc9e73cd15f6e29b62b168fd19004bb7baa0ffbb9b950d9937aca83",
+    "src/univer/UniverPreview.tsx": "480407720c73c6808534a2aca13dc1464b6bca6c63306c8313037edf47e59277"
+  },
+  "performance": {
+    "facts": 100000,
+    "baseline": {
+      "ms": 1347.7398999999998,
+      "cells": 50007,
+      "bytes": 4277010
+    },
+    "enabled": {
+      "ms": 1389.9914999999999,
+      "cells": 50007,
+      "bytes": 8882731,
+      "indexBytes": 4605707,
+      "targets": 10000,
+      "scopes": 10000
+    },
+    "firstQueryMs": 108.92500000000018,
+    "repeatedQueryMs": 99.42180000000008,
+    "returned": 10,
+    "total": 10,
+    "containsRawFacts": false
+  },
+  "logHashes": {
+    "micro-bi-drill-tests-final-2026-10-29.log": "065a0b7e1d5f1b73c1f47150d78bc28cc3b8ab09288bbeea0a8ce40b8c6e2772",
+    "micro-bi-drill-build-2026-10-29.log": "9828bda01365d8eb701ab20f4f47e7f3b852eb351278af974470b2d4fdc2aac2",
+    "micro-bi-drill-host-build-2026-10-29.log": "7bbc4896d6e650b83bc562c7c8cadfc553907750cfb872d5a012d840691f6b34"
+  }
+}

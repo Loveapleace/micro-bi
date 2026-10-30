@@ -11,7 +11,7 @@ export * from './charts/chartSpec.js';
 export * from './table/VTableView.js';
 export * from './table/tableExport.js';
 export * from './table/summaryCalculator.js';
-export * from './table/vtableSortPatch.js';
+export * from './table/tableSummary.js';
 export * from './toolbar/MetricSwitcher.js';
 export * from './toolbar/DimensionSwitcher.js';
 export * from './toolbar/ViewTypeSwitcher.js';

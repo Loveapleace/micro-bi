@@ -38,8 +38,10 @@ npm install micro-bi
 如需使用可视化 UI 组件（`DynamicDataView` 或 `DynamicDataConfigPanel`），确保项目中已安装配套基础库：
 
 ```bash
-npm install @visactor/vtable @visactor/vchart antd @ant-design/icons dayjs
+npm install react@18.3.1 react-dom@18.3.1 antd@5.29.3 @ant-design/icons @visactor/vtable@1.26.8 @visactor/vchart dayjs
 ```
+
+使用表格Excel导出时，另安装与VTable配套的 `@visactor/vtable-plugins@1.26.8`。插件和ExcelJS在首次导出时加载，输出真实 `.xlsx`；只使用数据引擎无需安装UI和导出依赖。当前AntD要求 `>=5.29.3 <6`，VTable及导出插件要求 `>=1.26.8 <2`，建议二者保持相同版本。
 
 ---
 
@@ -323,11 +325,11 @@ export const App = () => {
 ## 表格计算与现有预览能力
 
 - 正式展示使用 `@visactor/vtable` 的 `ListTable` / `PivotTable`。透视交叉格直接读取引擎结果；行、列总计根据原始聚合统计合并，COUNT 统计字段的非空值，AVG 按有效数值数量加权，计算列在总计上下文重新求值。显式 `scope: 'row'` 的数值计算列则累计各明细行的计算结果。
-- 配置预览使用 DOM 表格，展示前 10 行。现有编辑和粘贴仅允许修改可溯源的明细原始字段，聚合结果与计算列只读；补丁保存在 `dataOverrides` 中，不写回数据源。建议原始记录提供稳定、唯一的 `id` 或 `key`；缺省时使用原始行索引，支持同一数据快照内的排序和切片过滤。
-- 静态样式、条件格式和值映射以输出列 `key` 为准，例如 `SUM(sales)`；原始字段名配置继续作为兼容回退。正式 VTable 的编辑器与完整格式能力留待后续扩展。
+- 模式一使用VChart配置图表；模式三由面板维护维度和指标，由Univer维护模板外观与静态内容，动态预览和保存共用模板编译链路。正式报表使用中性的publication和VTable，展示态不加载Univer编辑器。条件替换文本与原始计算值分开。
+- 普通VTableView的总计使用SDK原生聚合行，统计口径仍来自共享引擎；总计不混入records，也不修改全局DataSource排序方法。模式三的分组、交叉、合并及明细下钻由报表编译器和会话层维护，见[当前文档导航](doc/README.md)。
 - `transformData([], config)` 保留列结构、透视模式和配置元信息。自然周以同一个周起始日期生成分桶键，支持跨月、跨年及周日/周一起始。
 - 数据源替换、注销、清空缓存或强制刷新时，旧请求仍可返回给原调用者，但不会覆盖当前缓存或删除新请求。普通并发读取继续共享一个请求。
-- 现有 `.xls` 导出内容为 HTML 表格，不是二进制 Excel 工作簿；尚未提供真实 `.xlsx` 导出或完整自定义格式导出。
+- VTableView的Excel导出使用官方TableExportPlugin输出真实 `.xlsx`，保留原始数值、布尔值、文本编号及日期文本；字符串 `=1+1` 不转换为可执行公式。支持当前表格顺序、合并与SDK可导出样式；不承诺完整复刻自定义Canvas绘制效果。模式三本轮没有新增导出操作栏。
 
 ---
 

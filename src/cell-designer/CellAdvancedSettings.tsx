@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Descriptions, Form, Input, Modal, Select, Space, Tabs, Tag, Typography } from 'antd';
+import { Alert, Descriptions, Form, Input, Modal, Select, Space, Switch, Tabs, Tag, Typography } from 'antd';
 import type { AdvancedCellUpdate, CellDefinition, CellFormatOptions, CellTemplateDocumentV1 } from '../report-template/types.js';
 import type { BiGridModel } from '../report/types.js';
 import { canOpenCellAdvancedSettings, getCellCapabilities, type CapabilityField } from '../report-template/cellCapabilities.js';
@@ -57,6 +57,13 @@ export const CellAdvancedSettings: React.FC<CellAdvancedSettingsProps> = ({
   const name=content.kind==='field'?content.displayName||content.fieldKey:content.kind==='literal'?
     isStatic?'静态文本 / 固定值':'面板生成文字':content.displayName||'公式';
   const settings=<Form layout="vertical" size="small" style={{paddingTop:8}}>
+    {cap.canDrill&&<>
+      <Form.Item label="明细下钻"><Switch aria-label="双击查看明细" checked={draft.drill.enabled} onChange={enabled=>change('drill',{...draft.drill,enabled})}/><Typography.Text type="secondary" style={{marginLeft:10}}>预览或展示时双击，打开只读明细工作表</Typography.Text></Form.Item>
+      {draft.drill.enabled&&<>
+        <Form.Item label="明细字段"><Select mode="multiple" aria-label="明细字段" placeholder="全部字段" value={draft.drill.columns} options={(fields||[]).map(f=>({value:f.key,label:f.label||f.key}))} onChange={columns=>change('drill',{...draft.drill,columns})}/></Form.Item>
+        <Form.Item label="每页条数"><Select aria-label="明细每页条数" value={draft.drill.pageSize} options={[20,50,100].map(value=>({value,label:String(value)}))} onChange={pageSize=>change('drill',{...draft.drill,pageSize})}/></Form.Item>
+      </>}
+    </>}
     {cap.canEditAggregation&&<Form.Item label="计算口径（与左侧指标同步）" extra="改变统计计算；同一指标的派生总计同步更新。"><Select aria-label="指标聚合口径" value={draft.operation}
       options={[...new Set([...cap.aggregations,...(draft.operation?[draft.operation]:[])])].map(value=>({value,label:operationNames[value]||value,disabled:!cap.aggregations.includes(value as any)}))}
       onChange={v=>change('operation',v)}/></Form.Item>}
@@ -87,7 +94,7 @@ export const CellAdvancedSettings: React.FC<CellAdvancedSettingsProps> = ({
   };
   return <Modal open={open} title={<Space wrap><Typography.Text strong>单元格高级配置</Typography.Text><Tag color="blue">{cap.label}</Tag>
     <Tag>R{cell.position.row+1}C{cell.position.column+1}</Tag><Typography.Text type="secondary">{name}</Typography.Text></Space>}
-    width={920} styles={{body:{maxHeight:'72vh',overflowY:'auto'}}} onOk={apply} onCancel={onCancel} okText="应用配置" cancelText="取消" destroyOnClose>
+    width={920} styles={{body:{maxHeight:'72vh',overflowY:'auto'}}} onOk={apply} onCancel={onCancel} okText="应用配置" cancelText="取消" destroyOnHidden>
     {error&&<Alert type="error" showIcon message={error} style={{marginBottom:12}}/>}
     <Typography.Paragraph type="secondary" style={{marginBottom:12}}>
       {isStatic?'在这里编辑静态内容及动态范围跟随。':'按当前角色配置业务属性；字段、分组粒度和展开结构由左侧面板维护。'}

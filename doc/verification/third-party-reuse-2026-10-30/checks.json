@@ -1,0 +1,317 @@
+{
+  "date": "2026-10-30",
+  "timezone": "Asia/Shanghai",
+  "scope": "三方API复用优化；保留既有下钻业务实现与配置",
+  "tests": {
+    "total": 560,
+    "passed": 560,
+    "failed": 0,
+    "skipped": 0,
+    "newFile": "test/third-party-reuse.test.mjs",
+    "newCases": 10,
+    "ids": "REUSE-01~10"
+  },
+  "builds": {
+    "library": "ESM/CJS/declarations passed",
+    "host": "TypeScript/Vite passed; existing SDK chunk warnings retained",
+    "logs": {
+      "micro-bi-reuse-build-2026-10-30.log": {
+        "bytes": 399,
+        "sha256": "9828bda01365d8eb701ab20f4f47e7f3b852eb351278af974470b2d4fdc2aac2"
+      },
+      "micro-bi-reuse-tests-final-2026-10-30.log": {
+        "bytes": 132338,
+        "sha256": "9bfcbf96179b0f367ae98f5897ca3272fb9573d3077efc9180bac6221f159b28"
+      },
+      "micro-bi-reuse-host-build-2026-10-30.log": {
+        "bytes": 7774,
+        "sha256": "adbe8610cc55e51e379a10a40c70f9ffbf5df0844f720387778f0616cce32181"
+      }
+    }
+  },
+  "dependencies": {
+    "antd": "5.29.3",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "@visactor/vtable": "1.26.8",
+    "@visactor/vtable-plugins": "1.26.8",
+    "@univerjs/core": "1.1.0",
+    "numfmt": "4.1.1"
+  },
+  "audit": {
+    "library": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    },
+    "host": {
+      "info": 0,
+      "low": 0,
+      "moderate": 1,
+      "high": 1,
+      "critical": 0,
+      "total": 2
+    },
+    "hostRemaining": [
+      "vite",
+      "esbuild"
+    ],
+    "deferred": "Vite major upgrade requires separate evaluation"
+  },
+  "browser": {
+    "url": "http://localhost:5174/",
+    "browser": "155.0.8059.85",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "isolation": "Fresh Playwright contexts; user browser/storage unchanged",
+    "pageErrors": [],
+    "nativeTabs": {
+      "masterCannotClose": true,
+      "detailClosable": true,
+      "closedToMaster": true
+    },
+    "modal": {
+      "immediateEscClosesOnlyChild": true,
+      "savedMetric": {
+        "expression": "[output_qty] * 2",
+        "metrics": 3,
+        "parentVisible": true
+      }
+    },
+    "sort": [
+      {
+        "order": "asc",
+        "qty": [
+          15,
+          20,
+          50
+        ],
+        "total": 85,
+        "records": 3
+      },
+      {
+        "order": "desc",
+        "qty": [
+          50,
+          20,
+          15
+        ],
+        "total": 85,
+        "records": 3
+      }
+    ],
+    "filter": {
+      "sameInstance": true,
+      "records": 1,
+      "total": 20,
+      "weighted": 0.1
+    },
+    "xlsx": {
+      "signature": [
+        80,
+        75,
+        3,
+        4
+      ],
+      "textCode": "00123",
+      "dateText": "2026-08",
+      "boolean": false,
+      "literalFormula": "=1+1",
+      "literalType": "string",
+      "total": 85,
+      "weighted": 0.117647
+    },
+    "pivotXlsx": {
+      "rows": 6,
+      "columns": 7,
+      "merges": [
+        "B1:D1",
+        "E1:G1",
+        "A1:A2"
+      ],
+      "total": 85,
+      "defect": 10,
+      "weighted": 0.117647
+    },
+    "asyncExport": {
+      "sortChange": "表格数据或排序已变化，请重新导出",
+      "close": "表格已关闭，已取消导出",
+      "closeRows": 1000
+    },
+    "mode3": {
+      "previousRound": {
+        "openClosePreviewCycles": 3,
+        "sourceUndoRedoPreserved": true,
+        "savedWhileRuntimeSheetActive": {
+          "sourceSheets": 1,
+          "publicationSheets": 1
+        }
+      },
+      "freshReopen": {
+        "preview": [
+          {
+            "row": 18,
+            "col": 8,
+            "value": "1,234.50",
+            "formula": "=TEXT(1234.5,\"#,##0.00\")"
+          },
+          {
+            "row": 18,
+            "col": 9,
+            "value": 3,
+            "formula": "=SUM(1,2)"
+          }
+        ],
+        "source": {
+          "text": "=TEXT(1234.5,\"#,##0.00\")",
+          "sum": "=SUM(1,2)",
+          "getSheet": "function",
+          "getInject": "function"
+        },
+        "formalVTable": {
+          "rows": 19,
+          "columns": 10,
+          "text": "1,234.50",
+          "sum": 3
+        },
+        "sourceSheets": 1,
+        "publicationSheets": 1,
+        "apiClearedAfterClose": true
+      }
+    }
+  },
+  "productionLazyEntry": {
+    "file": "assets/nativeTableExport-Dlrh-cKd.js",
+    "name": "nativeTableExport",
+    "src": "../micro-bi/src/ui/presentation/table/nativeTableExport.ts",
+    "isDynamicEntry": true,
+    "imports": [
+      "index.html"
+    ],
+    "dynamicImports": [
+      "node_modules/@visactor/vtable-plugins/es/index.js"
+    ]
+  },
+  "sourceHashes": {
+    "package.json": {
+      "bytes": 5902,
+      "sha256": "fad4de575f14a9cf878b4eb1550cbfff44b8f43305fb8024f5d3685636633538"
+    },
+    "package-lock.json": {
+      "bytes": 255618,
+      "sha256": "79af969f58473c74942800a7c32e885dd2bf1e73723a0d6f234cd07436c9caf6"
+    },
+    "src/ui/presentation/report/ReportTableView.tsx": {
+      "bytes": 9698,
+      "sha256": "2d36f889b5de85274a4f82349eace89610608a6831f763ce5222c087f118baee"
+    },
+    "src/ui/components/common/ReportModal.tsx": {
+      "bytes": 1413,
+      "sha256": "b9e7e0df129ae1b55ef1447e3db3c8d7f3c192652898d41c2795b7f29e2aed4f"
+    },
+    "src/ui/components/ColumnConfigList.tsx": {
+      "bytes": 23950,
+      "sha256": "183c5c15c60deca9fe22d6d7883183439a0372150f4c3366baebe5cfc3f3ba6a"
+    },
+    "src/ui/components/FormulaEditorModal.tsx": {
+      "bytes": 16686,
+      "sha256": "fdf406ae94b34f54d5962c7640d48a5176c14260c3e41db756e3659598768eff"
+    },
+    "src/ui/components/ImportConfigModal.tsx": {
+      "bytes": 8508,
+      "sha256": "37cbdc3961f788d072dfb2bb581d3470833489e122b30886db6b49ee38f2ca36"
+    },
+    "src/ui/presentation/table/VTableView.tsx": {
+      "bytes": 76951,
+      "sha256": "f3d7d446c8633a4913650e04bc189b411115967bc741e8441d847784015230f1"
+    },
+    "src/ui/presentation/table/tableSummary.ts": {
+      "bytes": 1476,
+      "sha256": "4d3d511971dbcb7a5a3f3a5fbf980bbbb83306b97b1188537abbf31a89f7559d"
+    },
+    "src/ui/presentation/table/nativeTableExport.ts": {
+      "bytes": 3771,
+      "sha256": "28cf3bf4f1b3a22fab480796fcf388974335a4c5dc25532943134ab984516453"
+    },
+    "src/ui/presentation/table/tableExport.ts": {
+      "bytes": 10210,
+      "sha256": "c135c4a7705e03d2b4351e9036ed5e474fa8f466ea33cb449c63a75f7de5a8d3"
+    },
+    "src/ui/presentation/index.ts": {
+      "bytes": 686,
+      "sha256": "fb96865926678892d8f93ff11273b0519eb7fb8f4e3b384eee5c79cac7dea5f5"
+    },
+    "src/univer/UniverPreview.tsx": {
+      "bytes": 25978,
+      "sha256": "8bdf7291048988ea0f767c2593fdeb8831a5fae0d2f145aae1dd8ff36b809033"
+    },
+    "src/univer/adapter.ts": {
+      "bytes": 9491,
+      "sha256": "6c82f6e40ce0862eb8eb0cc9bcaf45ca566dc33bb2fd6dbc4f01af700245ea38"
+    },
+    "src/report-template/sheetFormulaEvaluator.ts": {
+      "bytes": 25256,
+      "sha256": "e27294efccd8732bc112fd3a282bf2c71642d4240e2b57d85158042f3515d0d5"
+    },
+    "src/locale/en_US.ts": {
+      "bytes": 19239,
+      "sha256": "2d6a1d0d193724a006db0ad1f77513abca56449d133597074c0858423ef859fb"
+    },
+    "test/table.test.mjs": {
+      "bytes": 28050,
+      "sha256": "ebf0066516f48fcb140a9c02166c7178dc7997f5b5c9096d5b1bd4421653789b"
+    },
+    "test/third-party-reuse.test.mjs": {
+      "bytes": 5853,
+      "sha256": "94e524abbf6bc2806f33551673737971029ac61f6c74f62b977ba4d724bddf12"
+    }
+  },
+  "hostHashes": {
+    "package.json": {
+      "bytes": 957,
+      "sha256": "b6b79c21b7553773b5285b5f3d6a46e35dd61bd945043aff72819a031670a579"
+    },
+    "package-lock.json": {
+      "bytes": 305408,
+      "sha256": "832b3fd663cb09fb901c8122036bc77651f57788dc5dc1bc948edc94e02aecd9"
+    },
+    "vite.config.ts": {
+      "bytes": 2913,
+      "sha256": "82875e3f05a1ffa8b5f2715abf5a039879cba905dde564c74cab99478e9b6a8b"
+    }
+  },
+  "artifacts": {
+    "01-native-tabs.png": {
+      "bytes": 30356,
+      "sha256": "bd2668a0e273bcb76135369567b48869c1e87b993b9dda983c2a23c570d24c8a"
+    },
+    "02-native-formula-modal.png": {
+      "bytes": 36175,
+      "sha256": "ebac81d82243cc842a1af3d1bd3a2aff4ee9d4e99fe5bd081248a66d081abcc2"
+    },
+    "03-native-summary.png": {
+      "bytes": 24603,
+      "sha256": "e622c8f8b1cb7886d23d70e1a131dd28f0a01eba9432f1c8a82b913448f22ae1"
+    },
+    "native-export.xlsx": {
+      "bytes": 7226,
+      "sha256": "6ffe63b15eb87ae221f325248e949e129664f1449a8c950f22d61fe349464618"
+    },
+    "native-pivot-export.xlsx": {
+      "bytes": 7192,
+      "sha256": "f5b651d502fcffe2edbca61add4baaa5b2c5b2ebf8796e5a0ef313c0e310c5c3"
+    }
+  },
+  "knownLimits": [
+    "宿主Vite/esbuild剩余两项开发依赖审计报告",
+    "大型SDK分包告警仍在",
+    "数字形态的固定文本编号被既有推断策略判为数值时可能产生总计；未更改该统计策略",
+    "自定义Canvas绘制按值导出，不承诺效果完整复刻"
+  ],
+  "git": "No commit or push performed"
+}

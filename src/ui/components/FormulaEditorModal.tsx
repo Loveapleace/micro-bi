@@ -20,7 +20,7 @@ import type { DataRecord } from '../../types.js';
 import { parseFormula } from '../../engine/formula/parser.js';
 import { evaluateFormula } from '../../engine/formula/evaluator.js';
 import { useDynamicDataLocale } from '../../locale/index.js';
-import { SimpleModal } from './common/SimpleModal.js';
+import { ReportModal } from './common/ReportModal.js';
 
 const { Text } = Typography;
 
@@ -238,7 +238,7 @@ export const FormulaEditorModal: React.FC<FormulaEditorModalProps> = ({
   };
 
   return (
-    <SimpleModal
+    <ReportModal
       title={
         <Space size={6}>
           <CalculatorOutlined style={{ color: '#1677ff' }} />
@@ -251,7 +251,7 @@ export const FormulaEditorModal: React.FC<FormulaEditorModalProps> = ({
       onCancel={onCancel}
       okText={usage==='chart'?'保存指标配置':t('保存列配置')}
       cancelText={t('取消')}
-      destroyOnClose
+      destroyOnHidden
       isDark={isDark}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -482,6 +482,6 @@ export const FormulaEditorModal: React.FC<FormulaEditorModalProps> = ({
             ))}
         </div>
       </div>
-    </SimpleModal>
+    </ReportModal>
   );
 };

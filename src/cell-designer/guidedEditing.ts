@@ -4,6 +4,7 @@ import type { FUniver } from '../univer/adapter.js';
 import { isUniverDoubleClick } from './univerEvents.js';
 import { isEditableGeneratedText } from '../report-template/guidedSource.js';
 import { readUniverLiteralValue } from './univerValues.js';
+import { sourceOnlyWorkbookSnapshot } from '../report/runtimeSheets.js';
 export interface GuidedRange {
     sheetId: string;
     startRow: number;
@@ -54,6 +55,7 @@ function containsFormula(value:unknown):boolean {
 }
 /** 原生快照是外观和静态内容的编辑载体，不能覆盖系统数据区的内容。 */
 export function protectGuidedSnapshot(snapshot: any, panel: CellTemplateDocumentV1, grid: BiGridModel, mode: 'design' | 'preview'): any {
+    snapshot=sourceOnlyWorkbookSnapshot(snapshot);
     if (!snapshot?.sheets)
         return snapshot;
     const next = structuredClone(snapshot), at = new Map(grid.cells.map(c => [`${c.row}:${c.col}`, c])), ranges = guidedDataRanges(panel);

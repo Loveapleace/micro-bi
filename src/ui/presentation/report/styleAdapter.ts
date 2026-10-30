@@ -25,12 +25,16 @@ export interface VTableCellStyleResult {
 }
 
 export function mapPublishedStyleToVTable(
-  style?: PublishedCellStyle, value?:unknown
+  style: PublishedCellStyle = {}, value?: unknown
 ): VTableCellStyleResult {
-  if (!style) return {};
-
+  const alignment = style.align ?? 'general';
   // 与中性网格的自动行高估算使用同一内边距，避免24号换行文本被主题默认大边距截断。
-  const res: VTableCellStyleResult = {padding:[4,6,4,6],fontFamily:'Arial',fontSize:11,textOverflow:'clip'};
+  const res: VTableCellStyleResult = {
+    padding: [4, 6, 4, 6], fontFamily: 'Arial', fontSize: 11,
+    textOverflow: 'clip', textBaseline: 'middle',
+    // 以原值类型判断，格式化文本和条件文案不会把数值误判为文本。
+    textAlign: alignment === 'general' ? (typeof value === 'number' ? 'right' : 'left') : alignment,
+  };
 
   if (style.fontFamily) res.fontFamily = style.fontFamily;
   if (style.fontSize) res.fontSize = style.fontSize;
@@ -40,7 +44,6 @@ export function mapPublishedStyleToVTable(
   if (style.strikethrough!==undefined) res.lineThrough = style.strikethrough;
   if (style.color) res.color = style.color;
   if (style.bgColor) res.bgColor = style.bgColor;
-  if (style.align) res.textAlign = style.align==='general'?(typeof value==='number'?'right':'left'):style.align;
 
   if (style.verticalAlign) {
     res.textBaseline =

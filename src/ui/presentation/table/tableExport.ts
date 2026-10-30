@@ -1,7 +1,7 @@
 /**
- * 表格数据导出与剪贴板实用工具 (零外部重型依赖)
+ * 表格数据导出与剪贴板实用工具（原生XLSX导出按需加载）
  * - exportToCsv: 纯前端 CSV 导出（自动注入 UTF-8 BOM，在 Windows / Mac Excel 中双击 100% 无乱码）
- * - exportToHtmlExcel: 生成标准 XML/HTML 格式的 .xls 工作表，支持列样式与单元格保留
+ * - exportTableInstanceToExcel: 复用官方插件导出真正的xlsx工作簿
  * - copyToClipboardAsTsv: 格式化为 TSV (Tab Separated) 写入剪贴板，支持直接 Ctrl+V 粘贴进本地 Excel
  */
 import type { DataRecord, OutputColumnMeta } from '../../../engine/types.js';
@@ -70,66 +70,6 @@ export function exportToCsv(
   const content = generateCsvContent(data, columns);
   const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
   const finalName = filename.endsWith('.csv') ? filename : `${filename}.csv`;
-  triggerDownload(blob, finalName);
-}
-
-/** 导出为 HTML/XML Excel (.xls) 文件（支持样式与原生表格结构，并对文本实施安全实体转义） */
-export function exportToHtmlExcel(
-  data: readonly DataRecord[],
-  columns: readonly ExportColumnDef[],
-  filename: string = 'export_data'
-): void {
-  const headerHtml = columns
-    .map(
-      (col) =>
-        `<th style="background-color: #f2f4f8; font-weight: bold; border: 1px solid #d9d9d9; padding: 6px 10px;">${escapeHtml(col.title)}</th>`
-    )
-    .join('');
-
-  const rowsHtml = data
-    .map((row) => {
-      const cells = columns
-        .map((col) => {
-          const val = row[col.key];
-          const text = escapeHtml(val);
-          const isNum = typeof val === 'number';
-          const align = isNum ? 'right' : 'left';
-          const numFormat = isNum ? '' : "mso-number-format:'\\@';";
-          return `<td style="border: 1px solid #e8e8e8; padding: 6px 10px; text-align: ${align}; ${numFormat}">${text}</td>`;
-        })
-        .join('');
-      return `<tr>${cells}</tr>`;
-    })
-    .join('');
-
-  const template = `
-    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-      <head>
-        <meta http-equiv="content-type" content="application/vnd.ms-excel; charset=UTF-8">
-        <!--[if gte mso 9]>
-        <xml>
-          <x:ExcelWorkbook>
-            <x:ExcelWorksheets>
-              <x:ExcelWorksheet>
-                <x:Name>Sheet1</x:Name>
-                <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
-              </x:ExcelWorksheet>
-            </x:ExcelWorksheets>
-          </x:ExcelWorkbook>
-        </xml>
-        <![endif]-->
-      </head>
-      <body>
-        <table>
-          <thead><tr>${headerHtml}</tr></thead>
-          <tbody>${rowsHtml}</tbody>
-        </table>
-      </body>
-    </html>
-  `;
-
-  const blob = new Blob([template], { type: 'application/vnd.ms-excel;charset=utf-8' });
-  const finalName = filename.endsWith('.xls') || filename.endsWith('.xlsx') ? filename : `${filename}.xls`;
   triggerDownload(blob, finalName);
 }
 
@@ -303,35 +243,13 @@ export function exportTableInstanceToCsv(table: any, filename: string = 'export_
 }
 
 /**
- * 导出 VTable 表格实例 (如多维交叉透视表) 为原生 XML/HTML Excel (.xls) 文件
+ * 导出 VTable 表格实例为真正的Excel工作簿(.xlsx)
  */
-export function exportTableInstanceToExcel(table: any, filename: string = 'export_pivot'): void {
-  const tableHtml = generateTableInstanceHtml(table);
-  const template = `
-    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-      <head>
-        <meta http-equiv="content-type" content="application/vnd.ms-excel; charset=UTF-8">
-        <!--[if gte mso 9]>
-        <xml>
-          <x:ExcelWorkbook>
-            <x:ExcelWorksheets>
-              <x:ExcelWorksheet>
-                <x:Name>Sheet1</x:Name>
-                <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
-              </x:ExcelWorksheet>
-            </x:ExcelWorksheets>
-          </x:ExcelWorkbook>
-        </xml>
-        <![endif]-->
-      </head>
-      <body>
-        ${tableHtml}
-      </body>
-    </html>
-  `;
-  const blob = new Blob([template], { type: 'application/vnd.ms-excel;charset=utf-8' });
-  const finalName = filename.endsWith('.xls') || filename.endsWith('.xlsx') ? filename : `${filename}.xls`;
-  triggerDownload(blob, finalName);
+export async function exportTableInstanceToExcel(table: any, filename: string = 'export_table'): Promise<void> {
+  const { generateTableXlsx } = await import('./nativeTableExport.js');
+  const bytes = await generateTableXlsx(table);
+  const name = filename.replace(/\.xlsx?$/i, '') + '.xlsx';
+  triggerDownload(new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), name);
 }
 
 /**

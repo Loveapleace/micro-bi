@@ -30,7 +30,7 @@ import type {
 import { metricTemplateRegistry } from '../../engine/template.js';
 import { cleanAggregatedLabel, formatAggregatedLabel } from '../../engine/modeAdapter.js';
 import { useDynamicDataLocale } from '../../locale/index.js';
-import { SimpleModal } from './common/SimpleModal.js';
+import { ReportModal } from './common/ReportModal.js';
 
 const { Text } = Typography;
 
@@ -503,8 +503,8 @@ export const ColumnConfigList: React.FC<ColumnConfigListProps> = ({
         )}
       </div>
 
-      {/* 行业指标模板套用 SimpleModal */}
-      <SimpleModal
+      {/* 行业指标模板使用统一报表弹窗 */}
+      <ReportModal
         title={
           <Space size={6}>
             <AppstoreAddOutlined style={{ color: '#722ed1' }} />
@@ -516,7 +516,7 @@ export const ColumnConfigList: React.FC<ColumnConfigListProps> = ({
         onCancel={() => setTemplateModalOpen(false)}
         okText={t('一键导入指标列')}
         cancelText={t('取消')}
-        destroyOnClose
+        destroyOnHidden
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
@@ -600,7 +600,7 @@ export const ColumnConfigList: React.FC<ColumnConfigListProps> = ({
             </>
           )}
         </div>
-      </SimpleModal>
+      </ReportModal>
     </Card>
   );
 };

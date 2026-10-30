@@ -17,13 +17,17 @@
 | Excel工具栏样式与格式 | [保存、预览和VTable实施验收](toolbar-formatting-implementation-and-acceptance-2026-10-28.md)；不做旧结构兼容，受限操作明确隐藏或拒绝 |
 | Univer生命周期 | [初始化、关闭取消与压力验收](univer-lifecycle-fix-and-acceptance-2026-10-29.md)；已修复滚动控制器注册竞态，历史null(row)另留观察 |
 | 静态格跟随动态列范围 | [实施验收](static-span-implementation-and-acceptance-2026-10-26.md) |
+| 模式三明细Sheet下钻 | [首期实施与验收](drilldown-detail-sheet-implementation-and-acceptance-2026-10-29.md)；双击汇总格，预览用Univer、展示用VTable，明细不进入保存包 |
+| 三方API复用优化 | [实施与验收](third-party-api-reuse-implementation-and-acceptance-2026-10-30.md)；AntD页签/弹窗、VTable原生聚合行与真实xlsx、Univer公开API及TEXT公式 |
+| 指标默认对齐 | [常规对齐与验收](univer-implementation-issues-and-remediation.md#64-指标默认使用excel常规对齐2026-10-30)；占位文本靠左，数值靠右，显式对齐优先 |
 | 多条件、文本和样式 | [条件规则方案](conditional-rules-optimization-plan-2026-10-26.md)、[实施验收](conditional-rules-implementation-and-acceptance-2026-10-26.md) |
 | React18 | [运行约定与升级实施记录](react18-implementation-and-acceptance.md) |
 | 历次问题与最新约定 | [整改清单](univer-implementation-issues-and-remediation.md)；最新约定按最后章节为准 |
 
 ## 待办事项
 
-- [ ] **H3-DRILL-01：模式三单元格交互与下钻**。建议先支持查看明细、参数化目标报表及抽屉/弹窗打开，再支持当前表内的层级下钻。需打通模板设计、动态预览试运行、保存重开和VTable触发；当前仅登记，尚未实施或排期。范围、实现要点及验收条件见[整改清单第44节](univer-implementation-issues-and-remediation.md#44-模式三单元格交互与下钻待办2026-10-27)。
+- [ ] **H3-DRILL-01：模式三单元格交互与下钻**。首期“双击汇总格打开临时明细Sheet”及类型/时间/版本语义已[实现并验收](drilldown-detail-sheet-implementation-and-acceptance-2026-10-29.md)。预览用Univer，展示用VTable，明细不进入保存包。目标报表跳转、行列层级钻入/上钻及局部展开仍待实施；真实宿主远端查询待联调。原范围见[第44节](univer-implementation-issues-and-remediation.md#44-模式三单元格交互与下钻待办2026-10-27)，阶段规划见[技术评估](drilldown-technical-assessment-2026-10-29.md)。
+- [ ] **H3-VAR-01：模式三单元格引用宿主变量**。单元格通过 `{{address}}` 引用宿主接口提供的值，支持变量目录注册、多级树选择和变量变化后的局部同步。**仅登记，暂缓实施，接入实际宿主项目时再落地**；当前没有对应运行时API。需求边界、拟议接口、性能要求和待执行验收见[整改清单第61节](univer-implementation-issues-and-remediation.md#61-模式三单元格引用宿主变量待办2026-10-29)。
 
 ## 当前架构
 

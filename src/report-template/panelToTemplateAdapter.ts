@@ -201,7 +201,7 @@ function compileGroupedTemplate(
       position: { row: anchorR, column: anchorC + colIdx },
       content: { kind: 'literal', value: mLabel },
       parents: { row: null, column: null },
-      style: { bold: true, backgroundColor: '#fafafa', textAlign: 'right' },
+      style: { bold: true, backgroundColor: '#fafafa', textAlign: 'general' },
     });
     colIdx++;
   });
@@ -282,7 +282,7 @@ function compileGroupedTemplate(
         row: secCellId || priCellId,
         column: null,
       },
-      style: { textAlign: 'right', color: '#d46b08', backgroundColor: '#fff7e6' },
+      style: { textAlign: 'general', color: '#d46b08', backgroundColor: '#fff7e6' },
     });
     dColIdx++;
   });
@@ -436,7 +436,7 @@ function compileDetailTemplate(
       position: { row: anchorR, column: anchorC + idx },
       content: { kind: 'literal', value: label },
       parents: { row: null, column: null },
-      style: { bold: true, backgroundColor: '#fafafa', textAlign: isNum ? 'right' : 'center' },
+      style: { bold: true, backgroundColor: '#fafafa', textAlign: isNum ? 'general' : 'center' },
     });
 
     // 明细行 (Row anchorR + 1)
@@ -459,7 +459,7 @@ function compileDetailTemplate(
         row: idx === 0 ? 'none' : masterDriverId,
         column: 'none',
       },
-      style: { textAlign: isNum ? 'right' : 'left', verticalAlign: 'middle' },
+      style: { textAlign: 'general', verticalAlign: 'middle' },
     });
   });
 

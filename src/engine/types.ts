@@ -48,6 +48,8 @@ export interface TimeBucketConfig {
   readonly format?: string | undefined;
   /** 周起始日（0: 周日, 1: 周一，默认 1） */
   readonly weekStartsOn?: 0 | 1 | undefined;
+  /** IANA时区；省略时使用宿主本地时区。 */
+  readonly timezone?: string | undefined;
 }
 
 /** 维度总计/小计展示配置 */

@@ -81,16 +81,7 @@ export function adaptPublishedSheetToVTable(
       style: (args: any) => {
         const r = args.row;
         const cell = cellIndex.get(`${r},${c}`);
-        if (cell?.styleId && styles[cell.styleId]) {
-          return mapPublishedStyleToVTable(styles[cell.styleId],cell.v) as any;
-        }
-        return {
-          textAlign: 'left',
-          textBaseline: 'middle',
-          fontSize: 11,
-          textOverflow: 'clip',
-          padding: [4,6,4,6],
-        };
+        return mapPublishedStyleToVTable(cell?.styleId ? styles[cell.styleId] : undefined, cell?.v) as any;
       },
       ...(sheet.cells.some(cell=>cell.c===c&&hasDouble(cell))?{customRender:doubleBorderRender}:{}),
     } as any);
@@ -135,7 +126,12 @@ export function adaptPublishedSheetToVTable(
     frozenRowCount: sheet.frozenRowCount ?? 0,
     frozenColCount: sheet.frozenColCount ?? 0,
     defaultRowHeight: sheet.defaultRowHeight ?? 28,
-    rowHeightConfig: Object.entries(sheet.rowHeights||{}).map(([row,height])=>({key:Number(row),height})),
+    // SDK把空数组也视作自动行高，但冻结区前缀仍按默认值累加，会遮住首条数据。
+    // 已发布的Excel行高是最终布局；用同一回调统一实际高度与冻结区累计高度。
+    ...(Object.keys(sheet.rowHeights||{}).length?{
+      rowHeightConfig:Object.entries(sheet.rowHeights!).map(([row,height])=>({key:Number(row),height})),
+      customComputeRowHeight:({row}:{row:number})=>sheet.rowHeights?.[row]??sheet.defaultRowHeight??28,
+    }:{}),
     keyboardOptions: {
       copySelected: true,
       pasteValueToCell: false,

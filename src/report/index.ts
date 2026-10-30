@@ -13,4 +13,8 @@ export * from './refresh.js';
 export * from './validator.js';
 export * from './cellStyle.js';
 export * from './numberFormat.js';
+export * from './drillTypes.js';
+export * from './drill.js';
+export * from './drillSession.js';
+export * from './runtimeSheets.js';
 export * from '../report-template/index.js';

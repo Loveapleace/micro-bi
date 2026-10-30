@@ -99,6 +99,7 @@ export interface RuleStatistics {
 export type AdvancedCellUpdate = Partial<CellDefinition> & {
     presentationRules?: PresentationRules | undefined;
     visualStyleRules?: StyleRule[] | undefined;
+    drillRules?: import('../report/drillTypes.js').DrillRule[] | undefined;
 };
 export const emptyPresentationRules = (): PresentationRules => ({ version: 1, revision: 0, ruleSets: [] });
 export const createPredicate = (): RulePredicate => ({ kind: 'comparison', left: { kind: 'current' }, operator: 'lt', right: { kind: 'literal', value: 90 } });

@@ -1,0 +1,107 @@
+{
+  "date": "2026-10-29",
+  "status": "technical-assessment-only",
+  "featureImplemented": false,
+  "drilldownAcceptanceExecuted": false,
+  "probeMethod": "Node导入本地现有dist；仅使用合成事实，设置当前进程TZ，不修改宿主数据或运行时代码。",
+  "observations": {
+    "kind": "read-only-technical-probe",
+    "fixture": [
+      {
+        "id": "n1",
+        "team": 1,
+        "qty": 10
+      },
+      {
+        "id": "s1",
+        "team": "1",
+        "qty": 20
+      }
+    ],
+    "typedMembers": [
+      {
+        "value": 1,
+        "valueType": "number",
+        "rowPath": [
+          {
+            "axisId": "rows",
+            "field": "team",
+            "memberKey": "1",
+            "label": "1"
+          }
+        ]
+      },
+      {
+        "value": "1",
+        "valueType": "string",
+        "rowPath": [
+          {
+            "axisId": "rows",
+            "field": "team",
+            "memberKey": "1",
+            "label": "1"
+          }
+        ]
+      }
+    ],
+    "publicationValid": true,
+    "expandedMetric": [
+      {
+        "sourceCellId": "meas-qty",
+        "rowPath": [
+          {
+            "axisId": "rows",
+            "field": "team",
+            "memberKey": "n:1",
+            "label": "n:1"
+          }
+        ],
+        "hasRuleFacts": true
+      },
+      {
+        "sourceCellId": "meas-qty",
+        "rowPath": [
+          {
+            "axisId": "rows",
+            "field": "team",
+            "memberKey": "s:1",
+            "label": "s:1"
+          }
+        ],
+        "hasRuleFacts": true
+      }
+    ],
+    "publishedMetric": [
+      {
+        "keys": [
+          "r",
+          "c",
+          "v",
+          "displayText",
+          "styleId",
+          "role",
+          "tooltip"
+        ],
+        "value": 10
+      },
+      {
+        "keys": [
+          "r",
+          "c",
+          "v",
+          "displayText",
+          "styleId",
+          "role",
+          "tooltip"
+        ],
+        "value": 20
+      }
+    ],
+    "timezoneProbe": {
+      "input": "2026-08-31T16:30:00Z",
+      "processTimezone": "Asia/Shanghai",
+      "utcOption": "2026-09-01",
+      "shanghaiOption": "2026-09-01"
+    }
+  }
+}

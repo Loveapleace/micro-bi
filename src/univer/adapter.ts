@@ -6,7 +6,7 @@
  * 3. 异步公式计算稳定判定 (waitForFormulaSettled)
  * 4. 实例与事件完整释放清理 (dispose)
  */
-import { LocaleType, CommandType, CellValueType, InterceptorEffectEnum, ICommandService, IUndoRedoService, IContextService, IUniverInstanceService,
+import { LocaleType, CommandType, CellValueType, HorizontalAlign, InterceptorEffectEnum, ICommandService, IUndoRedoService, IContextService, IUniverInstanceService,
   EDITOR_ACTIVATED, FOCUSING_SHEET, LifecycleService, LifecycleStages, type IWorkbookData, type Univer } from '@univerjs/core';
 import { createUniver } from '@univerjs/presets';
 import { UniverSheetsCorePreset, IMenuManagerService, RibbonPosition, type MenuSchemaType, type IMenuSchema } from '@univerjs/preset-sheets-core';
@@ -61,7 +61,8 @@ export function bindSourceHistory(api: FUniver, source: { readonly count: number
   const instance=owner?.univer;
   const unitId = api.getActiveWorkbook()?.getId();
   if (!instance || !unitId) return undefined;
-  const injector = instance.__getInjector();
+  const injector = api.getActiveWorkbook()?.getActiveSheet()?.getInject();
+  if(!injector)return undefined;
   const commands = injector.get(ICommandService), history = injector.get(IUndoRedoService);
   const context = injector.get(IContextService), units = injector.get(IUniverInstanceService);
   const id = 'micro-bi.mutation.restore-hybrid-source';
@@ -147,7 +148,12 @@ export function initUniver(
         const meta = raw?.custom;
         if (!meta?.biProjection || typeof meta.displayText !== 'string' || !Object.is(raw.v ?? null, meta.originalValue ?? null)) return rendered;
         if(meta.displaySource!=='conditional'&&meta.displayText===String(raw.v??''))return rendered;
-        return { ...rendered, v: meta.displayText, t: CellValueType.FORCE_STRING, p: null };
+        // 文案投影使用字符串绘制；常规对齐仍按原始数值决定，且不写回工作簿样式。
+        const style = location.worksheet.getComposedCellStyleByCellData(location.row, location.col, rendered);
+        const numericGeneral = typeof raw.v === 'number' &&
+          (style.ht === undefined || style.ht === HorizontalAlign.UNSPECIFIED);
+        return { ...rendered, v: meta.displayText, t: CellValueType.FORCE_STRING, p: null,
+          ...(numericGeneral ? { interceptorStyle: { ...rendered?.interceptorStyle, ht: HorizontalAlign.RIGHT } } : {}) };
       },
     }) : undefined;
 

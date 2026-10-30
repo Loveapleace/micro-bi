@@ -4,7 +4,18 @@
  * 依据配置将任意形式的时间转换为聚合分桶 Key。
  */
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc.js';
+import timezone from 'dayjs/plugin/timezone.js';
 import type { TimeBucketConfig } from './types.js';
+dayjs.extend(utc);
+dayjs.extend(timezone);
+const timeZoneValidity=new Map<string,boolean>();
+
+export function isValidTimeZone(zone: string): boolean {
+  if(timeZoneValidity.has(zone))return timeZoneValidity.get(zone)!;
+  let valid=true;try { new Intl.DateTimeFormat('en', { timeZone: zone }).format(0); } catch { valid=false; }
+  if(timeZoneValidity.size>128)timeZoneValidity.clear();timeZoneValidity.set(zone,valid);return valid;
+}
 
 /**
  * 将单个时间值格式化为分桶聚合键
@@ -20,7 +31,13 @@ export function formatTimeBucket(value: unknown, config: TimeBucketConfig): stri
       : typeof value === 'number' && Math.abs(value) >= 1000000000 && Math.abs(value) < 10000000000
       ? value * 1000
       : value as string | number | Date;
-  const d = dayjs(normalizedValue);
+  if (config.timezone && !isValidTimeZone(config.timezone)) throw new Error(`无效时区：${config.timezone}`);
+  const naive = typeof normalizedValue === 'string' && !/(?:Z|[+-]\d{2}:?\d{2})$/i.test(normalizedValue);
+  const parsed = dayjs(normalizedValue);
+  if (!parsed.isValid()) return '(无效时间)';
+  const d = config.timezone==='UTC'? naive?dayjs.utc(normalizedValue):parsed.utc():config.timezone
+    ? naive ? dayjs.tz(normalizedValue as string, config.timezone) : parsed.tz(config.timezone)
+    : parsed;
 
   if (!d.isValid()) {
     return '(无效时间)';
@@ -72,15 +89,15 @@ export function formatTimeBucket(value: unknown, config: TimeBucketConfig): stri
       const daysInterval = Math.max(1, config.customIntervalDays ?? 1);
       // 以本地时区 2000-01-01 00:00 为基准、按本地自然日切分，
       // 避免 UTC 毫秒基准与本地时区格式化不一致导致桶边界在非 UTC 时区漂移。
-      const baseMs = dayjs('2000-01-01').valueOf();
+      const baseMs = Date.UTC(2000, 0, 1);
       const oneDayMs = 86400000;
-      const dayStartMs = d.startOf('day').valueOf();
+      const dayStartMs = Date.UTC(d.year(), d.month(), d.date());
       const diffDays = Math.round((dayStartMs - baseMs) / oneDayMs);
       const bucketIndex = Math.floor(diffDays / daysInterval);
       const startMs = baseMs + bucketIndex * daysInterval * oneDayMs;
       const endMs = startMs + (daysInterval - 1) * oneDayMs;
-      const startStr = dayjs(startMs).format('YYYY-MM-DD');
-      const endStr = dayjs(endMs).format('YYYY-MM-DD');
+      const startStr = dayjs.utc(startMs).format('YYYY-MM-DD');
+      const endStr = dayjs.utc(endMs).format('YYYY-MM-DD');
       return daysInterval === 1 ? startStr : `${startStr} ~ ${endStr}`;
     }
 

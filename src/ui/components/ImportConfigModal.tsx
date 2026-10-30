@@ -20,7 +20,7 @@ import {
 import type { DynamicTransformConfig, FieldMeta } from '../../engine/types.js';
 import { validateTransformConfig } from '../../engine/validator.js';
 import { useDynamicDataLocale } from '../../locale/index.js';
-import { SimpleModal } from './common/SimpleModal.js';
+import { ReportModal } from './common/ReportModal.js';
 
 const { TextArea } = Input;
 const { Text } = Typography;
@@ -103,7 +103,7 @@ export const ImportConfigModal: React.FC<ImportConfigModalProps> = ({
   const warningIssues = validationResult?.issues.filter((i) => i.severity === 'warning') ?? [];
 
   return (
-    <SimpleModal
+    <ReportModal
       title={
         <Space align="center">
           <ImportOutlined style={{ color: '#1677ff' }} />
@@ -114,7 +114,7 @@ export const ImportConfigModal: React.FC<ImportConfigModalProps> = ({
       onOk={handleConfirm}
       onCancel={onCancel}
       width={700}
-      destroyOnClose
+      destroyOnHidden
       okText={t('确认导入并生效')}
       cancelText={t('取消')}
     >
@@ -239,6 +239,6 @@ export const ImportConfigModal: React.FC<ImportConfigModalProps> = ({
           />
         )}
       </div>
-    </SimpleModal>
+    </ReportModal>
   );
 };

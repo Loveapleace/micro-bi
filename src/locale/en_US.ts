@@ -7,6 +7,12 @@
 import type { DynamicDataLocale } from './types.js';
 
 export const en_US: DynamicDataLocale = {
+  '导出 Excel (.xlsx)': 'Export Excel (.xlsx)',
+  '已导出 Excel 工作簿文件 (.xlsx)': 'Excel workbook exported (.xlsx)',
+  'Excel导出失败': 'Excel export failed',
+  '表格已关闭，已取消导出': 'The table was closed; export cancelled',
+  '表格数据或排序已变化，请重新导出': 'Table data or sorting changed; please export again',
+  '表格尚未就绪或已经关闭': 'The table is not ready or has been closed',
   // === 展示视图与跨图表联动 ===
   '视图渲染异常': 'View Render Error',
   '图表渲染组件发生内部异常，您可以尝试切换视图或重试。': 'An internal error occurred in the chart rendering component. You can try switching views or retry.',

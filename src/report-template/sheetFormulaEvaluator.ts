@@ -13,6 +13,10 @@
  * 8. 复合嵌套表达式：=MAX(B2, C2) * 2, =IF(MAX(B2,C2) > 2, SUM(B2:C2), 0)
  */
 
+import { formatExcelValue, isValidNumberFormat } from '../report/numberFormat.js';
+const sheetErrors = new Set(['#DIV/0!', '#VALUE!', '#REF!', '#NAME?', '#NUM!', '#N/A', '#NULL!', '#SPILL!', '#CALC!', '#ERROR!']);
+const isSheetError = (value: unknown): value is string => typeof value === 'string' && sheetErrors.has(value);
+
 export interface CellAccessor {
   (row: number, col: number): any;
 }
@@ -631,7 +635,7 @@ class FormulaEvaluator {
         if (fn === 'IFERROR') {
           try {
             const v = this.eval(node.args[0]!);
-            if (v === '#DIV/0!' || (typeof v === 'string' && v.startsWith('#'))) {
+            if (isSheetError(v)) {
               return node.args[1] ? this.eval(node.args[1]) : null;
             }
             return v;
@@ -643,6 +647,18 @@ class FormulaEvaluator {
         const evalArgs = node.args.map((a) => this.eval(a));
 
         switch (fn) {
+          case 'TEXT': {
+            if (evalArgs.length !== 2 || typeof evalArgs[1] !== 'string' || Array.isArray(evalArgs[0])) return '#VALUE!';
+            if (isSheetError(evalArgs[0])) return evalArgs[0];
+            const pattern = evalArgs[1];
+            if (pattern === '') return '';
+            if (!isValidNumberFormat(pattern)) return '#VALUE!';
+            try {
+              return formatExcelValue(evalArgs[0] ?? 0, pattern);
+            } catch {
+              return '#VALUE!';
+            }
+          }
           case 'MAX': {
             const nums = flattenNumbers(evalArgs);
             return nums.length > 0 ? Math.max(...nums) : 0;
@@ -797,7 +813,7 @@ export function evaluateSheetFormula(
     if (result === '#DIV/0!') {
       return { value: '#DIV/0!', error: 'ERR_DIVIDE_BY_ZERO' };
     }
-    if (typeof result === 'string' && result.startsWith('#')) {
+    if (isSheetError(result)) {
       return { value: result, error: 'ERR_INVALID_SHEET_FORMULA' };
     }
 

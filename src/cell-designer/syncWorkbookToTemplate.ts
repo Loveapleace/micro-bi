@@ -27,6 +27,7 @@ import { isValidNumberFormat, numberFormatOptions } from '../report/numberFormat
 import { targetForCell } from '../report-template/presentationTypes.js';
 import { readUniverCellValue, readUniverLiteralValue } from './univerValues.js';
 import { isEditableGeneratedText } from '../report-template/guidedSource.js';
+import { sourceOnlyWorkbookSnapshot } from '../report/runtimeSheets.js';
 
 export function extractStyleFromUniver(
   styleIdOrObj: any,
@@ -49,6 +50,7 @@ export function syncDocumentFromWorkbookSnapshot(
   grid?: BiGridModel,
   dataRevision?: string | number
 ): CellTemplateDocumentV1 {
+  snapshot=sourceOnlyWorkbookSnapshot(snapshot);
   const source = captureStaticSpanIntent(doc, snapshot, grid, mode === 'design');
   doc = source;
   snapshot = omitStaticSpanProjection(snapshot, grid);

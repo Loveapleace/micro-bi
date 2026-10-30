@@ -59,6 +59,9 @@ const vtableActual = vtableMod.ListTable ? vtableMod : (vtableMod['def' + 'ault'
 const ListTable = vtableActual.ListTable;
 const PivotTable = vtableActual.PivotTable;
 const themes = vtableActual.themes;
+const EMPTY_PIVOT_DIMENSIONS: any[] = [];
+const EMPTY_PIVOT_RECORDS: DataRecord[] = [];
+const EMPTY_PIVOT_ANALYSIS = { pivotIndicators: [] as any[], pivotAggregationRules: [] as any[] };
 import type { TransformResult, DataRecord, OutputColumnMeta } from '../../../engine/types.js';
 import type { TableFeatureConfig } from '../types.js';
 import type { ResolvedThemeConfig } from '../theme.js';
@@ -70,15 +73,11 @@ import {
   exportToCsv,
   exportTableInstanceToCsv,
   copyTableInstanceAsTsv,
-  exportToHtmlExcel,
   exportTableInstanceToExcel,
 } from './tableExport.js';
-import { applyVTableSummaryRowSortPatch } from './vtableSortPatch.js';
+import { compareTableValues, createSummaryAggregation, formatTableValue } from './tableSummary.js';
 import { useDynamicDataLocale, type TableLocale } from '../../../locale/index.js';
 import type { DynamicDataLocale, DeepPartial } from '../../../locale/types.js';
-
-// 应用 VTable 底部总计行排序隔离补丁 (确保总计行绝对不参与任何列排序)
-applyVTableSummaryRowSortPatch();
 
 interface ExcelColumnFilterContentProps {
   colKey: string;
@@ -355,6 +354,8 @@ export const VTableView: React.FC<VTableViewProps> = ({
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const tableRef = useRef<any>(null);
+  const exportInFlight = useRef(false);
+  const [exporting, setExporting] = useState(false);
   const resultRef = useRef(result);
   resultRef.current = result;
   const onRowSelectRef = useRef(onRowSelect);
@@ -554,13 +555,13 @@ export const VTableView: React.FC<VTableViewProps> = ({
   }, [rawDataSource, searchText, visibleColumnsMeta, columnFilters, t]);
 
   // 5. 组装表格行数据与科学总计行计算
-  const { tableRecords, hasSummaryRow } = useMemo(() => {
+  const { tableRecords, summaryRow } = useMemo(() => {
     const shouldShowSummary = features.summaryRow !== false && showSummaryRow && filteredData.length > 0;
 
     if (!shouldShowSummary) {
       return {
         tableRecords: filteredData,
-        hasSummaryRow: false,
+        summaryRow: undefined,
       };
     }
 
@@ -583,8 +584,8 @@ export const VTableView: React.FC<VTableViewProps> = ({
     }
 
     return {
-      tableRecords: [...filteredData, summaryRow],
-      hasSummaryRow: true,
+      tableRecords: filteredData,
+      summaryRow,
     };
   }, [
     filteredData,
@@ -596,8 +597,9 @@ export const VTableView: React.FC<VTableViewProps> = ({
   ]);
 
   // 5.1 构造透视表行维度 (Row Dimensions)
+  const hasSummaryRow = Boolean(summaryRow);
   const pivotRowDimensions = useMemo(() => {
-    if (!isCrossTab) return [];
+    if (!isCrossTab) return EMPTY_PIVOT_DIMENSIONS;
     const dims: any[] = [];
     const headers = (result.meta as any)?.rawHeaders || {};
     if (result.meta?.dimensions?.timeBucket?.field) {
@@ -622,7 +624,7 @@ export const VTableView: React.FC<VTableViewProps> = ({
 
   // 5.2 构造透视表列维度 (Column Dimensions)
   const pivotColumnDimensions = useMemo(() => {
-    if (!isCrossTab) return [];
+    if (!isCrossTab) return EMPTY_PIVOT_DIMENSIONS;
     const dims: any[] = [];
     const headers = (result.meta as any)?.rawHeaders || {};
     if (result.meta?.dimensions?.columnTimeBucket?.field) {
@@ -668,7 +670,7 @@ export const VTableView: React.FC<VTableViewProps> = ({
 
   // 5.4 构造透视表度量指标与聚合规则
   const { pivotIndicators, pivotAggregationRules } = useMemo(() => {
-    if (!isCrossTab) return { pivotIndicators: [], pivotAggregationRules: [] };
+    if (!isCrossTab) return EMPTY_PIVOT_ANALYSIS;
 
     const rowDimKeys = new Set(pivotRowDimensions.map((d: any) => d.dimensionKey));
     const colDimKeys = new Set(pivotColumnDimensions.map((d: any) => d.dimensionKey));
@@ -763,7 +765,7 @@ export const VTableView: React.FC<VTableViewProps> = ({
 
   // 5.5 构造透视表事实记录 (保证每个记录拥有有效行维度)
   const pivotRecords = useMemo(() => {
-    if (!isCrossTab) return [];
+    if (!isCrossTab) return EMPTY_PIVOT_RECORDS;
     return filteredData.map((r: DataRecord) => {
       if (pivotRowDimensions.length === 0) {
         return cloneTransformRecord(r, { __summary_row_dim__: t('汇总') });
@@ -774,6 +776,10 @@ export const VTableView: React.FC<VTableViewProps> = ({
 
   // 6. 构建 VTable 列定义 (ColumnDefine)
   const tableColumns = useMemo<ColumnDefine[]>(() => {
+    const rowAt = (args: any) => args.table?.isAggregation?.(args.col, args.row)
+      ? summaryRow
+      : args.table?.getCellOriginRecord?.(args.col, args.row)
+        || args.table?.records?.[args.row - (args.table?.columnHeaderLevelCount || 1)];
     const cols: ColumnDefine[] = visibleColumnsMeta.map((col: OutputColumnMeta, colIndex: number) => {
       const isNumber = col.type === 'number';
 
@@ -793,6 +799,7 @@ export const VTableView: React.FC<VTableViewProps> = ({
 
             const sourceRow = extraArgs.source?.row;
             const targetRow = extraArgs.target?.row;
+            if (tbl.isAggregation?.(extraArgs.source?.col, sourceRow) || tbl.isAggregation?.(extraArgs.target?.col, targetRow)) return false;
 
             const sourceRecord = tbl.getCellOriginRecord?.(extraArgs.source?.col, sourceRow);
             const targetRecord = tbl.getCellOriginRecord?.(extraArgs.target?.col, targetRow);
@@ -818,7 +825,8 @@ export const VTableView: React.FC<VTableViewProps> = ({
       const colDef: ColumnDefine = {
         field: col.key,
         title: col.title || col.key,
-        sort: true,
+        sort: compareTableValues,
+        ...(summaryRow ? { aggregation: createSummaryAggregation(summaryRow[col.key]) } : {}),
         width: 'auto',
         minWidth: isNumber
           ? Math.max(115, (col.title?.length || 4) * 14 + 36)
@@ -829,18 +837,7 @@ export const VTableView: React.FC<VTableViewProps> = ({
             ? (record[col.key] !== undefined ? record[col.key] : (col.field ? record[col.field] : undefined))
             : record;
 
-          if (val === null || val === undefined || val === '') return '-';
-          if (typeof val === 'number') {
-            return Number.isFinite(val) ? val.toLocaleString() : '-';
-          }
-          if (typeof val === 'object') {
-            try {
-              return JSON.stringify(val);
-            } catch {
-              return '-';
-            }
-          }
-          return String(val);
+          return formatTableValue(val);
         },
         style: {
           textAlign: isNumber ? 'right' : 'left',
@@ -848,16 +845,12 @@ export const VTableView: React.FC<VTableViewProps> = ({
           textStick: true,
           textStickBaseOnAlign: true,
           fontWeight: (args: any) => {
-            const rowData =
-              args.table?.getCellOriginRecord?.(args.col, args.row) ||
-              args.table?.records?.[args.row - (args.table?.columnHeaderLevelCount || 1)];
+            const rowData = rowAt(args);
             if (rowData?.__isSummaryRow) return 700;
             return 400;
           },
           color: (args: any) => {
-            const rowData =
-              args.table?.getCellOriginRecord?.(args.col, args.row) ||
-              args.table?.records?.[args.row - (args.table?.columnHeaderLevelCount || 1)];
+            const rowData = rowAt(args);
             const val = Number(rowData?.[col.key]);
             // 负数红字预警 (AntD Table 经典高阶能力)
             if (isNumber && Number.isFinite(val) && val < 0) {
@@ -866,9 +859,7 @@ export const VTableView: React.FC<VTableViewProps> = ({
             return isDark ? 'rgba(255,255,255,0.88)' : 'rgba(0,0,0,0.88)';
           },
           bgColor: (args: any): any => {
-            const rowData =
-              args.table?.getCellOriginRecord?.(args.col, args.row) ||
-              args.table?.records?.[args.row - (args.table?.columnHeaderLevelCount || 1)];
+            const rowData = rowAt(args);
             if (rowData?.__isSummaryRow) {
               return isDark ? '#1f242d' : '#f6f8fb';
             }
@@ -881,9 +872,7 @@ export const VTableView: React.FC<VTableViewProps> = ({
       if (isDataBarsActive && isNumber && (colMaxMap[col.key] ?? 0) > 0) {
         const colMax = colMaxMap[col.key]!;
         colDef.customRender = ((args: any) => {
-          const rowData =
-            args.table?.getCellOriginRecord?.(args.col, args.row) ||
-            args.table?.records?.[args.row - (args.table?.columnHeaderLevelCount || 1)];
+          const rowData = rowAt(args);
           const rect = args.rect || { width: 120, height: 32 };
           if (rowData?.__isSummaryRow) {
             return { expectedWidth: rect.width, expectedHeight: rect.height, renderDefault: true };
@@ -952,7 +941,7 @@ export const VTableView: React.FC<VTableViewProps> = ({
     });
 
     return cols;
-  }, [visibleColumnsMeta, isDark, features.filterDropdown, features.mergeCells, isDataBarsActive, colMaxMap, columnFilters, autoMergeCells, t]);
+  }, [visibleColumnsMeta, isDark, features.filterDropdown, features.mergeCells, isDataBarsActive, colMaxMap, columnFilters, autoMergeCells, summaryRow, t]);
 
   // 7. 初始化 VTable Canvas 实例与事件监听 (自适应 ListTable 明细表 / PivotTable 双向交叉透视表)
   useEffect(() => {
@@ -1194,6 +1183,7 @@ export const VTableView: React.FC<VTableViewProps> = ({
       }
 
       const originData = args.originData;
+      if (table.isAggregation(args.col, args.row)) return;
       if (!originData || originData.__isSummaryRow) return;
 
       const colField =
@@ -1316,24 +1306,26 @@ export const VTableView: React.FC<VTableViewProps> = ({
     message.success(t('已导出 CSV 表格文件'));
   }, [isCrossTab, filteredData, visibleColumnsMeta, t]);
 
-  // 10.1 导出 Excel (.xls) 逻辑 (推荐：完整保留纯文本日期、分桶格式与数值，防止 Excel 自动篡改)
-  const handleExportExcel = useCallback(() => {
-    if (isCrossTab && tableRef.current) {
-      exportTableInstanceToExcel(tableRef.current, `pivot_table_${Date.now()}.xls`);
-      message.success(t('已导出 Excel 工作簿文件 (.xls)'));
-      return;
-    }
-
-    const dataToExport = filteredData || [];
-    if (dataToExport.length === 0) {
+  // 10.1 官方插件按需导出xlsx，保留原始类型、文本编号和日期文本。
+  const handleExportExcel = useCallback(async () => {
+    if (exportInFlight.current) return;
+    const table = tableRef.current;
+    if (!table || filteredData.length === 0) {
       message.warning(t('当前无数据可导出'));
       return;
     }
-
-    const exportCols = visibleColumnsMeta;
-    exportToHtmlExcel(dataToExport, exportCols, `dynamic_report_${Date.now()}.xls`);
-    message.success(t('已导出 Excel 工作簿文件 (.xls)'));
-  }, [isCrossTab, filteredData, visibleColumnsMeta, t]);
+    exportInFlight.current = true;
+    setExporting(true);
+    try {
+      await exportTableInstanceToExcel(table, `dynamic_report_${Date.now()}.xlsx`);
+      message.success(t('已导出 Excel 工作簿文件 (.xlsx)'));
+    } catch (error) {
+      message.error(t(error instanceof Error ? error.message : 'Excel导出失败'));
+    } finally {
+      exportInFlight.current = false;
+      setExporting(false);
+    }
+  }, [filteredData, t]);
 
   // 11. 复制数据到剪贴板 (双 MIME 格式：HTML + TSV，粘贴到 Excel 原汁原味保留日期与文本格式)
   const handleCopyTSV = useCallback(async () => {
@@ -1838,19 +1830,21 @@ export const VTableView: React.FC<VTableViewProps> = ({
             {/* 导出菜单 (Excel / CSV) */}
             {features.export !== false && (
               <Dropdown
+                disabled={exporting}
                 menu={{
                   items: [
                     {
                       key: 'excel',
                       label: (
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <span>{t('导出 Excel (.xls)')}</span>
+                          <span>{t('导出 Excel (.xlsx)')}</span>
                           <Tag color="success" style={{ margin: 0, fontSize: 10, lineHeight: '16px', padding: '0 4px' }}>
                             {t('推荐/保留格式')}
                           </Tag>
                         </div>
                       ),
                       icon: <FileExcelOutlined style={{ color: '#52c41a' }} />,
+                      disabled: exporting,
                       onClick: handleExportExcel,
                     },
                     {
@@ -1868,6 +1862,7 @@ export const VTableView: React.FC<VTableViewProps> = ({
                 <Tooltip title={t('导出表格数据 (推荐使用 Excel 格式以保留日期与纯文本原貌)')}>
                   <Button
                     size="small"
+                    loading={exporting}
                     icon={<DownloadOutlined />}
                     style={{ fontSize: 12 }}
                   >

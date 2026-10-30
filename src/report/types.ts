@@ -21,6 +21,8 @@ export interface AxisMemberRef {
   axisId: string;
   field: string;
   memberKey: string;
+  /** 保留原值类型的成员身份；显示路径和既有合并键不承担查询类型语义。 */
+  typedMemberKey?: string | undefined;
   label?: string | undefined;
 }
 
@@ -136,6 +138,7 @@ export interface PublishedReport {
   sheets: PublishedSheet[];
   styles: Record<string, PublishedCellStyle>;
   diagnostics?: ReportDiagnostic[] | undefined;
+  drillIndex?: import('./drillTypes.js').PublishedDrillIndex | undefined;
 }
 
 export interface ReportAnalysisRegion {
@@ -193,6 +196,7 @@ export interface BiGridCell {
   formula?: string | undefined;
   /** 仅编译期共享引用，不进入发布/保存包。 */
   ruleFacts?: readonly Record<string, any>[] | undefined;
+  drillContext?: import('./drillTypes.js').DrillCellContext | undefined;
   baseDisplayText?: string | undefined;
   basePresentationStyle?: PublishedCellStyle | undefined;
   displaySource?: 'format' | 'conditional' | undefined;

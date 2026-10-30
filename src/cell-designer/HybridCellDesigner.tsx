@@ -42,6 +42,11 @@ import {isGuidedSourceDocument} from '../report-template/guidedSource.js';
 import {attachGuidedEditingGuard,guidedCellProtected,guidedCellContentProtected,protectGuidedSnapshot} from './guidedEditing.js';
 import { bindSourceHistory, type FUniver } from '../univer/adapter.js';
 import { EditorSession, EditorSessionClosedError, isEditorSessionClosed } from '../univer/lifecycle.js';
+import { compileDrillIndex, dataSnapshotFingerprint, resolveDrillTarget } from '../report/drill.js';
+import { createLocalDrillQuery } from '../report/drillSession.js';
+import { useDrillRuntime } from '../ui/presentation/report/useDrillRuntime.js';
+import { DrillSheetBar } from '../ui/presentation/report/DrillSheetBar.js';
+import { attachUniverDrillSheets } from './univerDrillSheets.js';
 import {
   useRegisteredDatasets,
   useDatasetData,
@@ -166,6 +171,7 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
     const [extraLayoutRules, setExtraLayoutRules] = useState<LayoutRule[]>([]);
     const [presentationModel, setPresentationModel] = useState<PresentationRules>(()=>structuredClone(initialDocument?.presentationRules || emptyPresentationRules()));
     const [visualStyleRules, setVisualStyleRules] = useState<StyleRule[]>(()=>structuredClone(initialDocument?.styleRules || []));
+    const [drillRules,setDrillRules]=useState(()=>structuredClone(initialDocument?.drillRules||[]));
     const [designSize, setDesignSize] = useState({ rows: initialDocument?.sheets[0]?.rowCount ?? 25,
       columns: initialDocument?.sheets[0]?.columnCount ?? 15 });
     const [retainedMergeConfig, setRetainedMergeConfig] = useState(() => {
@@ -655,16 +661,16 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
         ...(panelGeneratedTemplate.hybridConfig?.version === 2 ? { hybridConfig: { ...panelGeneratedTemplate.hybridConfig,
           retainedMergeConfig: retained, disabledLayoutRuleIds: disabledLayoutIds,
           retainedCells: extraCustomCells.filter((c) => c.panelOwner && c.content.kind === 'field' && !mergedCells.some((m) => m.id === c.id)) } } : {}),
-      }, initialDocument), presentationRules: presentationModel, styleRules: visualStyleRules,
+      }, initialDocument), presentationRules: presentationModel, styleRules: visualStyleRules,drillRules,
         templateRevision: Math.max(panelGeneratedTemplate.templateRevision, presentationModel.revision+1) };
-    }, [panelGeneratedTemplate, extraCustomCells, extraLayoutRules, retainedMergeConfig, disabledLayoutIds, enableGroupMerge, initialDocument, designSize, presentationModel, visualStyleRules]);
+    }, [panelGeneratedTemplate, extraCustomCells, extraLayoutRules, retainedMergeConfig, disabledLayoutIds, enableGroupMerge, initialDocument, designSize, presentationModel, visualStyleRules,drillRules]);
 
     const currentTemplateRef = useRef(currentTemplate);
     currentTemplateRef.current = currentTemplate;
 
     const editState = { rowTimeField, rowGranularity, rowCustomDays, rowCategories, colTimeField, colGranularity,
       colCategories, selectedMeasures, measureAggs, measureFormats, showRowTotal, enableGroupMerge,
-      extraCustomCells, extraLayoutRules, retainedMergeConfig, disabledLayoutIds, layoutAnchor, designSize, presentationModel, visualStyleRules };
+      extraCustomCells, extraLayoutRules, retainedMergeConfig, disabledLayoutIds, layoutAnchor, designSize, presentationModel, visualStyleRules,drillRules };
     type EditSnapshot = typeof editState & { document: CellTemplateDocumentV1; canvasMode: 'design' | 'preview';
       sheetSizes: { id: string; rows: number; columns: number }[] };
     const editStateRef = useRef(editState);
@@ -798,7 +804,7 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
             strikethrough: c.style?.strikethrough,
             border: c.style?.border,
             color: cellColor,
-            align: c.style?.textAlign ?? (c.content.kind === 'field' && c.content.role === 'measure' ? 'right' : undefined),
+            align: c.style?.textAlign ?? 'general',
             verticalAlign: c.style?.verticalAlign ?? 'middle',
             bgColor: cellBgColor,
             wrapText: c.style?.wrapText,
@@ -847,6 +853,15 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
 
     const currentGridRef = useRef<BiGridModel | undefined>(undefined);
     currentGridRef.current = currentGrid;
+    const drillFingerprint=useMemo(()=>dataSnapshotFingerprint(activeData),[activeData]);
+    const drillIndex=useMemo(()=>mode==='preview'?compileDrillIndex(currentTemplate,[{sheetId:currentTemplate.sheets[0]?.id||'sheet-1',grid:currentGrid}],drillFingerprint):undefined,[mode,currentTemplate,currentGrid,drillFingerprint]);
+    const drillIndexRef=useRef(drillIndex);drillIndexRef.current=drillIndex;
+    const drillQuery=useMemo(()=>createLocalDrillQuery(()=>({records:activeData,headers:Object.fromEntries(fieldItems.map(f=>[f.key,f.label]))})),[activeData,fieldItems]);
+    const {session:drillSession,snapshot:drillSnapshot}=useDrillRuntime(drillIndex,drillQuery);
+    useEffect(()=>{
+      if(!univerAPI||mode!=='preview')return;
+      return attachUniverDrillSheets(univerAPI,drillSession,()=>historyBridgeRef.current?.sync(),reason=>message.error(reason));
+    },[univerAPI,mode,drillSession]);
 
     type RenderedState = { grid: BiGridModel; template: CellTemplateDocumentV1; panel: CellTemplateDocumentV1; mode: 'design' | 'preview' };
     const gridStatesRef = useRef(new WeakMap<BiGridModel, RenderedState>());
@@ -885,6 +900,7 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
       setExtraCustomCells(s.extraCustomCells); setExtraLayoutRules(s.extraLayoutRules);
       setRetainedMergeConfig(s.retainedMergeConfig); setDisabledLayoutIds(s.disabledLayoutIds); setLayoutAnchor(s.layoutAnchor);
       setDesignSize(s.designSize); setPresentationModel(s.presentationModel); setVisualStyleRules(s.visualStyleRules);
+      setDrillRules(s.drillRules);
     };
 
     // 6. 保存或切换视图前采集静态内容、样式与合并意图；受控数据内容不接受快照覆盖。
@@ -1003,7 +1019,14 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
 
       const dispose = attachUniverDesignerEvents(api, {
         onDoubleClicked: (pos) => {
-          if (modeRef.current !== 'design') return true;
+          if (modeRef.current !== 'design') {
+            const target=resolveDrillTarget(drillIndexRef.current,pos.sheetId||'sheet-1',pos.row,pos.column);
+            if(target){
+              if(target.reason)message.info(target.reason);
+              else queueMicrotask(()=>{if(modeRef.current==='preview'&&requestScopeRef.current?.active)drillSession.open(target);});
+            }
+            return true;
+          }
           flushCanvasToTemplate();
           const found = currentTemplateRef.current.cells.find(
             (c) => c.sheetId === (pos.sheetId || 'sheet-1') && c.position.row === pos.row && c.position.column === pos.column
@@ -1334,7 +1357,8 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
       if(!Object.keys(updated).length){setAdvancedModalOpen(false);return;}
       const capabilities=getCellCapabilities(source,capabilityContext);
       beginSourceEdit();
-      const { presentationRules: newRules, visualStyleRules: newStyles, ...cellUpdate } = updated;
+      const { presentationRules: newRules, visualStyleRules: newStyles, drillRules:newDrillRules, ...cellUpdate } = updated;
+      if(newDrillRules)setDrillRules(newDrillRules);
       const { row, column } = selectedCellForAdvanced.position;
 
       // 1. 同步格式与聚合操作到左侧控制面板
@@ -1977,6 +2001,7 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
           {dataLoading && <Alert type="info" showIcon message="正在加载数据源，请稍候；加载完成后可预览和保存" />}
           {dataError && <Alert type="error" showIcon message={`数据源加载失败：${dataError.message}`} action={<Button size="small" onClick={() => void resolvedDataset.refresh()}>重试加载</Button>} />}
           {!dataLoading && !dataError && templateErrors.length > 0 && <Alert type="error" showIcon message="配置尚未通过校验，预览和保存已阻止" description={templateErrors.map((d) => d.message).join('；')} />}
+          <DrillSheetBar tab={drillSnapshot.tabs.find(t=>t.id===drillSnapshot.activeSheetId)} session={drillSession}/>
           {/* 右侧 Univer 画布容器 */}
           <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
             <UniverPreview

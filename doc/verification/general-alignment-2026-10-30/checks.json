@@ -1,0 +1,154 @@
+{
+  "date": "2026-10-30",
+  "timezone": "Asia/Shanghai",
+  "scope": "模式三指标默认常规对齐；保留显式用户样式",
+  "tests": {
+    "total": 565,
+    "passed": 565,
+    "failed": 0,
+    "newCases": "TB-26~30",
+    "coverage": [
+      "明细/普通分组/层级分组/交叉及行总计默认General",
+      "数值正负和0、文本编号与日期文本",
+      "原生样式采集、JSON保存、面板重建及数据增删逆序",
+      "条件文案不改变原始数值和General数值对齐",
+      "无样式VTable格按原始类型对齐"
+    ]
+  },
+  "builds": {
+    "library": "ESM/CJS/declarations passed",
+    "host": "TypeScript/Vite passed; SDK chunk warnings retained"
+  },
+  "browser": {
+    "url": "http://localhost:5174/",
+    "isolation": "Fresh Playwright context; original user storage unchanged",
+    "browser": "155.0.8059.85",
+    "pageErrors": [],
+    "initialDesign": {
+      "metric": {
+        "value": "{交付件数}",
+        "ht": 0
+      },
+      "total": {
+        "value": "{行总计-交付件数}",
+        "ht": 0
+      }
+    },
+    "preview": {
+      "metric": {
+        "raw": 600,
+        "sourceHt": 0,
+        "display": "600.00",
+        "drawHt": 3
+      },
+      "total": {
+        "raw": 4400
+      },
+      "snapshotHasProjectionStyle": false
+    },
+    "explicitCenter": {
+      "reopen": {
+        "value": "{交付件数}",
+        "sourceHt": 2
+      },
+      "preview": {
+        "raw": 600,
+        "sourceHt": 2,
+        "drawHt": 2
+      },
+      "formal": {
+        "value": 600,
+        "align": "center"
+      }
+    },
+    "restoreGeneral": {
+      "preview": {
+        "raw": 600,
+        "sourceHt": 0,
+        "drawHt": 3,
+        "sourceHasInterceptorStyle": false
+      },
+      "reopen": {
+        "metric": {
+          "value": "{交付件数}",
+          "ht": 0
+        },
+        "total": {
+          "value": "{行总计-交付件数}",
+          "ht": 0
+        }
+      },
+      "formal": {
+        "metric": {
+          "value": 600,
+          "align": "right"
+        },
+        "dimension": {
+          "value": "1号五轴切削车间",
+          "align": "left"
+        }
+      }
+    },
+    "apiClearedAfterClose": true
+  },
+  "sourceHashes": {
+    "src/report-template/compileHybridHierarchy.ts": {
+      "bytes": 7938,
+      "sha256": "73e15fa7b42d8b1513f6a4b0fc7cee2268058f695058e64d780f57e34cf7da64"
+    },
+    "src/report-template/panelToTemplateAdapter.ts": {
+      "bytes": 18738,
+      "sha256": "5f7f08f7f63806559deb15f323bf43f5eb0335d1523d44abc0b8f68e1f26a92e"
+    },
+    "src/cell-designer/HybridCellDesigner.tsx": {
+      "bytes": 93214,
+      "sha256": "bc76a23303123049ae2a701fa40bc6ca95e055ff384fe3e429b8154b5022cadc"
+    },
+    "src/ui/presentation/report/styleAdapter.ts": {
+      "bytes": 2752,
+      "sha256": "aa551624e5e400291a7e814f5872081490a600057ce989adf212e4fd1bb4a3e8"
+    },
+    "src/ui/presentation/report/gridAdapter.ts": {
+      "bytes": 7230,
+      "sha256": "f3b64c6a124405bed16a31eadb6fa2d3c97ad222c3d89966fdea2ba58ddc18d7"
+    },
+    "src/univer/adapter.ts": {
+      "bytes": 9997,
+      "sha256": "dbdb1322988413fa089a2a0e7d05255c700b6c2e956fcdbcce494f869275b7eb"
+    },
+    "src/univer/UniverPreview.tsx": {
+      "bytes": 26156,
+      "sha256": "5ed07af359577a6a444cec87c6b69debf31106f7ea05f6fd104faf3a36e0dee0"
+    },
+    "test/toolbar-formatting.test.mjs": {
+      "bytes": 20786,
+      "sha256": "1412e74ca0ac5f75b0e9574643021330ba63708af3bd48290cb887cba3de8c64"
+    }
+  },
+  "artifacts": {
+    "01-design.png": {
+      "bytes": 149747,
+      "sha256": "6ab404b095d21b6468b256120cb0fa60a86d6e3fb3948eaaa2e0bb466f232de6"
+    },
+    "02-preview.png": {
+      "bytes": 156850,
+      "sha256": "2a6d1409cb246544ddc67e2a72a9f4543094b1853e10707e75a5de38235967a2"
+    }
+  },
+  "temporaryLogs": {
+    "micro-bi-general-align-build-2026-10-30.log": {
+      "bytes": 399,
+      "sha256": "9828bda01365d8eb701ab20f4f47e7f3b852eb351278af974470b2d4fdc2aac2"
+    },
+    "micro-bi-general-align-tests-2026-10-30.log": {
+      "bytes": 133627,
+      "sha256": "88f561ac8bcf95acc0c38276a5b021a8450e1fe09c1ab7434292a07919653e37"
+    },
+    "micro-bi-general-align-host-build-2026-10-30.log": {
+      "bytes": 7774,
+      "sha256": "22eaf91e7b5b3f7dbd15e6f5e14a726b5b99f7bf0528ca49ae2102037be7b3cc"
+    }
+  },
+  "persistence": "No migration: existing saved explicit alignment is preserved. Source General stays ht:0, interceptorStyle only affects rendering and never enters saved snapshots.",
+  "git": "No commit or push performed"
+}

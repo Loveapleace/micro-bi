@@ -40,6 +40,7 @@ import {
 } from './identity.js';
 import { resolveTemplateMerges } from './mergeResolver.js';
 import { applyRegionFilters } from './regionFilter.js';
+import { createDrillCellContext } from '../report/drill.js';
 import { evaluateSheetFormula as evaluateSheetFormulaEngine } from './sheetFormulaEvaluator.js';
 import { applyPresentationRules } from './presentationRules.js';
 import { activeStaticSpans, applyStaticSpans, prepareStaticSpanTemplate, type SpanDriverInstance } from './staticSpans.js';
@@ -241,6 +242,7 @@ export function expandCellDrivenTemplate(
   options: { sheetId?: string } = {}
 ): CellExpansionResult {
   const sourceDocument = doc;
+  const drillTimeZone=doc.drillRules?.some(r=>r.enabled)?Intl.DateTimeFormat().resolvedOptions().timeZone:undefined;
   doc = prepareStaticSpanTemplate(doc);
   const diagnostics: TemplateDiagnostic[] = [];
   const sheetId = options.sheetId || doc.sheets?.[0]?.id || 'sheet-1';
@@ -620,7 +622,7 @@ export function expandCellDrivenTemplate(
           seenVal.set(base, c);
           memberKey = c === 1 ? base : `${base}#${c}`;
         }
-        const currentPath = [...parentPath, { field: fieldKey, memberKey, memberValue: rawVal, recordId: pk }];
+        const currentPath = [...parentPath, { field: fieldKey, memberKey, memberValue: rawVal, recordId: pk, sourceCellId: driver.id, recordKey: rec.id != null ? 'id' : rec._id != null ? '_id' : rec.key != null ? 'key' : undefined }];
         return {
           memberKey,
           memberValue: rawVal,
@@ -661,7 +663,7 @@ export function expandCellDrivenTemplate(
     const sortedEntries = Array.from(groupsMap.entries()).sort(([a], [b]) => naturalCompare(a, b));
     const nodes: ExpansionNode[] = [];
     for (const [memberKey, g] of sortedEntries) {
-      const currentPath = [...parentPath, { field: fieldKey, memberKey, memberValue: g.value }];
+      const currentPath = [...parentPath, { field: fieldKey, memberKey, memberValue: g.value, sourceCellId: driver.id }];
       let children: ExpansionNode[] = [];
 
       if (childDrivers.length > 0) {
@@ -746,7 +748,7 @@ export function expandCellDrivenTemplate(
           seenVal.set(base, c);
           memberKey = c === 1 ? base : `${base}#${c}`;
         }
-        const currentPath = [...parentPath, { field: fieldKey, memberKey, memberValue: rawVal, recordId: pk }];
+        const currentPath = [...parentPath, { field: fieldKey, memberKey, memberValue: rawVal, recordId: pk, sourceCellId: driver.id, recordKey: rec.id != null ? 'id' : rec._id != null ? '_id' : rec.key != null ? 'key' : undefined }];
         return {
           memberKey,
           memberValue: rawVal,
@@ -786,7 +788,7 @@ export function expandCellDrivenTemplate(
     const sortedEntries = Array.from(groupsMap.entries()).sort(([a], [b]) => naturalCompare(a, b));
     const nodes: ExpansionNode[] = [];
     for (const [memberKey, g] of sortedEntries) {
-      const currentPath = [...parentPath, { field: fieldKey, memberKey, memberValue: g.value }];
+      const currentPath = [...parentPath, { field: fieldKey, memberKey, memberValue: g.value, sourceCellId: driver.id }];
       let children: ExpansionNode[] = [];
 
       if (childDrivers.length > 0) {
@@ -1095,6 +1097,7 @@ export function expandCellDrivenTemplate(
         axisId: axis === 'row' ? 'rows' : 'columns',
         field: p.field,
         memberKey: String(p.memberValue !== undefined ? p.memberValue : decodeMemberValue(p.memberKey)),
+        typedMemberKey: p.memberKey,
         label: String(p.memberValue !== undefined ? p.memberValue : decodeMemberValue(p.memberKey)),
       }));
 
@@ -1108,6 +1111,7 @@ export function expandCellDrivenTemplate(
         col: c,
         value: n.memberValue,
         sourceCellId: driver.id, regionId: driver.regionId, ruleFacts: n.records,
+        drillContext: createDrillCellContext(sourceDocument, driver, axis==='row'?n.path:[], axis==='column'?n.path:[], n.memberValue,drillTimeZone),
         displayText: dispText,
         role: 'dimension-member',
         rowPath: axis === 'row' ? axisRefPath : undefined,
@@ -1420,6 +1424,7 @@ export function expandCellDrivenTemplate(
       col: c,
       value: computedValue,
       sourceCellId: dc.id, regionId: dc.regionId, ruleFacts: records,
+      drillContext: createDrillCellContext(sourceDocument, dc, rowPath, colPath, computedValue,drillTimeZone),
       ...(fc.kind === 'sheet-formula' ? { formula: fc.formula } : {}),
       displayText: formatValue(computedValue, formatOpts.format, formatOpts),
       role: role as any,

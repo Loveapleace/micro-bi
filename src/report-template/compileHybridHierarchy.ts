@@ -81,12 +81,12 @@ export function compileHybridHierarchy(config: DynamicTransformConfig, datasetId
     cells.push({ id: `meas-${key}`, sheetId, regionId, position: { row, column },
       content: { kind: 'field', fieldId: key, fieldKey: key, metricId: `metric-${key}`, role: 'measure',
         operation: (col as any).agg || 'sum', expand: 'inherit', displayName: label, format: options.formats?.[key] || 'number' },
-      parents: { row: rowParent, column: colParent }, style: { textAlign: 'right', color: '#d46b08', backgroundColor: '#fff7e6' } });
+      parents: { row: rowParent, column: colParent }, style: { textAlign: 'general', color: '#d46b08', backgroundColor: '#fff7e6' } });
     if (pivot && options.showRowTotals) cells.push({ id: `meas-rowtotal-${key}`, sheetId, regionId, position: { row, column: dataCol + 1 },
       content: { kind: 'field', fieldId: key, fieldKey: key, metricId: `metric-rowtotal-${key}`, role: 'measure',
         operation: (col as any).agg || 'sum', expand: 'inherit', displayName: `行总计-${label}`, format: options.formats?.[key] || 'number' },
       parents: { row: rowParent === rowIds[0] ? 'default' : rowParent, column: 'none' },
-      style: { bold: true, textAlign: 'right', color: '#0958d9', backgroundColor: '#f0f5ff' } });
+      style: { bold: true, textAlign: 'general', color: '#0958d9', backgroundColor: '#f0f5ff' } });
   });
   if (pivot && options.showRowTotals) literal('hdr-row-total', bodyRow - 1, dataCol + 1, '行总计');
   for (let column = c0; column <= (pivot ? dataCol + (options.showRowTotals ? 1 : 0) : dataCol + measures.length - 1); column++) {

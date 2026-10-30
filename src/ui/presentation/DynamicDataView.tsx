@@ -74,6 +74,7 @@ const { Text } = Typography;
 export const DynamicDataView: React.FC<DynamicDataViewProps> = ({
   result,
   publishedReport,
+  queryDrillDetails,
   viewType: controlledViewType,
   defaultViewType = 'table',
   onViewTypeChange,
@@ -505,6 +506,7 @@ export const DynamicDataView: React.FC<DynamicDataViewProps> = ({
                 publishedReport ? (
                   <ReportTableView
                     report={publishedReport}
+                    queryDrillDetails={queryDrillDetails}
                     height={tableStyle?.height || 360}
                     style={tableStyle}
                   />

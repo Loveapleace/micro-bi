@@ -112,3 +112,83 @@ test('TB-24 Excel pattern colors override ordinary font colors while conditional
 test('TB-25 custom double-border drawing is confined to double-border cells and never creates empty overlays',()=>{
   let d=panel();d=capture(d,qty(d),{bd:{t:{s:7,cl:{rgb:'#123456'}}}});const p=published(d),m=metric(p),t=adaptPublishedSheetToVTable(p.sheets[0],p.styles);assert.equal(t.columns[0].customRender,undefined);assert.equal(t.columns[m.cell.c].customRender({row:2,col:m.cell.c,rect:{width:100,height:30}}),undefined);assert.equal(t.columns[m.cell.c].customRender({row:m.cell.r,col:m.cell.c,rect:{width:100,height:30}}).renderDefault,true);
 });
+
+test('TB-26 new detail, grouped, hierarchical and pivot templates use General for metric cells', () => {
+  const columns = [{ type: 'aggregated', field: 'qty', agg: 'sum' }];
+  for (const dimensions of [{}, { categories: ['team'] },
+    { categories: ['team'], timeBucket: { field: 'day', granularity: 'day' } },
+    { categories: ['team'], columnTimeBucket: { field: 'day', granularity: 'day' } }]) {
+    const doc = compilePanelToCellTemplate({ datasetId: 'facts', dimensions, columns }, 'facts', { showRowTotals: true });
+    const measures = doc.cells.filter(c => c.content.kind === 'field' && ['measure', 'detail-column'].includes(c.content.role));
+    assert.ok(measures.length);
+    for (const c of measures) {
+      assert.equal(c.style.textAlign, 'general', c.id);
+      const native = publishedStyleToUniver(sourceStyleToPublished(c.style));
+      assert.equal(native.ht, 0, c.id);
+    }
+    for (const c of doc.cells.filter(c => c.id === 'hdr-m-qty' || c.id === 'hdr-qty')) {
+      assert.equal(publishedStyleToUniver(sourceStyleToPublished(c.style)).ht, 0);
+    }
+  }
+});
+
+test('TB-27 General preserves numeric types and right alignment in preview and publication including zero', () => {
+  const doc = panel();
+  const preview = expandCellDrivenTemplate(doc, facts).grid;
+  const p = published(doc);
+  for (const value of [1234.56, -25.3, 0]) {
+    const previewCell = preview.cells.find(c => c.metricId === 'metric-qty' && c.value === value);
+    assert.ok(previewCell);
+    assert.equal(previewCell.style.align, 'general');
+    assert.equal(publishedStyleToUniver(previewCell.style).ht, 0);
+    const { cell, style } = metric(p, value);
+    assert.equal(style.align, 'general');
+    assert.equal(publishedStyleToUniver(style).ht, 0);
+    assert.equal(typeof cell.v, 'number');
+    const table = adaptPublishedSheetToVTable(p.sheets[0], p.styles);
+    assert.equal(table.columns[cell.c].style({ row: cell.r }).textAlign, 'right');
+  }
+});
+
+test('TB-28 native explicit alignment survives JSON save, panel refresh, sorting and changed data', () => {
+  for (const [native, alignment] of [[0, 'general'], [1, 'left'], [2, 'center'], [3, 'right']]) {
+    const original = panel();
+    let edited = capture(original, qty(original), { ht: native });
+    edited = JSON.parse(JSON.stringify(edited));
+    const regenerated = panel();
+    const extras = collectHybridExtras(edited, original, [], regenerated, original);
+    edited.cells = mergeHybridCells(regenerated, extras, original.cells);
+    const source = JSON.stringify(edited);
+    for (const data of [facts, [...facts].reverse(), facts.filter(f => f.team === 'A'),
+      [...facts, { team: 'C', day: '2026-08-03', qty: 10 }]]) {
+      const { cell, style } = metric(published(edited, data));
+      assert.equal(style.align, alignment);
+      assert.equal(mapPublishedStyleToVTable(style, cell.v).textAlign, alignment === 'general' ? 'right' : alignment);
+      assert.equal(JSON.stringify(edited), source);
+    }
+  }
+});
+
+test('TB-29 conditional text replacement retains General alignment based on the original number', () => {
+  const doc = panel();
+  setPresentation(doc, qty(doc).id, { operator: 'gt', threshold: 1000, text: '达标' });
+  const { cell, style } = metric(published(doc));
+  assert.equal(cell.v, 1234.56);
+  assert.equal(cell.displayText, '达标');
+  assert.equal(style.align, 'general');
+  assert.equal(mapPublishedStyleToVTable(style, cell.v).textAlign, 'right');
+});
+
+test('TB-30 unstyled VTable cells use raw types rather than formatted or numeric-looking text', () => {
+  const values = [0, -2, 1.25, '00123', '2026-08', '合计'];
+  const sheet = { id: 'sheet-1', name: '类型', rowCount: 1, colCount: values.length,
+    cells: values.map((v, c) => ({ r: 0, c, v, displayText: String(v) })), merges: [] };
+  const table = adaptPublishedSheetToVTable(sheet, {});
+  values.forEach((v, c) => {
+    const expected = typeof v === 'number' ? 'right' : 'left';
+    assert.equal(table.columns[c].style({ row: 0 }).textAlign, expected);
+    assert.equal(mapPublishedStyleToVTable({ color: '#123456' }, v).textAlign, expected);
+    assert.equal(table.rawRecords[0][`col_${c}`], v);
+  });
+  assert.equal(mapPublishedStyleToVTable({ align: 'center' }, 123).textAlign, 'center');
+});

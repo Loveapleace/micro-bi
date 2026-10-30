@@ -5,11 +5,11 @@ import {
   generateCsvContent,
   generateTsvContent,
   exportToCsv,
-  exportToHtmlExcel,
   copyToClipboardAsTsv,
   VTableView,
   computeSummaryValues,
-  applyVTableSummaryRowSortPatch,
+  compareTableValues,
+  createSummaryAggregation,
 } from '../dist/esm/ui/index.js';
 import { transformData } from '../dist/esm/engine/index.js';
 
@@ -17,7 +17,6 @@ test('tableExport: 导出模块与 VTableView 组件导出完整性', () => {
   assert.equal(typeof generateCsvContent, 'function');
   assert.equal(typeof generateTsvContent, 'function');
   assert.equal(typeof exportToCsv, 'function');
-  assert.equal(typeof exportToHtmlExcel, 'function');
   assert.equal(typeof copyToClipboardAsTsv, 'function');
   assert.equal(typeof VTableView, 'function');
 });
@@ -163,46 +162,44 @@ test('table: 总计行在 VTable 列排序 (ASC/DESC/数值/文本) 中严格被
   const DataSource = vtableActual.data.DataSource;
   const CachedDataSource = vtableActual.data.CachedDataSource;
 
-  // 确保补丁已生效
-  applyVTableSummaryRowSortPatch();
-
   const records = [
     { workshop: '10号车间', count: 15, rate: 0.75 },
     { workshop: '2号车间', count: 50, rate: 0.95 },
     { workshop: '1号车间', count: 20, rate: 0.60 },
-    { workshop: '总计 (共 3 项)', count: 85, rate: 0.82, __isSummaryRow: true },
   ];
 
   const ds = CachedDataSource.ofArray(records, null, null, [
-    { field: 'workshop', sort: true },
-    { field: 'count', sort: true },
-    { field: 'rate', sort: true },
+    { field: 'workshop', sort: compareTableValues, aggregation:createSummaryAggregation('总计 (共 3 项)') },
+    { field: 'count', sort: compareTableValues, aggregation:createSummaryAggregation(85) },
+    { field: 'rate', sort: compareTableValues, aggregation:createSummaryAggregation(0.82) },
   ]);
 
   // 1. 数值升序排序：数据行 15, 20, 50 升序排，总计行 85 必须且始终在最后
-  ds.sort([{ field: 'count', order: 'asc' }]);
+  ds.sort([{ field: 'count', order: 'asc',orderFn:compareTableValues }]);
   const countAsc = ds.currentIndexedData.map((i) => records[i].count);
-  assert.deepEqual(countAsc, [15, 20, 50, 85]);
+  assert.deepEqual(countAsc, [15, 20, 50]);
 
   // 2. 数值降序排序：数据行 50, 20, 15 降序排，总计行 85 绝对不能跑到最前面，必须仍在最后
-  ds.sort([{ field: 'count', order: 'desc' }]);
+  ds.sort([{ field: 'count', order: 'desc',orderFn:compareTableValues }]);
   const countDesc = ds.currentIndexedData.map((i) => records[i].count);
-  assert.deepEqual(countDesc, [50, 20, 15, 85]);
+  assert.deepEqual(countDesc, [50, 20, 15]);
 
   // 3. 浮点百分比降序排序：0.95, 0.75, 0.60，总计行 0.82 仍在最后
-  ds.sort([{ field: 'rate', order: 'desc' }]);
+  ds.sort([{ field: 'rate', order: 'desc',orderFn:compareTableValues }]);
   const rateDesc = ds.currentIndexedData.map((i) => records[i].rate);
-  assert.deepEqual(rateDesc, [0.95, 0.75, 0.60, 0.82]);
+  assert.deepEqual(rateDesc, [0.95, 0.75, 0.60]);
 
   // 4. 文本拼音自然升序：1号车间, 2号车间, 10号车间，总计行仍在最后
-  ds.sort([{ field: 'workshop', order: 'asc' }]);
+  ds.sort([{ field: 'workshop', order: 'asc',orderFn:compareTableValues }]);
   const wsAsc = ds.currentIndexedData.map((i) => records[i].workshop);
-  assert.deepEqual(wsAsc, ['1号车间', '2号车间', '10号车间', '总计 (共 3 项)']);
+  assert.deepEqual(wsAsc, ['1号车间', '2号车间', '10号车间']);
 
   // 5. 文本拼音降序：10号车间, 2号车间, 1号车间，总计行仍然在最后
-  ds.sort([{ field: 'workshop', order: 'desc' }]);
+  ds.sort([{ field: 'workshop', order: 'desc',orderFn:compareTableValues }]);
   const wsDesc = ds.currentIndexedData.map((i) => records[i].workshop);
-  assert.deepEqual(wsDesc, ['10号车间', '2号车间', '1号车间', '总计 (共 3 项)']);
+  assert.deepEqual(wsDesc, ['10号车间', '2号车间', '1号车间']);
+  assert.deepEqual(ds.fieldAggregators.map(a=>a.value()),['总计 (共 3 项)',85,0.82]);
+  assert.equal(ds.records.length,3);
 });
 
 test('table: 维度列相邻同类单元格纵向合并逻辑验证 (时间分桶/分类合并、总计行隔离与上级维度保护)', () => {

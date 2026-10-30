@@ -15,6 +15,7 @@ import { EditorSessionClosedError, isEditorSessionClosed } from './lifecycle.js'
 import { BiBindingManager } from './BiBindingPlugin.js';
 import { compileReport, type CompileReportResult } from './compileReport.js';
 import { collectStaleCells } from './gridSync.js';
+import { sourceOnlyWorkbookSnapshot } from '../report/runtimeSheets.js';
 import type { BiGridModel, ReportBinding } from '../report/types.js';
 import { biGridToUniverWorksheetData, publishedStyleToUniver, toExcelPattern } from '../report/buildBiGrid.js';
 
@@ -213,7 +214,8 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
           (univerAPIRef.current as any).__biTransaction = txn;
         }
         const activeWorkbook = univerAPIRef.current.getActiveWorkbook();
-        const worksheet = activeWorkbook ? activeWorkbook.getActiveSheet() : null;
+        const activeWorksheet=activeWorkbook?.getActiveSheet();
+        const worksheet = activeWorksheet&&!(univerAPIRef.current as any).__biRuntimeSheetIds?.has(activeWorksheet.getSheetId())?activeWorksheet:activeWorkbook?.getSheets().find((s:{getSheetId:()=>string})=>!(univerAPIRef.current as any).__biRuntimeSheetIds?.has(s.getSheetId()));
         if (!worksheet || !activeWorkbook) {
           // GRID-SYNC-02: worksheet 未就绪时不推进游标，保留差集待下次刷新重试，
           // 否则本次网格变更将被永久跳过、旧内容失去被清理的机会。
@@ -221,7 +223,7 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
         }
         lastGridRef.current = initialGrid;
 
-        const wsInternal = (worksheet as any)._worksheet;
+        const wsInternal = worksheet.getSheet();
         const matrix = wsInternal?.getCellMatrix?.();
         const oldSnapshot = activeWorkbook.save();
         const sheetId = worksheet.getSheetId?.() || 's1';
@@ -398,8 +400,9 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
               if (cell.style.bold !== undefined && typeof range?.setFontWeight === 'function') {
                 try { range.setFontWeight(cell.style.bold ? 'bold' : 'normal'); } catch {}
               }
-              if (cell.style.align && typeof range?.setHorizontalAlignment === 'function') {
-                try { range.setHorizontalAlignment(cell.style.align); } catch {}
+              if (cell.style.align && cell.style.align !== 'general' && typeof range?.setHorizontalAlignment === 'function') {
+                // Facade用normal表示右对齐；常规对齐由下方完整样式的ht:0回填。
+                try { range.setHorizontalAlignment(cell.style.align === 'right' ? 'normal' : cell.style.align); } catch {}
               }
               if (cell.style.verticalAlign && typeof range?.setVerticalAlignment === 'function') {
                 try { range.setVerticalAlignment(cell.style.verticalAlign); } catch {}
@@ -523,7 +526,7 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
         getWorkbookSnapshot: () => {
           if (!univerAPIRef.current||!bundleRef.current?.session.ready) return null;
           const activeWorkbook = univerAPIRef.current.getActiveWorkbook();
-          return activeWorkbook ? activeWorkbook.save() : null;
+          return activeWorkbook ? sourceOnlyWorkbookSnapshot(activeWorkbook.save(),(univerAPIRef.current as any).__biRuntimeSheetIds) : null;
         },
         getUniverAPI: () => bundleRef.current?.session.ready?univerAPIRef.current:null,
         waitForFormulaSettled: async () => {

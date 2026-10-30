@@ -23,6 +23,7 @@ export interface CellCapabilities {
   canTargetField: boolean;
   canEditConditions: boolean;
   canStyleRow: boolean;
+  canDrill: boolean;
   tabs: {key:AdvancedCellTab;label:string}[];
 }
 export interface CapabilityContext {
@@ -86,7 +87,7 @@ export function getCellCapabilities(cell: CellDefinition, context: CapabilityCon
     canEditAggregation: role === 'measure', aggregations,
     mergePolicies,
     canTargetField: c.kind === 'field',
-    canEditConditions:businessCell,canStyleRow:businessCell,tabs,
+    canEditConditions:businessCell,canStyleRow:businessCell,canDrill:c.kind==='field'||c.kind==='business-formula',tabs,
   };
 }
 

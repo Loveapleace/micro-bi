@@ -9,6 +9,7 @@ import { validateHybridAxes } from './hybridAxes.js';
 import { validateStaticSpans } from './staticSpans.js';
 import { validatePresentationRules } from './presentationRules.js';
 import { isValidNumberFormat } from '../report/numberFormat.js';
+import { isValidTimeZone } from '../engine/bucketing.js';
 
 export interface ValidationResult {
   valid: boolean;
@@ -26,7 +27,22 @@ export function validateCellTemplateDocument(
 ): ValidationResult {
   const diagnostics: TemplateDiagnostic[] = [...validateHybridAxes(doc), ...validateStaticSpans(doc), ...validatePresentationRules(doc, availableFields)];
   const occupied = new Map<string, string>();
+  const drillTargets = new Set<string>();
+  for(const rule of doc.drillRules||[]){
+    const key=JSON.stringify([rule.sheetId,rule.datasetId,rule.semanticKey||rule.cellId]);
+    const source=doc.cells.find(c=>c.id===rule.cellId&&c.sheetId===rule.sheetId);
+    const error=(message:string)=>diagnostics.push({severity:'error',code:'ERR_DRILL_RULE',targetId:rule.cellId,message});
+    if(drillTargets.has(key))error('同一源格只能配置一条明细规则');drillTargets.add(key);
+    if(!Number.isInteger(rule.pageSize)||rule.pageSize<1||rule.pageSize>100)error('明细每页条数需为1～100');
+    if(!Array.isArray(rule.columns)||rule.columns.some(c=>typeof c!=='string'||!c))error('明细列配置无效');
+    if(source&&rule.enabled){
+      if(!['field','business-formula'].includes(source.content.kind))error('此单元格不支持自动事实明细');
+      if(rule.field&&(source.content.kind!=='field'||source.content.fieldKey!==rule.field))error('明细规则与源字段身份不一致');
+      if(availableFields?.length&&rule.columns.some(c=>!availableFields.includes(c)))error('明细列引用不存在的字段');
+    }
+  }
   for(const cell of doc.cells||[]){
+    if(cell.content.kind==='field'&&cell.content.timeBucket?.timezone&&!isValidTimeZone(cell.content.timeBucket.timezone))diagnostics.push({severity:'error',code:'ERR_TIMEZONE',targetId:cell.id,message:'时间分桶的IANA时区无效'});
     const pattern=((cell.content as any)?.formatOptions||cell.formatOptions)?.numberFormat;
     if(pattern!==undefined&&!isValidNumberFormat(pattern))diagnostics.push({severity:'error',code:'ERR_NUMBER_FORMAT',targetId:cell.id,message:'Excel数字格式模式串无效'});
   }

@@ -8,6 +8,11 @@ import * as VTablePkg from '@visactor/vtable';
 import type { ListTable as ListTableType } from '@visactor/vtable';
 import type { PublishedReport, SheetId } from '../../../report/types.js';
 import { adaptPublishedSheetToVTable } from './gridAdapter.js';
+import { resolveDrillTarget } from '../../../report/drill.js';
+import type { DrillQuery } from '../../../report/drillTypes.js';
+import { useDrillRuntime } from './useDrillRuntime.js';
+import { DrillSheetBar } from './DrillSheetBar.js';
+import { Tabs } from 'antd';
 
 const vtableMod: any = VTablePkg;
 const vtableActual = vtableMod.ListTable ? vtableMod : (vtableMod['def' + 'ault'] || vtableMod);
@@ -20,6 +25,7 @@ export interface ReportTableViewProps {
   onActiveSheetChange?: ((sheetId: SheetId) => void) | undefined;
   className?: string | undefined;
   style?: React.CSSProperties | undefined;
+  queryDrillDetails?: DrillQuery | undefined;
 }
 
 export const ReportTableView: React.FC<ReportTableViewProps> = ({
@@ -29,14 +35,19 @@ export const ReportTableView: React.FC<ReportTableViewProps> = ({
   onActiveSheetChange,
   className,
   style,
+  queryDrillDetails,
 }) => {
+  const {session:drillSession,snapshot:drillSnapshot}=useDrillRuntime(report.drillIndex,queryDrillDetails);
+  const effectiveReport=useMemo(()=>({...report,sheets:[...report.sheets,...drillSnapshot.tabs.map(t=>t.sheet)]}),[report,drillSnapshot.tabs]);
+  const scrollBySheet=useRef(new Map<string,{left:number;top:number;row?:number;col?:number}>());
+  const queryMessageRef=useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const tableInstanceRef = useRef<ListTableType | null>(null);
 
   // MBI-12: 派生仅可见的工作表列表 (严格过滤 hidden 为 true 的工作表)
   const visibleSheets = useMemo(() => {
-    return (report.sheets || []).filter((s) => !s.hidden);
-  }, [report.sheets]);
+    return (effectiveReport.sheets || []).filter((s) => !s.hidden);
+  }, [effectiveReport.sheets]);
 
   // 工作表切换状态：仅从可见工作表中选取
   const [internalSheetId, setInternalSheetId] = useState<string>(() => {
@@ -57,7 +68,7 @@ export const ReportTableView: React.FC<ReportTableViewProps> = ({
     }
   }, [activeSheetId, visibleSheets, internalSheetId, onActiveSheetChange]);
 
-  const currentSheetId = activeSheetId && visibleSheets.some((s) => s.id === activeSheetId)
+  const currentSheetId = drillSnapshot.activeSheetId&&visibleSheets.some(s=>s.id===drillSnapshot.activeSheetId)?drillSnapshot.activeSheetId:activeSheetId && visibleSheets.some((s) => s.id === activeSheetId)
     ? activeSheetId
     : internalSheetId;
 
@@ -71,12 +82,13 @@ export const ReportTableView: React.FC<ReportTableViewProps> = ({
 
   const handleSheetTabClick = useCallback(
     (sheetId: string) => {
+      drillSession.activate(sheetId);
       setInternalSheetId(sheetId);
       if (onActiveSheetChange) {
         onActiveSheetChange(sheetId);
       }
     },
-    [onActiveSheetChange]
+    [onActiveSheetChange,drillSession]
   );
 
   // 初始化与更新 VTable 实例
@@ -104,6 +116,7 @@ export const ReportTableView: React.FC<ReportTableViewProps> = ({
         widthMode: 'standard',
         autoFillWidth: true,
         ...options,
+        menu:{...options.menu,contextMenuItems:(_field:any,row:number,col:number)=>resolveDrillTarget(report.drillIndex,currentSheet.id,row,col)?[{text:'查看明细',menuKey:'bi-drill-details'},'copy']:['copy']},
       });
       instance.on('dropdown_menu_click', ({ menuKey }: { menuKey: string }) => {
         if (menuKey === 'copy') {
@@ -114,6 +127,22 @@ export const ReportTableView: React.FC<ReportTableViewProps> = ({
       });
 
       localInstance = instance;
+      const openDetails=(col:number,row:number)=>{
+        const target=resolveDrillTarget(report.drillIndex,currentSheet.id,row,col);
+        if(!target)return;
+        if(target.reason){if(queryMessageRef.current)queryMessageRef.current.textContent=target.reason;return;}
+        scrollBySheet.current.set(currentSheet.id,{left:instance.scrollLeft,top:instance.scrollTop,row,col});
+        // SDK在pointerup后用timer收尾menuHandler；微任务仍过早，下一任务再切Sheet。
+        setTimeout(()=>{if(tableInstanceRef.current===instance)drillSession.open(target);},0);
+      };
+      instance.on('dblclick_cell',({col,row}:{col:number;row:number})=>openDetails(col,row));
+      instance.on('mouseenter_cell',({col,row}:{col:number;row:number})=>{
+        const target=resolveDrillTarget(report.drillIndex,currentSheet.id,row,col);
+        if(containerRef.current)containerRef.current.title=target?target.reason||'双击查看明细':'';
+      });
+      instance.on('dropdown_menu_click',(event:{menuKey:string;col:number;row:number})=>{if(event.menuKey==='bi-drill-details')openDetails(event.col,event.row);});
+      const position=scrollBySheet.current.get(currentSheet.id);
+      if(position){instance.setScrollLeft(position.left);instance.setScrollTop(position.top);if(position.row!==undefined&&position.col!==undefined)instance.selectCell(position.col,position.row);}
       tableInstanceRef.current = instance;
     } catch (e) {
       console.error('[ReportTableView] 渲染 VTable 失败:', e);
@@ -121,6 +150,8 @@ export const ReportTableView: React.FC<ReportTableViewProps> = ({
 
     return () => {
       if (localInstance) {
+        const previous=scrollBySheet.current.get(currentSheet.id);
+        scrollBySheet.current.set(currentSheet.id,{...previous,left:localInstance.scrollLeft,top:localInstance.scrollTop});
         try {
           localInstance.release();
         } catch {}
@@ -129,7 +160,7 @@ export const ReportTableView: React.FC<ReportTableViewProps> = ({
         tableInstanceRef.current = null;
       }
     };
-  }, [currentSheet, report.styles]);
+  }, [currentSheet, report.styles,report.drillIndex,drillSession]);
 
   // React布局提交后同步Canvas布局。弹窗开关/外层样式变化时，单次resize可能
   // 留下旧的文字绘制缓存；重建可见单元格而不改写数据、滚动或源配置。
@@ -139,7 +170,7 @@ export const ReportTableView: React.FC<ReportTableViewProps> = ({
       if(table){table.resize();table.renderWithRecreateCells();}
     });
     return ()=>cancelAnimationFrame(frame);
-  },[height,style,className]);
+  },[currentSheet,report.styles,height,style,className]);
 
   // 监听容器大小变化自动调整
   useEffect(() => {
@@ -168,6 +199,8 @@ export const ReportTableView: React.FC<ReportTableViewProps> = ({
         ...style,
       }}
     >
+      <DrillSheetBar tab={drillSnapshot.tabs.find(t=>t.id===currentSheetId)} session={drillSession}/>
+      <div ref={queryMessageRef} role="status" style={{fontSize:12,color:'#ad6800'}}/>
       {/* 报表主网格画布容器 */}
       <div
         ref={containerRef}
@@ -197,43 +230,11 @@ export const ReportTableView: React.FC<ReportTableViewProps> = ({
 
       {/* 多工作表页签栏 (MBI-12: 仅展示可见工作表页签) */}
       {visibleSheets.length > 1 && (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            height: 32,
-            background: '#f8fafc',
-            borderTop: '1px solid #e2e8f0',
-            padding: '0 8px',
-            gap: 4,
-          }}
-        >
-          {visibleSheets.map((sheet) => {
-            const isActive = currentSheet && sheet.id === currentSheet.id;
-            return (
-              <button
-                key={sheet.id}
-                onClick={() => handleSheetTabClick(sheet.id)}
-                style={{
-                  height: 24,
-                  padding: '0 12px',
-                  fontSize: 12,
-                  border: isActive ? '1px solid #cbd5e1' : 'none',
-                  borderBottom: 'none',
-                  borderRadius: '4px 4px 0 0',
-                  background: isActive ? '#ffffff' : 'transparent',
-                  color: isActive ? '#0f172a' : '#64748b',
-                  fontWeight: isActive ? 600 : 400,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                }}
-              >
-                {sheet.name}
-              </button>
-            );
-          })}
-        </div>
+        <Tabs type="editable-card" size="small" hideAdd animated={false} tabPosition="bottom"
+          activeKey={currentSheetId} onChange={handleSheetTabClick} tabBarStyle={{margin:0}}
+          style={{flexShrink:0,padding:'0 8px',background:'#f8fafc',borderTop:'1px solid #e2e8f0'}}
+          onEdit={(key,action)=>{if(action==='remove'&&typeof key==='string'&&drillSnapshot.tabs.some(t=>t.id===key))drillSession.close(key);}}
+          items={visibleSheets.map(sheet=>({key:sheet.id,label:sheet.name,closable:drillSnapshot.tabs.some(t=>t.id===sheet.id)}))}/>
       )}
     </div>
   );

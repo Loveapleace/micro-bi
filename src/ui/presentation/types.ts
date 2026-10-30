@@ -36,6 +36,7 @@ export interface DynamicDataViewProps {
 
   /** 可选的已发布报表模型输入 (MBI-16: 若提供且为表格视图，优先使用 ReportTableView 进行精确呈现) */
   publishedReport?: PublishedReport | undefined;
+  queryDrillDetails?: import('../../report/drillTypes.js').DrillQuery | undefined;
 
   /** 点击表格行或单元格回调 */
   onRowSelect?: ((record: DataRecord, index: number, colField?: string | undefined) => void) | undefined;

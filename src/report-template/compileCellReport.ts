@@ -22,6 +22,7 @@ import { expandCellTemplate } from './expandTemplate.js';
 import { expandCellDrivenTemplate } from './cellExpansionEngine.js';
 import { applyPresentationRules, validatePresentationRules } from './presentationRules.js';
 import { fieldValueType } from './cellCapabilities.js';
+import { compileDrillIndex, dataSnapshotFingerprint } from '../report/drill.js';
 
 export interface CompileCellReportResult {
   publication: PublishedReport;
@@ -39,8 +40,9 @@ export function compileCellReport(
     availableFields?: readonly string[];
   } = {}
 ): CompileCellReportResult {
-  const compilerVersion = options.compilerVersion || '2.0.0-presentation-1';
-  const dataRevision = options.dataRevision ?? Date.now();
+  const compilerVersion = options.compilerVersion || '2.0.0-drill-1';
+  const fingerprint = dataSnapshotFingerprint(rawDataset);
+  const dataRevision = options.dataRevision ?? fingerprint;
   const createdAt = new Date().toISOString();
 
   const stamp: RenderStamp = {
@@ -331,6 +333,7 @@ export function compileCellReport(
   };
 
   const allSheets: PublishedSheet[] = [activeSheet];
+  const drillGrids = [{sheetId: activeSheet.id, grid}];
 
   for (const sheet of doc.sheets || []) {
     if (sheet.id === activeSheet.id) continue;
@@ -346,6 +349,7 @@ export function compileCellReport(
       const sheetExpanded = expandCellDrivenTemplate(doc, rawDataset, { sheetId: sheet.id });
       allDiagnostics.push(...sheetExpanded.diagnostics);
       const sGrid = sheetExpanded.grid;
+      drillGrids.push({sheetId: sheet.id, grid: sGrid});
       const sCells: PublishedCell[] = [];
       const sCellValueMap = new Map<string, any>();
 
@@ -488,6 +492,7 @@ export function compileCellReport(
     createdAt,
     sheets: allSheets,
     styles,
+    drillIndex: compileDrillIndex(doc, drillGrids, fingerprint, dataRevision),
     diagnostics: allDiagnostics.map((d) => ({
       severity: d.severity,
       code: d.code,
