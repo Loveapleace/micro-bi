@@ -76,6 +76,7 @@ export interface CellBorderConfig {
 
 export interface PublishedCellStyle {
   fontFamily?: string | undefined;
+  /** Excel points (pt). Convert only at a pixel-based renderer boundary. */
   fontSize?: number | undefined;
   bold?: boolean | undefined;
   italic?: boolean | undefined;
@@ -98,6 +99,7 @@ export interface PublishedCell {
   formula?: string | undefined;
   styleId?: string | undefined;
   bindingId?: BindingId | undefined;
+  sourceCellId?: string | undefined;
   role?: BindingRole | undefined;
   tooltip?: string | undefined;
 }

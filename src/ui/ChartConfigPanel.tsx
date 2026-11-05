@@ -8,12 +8,15 @@ import {ChartView} from './presentation/charts/ChartView.js';
 import {FormulaEditorModal} from './components/FormulaEditorModal.js';
 
 export interface ChartConfigPanelRef {getConfig:()=>ChartConfigV1;validateAndGetChart:()=>CompiledChart}
-export interface ChartConfigPanelProps {value:ChartConfigV1;onChange:(config:ChartConfigV1)=>void;isDark?:boolean|undefined;isEn?:boolean|undefined;height?:number|string|undefined}
+export interface ChartConfigPanelProps {value:ChartConfigV1;onChange:(config:ChartConfigV1)=>void;datasets?:readonly import('../core/datasetRegistry.js').RegisteredDataset[]|undefined;externalDataset?:import('../core/datasetRegistry.js').ExternalDatasetSnapshot|undefined;onDatasetChange?:((datasetId:string)=>void)|undefined;onRefresh?:(()=>void)|undefined;isDark?:boolean|undefined;isEn?:boolean|undefined;height?:number|string|undefined}
 const aggregations=[['sum','求和'],['avg','平均'],['count','计数'],['min','最小'],['max','最大']].map(([value,label])=>({value,label}));
 const grains=[['hour','小时'],['day','日'],['week','周'],['month','月'],['quarter','季度'],['year','年'],['custom','自定义天数']].map(([value,label])=>({value,label}));
 /** 模式一专用：没有表格、行列透视、工作簿及Excel保存入口。 */
-export const ChartConfigPanel=forwardRef<ChartConfigPanelRef,ChartConfigPanelProps>(function ChartConfigPanel({value,onChange,isDark=false,isEn=false,height='100%'},ref){
-  const datasets=useRegisteredDatasets(),resolved=useDatasetData(value.datasetId);
+export const ChartConfigPanel=forwardRef<ChartConfigPanelRef,ChartConfigPanelProps>(function ChartConfigPanel({value,onChange,datasets:providedDatasets,externalDataset,onDatasetChange,onRefresh,isDark=false,isEn=false,height='100%'},ref){
+  const registered=useRegisteredDatasets(),datasets=providedDatasets||registered,loaded=useDatasetData(value.datasetId,{enabled:!externalDataset});
+  const matches=externalDataset?.datasetId===value.datasetId;
+  const resolved=externalDataset?{...loaded,data:matches?externalDataset.records:[],headers:matches?externalDataset.headers:undefined,loading:!matches||Boolean(externalDataset.loading),error:matches&&externalDataset.error?new Error(externalDataset.error):null}:loaded;
+  useEffect(()=>{onDatasetChange?.(value.datasetId);},[value.datasetId,onDatasetChange]);
   const fields=useMemo(()=>chartFields(resolved.data,resolved.headers,value.fieldTypes),[resolved.data,resolved.headers,value.fieldTypes]);
   const initialised=useRef(value.dimension.field||value.metrics.length?value.datasetId:'');
   const [formula,setFormula]=useState<{open:boolean;value?:ComputedColumnConfig|undefined;originalKey?:string|undefined}>({open:false});
@@ -44,7 +47,7 @@ export const ChartConfigPanel=forwardRef<ChartConfigPanelRef,ChartConfigPanelPro
       <Space direction="vertical" style={{width:'100%'}} size={12}>
         <Typography.Text strong>{isEn?'Chart configuration':'图表配置（模式一）'}</Typography.Text>
         <Select aria-label="图表数据源" style={{width:'100%'}} value={value.datasetId} options={datasets.map(d=>({value:d.id,label:d.name}))} onChange={datasetId=>{initialised.current='';onChange(createChartConfig(datasetId));}}/>
-        {resolved.error&&<Alert type="error" message={resolved.error.message} action={<Button onClick={()=>void resolved.refresh()}>重试</Button>}/>}
+        {resolved.error&&<Alert type="error" message={resolved.error.message} action={<Button onClick={()=>externalDataset?onRefresh?.():void resolved.refresh()}>重试</Button>}/>}
         <Radio.Group aria-label="图表类型" value={value.chartType} onChange={e=>patch({chartType:e.target.value})} optionType="button" options={[{value:'bar',label:'柱状图'},{value:'line',label:'折线图'},{value:'pie',label:'饼图'}]}/>
         <Tabs items={[
           {key:'data',label:'数据与维度',children:<Space direction="vertical" style={{width:'100%'}} size={12}>

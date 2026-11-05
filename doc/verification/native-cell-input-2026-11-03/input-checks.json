@@ -1,0 +1,57 @@
+{
+  "backend": "isolated API fixture; real platform and native keyboard/IME",
+  "cases": [
+    {
+      "name": "blank double-click accepts real ASCII keyboard events",
+      "result": {
+        "width": 1,
+        "height": 1
+      }
+    },
+    {
+      "name": "blank F2 accepts native IME composition and commits Chinese text",
+      "result": true
+    },
+    {
+      "name": "continuous editing and Escape preserve the committed value",
+      "result": true
+    },
+    {
+      "name": "generated headers support double-click/F2 text editing without a modal",
+      "result": true
+    },
+    {
+      "name": "generated metric captions support double-click and F2",
+      "result": true
+    },
+    {
+      "name": "native F2 formula input retains its expression in the template view",
+      "result": true
+    },
+    {
+      "name": "formula-bar native input uses the same nonzero input surface",
+      "result": true
+    },
+    {
+      "name": "bound metric values remain protected from direct keyboard overwrites",
+      "result": true
+    },
+    {
+      "name": "preview retains input/formulas and continues to reject content editing",
+      "result": true
+    },
+    {
+      "name": "saved template and VTable retain text, metric bindings and formula input",
+      "result": true
+    },
+    {
+      "name": "reopening restores saved content and native input; closing cleans the editor",
+      "result": true
+    },
+    {
+      "name": "publish/reload and new group/pivot members preserve edited text in VTable",
+      "result": true
+    }
+  ],
+  "pageErrors": []
+}

@@ -1,0 +1,182 @@
+{
+  "date": "2026-11-04T06:45:55.234Z",
+  "backend": "isolated API fixture; real host and native pointer/keyboard",
+  "cases": [
+    {
+      "kind": "detail",
+      "name": "real drag reorders selected metrics and native template/formula positions",
+      "result": true
+    },
+    {
+      "kind": "detail",
+      "name": "up/down buttons and keyboard activation use the same ordering",
+      "result": true
+    },
+    {
+      "kind": "detail",
+      "name": "native undo/redo restores order and formula references",
+      "result": true
+    },
+    {
+      "kind": "detail",
+      "name": "adding/removing fields and select-all retain explicit order",
+      "result": true
+    },
+    {
+      "kind": "detail",
+      "name": "existing font/color and custom metric width/height follow their identity",
+      "result": {
+        "font": 18,
+        "color": "#A61D24",
+        "width": 173,
+        "height": 32
+      }
+    },
+    {
+      "kind": "detail",
+      "name": "left-side sorting also updates the active dynamic preview and formulas",
+      "result": true
+    },
+    {
+      "kind": "detail",
+      "name": "dynamic preview retains conditional display text and raw numeric/formula values",
+      "result": true
+    },
+    {
+      "kind": "detail",
+      "name": "saved template and VTable retain order, renamed captions, rules and cancelled merges",
+      "result": true
+    },
+    {
+      "kind": "detail",
+      "name": "saved report reopens with the same order",
+      "result": true
+    },
+    {
+      "kind": "detail",
+      "name": "publish/reload, inserts/deletes, sorting, new groups/pivot columns and empty recovery retain order",
+      "result": true
+    },
+    {
+      "kind": "grouped",
+      "name": "real drag reorders selected metrics and native template/formula positions",
+      "result": true
+    },
+    {
+      "kind": "grouped",
+      "name": "up/down buttons and keyboard activation use the same ordering",
+      "result": true
+    },
+    {
+      "kind": "grouped",
+      "name": "native undo/redo restores order and formula references",
+      "result": true
+    },
+    {
+      "kind": "grouped",
+      "name": "adding/removing fields and select-all retain explicit order",
+      "result": true
+    },
+    {
+      "kind": "grouped",
+      "name": "existing font/color and custom metric width/height follow their identity",
+      "result": {
+        "font": 18,
+        "color": "#A61D24",
+        "width": 173,
+        "height": 32
+      }
+    },
+    {
+      "kind": "grouped",
+      "name": "left-side sorting also updates the active dynamic preview and formulas",
+      "result": true
+    },
+    {
+      "kind": "grouped",
+      "name": "dynamic preview retains conditional display text and raw numeric/formula values",
+      "result": true
+    },
+    {
+      "kind": "grouped",
+      "name": "saved template and VTable retain order, renamed captions, rules and cancelled merges",
+      "result": true
+    },
+    {
+      "kind": "grouped",
+      "name": "saved report reopens with the same order",
+      "result": true
+    },
+    {
+      "kind": "grouped",
+      "name": "publish/reload, inserts/deletes, sorting, new groups/pivot columns and empty recovery retain order",
+      "result": true
+    },
+    {
+      "kind": "grouped",
+      "name": "drill rules remain attached to the reordered metric",
+      "result": true
+    },
+    {
+      "kind": "pivot",
+      "name": "real drag reorders selected metrics and native template/formula positions",
+      "result": true
+    },
+    {
+      "kind": "pivot",
+      "name": "up/down buttons and keyboard activation use the same ordering",
+      "result": true
+    },
+    {
+      "kind": "pivot",
+      "name": "native undo/redo restores order and formula references",
+      "result": true
+    },
+    {
+      "kind": "pivot",
+      "name": "adding/removing fields and select-all retain explicit order",
+      "result": true
+    },
+    {
+      "kind": "pivot",
+      "name": "existing font/color and custom metric width/height follow their identity",
+      "result": {
+        "font": 18,
+        "color": "#A61D24",
+        "width": 173,
+        "height": 39
+      }
+    },
+    {
+      "kind": "pivot",
+      "name": "left-side sorting also updates the active dynamic preview and formulas",
+      "result": true
+    },
+    {
+      "kind": "pivot",
+      "name": "dynamic preview retains conditional display text and raw numeric/formula values",
+      "result": true
+    },
+    {
+      "kind": "pivot",
+      "name": "saved template and VTable retain order, renamed captions, rules and cancelled merges",
+      "result": true
+    },
+    {
+      "kind": "pivot",
+      "name": "saved report reopens with the same order",
+      "result": true
+    },
+    {
+      "kind": "pivot",
+      "name": "publish/reload, inserts/deletes, sorting, new groups/pivot columns and empty recovery retain order",
+      "result": true
+    },
+    {
+      "kind": "pivot",
+      "name": "drill rules remain attached to the reordered metric",
+      "result": true
+    }
+  ],
+  "pageErrors": []
+}

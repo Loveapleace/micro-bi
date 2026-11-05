@@ -1,0 +1,102 @@
+{
+  "date": "2026-11-03T03:17:44.521Z",
+  "browser": "155.0.8059.85",
+  "backend": "none",
+  "cases": [
+    {
+      "name": "native setRecords refreshes formats/styles and migrates the selected identity",
+      "result": {
+        "ranges": [
+          {
+            "start": {
+              "col": 1,
+              "row": 201
+            },
+            "end": {
+              "col": 1,
+              "row": 201
+            },
+            "skipBodyMerge": true
+          }
+        ],
+        "top": 500,
+        "left": 70,
+        "value": 1,
+        "text": "显示 1",
+        "font": 24,
+        "color": "#D4380D",
+        "calls": {
+          "created": 1,
+          "release": 0,
+          "records": 1,
+          "options": 0,
+          "resize": 0,
+          "density": 0
+        }
+      }
+    },
+    {
+      "name": "deleting the selected business identity clears its selection",
+      "result": true
+    },
+    {
+      "name": "same merged bounds refresh both the title and unmerged formatted values",
+      "result": true
+    },
+    {
+      "name": "adding/removing dynamic columns updates the existing native layout",
+      "result": true
+    },
+    {
+      "name": "source/detail tab switches retain independent scroll positions",
+      "result": true
+    },
+    {
+      "name": "fractional scale × DPR matches physical canvas pixels",
+      "result": {
+        "ratio": 1.3125,
+        "width": 1181,
+        "cssWidth": 900,
+        "viewport": {
+          "width": 900,
+          "height": 440,
+          "scaleX": 0.875,
+          "scaleY": 0.875,
+          "pixelRatio": 1.3125
+        },
+        "calls": {
+          "created": 1,
+          "release": 0,
+          "records": 9,
+          "options": 7,
+          "resize": 7,
+          "density": 2
+        }
+      }
+    },
+    {
+      "name": "repeated fractional DPR changes recover even when resolution events are suppressed",
+      "result": true
+    },
+    {
+      "name": "rotation preserves density; CSS zoom participates in density",
+      "result": true
+    },
+    {
+      "name": "hidden update/reveal restores layout and the current data without remounting",
+      "result": true
+    },
+    {
+      "name": "unmount releases exactly once and detaches viewport observers",
+      "result": {
+        "created": 1,
+        "release": 1,
+        "records": 11,
+        "options": 8,
+        "resize": 9,
+        "density": 9
+      }
+    }
+  ],
+  "pageErrors": []
+}

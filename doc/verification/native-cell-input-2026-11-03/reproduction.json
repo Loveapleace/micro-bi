@@ -1,0 +1,21 @@
+{
+  "date": "2026-11-03",
+  "environment": "real webEditor host with isolated API fixture; Chrome 155",
+  "before": {
+    "target": "E8 outside the controlled data region",
+    "doubleClickAndF2ReachNativeEditor": true,
+    "keydownEventsReceived": true,
+    "inputSurface": {"width": 0, "height": 0},
+    "beforeinputOrInputForTypedText": false,
+    "committedValue": null
+  },
+  "diagnosticExperiment": {
+    "change": "preserve at least 1px width and height on the owned native contenteditable",
+    "negativeZIndexStillSupported": true,
+    "beforeinputAndInputReceived": true,
+    "keyboardTextCommits": true,
+    "nativeChineseImeCommits": true
+  },
+  "businessProtectionUnchanged": true,
+  "dependenciesPatched": false
+}

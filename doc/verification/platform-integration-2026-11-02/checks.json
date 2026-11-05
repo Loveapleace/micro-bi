@@ -1,0 +1,488 @@
+{
+  "date": "2026-11-02",
+  "branch": "feat/micro-bi-report-integration",
+  "environment": {
+    "node": "22.22",
+    "host": "http://127.0.0.1:1124/",
+    "viewport": "1920x1080",
+    "backend": "Playwright isolated API fixture; no real account/project write"
+  },
+  "validation": {
+    "microBi": {
+      "passed": 583,
+      "failed": 0,
+      "added": "PI-01 through PI-18"
+    },
+    "hostUnit": {
+      "passed": 162,
+      "failed": 0
+    },
+    "embeddedStrictTypes": "passed",
+    "hostTypes": "passed",
+    "editorProduction": {
+      "passed": true,
+      "ms": 192918,
+      "warnings": "asset and entry size"
+    },
+    "actualProduction": {
+      "passed": true,
+      "ms": 175602,
+      "warnings": "asset and entry size"
+    },
+    "editorNpmLocal": "passed; lib/index.d.ts exports microBi",
+    "componentIntegrationTypes": "passed against latest editor lib",
+    "componentDefaultTypes": "not a release gate: installed old editor is missing new and existing APIs; release together",
+    "browserSmoke": {
+      "passed": 8,
+      "pageErrors": []
+    }
+  },
+  "manual": {
+    "add": [
+      {
+        "id": "microBiReportYmjg7t4ubx",
+        "rows": 5,
+        "cols": 7,
+        "firstQty": 230
+      },
+      {
+        "id": "microBiReportYmjg7t4ub10",
+        "rows": 11,
+        "cols": 8,
+        "firstQty": 170
+      }
+    ],
+    "deleteAndReorder": [
+      {
+        "rows": 5,
+        "cols": 6,
+        "first": [
+          "一车间",
+          "qty",
+          130,
+          154,
+          178,
+          142
+        ]
+      },
+      {
+        "rows": 9,
+        "cols": 6,
+        "first": [
+          "二车间",
+          "qty",
+          170,
+          134,
+          158,
+          182
+        ]
+      }
+    ],
+    "empty": [
+      "筛选 (1)\n排序字段\n+ 3 ...\n刷 新\n导出Excel\n重置查询\n筛选后 0 / 0 条\n当前数据源没有数据\n0 行，统计基于全部筛选记录\n1\n50 / page",
+      "筛选\nworkshop\n升序\n+ 3 ...\n刷 新\n导出Excel\n重置查询\n筛选后 0 / 0 条\n当前数据源没有数据\n0 行，统计基于全部筛选记录\n1\n50 / page"
+    ],
+    "rename": [
+      {
+        "message": "day\n筛选 (1)\n排序字段\n+ 5 ...\n刷 新\n导出Excel\n重置查询\n筛选后 0 / 60 条\n字段已失配，请编辑报表配置\n以下字段已不存在，当前仅展示模板结构：qty",
+        "missing": [
+          "⚠ 字段不存在：qty"
+        ]
+      },
+      {
+        "message": "day\n筛选\nworkshop\n升序\n+ 5 ...\n刷 新\n导出Excel\n重置查询\n筛选后 0 / 60 条\n字段已失配，请编辑报表配置\n以下字段已不存在，当前仅展示模板结构：qty",
+        "missing": [
+          "⚠ 字段不存在：qty"
+        ]
+      }
+    ],
+    "hideAfterEarlierMember": [
+      [
+        "workshop",
+        "指标名称",
+        "2026-07-31",
+        "2026-08-01",
+        "2026-08-02",
+        "2026-08-03",
+        "2026-08-04",
+        "2026-08-05"
+      ],
+      [
+        "workshop",
+        "指标名称",
+        "2026-07-31",
+        "2026-08-01",
+        "2026-08-03",
+        "2026-08-04",
+        "2026-08-05"
+      ]
+    ],
+    "variableUpdate": {
+      "ms": 40,
+      "values": [
+        "二号厂区",
+        "二号厂区"
+      ]
+    },
+    "savedSource": {
+      "id": "microBiReportYl44n05jp13",
+      "revision": 3,
+      "sheets": [
+        {
+          "id": "sheet-1",
+          "name": "交叉分析",
+          "rowCount": 25,
+          "columnCount": 15
+        }
+      ],
+      "rules": [
+        {
+          "cellId": "meas-qty",
+          "sheetId": "sheet-1",
+          "field": "qty",
+          "datasetId": "qa-source",
+          "enabled": true,
+          "columns": [],
+          "pageSize": 50
+        }
+      ],
+      "vars": [
+        {
+          "id": "c-mvymbc3s-1",
+          "sheetId": "sheet-1",
+          "position": {
+            "row": 1,
+            "column": 0
+          },
+          "content": {
+            "kind": "literal",
+            "value": "{{address}}"
+          },
+          "parents": {
+            "row": null,
+            "column": null
+          },
+          "regionId": "region-1"
+        }
+      ],
+      "styles": [
+        {
+          "id": "native-style-sheet-1-meas-qty",
+          "sheetId": "sheet-1",
+          "targetId": "meas-qty",
+          "target": {
+            "sheetId": "sheet-1",
+            "regionId": "region-1",
+            "cellId": "meas-qty",
+            "contentKind": "field",
+            "roles": [
+              "data"
+            ],
+            "field": "qty",
+            "role": "measure",
+            "operation": "sum"
+          },
+          "scope": "template-cell",
+          "style": {
+            "color": "#A61D24",
+            "textAlign": "center"
+          },
+          "priority": 0
+        }
+      ]
+    },
+    "runtime": {
+      "value": 130,
+      "align": "center",
+      "color": "#A61D24"
+    },
+    "previewDrill": {
+      "names": [
+        "分析工作表",
+        "qty明细 1"
+      ],
+      "values": [
+        [
+          "qty明细",
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "workshop=一车间 · day=2026-08-01",
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "id",
+          "workshop",
+          "day",
+          "qty",
+          "defects"
+        ],
+        [
+          "work-0",
+          "一车间",
+          "2026-08-01",
+          10,
+          0
+        ],
+        [
+          "work-15",
+          "一车间",
+          "2026-08-01",
+          25,
+          3
+        ],
+        [
+          "work-30",
+          "一车间",
+          "2026-08-01",
+          40,
+          2
+        ],
+        [
+          "work-45",
+          "一车间",
+          "2026-08-01",
+          55,
+          1
+        ]
+      ]
+    },
+    "vtableDrill": {
+      "text": "day\n筛选 (1)\n排序字段\n+ 7 ...\n刷 新\n导出Excel\n重置查询\n筛选后 20 / 60 条\n第 1 / 1 页，共 4 条；当前页最多 50 条\n与主报表数据一致\n上一页\n下一页\n返回主报表\n关闭明细\n交叉分析\nqty明细\n2 行，统计基于全部筛选记录\n1\n50 / page",
+      "rows": 7,
+      "cols": 5,
+      "values": [
+        [
+          "qty明细",
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "workshop=一车间 · day=2026-08-01",
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "id",
+          "workshop",
+          "day",
+          "qty",
+          "defects"
+        ],
+        [
+          "work-0",
+          "一车间",
+          "2026-08-01",
+          10,
+          0
+        ],
+        [
+          "work-15",
+          "一车间",
+          "2026-08-01",
+          25,
+          3
+        ],
+        [
+          "work-30",
+          "一车间",
+          "2026-08-01",
+          40,
+          2
+        ],
+        [
+          "work-45",
+          "一车间",
+          "2026-08-01",
+          55,
+          1
+        ]
+      ]
+    },
+    "export": {
+      "name": "sheet1",
+      "rows": 63,
+      "cols": 5,
+      "first": [
+        null,
+        "work-0",
+        "一车间",
+        "2026-08-01",
+        10,
+        0
+      ],
+      "last": [
+        null,
+        "work-59",
+        "三车间",
+        "2026-08-05",
+        69,
+        3
+      ],
+      "qtySum": 2370
+    },
+    "page20": {
+      "first": [
+        "work-20",
+        "三车间",
+        "2026-08-01",
+        30,
+        0
+      ],
+      "rows": 23
+    },
+    "reload": [
+      {
+        "id": "microBiReportYmjg7t4ubx",
+        "rows": 5,
+        "cols": 7,
+        "first": [
+          "一车间",
+          "qty",
+          130,
+          154,
+          178,
+          142,
+          166
+        ],
+        "query": "day\n筛选 (1)\n排序字段\n+ 7 ...\n刷 新\n导出Excel\n重置查询\n筛选后 20 / 60 条\n2 行，统计基于全部筛选记录\n1\n50 / page"
+      },
+      {
+        "id": "microBiReportYmjg7t4ub10",
+        "rows": 9,
+        "cols": 6,
+        "first": [
+          "二车间",
+          "qty",
+          170,
+          158,
+          182,
+          146
+        ],
+        "query": "day\n筛选\nworkshop\n升序\n+ 6 ...\n刷 新\n导出Excel\n重置查询\n筛选后 60 / 60 条\n6 行，统计基于全部筛选记录\n1\n50 / page"
+      },
+      {
+        "id": "microBiReportYnn7jp78i1r",
+        "rows": 23,
+        "cols": 5,
+        "first": [
+          "work-20",
+          "三车间",
+          "2026-08-01",
+          30,
+          0
+        ],
+        "query": "day\n筛选\n排序字段\n+ 5 ...\n刷 新\n导出Excel\n重置查询\n筛选后 60 / 60 条\n60 行，统计基于全部筛选记录\n1\n2\n3\n20 / page"
+      },
+      {
+        "id": "microBiReportYnn7jp78i1w",
+        "query": "day\n筛选\n排序字段\n刷 新\n重置查询\n筛选后 60 / 60 条"
+      }
+    ],
+    "undoRedo": {
+      "passed": true,
+      "sourceSwitch": {
+        "token": "{{address}}",
+        "style": {
+          "ff": "Arial",
+          "fs": 11,
+          "bl": 1,
+          "it": 0,
+          "ul": {
+            "s": 0
+          },
+          "st": {
+            "s": 0
+          },
+          "cl": {
+            "rgb": "#A61D24"
+          },
+          "bg": {
+            "rgb": "#FFF7E6"
+          },
+          "ht": 2,
+          "vt": 2,
+          "tb": 2,
+          "bd": {
+            "t": {
+              "s": 0,
+              "cl": {
+                "rgb": "#000000"
+              }
+            },
+            "r": {
+              "s": 0,
+              "cl": {
+                "rgb": "#000000"
+              }
+            },
+            "b": {
+              "s": 0,
+              "cl": {
+                "rgb": "#000000"
+              }
+            },
+            "l": {
+              "s": 0,
+              "cl": {
+                "rgb": "#000000"
+              }
+            }
+          },
+          "n": {
+            "pattern": "0.00"
+          }
+        }
+      }
+    },
+    "lifecycle": [
+      {
+        "closed": true,
+        "roots": 0
+      },
+      {
+        "closed": true,
+        "roots": 0
+      },
+      {
+        "closed": true,
+        "roots": 0
+      }
+    ],
+    "errors": []
+  },
+  "limitations": [
+    "Real authenticated platform/backend and production network not exercised",
+    "Referenced variable updates recompile the report; no incremental dependency graph or P95 promise",
+    "Companion/editor/component not published; file dependency is workspace-only",
+    "Large package warnings remain; evaluate actual terminals and business volume"
+  ],
+  "sourceSha256": {
+    "microBi/embedded/src/roots.tsx": "f34b2e08659154ef0de443b75d15d4aeb34bfa03e81bc86a830bc3938ff289de",
+    "microBi/embedded/src/designer.tsx": "14c23351251e11763ab86b4d292f67ac98e42afc7e6b5457c7531d7ec83f55af",
+    "microBi/embedded/src/viewer.tsx": "fa66a939705020535b6b1200cefab879b1c8cae5c4a31ae3896541fc3048643d",
+    "microBi/src/report/hostVariables.ts": "8014b1de31f1a28a6e0290cf44e6fb8cde7f86facf73ba104cb27190dd102669",
+    "microBi/src/report/viewProjection.ts": "4086eda243b49cb0fc21e4cb7d6f195b5f2a82de0c45d2d10c5d889387ecb1fa",
+    "microBi/src/report-template/compileCellReport.ts": "6aeb06e9adca0b7c1e1483e62fe097545680aa97a82aad9d4fd3510a12550395",
+    "microBi/test/platform-integration.test.mjs": "378d97855efe7b105ab79b63673197bfc69699dc6477c4854297f1aca61d164d",
+    "editor/src/microBi/Runtime.tsx": "86ec0fb09ef4ceef17fd053148cca9734f7c23185716e74709a6e101b792cadd",
+    "editor/src/microBi/sourceFeed.ts": "7cf8621974f1a8262c462ac602bba30b7dc2117db535ab3d2ddf1c43cd592118",
+    "editor/src/editor/modalManager/microBiReport/DesignerHost.tsx": "669ec3af6f0c61d265994bd81463b61cbe72f5e3c9b08018caab5658adb33863",
+    "editor/scripts/prepare-micro-bi.cjs": "cce31bdd2f60af62dd8f6b71e69dc7fc7e01462bcda90d5266abf8efecbe87cc",
+    "editor/scripts/verify-micro-bi-platform.cjs": "5065be970502d0df1bf44019eca150b6529c32f163ead5a35a0b33c8f0a48995",
+    "editor/tests/fixtures/microBiReport.json": "13f37758c727539b8861bd62cfd669740beb3310b4174c73da2712a073e543cd",
+    "component/src/index.ts": "5cebcc68cec33841f3a5f29d23df87c8c41a3799deaa972041e65dcb0b99bc6f",
+    "component/src/components/dataSource/index.tsx": "259d0b9f7133969e6d9581ffdffd72945108dbf92361da329de2d873d224f187",
+    "component/src/hwComponent/senior/microBiReport/index.tsx": "92b3909dfe26b9e1414f29655dac33d7bba84ce10ce826265dfe661d0f39f00f"
+  }
+}

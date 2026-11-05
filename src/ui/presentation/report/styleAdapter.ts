@@ -4,6 +4,7 @@
  */
 import type { PublishedCellStyle } from '../../../report/types.js';
 import { BORDER_SIDES, borderWidth, borderDash } from '../../../report/cellStyle.js';
+import { pointsToPixels } from '../../../report/fontMetrics.js';
 
 export interface VTableCellStyleResult {
   padding?: [number,number,number,number] | undefined;
@@ -30,14 +31,14 @@ export function mapPublishedStyleToVTable(
   const alignment = style.align ?? 'general';
   // 与中性网格的自动行高估算使用同一内边距，避免24号换行文本被主题默认大边距截断。
   const res: VTableCellStyleResult = {
-    padding: [4, 6, 4, 6], fontFamily: 'Arial', fontSize: 11,
+    padding: [4, 6, 4, 6], fontFamily: 'Arial', fontSize: pointsToPixels(),
     textOverflow: 'clip', textBaseline: 'middle',
     // 以原值类型判断，格式化文本和条件文案不会把数值误判为文本。
     textAlign: alignment === 'general' ? (typeof value === 'number' ? 'right' : 'left') : alignment,
   };
 
   if (style.fontFamily) res.fontFamily = style.fontFamily;
-  if (style.fontSize) res.fontSize = style.fontSize;
+  if (style.fontSize) res.fontSize = pointsToPixels(style.fontSize);
   if (style.bold !== undefined) res.fontWeight = style.bold ? 'bold' : 'normal';
   if (style.italic !== undefined) res.fontStyle = style.italic ? 'italic' : 'normal';
   if (style.underline!==undefined) res.underline = style.underline;

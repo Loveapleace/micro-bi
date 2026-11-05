@@ -9,10 +9,12 @@
 import { LocaleType, CommandType, CellValueType, HorizontalAlign, InterceptorEffectEnum, ICommandService, IUndoRedoService, IContextService, IUniverInstanceService,
   EDITOR_ACTIVATED, FOCUSING_SHEET, LifecycleService, LifecycleStages, type IWorkbookData, type Univer } from '@univerjs/core';
 import { createUniver } from '@univerjs/presets';
-import { UniverSheetsCorePreset, IMenuManagerService, RibbonPosition, type MenuSchemaType, type IMenuSchema } from '@univerjs/preset-sheets-core';
+import { UniverSheetsCorePreset, IMenuManagerService, MenuItemType, RibbonPosition, FormulaExecutedStateType,
+  SetFormulaCalculationStopMutation, SetFormulaCalculationNotificationMutation, type MenuSchemaType, type IMenuSchema } from '@univerjs/preset-sheets-core';
 import zhCN from '@univerjs/preset-sheets-core/lib/es/locales/zh-CN.js';
 import { INTERCEPTOR_POINT, SheetInterceptorService } from '@univerjs/sheets';
 import { EditorSession, EditorSessionClosedError, readyAfterRender, waitForOwnedEvent } from './lifecycle.js';
+import { BehaviorSubject } from 'rxjs';
 
 export type FUniver = ReturnType<typeof createUniver>['univerAPI'];
 const instances = new WeakMap<FUniver, {univer:Univer;session:EditorSession;ready:Promise<boolean>}>();
@@ -21,6 +23,32 @@ const REPORT_TOOLBAR_MENU = {
   'sheet.command.set-text-rotation':{hidden:true},
   'sheet.command.set-shrink-to-fit':{hidden:true},
 };
+
+/** Register an owned native context action; its availability follows the current selection and view. */
+export function attachUniverContextAction(api: FUniver, id: string, title: string, available: () => boolean, action: () => void): { refresh: () => void; dispose: () => void } | undefined {
+  const owner = instances.get(api);
+  if (!owner || closedInstances.has(api)) return;
+  const commands = owner.univer.__getInjector().get(ICommandService), menus = owner.univer.__getInjector().get(IMenuManagerService);
+  const hidden = new BehaviorSubject(true);
+  let closed = false;
+  const refresh = () => {
+    if (closed) return;
+    try { hidden.next(!owner.session.ready || !available()); } catch { hidden.next(true); }
+  };
+  const command = commands.registerCommand({ id, type: CommandType.COMMAND, handler: () => {
+    if (closed || !owner.session.ready || !available()) return false;
+    action(); return true;
+  } });
+  menus.mergeMenu({ 'contextMenu.mainArea': { 'contextMenu.others': { [id]: { order: 0,
+    menuItemFactory: () => ({ id, title, type: MenuItemType.BUTTON, hidden$: hidden }) } } } });
+  const events = [api.Event.SelectionChanged, api.Event.CellClicked].filter(Boolean).map(event => api.addEvent(event, refresh));
+  const selectionCommands = api.addEvent(api.Event.CommandExecuted, (event: { id: string }) => { if (event.id.includes('selection')) refresh(); });
+  refresh();
+  return { refresh, dispose: () => {
+    if (closed) return; closed = true; hidden.next(true); hidden.complete();
+    for (const event of events) event.dispose(); selectionCommands.dispose(); command.dispose();
+  } };
+}
 function restrictWrapMenu(univer:Univer):void{
   const manager=univer.__getInjector().get(IMenuManagerService);
   const visit=(nodes:IMenuSchema[],path:string[])=>{
@@ -165,9 +193,21 @@ export function initUniver(
       if(!session.allowsCommand(event.id))event.cancel=true;
     });
     let disposed=false;
+    const beginDispose = () => {
+      if (!session.active) return;
+      try {
+        // Univer 1.1 leaves the delayed calculation-progress timer alive until a terminal notification.
+        // Stop the owned engine and finish its progress while LocaleService and native listeners still exist.
+        const commands = univer.__getInjector().get(ICommandService);
+        commands.syncExecuteCommand(SetFormulaCalculationStopMutation.id, {}, { onlyLocal: true });
+        commands.syncExecuteCommand(SetFormulaCalculationNotificationMutation.id,
+          { functionsExecutedState: FormulaExecutedStateType.STOP_EXECUTION }, { onlyLocal: true });
+      } catch (error) { console.warn('[UniverAdapter] 停止公式计算失败:', error); }
+      closedInstances.add(univerAPI); session.close();
+    };
 
     const dispose = () => {
-      if(disposed)return;disposed=true;closedInstances.add(univerAPI);session.close();
+      if(disposed)return;disposed=true;beginDispose();
       instances.delete(univerAPI);
       try {
         display?.dispose();
@@ -182,7 +222,7 @@ export function initUniver(
       univerAPI,
       session,
       ready,
-      beginDispose:()=>{closedInstances.add(univerAPI);session.close();},
+      beginDispose,
       dispose,
     };
   } catch (error) {

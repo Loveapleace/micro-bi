@@ -269,7 +269,7 @@ export function syncDocumentFromWorkbookSnapshot(
           } else if ((v !== undefined && v !== null && v !== '') || f || !cellVal.custom?.biProjection&&(mappedStyle||nativeStyle?.n?.pattern)) {
             // 过滤：绝不将内部渲染的字段占位符 "{...}" 或 "=[...]" 错误固化为普通静态字面量单元格
             const strVal = String(v ?? '').trim();
-            const isTemplatePlaceholder = /^\{.*\}$/.test(strVal) || /^=\[.*\]$/.test(strVal);
+            const isTemplatePlaceholder = !/^\{\{[^{}]+\}\}$/u.test(strVal) && (/^\{.*\}$/.test(strVal) || /^=\[.*\]$/.test(strVal));
             if (isTemplatePlaceholder) {
               continue;
             }

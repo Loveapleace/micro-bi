@@ -272,6 +272,36 @@ export function resolveTemplateMerges(
     (p) => p.sheetId === sheetId && p.regionId === plan.regionId && p.enabled
   );
   const suppressions = doc.mergeConfig?.suppressions || [];
+  // An inferred driver footprint must not silently hide independently authored text or a formula.
+  // Explicit/manual merges remain an intentional user choice and are resolved above.
+  const authoredIds = new Set(doc.cells.filter(cell => (!cell.panelOwner || cell.literalOverride) && (
+    cell.content.kind === 'literal' && cell.content.value !== null && cell.content.value !== undefined && String(cell.content.value).trim() !== '' ||
+    cell.content.kind === 'sheet-formula' && cell.content.formula.trim() !== ''
+  )).map(cell => cell.id));
+  const authoredRows = new Map<number, number[]>(), authoredColumns = new Map<number, number[]>();
+  for (const cell of baseGrid.cells) {
+    if (!cell.sourceCellId || !authoredIds.has(cell.sourceCellId)) continue;
+    const columns = authoredRows.get(cell.row) || [], rows = authoredColumns.get(cell.col) || [];
+    columns.push(cell.col); rows.push(cell.row); authoredRows.set(cell.row, columns); authoredColumns.set(cell.col, rows);
+  }
+  for (const values of [...authoredRows.values(), ...authoredColumns.values()]) values.sort((a,b)=>a-b);
+  const rowNumbers = [...authoredRows.keys()].sort((a,b)=>a-b);
+  const lowerBound = (values: readonly number[], value: number) => {
+    let first=0,last=values.length;
+    while(first<last){const middle=(first+last)>>>1;if(values[middle]!<value)first=middle+1;else last=middle;}
+    return first;
+  };
+  const contains = (values: readonly number[] | undefined, from: number, to: number) =>
+    Boolean(values && (values[lowerBound(values,from)] ?? Infinity) <= to);
+  const hidesAuthoredContent = (range: ReportCellMerge) => {
+    if(range.startRow===range.endRow)return contains(authoredRows.get(range.startRow),range.startCol+1,range.endCol);
+    if(range.startCol===range.endCol)return contains(authoredColumns.get(range.startCol),range.startRow+1,range.endRow);
+    for(let i=lowerBound(rowNumbers,range.startRow);i<rowNumbers.length&&rowNumbers[i]!<=range.endRow;i++){
+      const row=rowNumbers[i]!;
+      if(contains(authoredRows.get(row),range.startCol+(row===range.startRow?1:0),range.endCol))return true;
+    }
+    return false;
+  };
 
   // 构建抑制集合
   const suppressedGroupContexts = new Set<string>();
@@ -343,6 +373,7 @@ export function resolveTemplateMerges(
         }
 
         if (!isMatch) continue;
+        if (hidesAuthoredContent(candidate)) continue;
 
         // 计算此成员块的 GroupContextKey
         const groupContextKey = buildGroupContextKey({
@@ -397,6 +428,7 @@ export function resolveTemplateMerges(
         }
 
         if (isMatch) {
+          if (hidesAuthoredContent(candidate)) continue;
           const conflictsWithManual = finalMerges.some((m) => isRangeOverlapping(m, candidate));
           if (!conflictsWithManual) {
             const k = rangeKey(candidate);

@@ -7,7 +7,8 @@ import React, { useRef, useEffect, useState, useMemo, useCallback } from 'react'
 import * as VTablePkg from '@visactor/vtable';
 import type { ListTable as ListTableType } from '@visactor/vtable';
 import type { PublishedReport, SheetId } from '../../../report/types.js';
-import { adaptPublishedSheetToVTable } from './gridAdapter.js';
+import { ReportTableRuntime } from './reportTableRuntime.js';
+import { observeCanvasViewport, readCanvasViewport } from './canvasViewport.js';
 import { resolveDrillTarget } from '../../../report/drill.js';
 import type { DrillQuery } from '../../../report/drillTypes.js';
 import { useDrillRuntime } from './useDrillRuntime.js';
@@ -26,6 +27,7 @@ export interface ReportTableViewProps {
   className?: string | undefined;
   style?: React.CSSProperties | undefined;
   queryDrillDetails?: DrillQuery | undefined;
+  onTableReady?: ((table: ListTableType | null) => void) | undefined;
 }
 
 export const ReportTableView: React.FC<ReportTableViewProps> = ({
@@ -36,13 +38,16 @@ export const ReportTableView: React.FC<ReportTableViewProps> = ({
   className,
   style,
   queryDrillDetails,
+  onTableReady,
 }) => {
   const {session:drillSession,snapshot:drillSnapshot}=useDrillRuntime(report.drillIndex,queryDrillDetails);
   const effectiveReport=useMemo(()=>({...report,sheets:[...report.sheets,...drillSnapshot.tabs.map(t=>t.sheet)]}),[report,drillSnapshot.tabs]);
-  const scrollBySheet=useRef(new Map<string,{left:number;top:number;row?:number;col?:number}>());
   const queryMessageRef=useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const tableInstanceRef = useRef<ListTableType | null>(null);
+  const runtimeRef = useRef<ReportTableRuntime | null>(null);
+  const readyRef = useRef(onTableReady);
+  readyRef.current = onTableReady;
+  const appliedRef = useRef<{report:PublishedReport;sheetId:string}|null>(null);
 
   // MBI-12: 派生仅可见的工作表列表 (严格过滤 hidden 为 true 的工作表)
   const visibleSheets = useMemo(() => {
@@ -91,99 +96,63 @@ export const ReportTableView: React.FC<ReportTableViewProps> = ({
     [onActiveSheetChange,drillSession]
   );
 
-  // 初始化与更新 VTable 实例
+  // Register native listeners once; resolve targets from the publication currently applied to the canvas.
   useEffect(() => {
-    if (!containerRef.current) return;
-
-    if (tableInstanceRef.current) {
-      tableInstanceRef.current.release();
-      tableInstanceRef.current = null;
-    }
-
-    if (!currentSheet) return;
-
-    const { columns, rawRecords, customMergeCell, options } = adaptPublishedSheetToVTable(
-      currentSheet,
-      report.styles || {}
-    );
-
-    let localInstance: ListTableType | null = null;
-    try {
-      const instance = new ListTable(containerRef.current, {
-        columns,
-        records: rawRecords,
-        customMergeCell,
-        widthMode: 'standard',
-        autoFillWidth: true,
-        ...options,
-        menu:{...options.menu,contextMenuItems:(_field:any,row:number,col:number)=>resolveDrillTarget(report.drillIndex,currentSheet.id,row,col)?[{text:'查看明细',menuKey:'bi-drill-details'},'copy']:['copy']},
-      });
-      instance.on('dropdown_menu_click', ({ menuKey }: { menuKey: string }) => {
-        if (menuKey === 'copy') {
-          void navigator.clipboard?.writeText(instance.getCopyValue()).catch((error) => {
-            console.warn('[ReportTableView] 复制失败:', error);
-          });
-        }
-      });
-
-      localInstance = instance;
-      const openDetails=(col:number,row:number)=>{
-        const target=resolveDrillTarget(report.drillIndex,currentSheet.id,row,col);
-        if(!target)return;
-        if(target.reason){if(queryMessageRef.current)queryMessageRef.current.textContent=target.reason;return;}
-        scrollBySheet.current.set(currentSheet.id,{left:instance.scrollLeft,top:instance.scrollTop,row,col});
-        // SDK在pointerup后用timer收尾menuHandler；微任务仍过早，下一任务再切Sheet。
-        setTimeout(()=>{if(tableInstanceRef.current===instance)drillSession.open(target);},0);
+    const container = containerRef.current;
+    if (!container) return;
+    const runtime = new ReportTableRuntime(options => new ListTable(container, options), options => ({ ...options,
+      menu: { ...options.menu, contextMenuItems: (_field: any, row: number, col: number) => {
+        const context = appliedRef.current;
+        return context && resolveDrillTarget(context.report.drillIndex, context.sheetId, row, col)
+          ? [{text:'查看明细',menuKey:'bi-drill-details'}, 'copy'] : ['copy'];
+      } },
+    }), instance => {
+      const openDetails = (col: number, row: number) => {
+        const context = appliedRef.current;
+        if (!context) return;
+        const target = resolveDrillTarget(context.report.drillIndex, context.sheetId, row, col);
+        if (!target) return;
+        if (target.reason) { if (queryMessageRef.current) queryMessageRef.current.textContent = target.reason; return; }
+        // The menu handler finishes in a later task. A reused instance also needs a publication guard.
+        setTimeout(() => {
+          const current = appliedRef.current;
+          if (runtime.table === instance && current?.sheetId === context.sheetId &&
+              current?.report.drillIndex?.revision === target.publicationRevision) drillSession.open(target);
+        }, 0);
       };
-      instance.on('dblclick_cell',({col,row}:{col:number;row:number})=>openDetails(col,row));
-      instance.on('mouseenter_cell',({col,row}:{col:number;row:number})=>{
-        const target=resolveDrillTarget(report.drillIndex,currentSheet.id,row,col);
-        if(containerRef.current)containerRef.current.title=target?target.reason||'双击查看明细':'';
+      instance.on('dblclick_cell', ({col,row}:{col:number;row:number}) => openDetails(col,row));
+      instance.on('mouseenter_cell', ({col,row}:{col:number;row:number}) => {
+        const context = appliedRef.current;
+        const target = context && resolveDrillTarget(context.report.drillIndex, context.sheetId, row, col);
+        container.title = target ? target.reason || '双击查看明细' : '';
       });
-      instance.on('dropdown_menu_click',(event:{menuKey:string;col:number;row:number})=>{if(event.menuKey==='bi-drill-details')openDetails(event.col,event.row);});
-      const position=scrollBySheet.current.get(currentSheet.id);
-      if(position){instance.setScrollLeft(position.left);instance.setScrollTop(position.top);if(position.row!==undefined&&position.col!==undefined)instance.selectCell(position.col,position.row);}
-      tableInstanceRef.current = instance;
-    } catch (e) {
-      console.error('[ReportTableView] 渲染 VTable 失败:', e);
-    }
-
+      instance.on('dropdown_menu_click', ({menuKey,col,row}:{menuKey:string;col:number;row:number}) => {
+        if (instance.isReleased) return;
+        if (menuKey === 'bi-drill-details') openDetails(col,row);
+        else if (menuKey === 'copy') void navigator.clipboard?.writeText(instance.getCopyValue() || '').catch(error => console.warn('[ReportTableView] 复制失败:',error));
+      });
+      readyRef.current?.(instance);
+    }, () => {
+      readyRef.current?.(null);
+    });
+    runtimeRef.current = runtime;
+    runtime.updateViewport(readCanvasViewport(container));
+    const stop = observeCanvasViewport(container, view => runtime.updateViewport(view));
     return () => {
-      if (localInstance) {
-        const previous=scrollBySheet.current.get(currentSheet.id);
-        scrollBySheet.current.set(currentSheet.id,{...previous,left:localInstance.scrollLeft,top:localInstance.scrollTop});
-        try {
-          localInstance.release();
-        } catch {}
-      }
-      if (tableInstanceRef.current === localInstance) {
-        tableInstanceRef.current = null;
-      }
+      stop(); appliedRef.current = null; runtime.dispose();
+      if (runtimeRef.current === runtime) runtimeRef.current = null;
     };
-  }, [currentSheet, report.styles,report.drillIndex,drillSession]);
+  }, [drillSession]);
 
-  // React布局提交后同步Canvas布局。弹窗开关/外层样式变化时，单次resize可能
-  // 留下旧的文字绘制缓存；重建可见单元格而不改写数据、滚动或源配置。
   useEffect(() => {
-    const frame=requestAnimationFrame(()=>{
-      const table=tableInstanceRef.current;
-      if(table){table.resize();table.renderWithRecreateCells();}
-    });
-    return ()=>cancelAnimationFrame(frame);
-  },[currentSheet,report.styles,height,style,className]);
-
-  // 监听容器大小变化自动调整
-  useEffect(() => {
-    if (!containerRef.current) return;
-    const ro = new ResizeObserver(() => {
-      if (tableInstanceRef.current) {
-        tableInstanceRef.current.resize();
-        tableInstanceRef.current.renderWithRecreateCells();
-      }
-    });
-    ro.observe(containerRef.current);
-    return () => ro.disconnect();
-  }, []);
+    appliedRef.current = currentSheet ? { report, sheetId: currentSheet.id } : null;
+    if (queryMessageRef.current) queryMessageRef.current.textContent = '';
+    if (containerRef.current) containerRef.current.title = '';
+    try {
+      runtimeRef.current?.apply(report.id, currentSheet || undefined, report.styles || {});
+      runtimeRef.current?.retainViews(report.id, visibleSheets);
+    } catch (error) { console.error('[ReportTableView] 更新VTable失败:',error); }
+  }, [currentSheet, report, visibleSheets]);
 
   return (
     <div

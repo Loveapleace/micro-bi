@@ -10,6 +10,17 @@ import { normalizeAxes } from './normalizeAxes.js';
 import { projectGroupedReport } from './groupedProjector.js';
 import { projectPivotReport } from './pivotProjector.js';
 import { cellStyleToUniver } from './cellStyle.js';
+import { dateToSerial } from 'numfmt';
+
+/** Excel stores dates as local calendar serials; source facts keep their Date objects. */
+export function spreadsheetCellValue(value: BiGridModel['cells'][number]['value'] | Date | undefined) {
+  if (value instanceof Date) {
+    if (!Number.isFinite(value.getTime())) return null;
+    const serial = dateToSerial([value.getFullYear(), value.getMonth() + 1, value.getDate(), value.getHours(), value.getMinutes(), value.getSeconds()]);
+    return serial === null || serial === undefined ? null : serial + value.getMilliseconds() / 86400000;
+  }
+  return value ?? null;
+}
 
 export function buildBiGrid(
   config: DynamicTransformConfig,
@@ -73,7 +84,7 @@ export function biGridToUniverWorksheetData(
       cellData[cell.row] = {};
     }
 
-    const val = cell.value ?? null;
+    const val = spreadsheetCellValue(cell.value);
     const cellType = typeof val === 'number' ? 2 : typeof val === 'boolean' ? 3 : 1;
 
     cellData[cell.row]![cell.col] = {
@@ -89,7 +100,7 @@ export function biGridToUniverWorksheetData(
         field: cell.field,
         agg: cell.agg,
         displayText: cell.displayText,
-        originalValue: cell.value,
+        originalValue: val,
         tooltip: cell.tooltip,
       },
     };

@@ -9,6 +9,7 @@
  * 5. 纯函数、无副作用，输出中性 BiGridModel 与实例映射
  */
 import type { DataRecord } from '../engine/types.js';
+import { resolveHostVariables } from '../report/hostVariables.js';
 import type {
   BiGridModel,
   BiGridCell,
@@ -41,7 +42,7 @@ import {
 import { resolveTemplateMerges } from './mergeResolver.js';
 import { applyRegionFilters } from './regionFilter.js';
 import { createDrillCellContext } from '../report/drill.js';
-import { evaluateSheetFormula as evaluateSheetFormulaEngine } from './sheetFormulaEvaluator.js';
+import { evaluateSheetFormula as evaluateSheetFormulaEngine, offsetSheetFormulaReferences } from './sheetFormulaEvaluator.js';
 import { applyPresentationRules } from './presentationRules.js';
 import { activeStaticSpans, applyStaticSpans, prepareStaticSpanTemplate, type SpanDriverInstance } from './staticSpans.js';
 
@@ -239,11 +240,11 @@ interface ExpansionNode {
 export function expandCellDrivenTemplate(
   doc: CellTemplateDocumentV1,
   rawDataset: readonly DataRecord[],
-  options: { sheetId?: string } = {}
+  options: { sheetId?: string; variableValues?: Readonly<Record<string, unknown>> | undefined; memberCompare?: ((field: string, a: unknown, b: unknown) => number | undefined) | undefined } = {}
 ): CellExpansionResult {
   const sourceDocument = doc;
   const drillTimeZone=doc.drillRules?.some(r=>r.enabled)?Intl.DateTimeFormat().resolvedOptions().timeZone:undefined;
-  doc = prepareStaticSpanTemplate(doc);
+  doc = prepareStaticSpanTemplate(resolveHostVariables(doc, options.variableValues));
   const diagnostics: TemplateDiagnostic[] = [];
   const sheetId = options.sheetId || doc.sheets?.[0]?.id || 'sheet-1';
 
@@ -660,7 +661,7 @@ export function expandCellDrivenTemplate(
     }
 
     // CE-T12: 确定性业务键自然排序 (支持自然数字序与字母混合排序)
-    const sortedEntries = Array.from(groupsMap.entries()).sort(([a], [b]) => naturalCompare(a, b));
+    const sortedEntries = Array.from(groupsMap.entries()).sort(([a, ga], [b, gb]) => options.memberCompare?.(fieldKey, ga.value, gb.value) ?? naturalCompare(a, b));
     const nodes: ExpansionNode[] = [];
     for (const [memberKey, g] of sortedEntries) {
       const currentPath = [...parentPath, { field: fieldKey, memberKey, memberValue: g.value, sourceCellId: driver.id }];
@@ -785,7 +786,7 @@ export function expandCellDrivenTemplate(
     }
 
     // CE-T12: 确定性业务键自然排序 (支持自然数字序与字母混合排序)
-    const sortedEntries = Array.from(groupsMap.entries()).sort(([a], [b]) => naturalCompare(a, b));
+    const sortedEntries = Array.from(groupsMap.entries()).sort(([a, ga], [b, gb]) => options.memberCompare?.(fieldKey, ga.value, gb.value) ?? naturalCompare(a, b));
     const nodes: ExpansionNode[] = [];
     for (const [memberKey, g] of sortedEntries) {
       const currentPath = [...parentPath, { field: fieldKey, memberKey, memberValue: g.value, sourceCellId: driver.id }];
@@ -1280,6 +1281,7 @@ export function expandCellDrivenTemplate(
   ) {
     const fc = dc.content;
     let computedValue: any = null;
+    let sheetFormula: string | undefined;
     let role = 'metric-value';
 
     const cellKey = `${r}:${c}`;
@@ -1369,7 +1371,11 @@ export function expandCellDrivenTemplate(
         computedValue = null;
       }
     } else if (fc.kind === 'sheet-formula') {
-      const formula = (fc as any).formula?.trim() || '';
+      // Repeated instances behave like Excel copies. Independent/static cells may be displaced
+      // by a growing region, but their references must not move merely because the footer moves.
+      const formula = offsetSheetFormulaReferences(fc.formula.trim(),
+        colPath?.length ? c - dc.position.column : 0, rowPath?.length ? r - dc.position.row : 0);
+      sheetFormula = formula;
       const evalResult = evaluateSheetFormula(formula, cellsMap, r, c);
       if (evalResult.error) {
         diagnostics.push({
@@ -1425,7 +1431,7 @@ export function expandCellDrivenTemplate(
       value: computedValue,
       sourceCellId: dc.id, regionId: dc.regionId, ruleFacts: records,
       drillContext: createDrillCellContext(sourceDocument, dc, rowPath, colPath, computedValue,drillTimeZone),
-      ...(fc.kind === 'sheet-formula' ? { formula: fc.formula } : {}),
+      ...(sheetFormula !== undefined ? { formula: sheetFormula } : {}),
       displayText: formatValue(computedValue, formatOpts.format, formatOpts),
       role: role as any,
       rowPath: rowRefPath,

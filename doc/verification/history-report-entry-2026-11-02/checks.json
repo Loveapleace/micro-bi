@@ -1,0 +1,479 @@
+{
+  "date": "2026-11-02",
+  "branch": "feat/micro-bi-report-integration",
+  "backend": "real host UI with isolated API routes; no real platform writes",
+  "validation": {
+    "library": {
+      "passed": 588,
+      "failed": 0,
+      "historyCases": 5
+    },
+    "host": {
+      "passed": 166,
+      "failed": 0
+    },
+    "browserSmoke": {
+      "passed": 10,
+      "failed": 0
+    },
+    "embeddedTypes": "passed",
+    "editorTypesAndNpmLocal": "passed",
+    "componentIntegrationTypes": "passed",
+    "editorProduction": "passed after SDK preservation fix:180911ms",
+    "actualProduction": "passed after SDK preservation fix:179994ms",
+    "warnings": "existing asset/entry size warnings",
+    "productionSdkBrowser": {
+      "passed": 10,
+      "failed": 0,
+      "assetFiles": 88,
+      "mismatches": []
+    }
+  },
+  "manual": {
+    "cancelBefore": {
+      "sources": 0,
+      "reports": 0
+    },
+    "cancelAfter": {
+      "sources": 0,
+      "reports": 0
+    },
+    "saved": {
+      "source": {
+        "title": "设备历史记录示例数据源",
+        "sourceMode": "platform",
+        "type": "array",
+        "platformDataType": "history",
+        "historyVariables": [
+          [
+            "$$variable",
+            "temperature"
+          ],
+          [
+            "$$variable",
+            "state"
+          ]
+        ],
+        "historyTimeRange": {
+          "type": "sevenDays"
+        },
+        "limit": 50000,
+        "id": "dataSourceYvsg6l4v17"
+      },
+      "reportId": "microBiReportYvsg6l4v1c",
+      "fields": [
+        {
+          "field": "$time",
+          "format": {
+            "format": "date",
+            "numberFormat": "yyyy-mm-dd hh:mm:ss"
+          }
+        },
+        {
+          "field": "温度",
+          "format": {
+            "format": "default",
+            "numberFormat": "General"
+          }
+        },
+        {
+          "field": "运行状态",
+          "format": {
+            "format": "default",
+            "numberFormat": "General"
+          }
+        }
+      ]
+    },
+    "runtime": {
+      "rows": 9,
+      "cols": 3,
+      "cells": [
+        [
+          "设备历史记录示例",
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null
+        ],
+        [
+          "时间",
+          "温度",
+          "运行状态"
+        ],
+        [
+          "2026-11-02T02:41:03.000Z",
+          0,
+          false
+        ],
+        [
+          "2026-11-02T02:42:03.000Z",
+          21,
+          true
+        ],
+        [
+          "2026-11-02T02:43:03.000Z",
+          22,
+          false
+        ],
+        [
+          "2026-11-02T02:44:03.000Z",
+          23,
+          true
+        ],
+        [
+          "2026-11-02T02:45:03.000Z",
+          24,
+          false
+        ],
+        [
+          "2026-11-02T02:46:03.000Z",
+          25,
+          true
+        ]
+      ],
+      "display": [
+        [
+          "设备历史记录示例",
+          "设备历史记录示例",
+          "设备历史记录示例"
+        ],
+        [
+          "",
+          "",
+          ""
+        ],
+        [
+          "时间",
+          "温度",
+          "运行状态"
+        ],
+        [
+          "2026-11-02 10:41:03",
+          "0",
+          "false"
+        ],
+        [
+          "2026-11-02 10:42:03",
+          "21",
+          "true"
+        ],
+        [
+          "2026-11-02 10:43:03",
+          "22",
+          "false"
+        ]
+      ],
+      "text": "时间\n筛选\n排序字段\n+ 3 ...\n刷 新\n导出Excel\n重置查询\n筛选后 6 / 6 条\n6 行，统计基于全部筛选记录\n1\n50 条/页"
+    },
+    "refresh": {
+      "rows": 10,
+      "cols": 3,
+      "cells": [
+        [
+          "设备历史记录示例",
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null
+        ],
+        [
+          "时间",
+          "温度",
+          "运行状态"
+        ],
+        [
+          "2026-11-02T02:41:03.000Z",
+          0,
+          false
+        ],
+        [
+          "2026-11-02T02:42:03.000Z",
+          21,
+          true
+        ],
+        [
+          "2026-11-02T02:43:03.000Z",
+          22,
+          false
+        ],
+        [
+          "2026-11-02T02:44:03.000Z",
+          23,
+          true
+        ],
+        [
+          "2026-11-02T02:45:03.000Z",
+          24,
+          false
+        ],
+        [
+          "2026-11-02T02:46:03.000Z",
+          25,
+          true
+        ],
+        [
+          "2026-11-02T02:47:03.000Z",
+          99,
+          false
+        ]
+      ],
+      "display": [
+        [
+          "设备历史记录示例",
+          "设备历史记录示例",
+          "设备历史记录示例"
+        ],
+        [
+          "",
+          "",
+          ""
+        ],
+        [
+          "时间",
+          "温度",
+          "运行状态"
+        ],
+        [
+          "2026-11-02 10:41:03",
+          "0",
+          "false"
+        ],
+        [
+          "2026-11-02 10:42:03",
+          "21",
+          "true"
+        ],
+        [
+          "2026-11-02 10:43:03",
+          "22",
+          "false"
+        ]
+      ],
+      "text": "时间\n筛选\n排序字段\n+ 3 ...\n刷 新\n导出Excel\n重置查询\n筛选后 7 / 7 条\n7 行，统计基于全部筛选记录\n1\n50 条/页"
+    },
+    "reloaded": {
+      "rows": 10,
+      "cols": 3,
+      "cells": [
+        [
+          "设备历史记录示例",
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null
+        ],
+        [
+          "时间",
+          "温度",
+          "运行状态"
+        ],
+        [
+          "2026-11-02T02:41:03.000Z",
+          0,
+          false
+        ],
+        [
+          "2026-11-02T02:42:03.000Z",
+          21,
+          true
+        ],
+        [
+          "2026-11-02T02:43:03.000Z",
+          22,
+          false
+        ],
+        [
+          "2026-11-02T02:44:03.000Z",
+          23,
+          true
+        ],
+        [
+          "2026-11-02T02:45:03.000Z",
+          24,
+          false
+        ],
+        [
+          "2026-11-02T02:46:03.000Z",
+          25,
+          true
+        ],
+        [
+          "2026-11-02T02:47:03.000Z",
+          99,
+          false
+        ]
+      ],
+      "display": [
+        [
+          "设备历史记录示例",
+          "设备历史记录示例",
+          "设备历史记录示例"
+        ],
+        [
+          "",
+          "",
+          ""
+        ],
+        [
+          "时间",
+          "温度",
+          "运行状态"
+        ],
+        [
+          "2026-11-02 10:41:03",
+          "0",
+          "false"
+        ],
+        [
+          "2026-11-02 10:42:03",
+          "21",
+          "true"
+        ],
+        [
+          "2026-11-02 10:43:03",
+          "22",
+          "false"
+        ]
+      ],
+      "text": "时间\n筛选\n排序字段\n+ 3 ...\n刷 新\n导出Excel\n重置查询\n筛选后 7 / 7 条\n7 行，统计基于全部筛选记录\n1\n50 条/页"
+    },
+    "dateProjection": {
+      "value": "2026-11-02 10:41:03",
+      "display": "2026-11-02 10:41:03",
+      "format": {
+        "pattern": "yyyy-mm-dd hh:mm:ss"
+      },
+      "snapshot": {
+        "v": 46328.44517361111,
+        "t": 2,
+        "s": {
+          "ff": "Arial",
+          "fs": 11,
+          "bl": 0,
+          "it": 0,
+          "ul": {
+            "s": 0
+          },
+          "st": {
+            "s": 0
+          },
+          "cl": {
+            "rgb": "#000000"
+          },
+          "bg": null,
+          "ht": 0,
+          "vt": 2,
+          "tb": 2,
+          "bd": {
+            "t": {
+              "s": 0,
+              "cl": {
+                "rgb": "#000000"
+              }
+            },
+            "r": {
+              "s": 0,
+              "cl": {
+                "rgb": "#000000"
+              }
+            },
+            "b": {
+              "s": 0,
+              "cl": {
+                "rgb": "#000000"
+              }
+            },
+            "l": {
+              "s": 0,
+              "cl": {
+                "rgb": "#000000"
+              }
+            }
+          },
+          "n": {
+            "pattern": "yyyy-mm-dd hh:mm:ss"
+          }
+        },
+        "custom": {
+          "biProjection": true,
+          "displaySource": "format",
+          "role": "dimension-member",
+          "displayText": "2026-11-02 10:41:03",
+          "originalValue": 46328.44517361111
+        }
+      }
+    },
+    "duplicateDraft": {
+      "sources": [
+        {
+          "id": "dataSourceYw8rou6ci19",
+          "title": "设备历史记录示例数据源(1)"
+        },
+        {
+          "id": "dataSourceYvsg6l4v17",
+          "title": "设备历史记录示例数据源"
+        }
+      ],
+      "reports": 1,
+      "sheet": {
+        "0": {
+          "w": 210
+        },
+        "1": {
+          "w": 160
+        },
+        "2": {
+          "w": 160
+        }
+      }
+    },
+    "cancelExisting": {
+      "sourceIds": [
+        "dataSourceYvsg6l4v17"
+      ],
+      "reportIds": [
+        "microBiReportYvsg6l4v1c"
+      ]
+    },
+    "legacy": {
+      "form": "历史报表配置\n历史记录变量\n请选择\n取消\n确定",
+      "errors": []
+    }
+  },
+  "limitations": [
+    "Authenticated private platform not exercised",
+    "Original platform source editor preview is sample-limited; runtime fetch follows source time window and limit",
+    "No XLS or legacy history-formula conversion"
+  ],
+  "sourceSha256": {
+    "microBi/src/report-template/detailPreset.ts": "f10a0cccf4762546f79fbd72b880e7c3e39c634ed654c3fbe1c493a04078da5a",
+    "microBi/src/report/buildBiGrid.ts": "624a50dc4e6e18932bbe77c35d3e4d90ac8d8ffa850dd4e6455669bfca4948f1",
+    "microBi/src/univer/UniverPreview.tsx": "2584bbcdaeb62378ff06932c6c9992ffb268c1b8a37a68c155e8b05e973e5d77",
+    "microBi/embedded/src/index.ts": "bbff06326b689c1e627a0b9896f0176eb7e5842d7b1ffff6ec97a0c7ef5fb40b",
+    "microBi/embedded/index.d.ts": "b49a9ec3145fd59ded5f9aa2d3c55b342dda2677421e1aa8cab8f92f975f8cd0",
+    "microBi/test/history-report-entry.test.mjs": "2cfc60524e8eaffce190da76403efc28582b0b9147aa18bdeb87933f4682c415",
+    "editor/src/editor/modalManager/microBiReport/history.ts": "f271c2b55920fe575607879f7941a3afef960afce162d44fba6919039e6b88d4",
+    "editor/src/editor/modalManager/microBiReport/index.tsx": "c26c3cd57fb3795d63e23c270a60e0e4a3e36367f59a28072b6c6ae16601c517",
+    "editor/src/editor/modalManager/microBiReport/DesignerHost.tsx": "31b877508bccf6fe0415e2a3e7f61b09e4d0d99aa5e2ac079090130339697832",
+    "editor/src/microBi/historySource.ts": "d407bdcfdab945a251af065c5194659a7168c76d2677ce1a35719b27bee1216c",
+    "editor/src/editor/components/optionForm/modalForm.tsx": "fc889e076a42c7b08b2a6c3e4e72e2f1cc279979852a4cee5bab8135c25a116c",
+    "editor/tests/modalFormLifecycle.test.ts": "023bddd8d3ea0f8fe88f42d17a495d5aa48584da84f4cb234e0efc05316dde4f",
+    "editor/scripts/verify-micro-bi-platform.cjs": "0895d95fc6d5d8fe36a7cdda84933720fb2fb958c237d3c475776ed97bfd96b4",
+    "editor/build/webpack.config.js": "3ca547a703157fb526f91a77f163df00ddbd9652b4b66d6513d5ee0458137d2a"
+  },
+  "productionRegression": {
+    "before": "Host Terser re-minified native ESM SDK; initialization threw h is not a function",
+    "fix": "CopyWebpackPlugin pattern info.minimized=true",
+    "after": "production SDK files unchanged and all 10 browser cases pass"
+  }
+}

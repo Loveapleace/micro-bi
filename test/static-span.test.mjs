@@ -339,7 +339,7 @@ test('SS-30 different column widths and caption styles are preserved in VTable c
   const result = compileCellReport(doc, facts); assert.equal(result.valid, true);
   const table = adaptPublishedSheetToVTable(result.publication.sheets[0], result.publication.styles);
   const merge = table.customMergeCell.find((m) => m.text === c.content.value);
-  assert.equal(merge.style.textAlign, 'center'); assert.equal(merge.style.fontSize, 18);
+  assert.equal(merge.style.textAlign, 'center'); assert.equal(merge.style.fontSize, 24); // 18pt is 24 CSS pixels.
   assert.equal(merge.style.bgColor, '#eef4ff'); assert.deepEqual(merge.style.borderColor, ['#335577','#000000','#335577','#000000']);assert.deepEqual(merge.style.borderLineWidth,[1,0,2,0]);
   assert.equal([2, 3, 4].reduce((n, i) => n + table.columns[i].width, 0), 321);
 });

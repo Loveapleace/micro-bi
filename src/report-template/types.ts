@@ -131,6 +131,7 @@ export interface CellParents {
 
 export interface CellStyleDefinition {
   fontFamily?: string | undefined;
+  /** Excel/Univer points (pt), independent of canvas zoom and device pixels. */
   fontSize?: number | undefined;
   bold?: boolean | undefined;
   italic?: boolean | undefined;

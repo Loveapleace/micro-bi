@@ -17,7 +17,7 @@ import { compileReport, type CompileReportResult } from './compileReport.js';
 import { collectStaleCells } from './gridSync.js';
 import { sourceOnlyWorkbookSnapshot } from '../report/runtimeSheets.js';
 import type { BiGridModel, ReportBinding } from '../report/types.js';
-import { biGridToUniverWorksheetData, publishedStyleToUniver, toExcelPattern } from '../report/buildBiGrid.js';
+import { biGridToUniverWorksheetData, publishedStyleToUniver, toExcelPattern, spreadsheetCellValue } from '../report/buildBiGrid.js';
 
 export interface UniverPreviewRef {
   getWorkbookSnapshot: () => any;
@@ -371,7 +371,7 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
             }
 
             // 显示文本由只读CELL_CONTENT投影处理；这里始终写原值供原生公式使用。
-            displayVal = val ?? null;
+            displayVal = spreadsheetCellValue(val);
 
             if (formula) {
               range?.setFormula?.(formula);
@@ -428,7 +428,7 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
                 field: cell.field,
                 agg: cell.agg,
                 displayText: cell.displayText,
-                originalValue: cell.value,
+                originalValue: spreadsheetCellValue(cell.value),
                 tooltip: cell.tooltip,
               };
               const nextCell = {
@@ -567,6 +567,8 @@ export const UniverPreview = forwardRef<UniverPreviewRef, UniverPreviewProps>(
           ...style,
         }}
       >
+        {/* An empty native contenteditable must have a layout box for Chrome to dispatch text/IME input. */}
+        <style>{'[data-univer-state] [data-u-comp="editor"][contenteditable="true"] { min-width: 1px; min-height: 1px; }'}</style>
         {!isInitialized&&<div role={initializationError?'alert':'status'} style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',zIndex:1,background:'inherit',color:initializationError?'#cf1322':'#595959'}}>{initializationError||'正在初始化报表编辑器…'}</div>}
         <div ref={containerRef} style={{flex:1,minHeight:0,position:'relative',overflow:'hidden'}} />
       </div>

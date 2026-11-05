@@ -1,0 +1,37 @@
+{
+  "date": "2026-11-03",
+  "status": "passed",
+  "scope": ["report font point/pixel conversion", "scaled canvas density", "native VTable instance reuse"],
+  "tests": {
+    "micro-bi": {"passed": 598, "failed": 0},
+    "webEditor": {"passed": 166, "failed": 0},
+    "nativeBrowser": {"passed": 10, "failed": 0, "evidence": "native-runtime-checks.json"},
+    "hostDevelopmentSdk": {"passed": 14, "failed": 0, "evidence": "platform-development-checks.json"},
+    "hostProductionSdk": {"passed": 14, "failed": 0, "evidence": "platform-production-checks.json"}
+  },
+  "builds": {
+    "microBiEsmCjsDeclarations": "passed",
+    "embeddedStrictTypes": "passed",
+    "embeddedVite": "passed",
+    "editorNpmLocal": "passed",
+    "componentIntegrationTypes": "passed",
+    "editorProduction": "passed",
+    "actualProduction": "passed",
+    "sdkAssetEquality": {"sourceFiles": 88, "mismatches": []},
+    "existingWarnings": "Webpack asset/entrypoint size warnings"
+  },
+  "observations": {
+    "sourceFontPt": 11,
+    "renderFontPx": 14.666666666666666,
+    "savedPointFontRoundTrip": {"sourcePt": 18, "renderPx": 24},
+    "density": {"dpr": 1.5, "cssScale": 0.875, "ratio": 1.3125},
+    "xlsxFontPt": {"body": 11, "title": 14},
+    "nativeInstance": {"created": 1, "releasedAtUnmount": 1},
+    "pageErrors": []
+  },
+  "boundaries": [
+    "Host APIs use isolated in-memory fixtures; no real enterprise project is written.",
+    "Page auto-fit still reduces physical text size.",
+    "Canvas density is capped at 4; no end-to-end performance multiplier is claimed."
+  ]
+}

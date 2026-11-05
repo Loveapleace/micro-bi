@@ -214,6 +214,74 @@ function tokenizeFormula(input: string): Token[] {
   return tokens;
 }
 
+export interface FormulaCellPosition { row: number; col: number }
+/** Copy semantics for an expanded formula instance; $ pins only the corresponding row/column. */
+export function offsetSheetFormulaReferences(formula: string, columnOffset: number, rowOffset: number): string {
+  if (!columnOffset && !rowOffset) return formula;
+  const edits = tokenizeFormula(formula).filter(token => token.type === 'CELL').map(token => {
+    const match = /^(\$?)([A-Z]+)(\$?)(\d+)$/i.exec(token.value)!;
+    const col = colLetterToIndex(match[2]!) + (match[1] ? 0 : columnOffset), row = Number(match[4]) - 1 + (match[3] ? 0 : rowOffset);
+    return { start: token.pos, end: token.pos + token.value.length,
+      text: col < 0 || row < 0 ? '#REF!' : `${match[1]}${indexToColLetter(col)}${match[3]}${row + 1}` };
+  });
+  let result = formula;
+  for (const edit of edits.reverse()) result = result.slice(0, edit.start) + edit.text + result.slice(edit.end);
+  return result;
+}
+/** Use the evaluator's tokenizer so quoted text and function names cannot be mistaken for A1 references. */
+export function relocateSheetFormulaReferences(formula: string, moves: ReadonlyMap<string, FormulaCellPosition>): string {
+  const tokens = tokenizeFormula(formula), edits: { start: number; end: number; text: string }[] = [];
+  const position = (token: Token): FormulaCellPosition => {
+    const match = /^\$?([A-Z]+)\$?(\d+)$/i.exec(token.value)!;
+    return { row: Number(match[2]) - 1, col: colLetterToIndex(match[1]!) };
+  };
+  const key = (p: FormulaCellPosition) => `${p.row}:${p.col}`;
+  const reference = (token: Token, p: FormulaCellPosition) => {
+    const match = /^(\$?)[A-Z]+(\$?)\d+$/i.exec(token.value)!;
+    return `${match[1]}${indexToColLetter(p.col)}${match[2]}${p.row + 1}`;
+  };
+  for (let i = 0; i < tokens.length; i++) {
+    const first = tokens[i]!;
+    if (first.type !== 'CELL') continue;
+    const second = tokens[i + 1]?.type === 'COLON' && tokens[i + 2]?.type === 'CELL' ? tokens[i + 2] : undefined;
+    // Explicit references to other sheets are outside this evaluator's local-cell contract.
+    if (tokens[i - 1]?.value === '!') { if (second) i += 2; continue; }
+    const a = position(first);
+    if (!second) {
+      const next = moves.get(key(a));
+      if (next) edits.push({ start: first.pos, end: first.pos + first.value.length, text: reference(first, next) });
+      continue;
+    }
+    i += 2;
+    const b = position(second), top = Math.min(a.row, b.row), bottom = Math.max(a.row, b.row),
+      left = Math.min(a.col, b.col), right = Math.max(a.col, b.col), width = right - left + 1, height = bottom - top + 1;
+    const destinations: FormulaCellPosition[] = [], rows = new Map<number, number>(), cols = new Map<number, number>();
+    for (const [old, next] of moves) {
+      const [row, col] = old.split(':').map(Number) as [number, number];
+      if (row < top || row > bottom || col < left || col > right) continue;
+      destinations.push(next); rows.set(row, (rows.get(row) || 0) + 1); cols.set(col, (cols.get(col) || 0) + 1);
+    }
+    if (!destinations.length) continue;
+    let minRow = top, maxRow = bottom, minCol = left, maxCol = right;
+    if (destinations.length === width * height) { minRow = minCol = Infinity; maxRow = maxCol = -Infinity; }
+    else {
+      while (rows.get(minRow) === width) minRow++;
+      while (rows.get(maxRow) === width) maxRow--;
+      while (cols.get(minCol) === height) minCol++;
+      while (cols.get(maxCol) === height) maxCol--;
+    }
+    for (const p of destinations) { minRow = Math.min(minRow, p.row); maxRow = Math.max(maxRow, p.row); minCol = Math.min(minCol, p.col); maxCol = Math.max(maxCol, p.col); }
+    if ((maxRow - minRow + 1) * (maxCol - minCol + 1) !== width * height)
+      throw new Error(`排序会使公式范围 ${first.value}:${second.value} 不再连续，请先调整该公式的引用范围`);
+    const start = { row: a.row <= b.row ? minRow : maxRow, col: a.col <= b.col ? minCol : maxCol },
+      end = { row: a.row <= b.row ? maxRow : minRow, col: a.col <= b.col ? maxCol : minCol };
+    edits.push({ start: first.pos, end: second.pos + second.value.length, text: `${reference(first, start)}:${reference(second, end)}` });
+  }
+  let result = formula;
+  for (const edit of edits.sort((a, b) => b.start - a.start)) result = result.slice(0, edit.start) + edit.text + result.slice(edit.end);
+  return result;
+}
+
 type ASTNode =
   | { kind: 'Number'; value: number }
   | { kind: 'String'; value: string }

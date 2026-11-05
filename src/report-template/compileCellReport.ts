@@ -23,6 +23,7 @@ import { expandCellDrivenTemplate } from './cellExpansionEngine.js';
 import { applyPresentationRules, validatePresentationRules } from './presentationRules.js';
 import { fieldValueType } from './cellCapabilities.js';
 import { compileDrillIndex, dataSnapshotFingerprint } from '../report/drill.js';
+import { resolveHostVariables } from '../report/hostVariables.js';
 
 export interface CompileCellReportResult {
   publication: PublishedReport;
@@ -38,8 +39,11 @@ export function compileCellReport(
     compilerVersion?: string;
     dataRevision?: string | number;
     availableFields?: readonly string[];
+    variableValues?: Readonly<Record<string, unknown>> | undefined;
+    memberCompare?: ((field: string, a: unknown, b: unknown) => number | undefined) | undefined;
   } = {}
 ): CompileCellReportResult {
+  doc = resolveHostVariables(doc, options.variableValues);
   const compilerVersion = options.compilerVersion || '2.0.0-drill-1';
   const fingerprint = dataSnapshotFingerprint(rawDataset);
   const dataRevision = options.dataRevision ?? fingerprint;
@@ -257,7 +261,7 @@ export function compileCellReport(
   }
 
   // 3. 模板实例化展开
-  const { grid, diagnostics: expandDiagnostics } = expandCellTemplate(doc, plan, rawDataset);
+  const { grid, diagnostics: expandDiagnostics } = expandCellTemplate(doc, plan, rawDataset, { memberCompare: options.memberCompare });
   const allDiagnostics: TemplateDiagnostic[] = [...validation.diagnostics, ...alignDiagnostics, ...(expandDiagnostics || [])];
 
   // 4. 生成去重样式表与单元格数组
@@ -281,6 +285,7 @@ export function compileCellReport(
   const cells: PublishedCell[] = [];
   const cellValueMap = new Map<string, any>();
 
+  const bindingsAtPosition = new Map(grid.bindings.map(b => [`${b.target.row},${b.target.column}`, b.id]));
   for (const c of grid.cells) {
     const posKey = `${c.row},${c.col}`;
     cellValueMap.set(posKey, c.displayText ?? (c.value === null ? '' : String(c.value)));
@@ -295,6 +300,8 @@ export function compileCellReport(
       styleId,
       role: c.role,
       tooltip: c.tooltip,
+      ...(c.sourceCellId ? { sourceCellId: c.sourceCellId } : {}),
+      ...(bindingsAtPosition.has(posKey) ? { bindingId: bindingsAtPosition.get(posKey) } : {}),
     });
   }
 
@@ -346,13 +353,14 @@ export function compileCellReport(
       ) || (doc.regions || []).some((r) => r.sheetId === sheet.id);
 
     if (hasDataCells) {
-      const sheetExpanded = expandCellDrivenTemplate(doc, rawDataset, { sheetId: sheet.id });
+      const sheetExpanded = expandCellDrivenTemplate(doc, rawDataset, { sheetId: sheet.id, memberCompare: options.memberCompare });
       allDiagnostics.push(...sheetExpanded.diagnostics);
       const sGrid = sheetExpanded.grid;
       drillGrids.push({sheetId: sheet.id, grid: sGrid});
       const sCells: PublishedCell[] = [];
       const sCellValueMap = new Map<string, any>();
 
+      const sheetBindingsAtPosition = new Map(sGrid.bindings.map(b => [`${b.target.row},${b.target.column}`, b.id]));
       for (const c of sGrid.cells) {
         sCellValueMap.set(
           `${c.row},${c.col}`,
@@ -367,6 +375,8 @@ export function compileCellReport(
           styleId,
           role: c.role,
           tooltip: c.tooltip,
+          ...(c.sourceCellId ? { sourceCellId: c.sourceCellId } : {}),
+          ...(sheetBindingsAtPosition.has(`${c.row},${c.col}`) ? { bindingId: sheetBindingsAtPosition.get(`${c.row},${c.col}`) } : {}),
         });
       }
 

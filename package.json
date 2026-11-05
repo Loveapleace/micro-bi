@@ -205,6 +205,7 @@
     "build": "npm run clean && npm run build:esm && npm run build:cjs && node scripts/postbuild.mjs",
     "build:esm": "tsc -p tsconfig.json",
     "build:cjs": "tsc -p tsconfig.cjs.json",
+    "build:embed": "vite build --config embedded/vite.config.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "npm run build && npm run test:only",
     "test:only": "node --test \"test/**/*.test.mjs\"",
@@ -225,7 +226,8 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "rxjs": "^7.8.1",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "vite": "8.3.5"
   },
   "dependencies": {
     "dayjs": "^1.11.23",

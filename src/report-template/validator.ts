@@ -216,8 +216,8 @@ export function validateCellTemplateDocument(
               const cleanRef = ref.replace(/^(?:SUM|AVG|MIN|MAX|COUNT)\s*\((.+)\)$/i, '$1').trim();
               if (!availableFields.includes(cleanRef) && !availableFields.includes(ref)) {
                 diagnostics.push({
-                  severity: 'warning',
-                  code: 'WARN_FORMULA_FIELD_NOT_IN_DATASET',
+                  severity: doc.hybridConfig?.version === 2 ? 'error' : 'warning',
+                  code: doc.hybridConfig?.version === 2 ? 'ERR_HYBRID_FORMULA_FIELD_NOT_FOUND' : 'WARN_FORMULA_FIELD_NOT_IN_DATASET',
                   message: `Business formula cell "${cell.id}" references field "${ref}" not present in the dataset.`,
                   targetId: cell.id,
                 });

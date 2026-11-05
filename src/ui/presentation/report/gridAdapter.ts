@@ -17,7 +17,7 @@ export interface VTableReportGridConfig {
     range: { start: { col: number; row: number }; end: { col: number; row: number } };
     text: string;
     style?: any;
-    customRender?: ((args:any)=>any) | undefined;
+    customRender?: (args:any)=>any;
   }[];
   options: Partial<ListTableConstructorOptions>;
 }

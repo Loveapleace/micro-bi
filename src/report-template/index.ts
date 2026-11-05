@@ -8,6 +8,7 @@ export * from './cellExpansionEngine.js';
 export * from './expandTemplate.js';
 export * from './compileCellReport.js';
 export * from './panelToTemplateAdapter.js';
+export * from './detailPreset.js';
 export * from './presentationTypes.js';
 export * from './presentationRules.js';
 export * from './guidedSource.js';

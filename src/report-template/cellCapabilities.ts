@@ -46,6 +46,11 @@ export function canOpenCellAdvancedSettings(cell: CellDefinition | null | undefi
   return true;
 }
 
+/** Worksheet formulas use native Excel editing; business bindings retain the advanced-settings entry. */
+export function shouldOpenCellAdvancedOnDoubleClick(cell: CellDefinition | null | undefined): cell is CellDefinition {
+  return cell?.content.kind !== 'sheet-formula' && canOpenCellAdvancedSettings(cell);
+}
+
 /** 角色来自绑定和生成归属，值类型来自字段/实际结果；数字维度不自动成为指标。 */
 export function getCellCapabilities(cell: CellDefinition, context: CapabilityContext = {}): CellCapabilities {
   const c = cell.content;

@@ -1,0 +1,32 @@
+{
+  "date": "2026-11-04",
+  "status": "passed",
+  "scope": ["drag-only metric sorting", "native worksheet-formula editing", "custom header visibility", "per-instance relative references"],
+  "tests": {
+    "core": {"passed": 618, "failed": 0, "cfhSpecificIncluded": 10},
+    "customFormulaUi": {"passed": 15, "failed": 0, "evidence": "custom-formula-checks.json"},
+    "dragOnlySorting": {"passed": 32, "failed": 0, "evidence": "measure-order-checks.json"},
+    "platform": {"passed": 14, "failed": 0, "evidence": "platform-checks.json"},
+    "nativeInputAndIme": {"passed": 12, "failed": 0, "evidence": "input-checks.json"}
+  },
+  "builds": {"esm": "passed", "cjs": "passed", "declarations": "passed", "embeddedStrictTypes": "passed", "embeddedProductionSdk": "passed"},
+  "observations": {
+    "upDownControls": 0,
+    "worksheetFormulaDoubleClick": "native editing",
+    "worksheetFormulaF2": "native editing",
+    "formulaAdvancedEntry": "native context menu, design mode only",
+    "blankAdvancedEntry": false,
+    "D3": "自定义",
+    "automaticMergeCoversD3": false,
+    "sourceFormulaCount": 1,
+    "sourceFormula": "=IF(C5>100,1,2)",
+    "expandedResults": {"D5": 1, "F5": 2, "D7": 2, "F7": 1},
+    "vtableResultsMatch": true,
+    "pageErrors": []
+  },
+  "boundaries": [
+    "Explicit/manual merges retain their intentional priority.",
+    "D3 retains its existing static/range behavior; no new repeat rule is inferred for it.",
+    "All platform writes use isolated API fixtures; no real project is written."
+  ]
+}

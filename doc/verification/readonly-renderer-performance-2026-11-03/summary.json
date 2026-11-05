@@ -1,0 +1,142 @@
+{
+  "conditions": {
+    "browser": "headless Chrome",
+    "dpr": 1,
+    "container": "1000x600 total",
+    "font": "14px Arial (Univer 10.5pt)",
+    "rowHeight": 28,
+    "columnWidth": 100,
+    "formulas": false,
+    "merges": false
+  },
+  "summary": [
+    {
+      "key": "vtable|50|20|1",
+      "trials": 3,
+      "paint": 89.5,
+      "prepare": 0.20000004768371582,
+      "update": 43.59999990463257,
+      "applied": true,
+      "heapTotal": 8.243560791015625,
+      "heapDelta": 4.525611877441406,
+      "load": 100.79999995231628,
+      "gzipMB": 0.6429681777954102,
+      "errors": []
+    },
+    {
+      "key": "univer|50|20|1",
+      "trials": 3,
+      "paint": 438.09999990463257,
+      "prepare": 0.20000004768371582,
+      "update": 28.09999990463257,
+      "applied": true,
+      "heapTotal": 19.15290069580078,
+      "heapDelta": 8.141353607177734,
+      "load": 326.2999999523163,
+      "gzipMB": 2.44390869140625,
+      "errors": []
+    },
+    {
+      "key": "vtable|2000|20|1",
+      "trials": 3,
+      "paint": 115,
+      "prepare": 3.200000047683716,
+      "update": 48.60000014305115,
+      "applied": true,
+      "heapTotal": 14.70047378540039,
+      "heapDelta": 10.675300598144531,
+      "load": 96.20000004768372,
+      "gzipMB": 0.6429681777954102,
+      "errors": []
+    },
+    {
+      "key": "univer|2000|20|1",
+      "trials": 3,
+      "paint": 445.2000000476837,
+      "prepare": 2.9000000953674316,
+      "update": 42.5,
+      "applied": true,
+      "heapTotal": 20.719573974609375,
+      "heapDelta": 9.462387084960938,
+      "load": 326.2999999523163,
+      "gzipMB": 2.44390869140625,
+      "errors": []
+    },
+    {
+      "key": "vtable|10000|20|1",
+      "trials": 3,
+      "paint": 127,
+      "prepare": 14.200000047683716,
+      "update": 46.09999990463257,
+      "applied": true,
+      "heapTotal": 16.60964584350586,
+      "heapDelta": 11.577392578125,
+      "load": 94.40000009536743,
+      "gzipMB": 0.6429681777954102,
+      "errors": []
+    },
+    {
+      "key": "univer|10000|20|1",
+      "trials": 3,
+      "paint": 475.89999985694885,
+      "prepare": 13.099999904632568,
+      "update": 145.60000014305115,
+      "applied": true,
+      "heapTotal": 27.0364990234375,
+      "heapDelta": 14.772300720214844,
+      "load": 330.7999999523163,
+      "gzipMB": 2.44390869140625,
+      "errors": []
+    },
+    {
+      "key": "vtable|50|20|4",
+      "trials": 3,
+      "paint": 154.40000009536743,
+      "prepare": 0.40000009536743164,
+      "update": 116,
+      "applied": true,
+      "heapTotal": 15.645133972167969,
+      "heapDelta": 11.92718505859375,
+      "load": 96.09999990463257,
+      "gzipMB": 0.6429681777954102,
+      "errors": []
+    },
+    {
+      "key": "univer|50|20|4",
+      "trials": 3,
+      "paint": 1461.0999999046326,
+      "prepare": 0.39999985694885254,
+      "update": 35.5,
+      "applied": true,
+      "heapTotal": 28.37838363647461,
+      "heapDelta": 17.366985321044922,
+      "load": 332.2999999523163,
+      "gzipMB": 2.44390869140625,
+      "errors": []
+    }
+  ],
+  "notes": [
+    "Three fresh-browser trials per case; median",
+    "First paint after engine module load; includes preparing engine input and two animation frames",
+    "Memory is JavaScript heap only; excludes GPU/canvas allocations",
+    "Four-instance retained heap measured after 3.5 seconds",
+    "Univer viewer updates use controlled set-range-values mutation; all updated values verified",
+    "Does not benchmark network/backend, aggregation, formulas, merges or real-device scrolling"
+  ],
+  "versions": {
+    "univer": "1.1.0",
+    "vtable": "1.26.8"
+  },
+  "environment": {
+    "cpu": "AMD Ryzen 9 7945HX, 16C/32T",
+    "chrome": "155.0.8059.85 headless",
+    "os": "Windows",
+    "date": "2026-11-03"
+  },
+  "validation": {
+    "trials": 24,
+    "allUpdatesApplied": true,
+    "pageErrors": [],
+    "portableBuild": "passed"
+  }
+}

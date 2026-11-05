@@ -1,0 +1,512 @@
+{
+  "date": "2026-11-02",
+  "branch": "feat/micro-bi-report-integration",
+  "scope": "Match existing project controls; retain responsive manager layout",
+  "reference": "webEditor data source management / original report management",
+  "computedStyle": {
+    "actual": {
+      "input": {
+        "background": "rgba(0, 0, 0, 0.06)",
+        "color": "rgb(51, 51, 51)",
+        "height": "30px",
+        "fontSize": "14px",
+        "fontFamily": "Arial",
+        "borderRadius": "2px 0px 0px 2px",
+        "padding": "0px 10px",
+        "borderColor": "rgb(51, 51, 51)"
+      },
+      "primary": {
+        "background": "rgb(127, 193, 255)",
+        "color": "rgb(255, 255, 255)",
+        "height": "30px",
+        "fontSize": "14px",
+        "fontFamily": "\"Microsoft YaHei\"",
+        "borderRadius": "2px",
+        "padding": "0px 10px",
+        "borderColor": "rgb(255, 255, 255)"
+      },
+      "secondary": {
+        "background": "rgba(0, 0, 0, 0.08)",
+        "color": "rgb(51, 51, 51)",
+        "height": "30px",
+        "fontSize": "14px",
+        "fontFamily": "\"Microsoft YaHei\"",
+        "borderRadius": "2px",
+        "padding": "0px 10px",
+        "borderColor": "rgb(51, 51, 51)"
+      },
+      "header": {
+        "background": "rgb(247, 247, 247)",
+        "color": "rgba(0, 0, 0, 0.85)",
+        "height": "39px",
+        "fontSize": "14px",
+        "fontFamily": "\"Microsoft YaHei\"",
+        "borderRadius": "2px 0px 0px",
+        "padding": "8px",
+        "borderColor": "rgba(0, 0, 0, 0.85) rgb(240, 240, 240) rgb(240, 240, 240) rgba(0, 0, 0, 0.85)"
+      },
+      "title": {
+        "background": "rgba(0, 0, 0, 0.02)",
+        "color": "rgb(51, 51, 51)",
+        "height": "42.3906px",
+        "fontSize": "14px",
+        "fontFamily": "\"Microsoft YaHei\"",
+        "borderRadius": "5px 5px 0px 0px",
+        "padding": "10px 15px",
+        "borderColor": "rgb(51, 51, 51)"
+      },
+      "smallTable": true
+    },
+    "reference": {
+      "input": {
+        "background": "rgba(0, 0, 0, 0.06)",
+        "color": "rgb(51, 51, 51)",
+        "height": "30px",
+        "fontSize": "14px",
+        "fontFamily": "Arial",
+        "borderRadius": "2px 0px 0px 2px",
+        "padding": "0px 10px",
+        "borderColor": "rgb(51, 51, 51)"
+      },
+      "primary": {
+        "background": "rgb(127, 193, 255)",
+        "color": "rgb(255, 255, 255)",
+        "height": "30px",
+        "fontSize": "14px",
+        "fontFamily": "\"Microsoft YaHei\"",
+        "borderRadius": "0px 2px 2px 0px",
+        "padding": "0px 10px",
+        "borderColor": "rgb(255, 255, 255)"
+      },
+      "secondary": {
+        "background": "rgba(0, 0, 0, 0.08)",
+        "color": "rgb(51, 51, 51)",
+        "height": "30px",
+        "fontSize": "14px",
+        "fontFamily": "\"Microsoft YaHei\"",
+        "borderRadius": "2px",
+        "padding": "0px 10px",
+        "borderColor": "rgb(51, 51, 51)"
+      },
+      "header": {
+        "background": "rgb(247, 247, 247)",
+        "color": "rgba(0, 0, 0, 0.85)",
+        "height": "41px",
+        "fontSize": "14px",
+        "fontFamily": "\"Microsoft YaHei\"",
+        "borderRadius": "2px 0px 0px",
+        "padding": "8px",
+        "borderColor": "rgba(0, 0, 0, 0.85) rgba(0, 0, 0, 0.85) rgb(240, 240, 240)"
+      },
+      "title": {
+        "background": "rgba(0, 0, 0, 0.02)",
+        "color": "rgb(51, 51, 51)",
+        "height": "42.3906px",
+        "fontSize": "14px",
+        "fontFamily": "\"Microsoft YaHei\"",
+        "borderRadius": "5px 5px 0px 0px",
+        "padding": "10px 15px",
+        "borderColor": "rgb(51, 51, 51)"
+      },
+      "smallTable": true
+    }
+  },
+  "verification": {
+    "typeScript": "passed",
+    "developmentWebpack": "passed",
+    "sharedStyleComparisons": "passed",
+    "resolutions": [
+      {
+        "viewport": {
+          "w": 1920,
+          "h": 1080
+        },
+        "modal": {
+          "x": 420,
+          "y": 86.390625,
+          "w": 1080,
+          "h": 543.390625,
+          "right": 1500,
+          "bottom": 629.78125
+        },
+        "toolbar": [
+          {
+            "x": 1011,
+            "y": 143.78125,
+            "w": 104,
+            "h": 30,
+            "right": 1115,
+            "bottom": 173.78125
+          },
+          {
+            "x": 1125,
+            "y": 143.78125,
+            "w": 146,
+            "h": 30,
+            "right": 1271,
+            "bottom": 173.78125
+          },
+          {
+            "x": 1281,
+            "y": 143.78125,
+            "w": 104,
+            "h": 30,
+            "right": 1385,
+            "bottom": 173.78125
+          },
+          {
+            "x": 1395,
+            "y": 143.78125,
+            "w": 90,
+            "h": 30,
+            "right": 1485,
+            "bottom": 173.78125
+          }
+        ],
+        "rowButtons": [
+          {
+            "x": 1355.609375,
+            "y": 237.78125,
+            "w": 47.890625,
+            "h": 24,
+            "right": 1403.5,
+            "bottom": 261.78125
+          },
+          {
+            "x": 1413.5,
+            "y": 237.78125,
+            "w": 47.890625,
+            "h": 24,
+            "right": 1461.390625,
+            "bottom": 261.78125
+          }
+        ],
+        "pagination": {
+          "x": 436,
+          "y": 573.78125,
+          "w": 1048,
+          "h": 24,
+          "right": 1484,
+          "bottom": 597.78125
+        },
+        "overflow": false
+      },
+      {
+        "viewport": {
+          "w": 1280,
+          "h": 720
+        },
+        "modal": {
+          "x": 100,
+          "y": 57.59375,
+          "w": 1080,
+          "h": 543.390625,
+          "right": 1180,
+          "bottom": 600.984375
+        },
+        "toolbar": [
+          {
+            "x": 691,
+            "y": 114.984375,
+            "w": 104,
+            "h": 30,
+            "right": 795,
+            "bottom": 144.984375
+          },
+          {
+            "x": 805,
+            "y": 114.984375,
+            "w": 146,
+            "h": 30,
+            "right": 951,
+            "bottom": 144.984375
+          },
+          {
+            "x": 961,
+            "y": 114.984375,
+            "w": 104,
+            "h": 30,
+            "right": 1065,
+            "bottom": 144.984375
+          },
+          {
+            "x": 1075,
+            "y": 114.984375,
+            "w": 90,
+            "h": 30,
+            "right": 1165,
+            "bottom": 144.984375
+          }
+        ],
+        "rowButtons": [
+          {
+            "x": 1035.609375,
+            "y": 208.984375,
+            "w": 47.890625,
+            "h": 24,
+            "right": 1083.5,
+            "bottom": 232.984375
+          },
+          {
+            "x": 1093.5,
+            "y": 208.984375,
+            "w": 47.890625,
+            "h": 24,
+            "right": 1141.390625,
+            "bottom": 232.984375
+          }
+        ],
+        "pagination": {
+          "x": 116,
+          "y": 544.984375,
+          "w": 1048,
+          "h": 24,
+          "right": 1164,
+          "bottom": 568.984375
+        },
+        "overflow": false
+      },
+      {
+        "viewport": {
+          "w": 768,
+          "h": 700
+        },
+        "modal": {
+          "x": 24,
+          "y": 56,
+          "w": 720,
+          "h": 543.390625,
+          "right": 744,
+          "bottom": 599.390625
+        },
+        "toolbar": [
+          {
+            "x": 39,
+            "y": 153.390625,
+            "w": 104,
+            "h": 30,
+            "right": 143,
+            "bottom": 183.390625
+          },
+          {
+            "x": 153,
+            "y": 153.390625,
+            "w": 146,
+            "h": 30,
+            "right": 299,
+            "bottom": 183.390625
+          },
+          {
+            "x": 309,
+            "y": 153.390625,
+            "w": 104,
+            "h": 30,
+            "right": 413,
+            "bottom": 183.390625
+          },
+          {
+            "x": 423,
+            "y": 153.390625,
+            "w": 90,
+            "h": 30,
+            "right": 513,
+            "bottom": 183.390625
+          }
+        ],
+        "rowButtons": [
+          {
+            "x": 599.609375,
+            "y": 247.390625,
+            "w": 47.890625,
+            "h": 24,
+            "right": 647.5,
+            "bottom": 271.390625
+          },
+          {
+            "x": 657.5,
+            "y": 247.390625,
+            "w": 47.890625,
+            "h": 24,
+            "right": 705.390625,
+            "bottom": 271.390625
+          }
+        ],
+        "pagination": {
+          "x": 40,
+          "y": 543.390625,
+          "w": 688,
+          "h": 24,
+          "right": 728,
+          "bottom": 567.390625
+        },
+        "overflow": false
+      },
+      {
+        "viewport": {
+          "w": 390,
+          "h": 700
+        },
+        "modal": {
+          "x": 24,
+          "y": 56,
+          "w": 342,
+          "h": 517.390625,
+          "right": 366,
+          "bottom": 573.390625
+        },
+        "toolbar": [
+          {
+            "x": 36,
+            "y": 150.390625,
+            "w": 104,
+            "h": 30,
+            "right": 140,
+            "bottom": 180.390625
+          },
+          {
+            "x": 150,
+            "y": 150.390625,
+            "w": 146,
+            "h": 30,
+            "right": 296,
+            "bottom": 180.390625
+          },
+          {
+            "x": 36,
+            "y": 190.390625,
+            "w": 104,
+            "h": 30,
+            "right": 140,
+            "bottom": 220.390625
+          },
+          {
+            "x": 36,
+            "y": 230.390625,
+            "w": 90,
+            "h": 30,
+            "right": 126,
+            "bottom": 260.390625
+          }
+        ],
+        "rowButtons": [
+          {
+            "x": 224.609375,
+            "y": 324.390625,
+            "w": 47.890625,
+            "h": 24,
+            "right": 272.5,
+            "bottom": 348.390625
+          },
+          {
+            "x": 282.5,
+            "y": 324.390625,
+            "w": 47.890625,
+            "h": 24,
+            "right": 330.390625,
+            "bottom": 348.390625
+          }
+        ],
+        "pagination": {
+          "x": 37,
+          "y": 520.390625,
+          "w": 316,
+          "h": 24,
+          "right": 353,
+          "bottom": 544.390625
+        },
+        "overflow": false
+      },
+      {
+        "viewport": {
+          "w": 900,
+          "h": 480
+        },
+        "modal": {
+          "x": 24,
+          "y": 38.390625,
+          "w": 852,
+          "h": 358.578125,
+          "right": 876,
+          "bottom": 396.96875
+        },
+        "toolbar": [
+          {
+            "x": 39,
+            "y": 135.78125,
+            "w": 104,
+            "h": 30,
+            "right": 143,
+            "bottom": 165.78125
+          },
+          {
+            "x": 153,
+            "y": 135.78125,
+            "w": 146,
+            "h": 30,
+            "right": 299,
+            "bottom": 165.78125
+          },
+          {
+            "x": 309,
+            "y": 135.78125,
+            "w": 104,
+            "h": 30,
+            "right": 413,
+            "bottom": 165.78125
+          },
+          {
+            "x": 423,
+            "y": 135.78125,
+            "w": 90,
+            "h": 30,
+            "right": 513,
+            "bottom": 165.78125
+          }
+        ],
+        "rowButtons": [
+          {
+            "x": 731.609375,
+            "y": 229.78125,
+            "w": 47.890625,
+            "h": 24,
+            "right": 779.5,
+            "bottom": 253.78125
+          },
+          {
+            "x": 789.5,
+            "y": 229.78125,
+            "w": 47.890625,
+            "h": 24,
+            "right": 837.390625,
+            "bottom": 253.78125
+          }
+        ],
+        "pagination": {
+          "x": 40,
+          "y": 340.96875,
+          "w": 820,
+          "h": 24,
+          "right": 860,
+          "bottom": 364.96875
+        },
+        "overflow": false
+      }
+    ],
+    "searchMatchedRows": 1,
+    "clear": "passed",
+    "entrances": {
+      "history": true,
+      "chart": true,
+      "table": true,
+      "source": true
+    },
+    "editCancel": true,
+    "deleteCancel": "passed",
+    "pageErrors": [],
+    "backend": "isolated API fixtures"
+  },
+  "sourceSha256": {
+    "webEditor/src/editor/modalManager/microBiReport/index.tsx": "00929493ac152ba815f6c5600668ce7847676b378dd1d25fd3ac0b79cb84788c",
+    "webEditor/src/editor/modalManager/microBiReport/index.less": "1cb19317d4e36d8289f87a8516983ceab117970792177c37e826308533475ecb"
+  }
+}

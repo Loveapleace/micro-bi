@@ -7,6 +7,7 @@ import { formatTimeBucket } from '../engine/bucketing.js';
 import { conditionOperators, dateComparable, fieldValueType, getCellCapabilities, getOperandValueType, metricAggregations, type CapabilityContext } from './cellCapabilities.js';
 import { sourceStyleToPublished } from '../report/cellStyle.js';
 import { displayedNumber, excelFormatColor } from '../report/numberFormat.js';
+import { pointsToPixels } from '../report/fontMetrics.js';
 
 const operators = new Set(['gt','gte','lt','lte','eq','ne','between','contains','startsWith','endsWith','in','notIn','empty','notEmpty']);
 const key = (c: { row: number; col: number }) => `${c.row}:${c.col}`;
@@ -337,11 +338,11 @@ export function applyPresentationRules(doc: CellTemplateDocumentV1, input: BiGri
   const baseRows={...(input.basePresentationRowHeights||input.rowHeights||{})},rowHeights={...baseRows};
   for(const c of cells){
     const text=c.displayText??String(c.value??'');if(!text)continue;
-    const font=c.style?.fontSize||12,m=mergeAt(c),start=m?.startRow??c.row,end=m?.endRow??c.row;
+    const font=pointsToPixels(c.style?.fontSize),m=mergeAt(c),start=m?.startRow??c.row,end=m?.endRow??c.row;
     if(m&&(c.row!==start||c.col!==m.startCol))continue;
     let width=0;for(let col=m?.startCol??c.col;col<=(m?.endCol??c.col);col++)width+=input.colWidths?.[col]??100;
     const lines=text.split(/\r?\n/).reduce((n,line)=>n+(c.style?.wrapText?Math.max(1,Math.ceil([...line].reduce((s,ch)=>s+(ch.charCodeAt(0)>255?font:font*0.62),0)/Math.max(16,width-12))):1),0);
-    const needed=Math.ceil(lines*font*1.2+8);
+    const needed=Math.ceil(lines*font+8);
     let available=0;const flexible:number[]=[];for(let r=start;r<=end;r++){available+=rowHeights[r]??defaultRowHeight;if(baseRows[r]===undefined)flexible.push(r);}
     if(needed>available&&flexible.length){const extra=Math.ceil((needed-available)/flexible.length);for(const r of flexible)rowHeights[r]=(rowHeights[r]??defaultRowHeight)+extra;}
   }

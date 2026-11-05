@@ -19,6 +19,7 @@ import {
   TableOutlined,
   EyeOutlined,
   EditOutlined,
+  HolderOutlined,
 } from '@ant-design/icons';
 import type { DataRecord, DynamicTransformConfig, TimeGranularity } from '../engine/types.js';
 import type { CellTemplateDocumentV1, CellDefinition, LayoutRule, StyleRule, PresentationRules, AdvancedCellUpdate } from '../report-template/types.js';
@@ -34,13 +35,13 @@ import { emptyPresentationRules } from '../report-template/presentationTypes.js'
 import { applyPresentationRules } from '../report-template/presentationRules.js';
 import { HybridHistory, isHybridHistoryCommand } from './hybridHistory.js';
 import { syncDocumentFromWorkbookSnapshot } from './syncWorkbookToTemplate.js';
-import { applyHybridFormatPreset, collectHybridExtras, mergeHybridCells, mergeHybridLayoutRules, preserveHybridDocumentMetadata, readHybridFormatPreset, readHybridRowTotals, type HybridFormatPreset } from './hybridTemplateState.js';
+import { applyHybridFormatPreset, collectHybridExtras, collectHybridLayoutOverrides, mergeHybridCells, mergeHybridLayoutRules, preserveHybridDocumentMetadata, readHybridFormatPreset, readHybridRowTotals, type HybridFormatPreset } from './hybridTemplateState.js';
 import { CellAdvancedSettings } from './CellAdvancedSettings.js';
 import { cellFormatOptions, changeMetricAggregation, validateAdvancedCellUpdate } from './advancedCellState.js';
-import { canOpenCellAdvancedSettings, fieldValueType, getCellCapabilities, metricAggregations } from '../report-template/cellCapabilities.js';
+import { canOpenCellAdvancedSettings, shouldOpenCellAdvancedOnDoubleClick, fieldValueType, getCellCapabilities, metricAggregations } from '../report-template/cellCapabilities.js';
 import {isGuidedSourceDocument} from '../report-template/guidedSource.js';
 import {attachGuidedEditingGuard,guidedCellProtected,guidedCellContentProtected,protectGuidedSnapshot} from './guidedEditing.js';
-import { bindSourceHistory, type FUniver } from '../univer/adapter.js';
+import { attachUniverContextAction, bindSourceHistory, type FUniver } from '../univer/adapter.js';
 import { EditorSession, EditorSessionClosedError, isEditorSessionClosed } from '../univer/lifecycle.js';
 import { compileDrillIndex, dataSnapshotFingerprint, resolveDrillTarget } from '../report/drill.js';
 import { createLocalDrillQuery } from '../report/drillSession.js';
@@ -56,6 +57,8 @@ import {
 } from '../core/datasetRegistry.js';
 import { UniverPreview, type UniverPreviewRef } from '../univer/UniverPreview.js';
 import type { BiGridModel } from '../report/types.js';
+import { referencedHostVariables } from '../report/hostVariables.js';
+import { moveMeasure, reconcileMeasureSelection, relocateMeasureCustomizations } from './measureOrder.js';
 interface FieldItem { key: string; label: string; type?: string; sample?: unknown }
 
 const { Text } = Typography;
@@ -66,6 +69,11 @@ export interface HybridCellDesignerProps {
   datasetId?: string | undefined;
   datasets?: readonly RegisteredDataset[] | undefined;
   rawDataset?: readonly DataRecord[] | undefined;
+  externalDataset?: import('../core/datasetRegistry.js').ExternalDatasetSnapshot | undefined;
+  onDatasetChange?: ((datasetId: string) => void) | undefined;
+  onRefresh?: (() => void) | undefined;
+  variableValues?: Readonly<Record<string, unknown>> | undefined;
+  onVariableReferencesChange?: ((ids: string[]) => void) | undefined;
   height?: string | number | undefined;
   onSave?: ((report: CompileCellReportResult) => void) | undefined;
   onCancel?: (() => void) | undefined;
@@ -75,6 +83,7 @@ export interface HybridCellDesignerProps {
 export interface HybridCellDesignerRef {
   getTemplate: () => CellTemplateDocumentV1;
   validateAndGetReport: () => Promise<CompileCellReportResult>;
+  insertVariable: (id: string) => boolean;
 }
 
 export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDesignerProps>(
@@ -85,6 +94,11 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
       datasetId,
       datasets,
       rawDataset,
+      externalDataset,
+      onDatasetChange,
+      onRefresh,
+      variableValues,
+      onVariableReferencesChange,
       height = '100%',
       isDark = false,
     },
@@ -112,22 +126,22 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
       );
     }, [candidateDatasets, selectedDatasetId]);
 
-    const resolvedDataset = useDatasetData(activeDataset, { enabled: rawDataset === undefined });
-    const activeData = rawDataset ?? resolvedDataset.data;
-    const dataLoading = rawDataset === undefined && resolvedDataset.loading;
-    const dataError = rawDataset === undefined ? resolvedDataset.error : null;
+    useEffect(() => { onDatasetChange?.(selectedDatasetId); }, [selectedDatasetId, onDatasetChange]);
+    const resolvedDataset = useDatasetData(activeDataset, { enabled: rawDataset === undefined && !externalDataset });
+    const matchingExternal = externalDataset?.datasetId === selectedDatasetId ? externalDataset : undefined;
+    const activeData = externalDataset ? matchingExternal?.records || [] : rawDataset ?? resolvedDataset.data;
+    const dataLoading = externalDataset ? !matchingExternal || Boolean(matchingExternal.loading) : rawDataset === undefined && resolvedDataset.loading;
+    const dataError = externalDataset ? matchingExternal?.error ? new Error(matchingExternal.error) : null : rawDataset === undefined ? resolvedDataset.error : null;
     const { token } = theme.useToken();
     const chromeColor = isDark ? '#f0f0f0' : token.colorText;
 
     // 2. 字段库提取
     const fieldItems = useMemo<FieldItem[]>(() => {
-      const headers = (resolvedDataset.headers || activeDataset?.headers || {}) as Record<string, string>;
+      const headers = (matchingExternal?.headers || resolvedDataset.headers || activeDataset?.headers || {}) as Record<string, string>;
       const keys = new Set<string>();
 
       Object.keys(headers).forEach((k) => keys.add(k));
-      if (activeData.length > 0 && activeData[0]) {
-        Object.keys(activeData[0]).forEach((k) => keys.add(k));
-      }
+      activeData.forEach(row => Object.keys(row).forEach(k => keys.add(k)));
 
       return Array.from(keys).map((k) => {
         const sampleVal = activeData.find(row=>row[k]!==null&&row[k]!==undefined&&row[k]!=='')?.[k];
@@ -140,7 +154,7 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
           sample: sampleVal,
         };
       });
-    }, [activeDataset, activeData, resolvedDataset.headers]);
+    }, [activeDataset, activeData, resolvedDataset.headers, matchingExternal?.headers]);
 
     // 3. 维度与度量配置状态（完全对齐图二结构）
     const [mode, setMode] = useState<'design' | 'preview'>('design');
@@ -159,8 +173,17 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
 
     // 统计度量指标
     const [selectedMeasures, setSelectedMeasures] = useState<string[]>([]);
+    const [draggingMeasure, setDraggingMeasure] = useState<string | null>(null);
+    const [measureDropTarget, setMeasureDropTarget] = useState<string | null>(null);
+    const draggedMeasureRef = useRef<string | null>(null);
     const [measureAggs, setMeasureAggs] = useState<Record<string, 'sum' | 'count' | 'avg' | 'max' | 'min'>>({});
     const [measureFormats, setMeasureFormats] = useState<Record<string, string>>({});
+    const orderedMeasureFields = useMemo(() => {
+      const byKey = new Map(fieldItems.map(field => [field.key, field]));
+      const selected = new Set(selectedMeasures);
+      return [...selectedMeasures.flatMap(key => byKey.has(key) ? [byKey.get(key)!] : []),
+        ...fieldItems.filter(field => !selected.has(field.key))];
+    }, [fieldItems, selectedMeasures]);
 
     // 汇总与合并选项
     const [showRowTotal, setShowRowTotal] = useState<boolean>(false);
@@ -391,15 +414,7 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
         const restoredExtras = collectHybridExtras(initialDocument, basePanelTemplate, [], basePanelTemplate);
         setExtraCustomCells([...restoredExtras, ...(initialDocument.hybridConfig?.version === 2 ? initialDocument.hybridConfig.retainedCells || [] : [])]);
 
-        const defaultLayoutRuleKeys = new Set(
-          basePanelTemplate.layoutRules.map(
-            (r) => `${r.kind}:${r.range?.startRow},${r.range?.startColumn},${r.range?.endRow},${r.range?.endColumn}`
-          )
-        );
-        const restoredRules = (initialDocument.layoutRules || []).filter((r) => {
-          const key = `${r.kind}:${r.range?.startRow},${r.range?.startColumn},${r.range?.endRow},${r.range?.endColumn}`;
-          return !defaultLayoutRuleKeys.has(key);
-        });
+        const restoredRules = collectHybridLayoutOverrides(initialDocument.layoutRules || [], basePanelTemplate);
         setExtraLayoutRules(restoredRules);
         return;
       }
@@ -454,13 +469,13 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
     }, [selectedDatasetId, fieldItems, dataLoading, dataError]);
 
     // 4.1 单向即时编译生成面板基准受控模板
-    const panelGeneratedTemplate = useMemo<CellTemplateDocumentV1>(() => {
+    const buildPanelTemplate = useCallback((measureOrder = selectedMeasures): CellTemplateDocumentV1 => {
       const headersMap: Record<string, string> = {};
       fieldItems.forEach((f) => {
         headersMap[f.key] = f.label;
       });
 
-      const measureColumns = selectedMeasures.map((mKey) => {
+      const measureColumns = measureOrder.map((mKey) => {
         const f = fieldItems.find((item) => item.key === mKey);
         const customAgg = measureAggs[mKey];
         const isNum = f?.type === 'number';
@@ -542,6 +557,7 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
       deducedArchetype,
       activeDataset,
     ]);
+    const panelGeneratedTemplate = useMemo(() => buildPanelTemplate(), [buildPanelTemplate]);
 
     const panelGeneratedTemplateRef = useRef(panelGeneratedTemplate);
     panelGeneratedTemplateRef.current = panelGeneratedTemplate;
@@ -720,15 +736,36 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
       historyTimerRef.current = setTimeout(finishSourceEdit, 0);
     }, [finishSourceEdit]);
     const runSourceEdit = (change: () => void) => { beginSourceEdit(); change(); scheduleSourceEdit(); };
+    const reorderMeasure = (from: string, to: string) => {
+      if (from === to || !selectedMeasures.includes(from) || !selectedMeasures.includes(to)) return;
+      beginSourceEdit();
+      const order = moveMeasure(editStateRef.current.selectedMeasures, from, to);
+      try {
+        const relocated = relocateMeasureCustomizations(currentTemplateRef.current, buildPanelTemplate(order),
+          extraCustomCellsRef.current, extraLayoutRulesRef.current, activeData, variableValues);
+        // The old canvas must not overwrite relocated formulas/dimensions before the new grid is applied.
+        renderedStateRef.current = undefined;
+        setExtraCustomCells(relocated.cells); setExtraLayoutRules(relocated.layouts); setSelectedMeasures(order);
+        scheduleSourceEdit();
+      } catch (error) {
+        pendingBeforeRef.current = undefined;
+        message.warning(error instanceof Error ? error.message : '指标排序失败，请重试');
+      }
+    };
+    const endMeasureDrag = () => {
+      draggedMeasureRef.current = null; setDraggingMeasure(null); setMeasureDropTarget(null);
+    };
 
+    const variableReferences = referencedHostVariables(currentTemplate);
+    const variableReferenceKey = JSON.stringify(variableReferences);
+    useEffect(() => { onVariableReferencesChange?.(variableReferences); }, [variableReferenceKey, onVariableReferencesChange]);
     const templateErrors = useMemo(() => [...validateCellTemplateDocument(currentTemplate, fieldItems.map((f) => f.key)).diagnostics.filter((d) => d.severity === 'error'),...(unsupportedSource?[{severity:'error' as const,code:'ERR_GUIDED_SOURCE',message:'仅支持模式三生成的受控报表，请通过面板新建；不读取自由模式配置'}]:[])], [currentTemplate,fieldItems,unsupportedSource]);
 
     // 5. 根据当前 mode (design vs preview) 构造 Univer 渲染矩阵
     const currentGrid = useMemo<BiGridModel>(() => {
       if (mode === 'preview') {
-        if (templateErrors.length) return { type: 'detail', rowCount: 25, colCount: 15, cells: [], merges: [], bindings: [] };
         try {
-          const { grid } = expandCellDrivenTemplate(currentTemplate, activeData || []);
+          const { grid } = expandCellDrivenTemplate(currentTemplate, activeData || [], { variableValues });
           return grid;
         } catch (e) {
           console.warn('[HybridCellDesigner] 展开预览计算异常:', e);
@@ -848,8 +885,15 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
         colWidths,
         rowHeights,
       });
-      return applyPresentationRules(currentTemplate, design, [], { conditions:false }).grid;
-    }, [currentTemplate, mode, activeData, templateErrors, designSize]);
+      const painted = applyPresentationRules(currentTemplate, design, [], { conditions:false }).grid;
+      const missing = new Set(templateErrors.filter(d => ['ERR_HYBRID_FIELD_NOT_FOUND', 'ERR_HYBRID_FORMULA_FIELD_NOT_FOUND'].includes(d.code)).map(d => d.targetId));
+      if (!missing.size) return painted;
+      const missingPositions = new Set(currentTemplate.cells.filter(c => missing.has(c.id)).map(c => `${c.position.row}:${c.position.column}`));
+      return { ...painted, cells: painted.cells.map(c => missingPositions.has(`${c.row}:${c.col}`)
+        ? { ...c, value: `⚠ ${c.displayText || c.value || ''}`, displayText: `⚠ ${c.displayText || c.value || ''}`,
+          tooltip: '字段不存在，请重新选择字段', style: { ...c.style, color: '#CF1322', bgColor: '#FFF1F0', bold: true } }
+        : c) };
+    }, [currentTemplate, mode, activeData, templateErrors, designSize, variableValues]);
 
     const currentGridRef = useRef<BiGridModel | undefined>(undefined);
     currentGridRef.current = currentGrid;
@@ -941,15 +985,7 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
       );
       if(JSON.stringify(syncedDoc.styleRules)!==JSON.stringify(editStateRef.current.visualStyleRules))setVisualStyleRules(syncedDoc.styleRules);
 
-      const defaultRuleKeys = new Set(
-        rendered.panel.layoutRules.map(
-          (r) => `${r.kind}:${r.range?.startRow},${r.range?.startColumn},${r.range?.endRow},${r.range?.endColumn}`
-        )
-      );
-      const newExtraRules = syncedDoc.layoutRules.filter((r) => {
-        const key = `${r.kind}:${r.range?.startRow},${r.range?.startColumn},${r.range?.endRow},${r.range?.endColumn}`;
-        return !defaultRuleKeys.has(key);
-      });
+      const newExtraRules = collectHybridLayoutOverrides(syncedDoc.layoutRules, rendered.panel);
       const mergeKey = (r: LayoutRule) => JSON.stringify(r.range);
       const activeMergeKeys = new Set(syncedDoc.layoutRules.filter((r) => r.kind === 'merge').map(mergeKey));
       const removed = rendered.template.layoutRules.filter((r) => r.kind === 'merge' && !activeMergeKeys.has(mergeKey(r))).map((r) => r.id);
@@ -970,6 +1006,26 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
       setExtraLayoutRules(newExtraRules);
       setDisabledLayoutIds(disabled);
     }, []);
+
+    const formulaContextActionRef = useRef<ReturnType<typeof attachUniverContextAction>>(undefined);
+    useEffect(() => {
+      if (!univerAPI) return;
+      const selectedFormula = () => {
+        if (modeRef.current !== 'design') return;
+        const sheet = univerAPI.getActiveWorkbook()?.getActiveSheet(), range = sheet?.getSelection()?.getActiveRange()?.getRange();
+        if (!sheet || !range || range.startRow !== range.endRow || range.startColumn !== range.endColumn) return;
+        const cell = currentTemplateRef.current.cells.find(cell => cell.sheetId === sheet.getSheetId() && cell.position.row === range.startRow && cell.position.column === range.startColumn);
+        return cell?.content.kind === 'sheet-formula' && canOpenCellAdvancedSettings(cell) && !guidedCellContentProtected(panelGeneratedTemplateRef.current, range.startRow, range.startColumn, sheet.getSheetId()) ? cell : undefined;
+      };
+      const action = attachUniverContextAction(univerAPI, 'micro-bi.command.formula-advanced', '高级配置', () => Boolean(selectedFormula()), () => {
+        flushCanvasToTemplate();
+        const cell = selectedFormula();
+        if (cell) { setSelectedCellForAdvanced(cell); setAdvancedModalOpen(true); }
+      });
+      formulaContextActionRef.current = action;
+      return () => { action?.dispose(); if (formulaContextActionRef.current === action) formulaContextActionRef.current = undefined; };
+    }, [univerAPI, flushCanvasToTemplate]);
+    useEffect(() => { formulaContextActionRef.current?.refresh(); }, [mode, currentTemplate]);
     flushRef.current = flushCanvasToTemplate;
 
     useEffect(()=>{
@@ -1031,7 +1087,7 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
           const found = currentTemplateRef.current.cells.find(
             (c) => c.sheetId === (pos.sheetId || 'sheet-1') && c.position.row === pos.row && c.position.column === pos.column
           );
-          if (!canOpenCellAdvancedSettings(found)) {
+          if (!shouldOpenCellAdvancedOnDoubleClick(found)) {
             if(guidedCellContentProtected(panelGeneratedTemplateRef.current,pos.row,pos.column,pos.sheetId||'sheet-1')){
               message.info('数据区通过左侧面板添加维度和指标');return true;
             }
@@ -1462,6 +1518,15 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
     useImperativeHandle(
       ref,
       () => ({
+        insertVariable: (id: string) => {
+          if (modeRef.current !== 'design' || !id || /[{}]/u.test(id)) return false;
+          const sheet = univerPreviewRef.current?.getUniverAPI()?.getActiveWorkbook()?.getActiveSheet();
+          const range = sheet?.getActiveRange();
+          const selection = range?.getRange();
+          if (!sheet || !range || !selection || guidedCellContentProtected(currentTemplateRef.current, selection.startRow, selection.startColumn, sheet.getSheetId())) return false;
+          sheet.getRange(selection.startRow, selection.startColumn).setValue({ v: `{{${id}}}`, t: 4 });
+          return true;
+        },
         getTemplate: () => {
           requestScopeRef.current?.assertActive();
           finishSourceEdit();
@@ -1480,10 +1545,10 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
           finishSourceEdit();
           flushCanvasToTemplate();
           const doc = currentTemplateRef.current;
-          return compileCellReport(doc, activeData, { availableFields: fieldItems.map((f) => f.key) });
+          return compileCellReport(doc, activeData, { availableFields: fieldItems.map((f) => f.key), variableValues });
         },
       }),
-      [activeData, flushCanvasToTemplate, fieldItems, dataLoading, dataError, finishSourceEdit, unsupportedSource]
+      [activeData, flushCanvasToTemplate, fieldItems, dataLoading, dataError, finishSourceEdit, unsupportedSource, variableValues]
     );
 
     return (
@@ -1539,7 +1604,7 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
               value={selectedDatasetId}
               onChange={(val) => setSelectedDatasetId(val)}
               options={candidateDatasets.map((ds) => {
-                const count = Array.isArray(ds.data)
+                const count = externalDataset?.datasetId === ds.id ? externalDataset.records.length : Array.isArray(ds.data)
                   ? ds.data.length
                   : getCachedDatasetData(ds.id)?.data?.length || 0;
                 return {
@@ -1790,7 +1855,7 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
                     type="link"
                     size="small"
                     style={{ padding: 0, fontSize: 11 }}
-                    onClick={() => runSourceEdit(() => setSelectedMeasures(fieldItems.map((f) => f.key)))}
+                    onClick={() => runSourceEdit(() => setSelectedMeasures(current => reconcileMeasureSelection(current, fieldItems.map((f) => f.key))))}
                   >
                     全选
                   </Button>
@@ -1808,11 +1873,11 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
 
               <Checkbox.Group
                 value={selectedMeasures}
-                onChange={(vals) => runSourceEdit(() => setSelectedMeasures(vals as string[]))}
+                onChange={(vals) => runSourceEdit(() => setSelectedMeasures(current => reconcileMeasureSelection(current, vals as string[])))}
                 style={{ width: '100%' }}
               >
                 <Space direction="vertical" style={{ width: '100%' }} size={4}>
-                  {fieldItems.map((f) => {
+                  {orderedMeasureFields.map((f) => {
                     const isNum = f.type === 'number';
                     const currentAgg = measureAggs[f.key] || (isNum ? 'sum' : 'count');
                     const measureCell = currentTemplate.cells.find((c) => c.content.kind === 'field' &&
@@ -1820,23 +1885,46 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
                       (c.content.role === 'measure' || c.content.role === 'detail-column'));
                     const currentFmt = measureCell ? readHybridFormatPreset(measureCell) : measureFormats[f.key] || (isNum ? 'decimal2' : 'integer');
                     const isChecked = selectedMeasures.includes(f.key);
+                    const order = selectedMeasures.indexOf(f.key);
+                    const dropTarget = isChecked && measureDropTarget === f.key && draggingMeasure !== f.key;
                     return (
                       <div
                         key={f.key}
+                        data-measure-key={f.key}
+                        data-measure-selected={isChecked}
+                        onDragOver={(event) => {
+                          if (!isChecked || !draggedMeasureRef.current) return;
+                          event.preventDefault(); event.dataTransfer.dropEffect = 'move';
+                          setMeasureDropTarget(f.key);
+                        }}
+                        onDrop={(event) => {
+                          if (!isChecked || !draggedMeasureRef.current) return;
+                          event.preventDefault(); reorderMeasure(draggedMeasureRef.current, f.key); endMeasureDrag();
+                        }}
                         style={{
                           display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          padding: '2px 4px',
+                          flexDirection: 'column',
+                          gap: 4,
+                          padding: isChecked ? '4px' : '2px 4px',
                           borderRadius: 4,
                           backgroundColor: isChecked ? '#fff7e6' : 'transparent',
+                          opacity: draggingMeasure === f.key ? 0.5 : 1,
+                          boxShadow: dropTarget ? `inset 0 ${selectedMeasures.indexOf(draggingMeasure!) < order ? '-2px' : '2px'} #1677ff` : undefined,
                         }}
                       >
-                        <Checkbox value={f.key} style={{ fontSize: 12 }}>
-                          <span>{f.label}</span>
-                          <span style={{ fontSize: 10, color: '#8c8c8c', marginLeft: 4 }}>({f.key})</span>
-                        </Checkbox>
-                        <Space size={4}>
+                        <div style={{display:'flex',alignItems:'center',gap:4,minWidth:0}}>
+                          {isChecked && <Button type="text" size="small" draggable
+                            aria-label={`拖动排序指标 ${f.label}`} title="拖动调整顺序"
+                            icon={<HolderOutlined/>} style={{width:20,minWidth:20,padding:0,cursor:'grab',color:'#8c8c8c'}}
+                            onDragStart={event => {draggedMeasureRef.current=f.key;setDraggingMeasure(f.key);event.dataTransfer.effectAllowed='move';event.dataTransfer.setData('text/plain',f.key);}}
+                            onDragEnd={endMeasureDrag}/>}
+                          <Checkbox value={f.key} style={{fontSize:12,flex:1,minWidth:0}}>
+                            <span title={`${f.label} (${f.key})`} style={{overflowWrap:'anywhere'}}>{f.label}
+                              <span style={{fontSize:10,color:'#8c8c8c',marginLeft:4}}>({f.key})</span>
+                            </span>
+                          </Checkbox>
+                        </div>
+                        {isChecked && <Space size={4} style={{paddingLeft:24}}>
                           <Select
                             size="small"
                             style={{ width: 68 }}
@@ -1870,7 +1958,7 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
                               ...(currentFmt === 'custom' ? [{ value: 'custom', label: '自定义', disabled: true }] : []),
                             ]}
                           />
-                        </Space>
+                        </Space>}
                       </div>
                     );
                   })}
@@ -1999,7 +2087,7 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
           </div>
 
           {dataLoading && <Alert type="info" showIcon message="正在加载数据源，请稍候；加载完成后可预览和保存" />}
-          {dataError && <Alert type="error" showIcon message={`数据源加载失败：${dataError.message}`} action={<Button size="small" onClick={() => void resolvedDataset.refresh()}>重试加载</Button>} />}
+          {dataError && <Alert type="error" showIcon message={`数据源加载失败：${dataError.message}`} action={<Button size="small" onClick={() => externalDataset ? onRefresh?.() : void resolvedDataset.refresh()}>重试加载</Button>} />}
           {!dataLoading && !dataError && templateErrors.length > 0 && <Alert type="error" showIcon message="配置尚未通过校验，预览和保存已阻止" description={templateErrors.map((d) => d.message).join('；')} />}
           <DrillSheetBar tab={drillSnapshot.tabs.find(t=>t.id===drillSnapshot.activeSheetId)} session={drillSession}/>
           {/* 右侧 Univer 画布容器 */}

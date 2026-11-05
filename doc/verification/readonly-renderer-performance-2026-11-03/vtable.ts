@@ -1,0 +1,3 @@
+import {ListTable} from '@visactor/vtable';
+export function prepare(cells){return cells.map(row=>Object.fromEntries(row.map((value,c)=>['c'+c,value])));}
+export async function mount(container,data,rows,cols,id){const table=new ListTable(container,{columns:Array.from({length:cols},(_,c)=>({field:'c'+c,title:'',width:100,style:{fontFamily:'Arial',fontSize:14,color:'#222',padding:[4,6,4,6]}})),records:data,showHeader:false,defaultRowHeight:28,widthMode:'standard',autoFillWidth:false,pixelRatio:devicePixelRatio});return {update:next=>table.setRecords(next),value:()=>table.getCellOriginValue(2,0),dispose:()=>table.release()};}

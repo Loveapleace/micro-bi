@@ -329,10 +329,11 @@ export function projectDetailReport(
 export function expandCellTemplate(
   doc: CellTemplateDocumentV1,
   plan: NormalizedRegionPlan,
-  rawDataset: readonly DataRecord[]
+  rawDataset: readonly DataRecord[],
+  options: { memberCompare?: ((field: string, a: unknown, b: unknown) => number | undefined) | undefined } = {}
 ): ExpandTemplateResult {
   if (!plan.layoutKind || doc.schemaVersion === '2.0' || doc.capabilitiesVersion === 'cell-expansion-v2') {
-    const res = expandCellDrivenTemplate(doc, rawDataset, { sheetId: plan.sheetId });
+    const res = expandCellDrivenTemplate(doc, rawDataset, { sheetId: plan.sheetId, memberCompare: options.memberCompare });
     return {
       grid: res.grid,
       recordCount: res.recordCount,

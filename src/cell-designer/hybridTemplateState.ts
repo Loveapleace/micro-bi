@@ -138,6 +138,14 @@ export function mergeHybridLayoutRules(panel: CellTemplateDocumentV1, extras: re
   return [...new Map([...panel.layoutRules, ...extras].map((r) => [key(r), r])).values()];
 }
 
+/** A changed width/height is an override even when its coordinates match a generated layout rule. */
+export function collectHybridLayoutOverrides(rules: readonly LayoutRule[], panel: CellTemplateDocumentV1): LayoutRule[] {
+  const intent = (rule: LayoutRule) => JSON.stringify([rule.sheetId, rule.kind, rule.index, rule.range,
+    rule.size, rule.frozenRows, rule.frozenColumns, rule.semanticSelector]);
+  const defaults = new Set(panel.layoutRules.map(intent));
+  return rules.filter(rule => !defaults.has(intent(rule)));
+}
+
 export type HybridFormatPreset = 'decimal2' | 'integer' | 'currency' | 'percent' | 'number';
 const presets: Record<HybridFormatPreset, { precision: number; useGrouping: boolean }> = {
   decimal2: { precision: 2, useGrouping: false },

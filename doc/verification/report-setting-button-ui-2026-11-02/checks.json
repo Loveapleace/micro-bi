@@ -1,0 +1,57 @@
+{
+  "results": [
+    {
+      "key": "mouse",
+      "passed": true,
+      "geometry": {
+        "width": 28,
+        "height": 28,
+        "offset": 0,
+        "selectHeight": 28,
+        "border": "0px",
+        "icon": "18px",
+        "title": "管理新报表",
+        "hover": "rgba(0, 0, 0, 0.1)"
+      },
+      "managers": 1
+    },
+    {
+      "key": "Enter",
+      "passed": true,
+      "geometry": {
+        "width": 28,
+        "height": 28,
+        "offset": 0,
+        "selectHeight": 28,
+        "border": "0px",
+        "icon": "18px",
+        "title": "管理新报表"
+      },
+      "managers": 1
+    },
+    {
+      "key": "Space",
+      "passed": true,
+      "geometry": {
+        "width": 28,
+        "height": 28,
+        "offset": 0,
+        "selectHeight": 28,
+        "border": "0px",
+        "icon": "18px",
+        "title": "管理新报表"
+      },
+      "managers": 1
+    }
+  ],
+  "pageErrors": [],
+  "date": "2026-11-02",
+  "scope": "report selector settings button UI",
+  "backend": "isolated API fixtures, real property panel",
+  "typeScript": "passed",
+  "developmentWebpack": "passed",
+  "sourceSha256": {
+    "SelectReport.tsx": "4fbd93f0dcabe8efe3b8247f35bd89f042c2548c8818d8fac626945f7a09bba1",
+    "SelectReport.less": "0a2c6a3840bb094e5810e05e87572a2e32ffbe0321e1194c5c778cb04e827b24"
+  }
+}

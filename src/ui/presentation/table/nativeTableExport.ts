@@ -1,6 +1,7 @@
 import * as VTablePkg from '@visactor/vtable';
 import type { ListTable, PivotTable } from '@visactor/vtable';
 import { formatTableValue } from './tableSummary.js';
+import { exportedFontSize, usesPixelFonts } from './exportFontMetrics.js';
 
 type ExportableTable = (ListTable | PivotTable) & {
   exportToExcel?: () => Promise<ArrayBuffer | Uint8Array>;
@@ -12,13 +13,20 @@ const tableEvents = vtableModule.TABLE_EVENT_TYPE || vtableModule.default.TABLE_
 /** ExcelJS字符串单元格不作为公式执行；保留前导零、日期文本及原始数值类型。 */
 export function formatNativeExcelCell(
   info: {
-    table: { getCellOriginValue?: (col: number, row: number) => unknown };
+    table: { getCellOriginValue?: (col: number, row: number) => unknown;
+      getCellStyle?: (col: number, row: number) => { fontSize?: number };
+      getCellRange?: (col: number, row: number) => { start: { col: number; row: number } } };
     col: number;
     row: number;
     cellValue: unknown;
   },
-  cell: { value: unknown; numFmt?: string },
+  cell: { value: unknown; numFmt?: string; font?: { size?: number } },
 ) {
+  if (cell.font?.size !== undefined && usesPixelFonts(info.table)) {
+    const master = info.table.getCellRange?.(info.col, info.row)?.start || info;
+    const pixels = info.table.getCellStyle?.(master.col, master.row)?.fontSize ?? cell.font.size;
+    cell.font = { ...cell.font, size: exportedFontSize(info.table, pixels) };
+  }
   const raw = typeof info.table.getCellOriginValue === 'function'
     ? info.table.getCellOriginValue(info.col, info.row)
     : info.cellValue;

@@ -11,6 +11,8 @@
 
 当前产品入口为模式一VChart图表配置与模式三受控表格配置。模式二自由设计器已移除，不读取或迁移其报表配置；模式三通过面板管理数据结构，保留Univer外观、静态内容与合并配置，正式表格由VTable展示。使用边界与最新验收见[文档导航](doc/README.md)。
 
+webEditor/hwComponent接入使用 `embedded/` 的 `@hw/micro-bi-embed` 伴随包：以 `mountDesigner/mountViewer` 管理独立DOM根，宿主保留React17/AntD4，包内使用React18/AntD5；数据源和变量由宿主提供。新报表管理、图元、实例查询及构建/发包步骤见[实际平台接入文档](doc/platform-integration-and-acceptance-2026-11-02.md)。源码工作区的file依赖尚需正式发包，不代表该伴随包已经发布到npm。
+
 ---
 
 ## 🌟 为什么选择 MicroBI？

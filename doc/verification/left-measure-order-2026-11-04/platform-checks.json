@@ -1,0 +1,104 @@
+{
+  "backend": "isolated API fixture; real webEditor/hwComponent/SDK",
+  "cases": [
+    {
+      "name": "point fonts and scale/DPR changes reuse the native canvas",
+      "result": {
+        "fontPixels": 14.666666666666666,
+        "ratio": 1.3125,
+        "backingWidth": 850,
+        "cssWidth": 648
+      }
+    },
+    {
+      "name": "separate component filters",
+      "result": {
+        "a": 5,
+        "b": 9
+      }
+    },
+    {
+      "name": "hidden pivot column follows identity after insertion",
+      "result": [
+        "workshop",
+        "指标名称",
+        "2026-07-31",
+        "2026-08-01",
+        "2026-08-03",
+        "2026-08-04",
+        "2026-08-05"
+      ]
+    },
+    {
+      "name": "empty source",
+      "result": true
+    },
+    {
+      "name": "renamed field has red structural diagnostic",
+      "result": true
+    },
+    {
+      "name": "variable snapshot updates without rewriting token",
+      "result": "动态厂区"
+    },
+    {
+      "name": "fresh drill targets and source/detail switching reuse one instance",
+      "result": true
+    },
+    {
+      "name": "second page and native xlsx",
+      "result": {
+        "first": "work-50",
+        "name": "工单完整数据 业务明细清单.xlsx",
+        "bytes": 8660
+      }
+    },
+    {
+      "name": "native xlsx preserves point font sizes after pixel rendering",
+      "result": true
+    },
+    {
+      "name": "registered source feed and repeated designer cleanup",
+      "result": 2
+    },
+    {
+      "name": "publish and reopen reuse instance state",
+      "result": true
+    },
+    {
+      "name": "toolbar point font survives preview/save/publish/reopen and renders as pixels",
+      "result": true
+    },
+    {
+      "name": "history variables create a source/template and cancellation cleans only the draft",
+      "result": true
+    },
+    {
+      "name": "history report renders original zero and false in VTable",
+      "result": [
+        "2026-11-04T05:49:29.000Z",
+        0,
+        false
+      ]
+    }
+  ],
+  "pageErrors": [],
+  "publishPaths": [
+    {
+      "path": "/api/web/w/scada/qa-scada/pages/conf",
+      "method": "POST"
+    },
+    {
+      "path": "/api/web/scada/qa-scada/pageconf",
+      "method": "POST"
+    },
+    {
+      "path": "/api/web/scada/qa-scada/conf",
+      "method": "POST"
+    },
+    {
+      "path": "/api/web/w/scada/qa-scada/pages/conf",
+      "method": "POST"
+    }
+  ]
+}

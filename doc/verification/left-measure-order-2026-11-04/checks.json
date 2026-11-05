@@ -1,0 +1,39 @@
+{
+  "date": "2026-11-04",
+  "status": "passed",
+  "feature": "left-panel metric ordering in guided mode",
+  "tests": {
+    "core": {"passed": 608, "failed": 0, "measureSpecificIncluded": 10},
+    "metricUi": {"passed": 32, "failed": 0, "evidence": "measure-order-checks.json", "detail": 10, "grouped": 11, "pivot": 11},
+    "platform": {"passed": 14, "failed": 0, "evidence": "platform-checks.json"},
+    "nativeInputAndIme": {"passed": 12, "failed": 0, "evidence": "input-checks.json"},
+    "nativeViewportAndCleanup": {"passed": 11, "failed": 0, "evidence": "viewport/native-runtime-checks.json"}
+  },
+  "builds": {
+    "esm": "passed",
+    "cjs": "passed",
+    "declarations": "passed",
+    "embeddedStrictTypes": "passed",
+    "embeddedProductionSdk": "passed",
+    "hostDevelopment": "passed",
+    "hostProductionMainBundles": "not rerun; host source is unchanged"
+  },
+  "coverage": [
+    "native drag in both directions, up/down buttons and keyboard activation",
+    "template and active dynamic preview synchronization",
+    "undo/redo with formula and dimension restoration",
+    "selection changes and select-all preserve explicit order",
+    "renamed captions, styles, number formats, conditions and cancelled merges",
+    "save/reopen, isolated project publish/reload and VTable pagination",
+    "insert/delete, reversed facts, new groups/pivot members and empty recovery",
+    "drill targets retain the original metric identity",
+    "formula progress cleanup before LocaleService disposal",
+    "fast DPR round-trip cache synchronization"
+  ],
+  "boundaries": [
+    "Sorting is exposed only in the left panel; controlled canvas row/column moves remain guarded.",
+    "A sort that would split a rectangular formula range is rejected without applying the order.",
+    "All platform writes use isolated in-memory API fixtures; no real project is written."
+  ],
+  "pageErrors": []
+}

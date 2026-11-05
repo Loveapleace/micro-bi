@@ -23,6 +23,15 @@ export type DatasetDataLoader = () => Promise<DatasetDataLoaderResult> | Dataset
  */
 export type DatasetData = readonly DataRecord[] | DatasetDataLoader;
 
+/** 宿主已有数据源组件提供的当前快照；取数、空数据和错误状态仍由宿主管理。 */
+export interface ExternalDatasetSnapshot {
+  readonly datasetId: string;
+  readonly records: readonly DataRecord[];
+  readonly headers?: HeaderMapping | undefined;
+  readonly loading?: boolean | undefined;
+  readonly error?: string | undefined;
+}
+
 /**
  * 已注册的数据集契约定义 (RegisteredDataset)
  *
