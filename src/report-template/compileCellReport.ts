@@ -24,6 +24,8 @@ import { applyPresentationRules, validatePresentationRules } from './presentatio
 import { fieldValueType } from './cellCapabilities.js';
 import { compileDrillIndex, dataSnapshotFingerprint } from '../report/drill.js';
 import { resolveHostVariables } from '../report/hostVariables.js';
+import { createReportSortEngine } from '../report/reportSort.js';
+import type { ReportSortRule } from '../report/sortTypes.js';
 
 export interface CompileCellReportResult {
   publication: PublishedReport;
@@ -40,6 +42,7 @@ export function compileCellReport(
     dataRevision?: string | number;
     availableFields?: readonly string[];
     variableValues?: Readonly<Record<string, unknown>> | undefined;
+    sortRules?: readonly ReportSortRule[] | undefined;
     memberCompare?: ((field: string, a: unknown, b: unknown) => number | undefined) | undefined;
   } = {}
 ): CompileCellReportResult {
@@ -261,7 +264,7 @@ export function compileCellReport(
   }
 
   // 3. 模板实例化展开
-  const { grid, diagnostics: expandDiagnostics } = expandCellTemplate(doc, plan, rawDataset, { memberCompare: options.memberCompare });
+  const { grid, diagnostics: expandDiagnostics } = expandCellTemplate(doc, plan, rawDataset, { sortRules:options.sortRules, memberCompare: options.memberCompare });
   const allDiagnostics: TemplateDiagnostic[] = [...validation.diagnostics, ...alignDiagnostics, ...(expandDiagnostics || [])];
 
   // 4. 生成去重样式表与单元格数组
@@ -326,6 +329,7 @@ export function compileCellReport(
   const effectiveColCount = Math.max(maxCellCol, maxMergeCol) >= 0 ? Math.max(maxCellCol, maxMergeCol) + 1 : grid.colCount;
 
   const activeSheet: PublishedSheet = {
+    sortHeaders: grid.sortHeaders,
     id: plan.sheetId || doc.sheets?.[0]?.id || 'sheet-1',
     name: doc.sheets?.find((s) => s.id === plan.sheetId)?.name || 'Sheet1',
     hidden: doc.sheets?.find((s) => s.id === (plan.sheetId || doc.sheets?.[0]?.id))?.visible === false ? true : undefined,
@@ -353,7 +357,7 @@ export function compileCellReport(
       ) || (doc.regions || []).some((r) => r.sheetId === sheet.id);
 
     if (hasDataCells) {
-      const sheetExpanded = expandCellDrivenTemplate(doc, rawDataset, { sheetId: sheet.id, memberCompare: options.memberCompare });
+      const sheetExpanded = expandCellDrivenTemplate(doc, rawDataset, { sheetId: sheet.id, sortRules:options.sortRules, memberCompare: options.memberCompare });
       allDiagnostics.push(...sheetExpanded.diagnostics);
       const sGrid = sheetExpanded.grid;
       drillGrids.push({sheetId: sheet.id, grid: sGrid});
@@ -399,6 +403,7 @@ export function compileCellReport(
       const sColCount = Math.max(sMaxCellCol, sMaxMergeCol) >= 0 ? Math.max(sMaxCellCol, sMaxMergeCol) + 1 : sGrid.colCount;
 
       allSheets.push({
+        sortHeaders: sGrid.sortHeaders,
         id: sheet.id,
         name: sheet.name || sheet.id,
         hidden: sheet.visible === false ? true : undefined,
@@ -496,6 +501,8 @@ export function compileCellReport(
   }
 
   const publication: PublishedReport = {
+    sortCatalog:grid.sortCatalog ?? createReportSortEngine(doc,rawDataset,options.sortRules).catalog,
+    sortRules:[...(options.sortRules ?? doc.defaultSortRules ?? [])],
     version: '1.0',
     id: doc.id,
     title: doc.title,

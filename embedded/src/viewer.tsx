@@ -11,14 +11,17 @@ import { reportColumns, projectReportSheet } from '../../src/report/viewProjecti
 import { fieldErrorPublication, missingReportFields } from '../../src/report/fieldDiagnostics';
 import { createLocalDrillQuery } from '../../src/report/drillSession';
 import { exportPublishedSheet } from '../../src/ui/presentation/report/exportReport';
-import { compareTableValues } from '../../src/ui/presentation/table/tableSummary';
+import { ReportSortControls, type ReportSortControlsRef } from '../../src/ui/presentation/report/ReportSortControls';
+import type { ReportSortHeader } from '../../src/report/sortTypes';
 import type { ViewerHandle, ViewerOptions, ReportFilter, ReportQuery } from '../index';
 
 const operators = [['eq', '等于'], ['ne', '不等于'], ['contains', '包含'], ['gt', '大于'], ['gte', '大于等于'], ['lt', '小于'], ['lte', '小于等于'], ['between', '范围'], ['empty', '为空'], ['notEmpty', '不为空']];
 function Viewer({ options }: { options: ViewerOptions }) {
   const { definition, snapshot, query } = options;
   const exportScope = useRef<AbortController>();
-  useEffect(() => () => exportScope.current?.abort(), [definition, snapshot.records, query.filters, query.sort, query.timeRange, query.hiddenColumns]);
+  useEffect(() => () => exportScope.current?.abort(), [definition, snapshot.records, query.filters, query.sort, query.sortRules, query.timeRange, query.hiddenColumns]);
+  const sortControlsRef=useRef<ReportSortControlsRef>(null);
+  const openSortHeader=useCallback((header:ReportSortHeader,anchor:{left:number;top:number})=>sortControlsRef.current?.openHeader(header,anchor),[]);
   const variableSignature = JSON.stringify(options.variableValues || {});
   const variableValues = useMemo(() => options.variableValues, [variableSignature]);
   const table = useRef<any>(null), [exporting, setExporting] = useState(false), [error, setError] = useState('');
@@ -34,15 +37,14 @@ function Viewer({ options }: { options: ViewerOptions }) {
   const missing = useMemo(() => {
     if (!snapshot.records.length) return [];
     return [...new Set([...(definition.template ? missingReportFields(definition.template, [...available]) : []),
-      ...query.filters.map(f => f.field).filter(f => f && !available.has(f)), ...(query.sort && !available.has(query.sort.field) ? [query.sort.field] : []),
+      ...query.filters.map(f => f.field).filter(f => f && !available.has(f)), ...(definition.renderer==='chart'&&query.sort && !available.has(query.sort.field) ? [query.sort.field] : []),
       ...(query.timeRange && !available.has(query.timeRange.field) ? [query.timeRange.field] : [])])];
   }, [definition, available, query.filters, query.sort, query.timeRange, snapshot.records.length]);
-  const records = useMemo(() => missing.length ? [] : queryReportRecords(snapshot.records, query), [snapshot.records, query.filters, query.match, query.sort, query.timeRange, missing.join('|')]);
+  const records = useMemo(() => missing.length ? [] : queryReportRecords(snapshot.records, {...query,sort:definition.renderer==='chart'?query.sort:undefined}), [snapshot.records, query.filters, query.match, query.sort, query.timeRange, definition.renderer, missing.join('|')]);
   const compiled = useMemo(() => definition.renderer === 'table'
     ? missing.length ? { publication: fieldErrorPublication(definition.template, missing), valid: false, diagnostics: [] }
-      : compileCellReport(definition.template, records, { availableFields: fields.map(f => f.key), variableValues,
-        memberCompare: query.sort ? (field, a, b) => field === query.sort!.field ? compareTableValues(a, b, query.sort!.order) : undefined : undefined })
-    : undefined, [definition, records, fields, variableValues, missing.join('|'), query.sort]);
+      : compileCellReport(definition.template, records, { availableFields: fields.map(f => f.key), variableValues,sortRules:query.sortRules })
+    : undefined, [definition, records, fields, variableValues, missing.join('|'), query.sortRules]);
   const report = compiled?.publication;
   const activeSheet = report?.sheets.find(s => s.id === query.activeSheetId) || report?.sheets[0];
   const headerRows = activeSheet?.frozenRowCount || (definition.template
@@ -103,9 +105,11 @@ function Viewer({ options }: { options: ViewerOptions }) {
           onChange={range=>resetPage({timeRange:range?.[0]&&range[1]&&timeField?{field:timeField,from:range[0].toISOString(),to:range[1].toISOString()}:undefined})}/>
       </>}
       <Popover trigger="click" placement="bottomLeft" content={filterEditor}><Button size="small">筛选{query.filters.length ? ` (${query.filters.length})` : ''}</Button></Popover>
-      <Select aria-label="报表排序字段" size="small" allowClear style={{ width: 150 }} value={query.sort?.field} placeholder="排序字段" options={sortFields.map(f => ({ value: f.key, label: f.label }))}
-        onChange={field => resetPage({ sort: field ? { field, order: query.sort?.order || 'asc' } : undefined })}/>
-      {query.sort && <Select aria-label="报表排序方向" size="small" value={query.sort.order} options={[{ value: 'asc', label: '升序' }, { value: 'desc', label: '降序' }]} onChange={order => resetPage({ sort: { ...query.sort!, order } })}/>}
+      {definition.renderer==='table'&&report?.sortCatalog?<ReportSortControls ref={sortControlsRef} catalog={report.sortCatalog} rules={report.sortRules||[]} defaultRules={definition.template?.defaultSortRules||[]}
+        disabled={snapshot.loading||missing.length>0} sheetId={activeSheet?.id} onChange={sortRules=>resetPage({sortRules})}/>:null}
+      {definition.renderer==='chart'&&<Select aria-label="报表排序字段" size="small" allowClear style={{ width: 150 }} value={query.sort?.field} placeholder="排序字段" options={sortFields.map(f => ({ value: f.key, label: f.label }))}
+        onChange={field => resetPage({ sort: field ? { field, order: query.sort?.order || 'asc' } : undefined })}/>}
+      {definition.renderer==='chart'&&query.sort && <Select aria-label="报表排序方向" size="small" value={query.sort.order} options={[{ value: 'asc', label: '升序' }, { value: 'desc', label: '降序' }]} onChange={order => resetPage({ sort: { ...query.sort!, order } })}/>}
       {definition.renderer === 'table' && <Select aria-label="报表显示列" size="small" mode="multiple" maxTagCount={0} style={{ width: 140 }} placeholder="显示列" value={columns.filter(c => !query.hiddenColumns.includes(c.key)).map(c => c.key)}
         options={columns.map(c => ({ value: c.key, label: c.label }))} onChange={visible => resetPage({ hiddenColumns: columns.filter(c => !visible.includes(c.key)).map(c => c.key) })}/>}
       <Button size="small" onClick={options.onRefresh}>刷新</Button>
@@ -121,7 +125,7 @@ function Viewer({ options }: { options: ViewerOptions }) {
     <div ref={chartPane} style={{ flex: 1, minHeight: 0, position: 'relative' }}>
       {snapshot.loading && <div style={{ position: 'absolute', right: 8, top: 8, zIndex: 2 }}><Spin size="small"/></div>}
       {definition.renderer === 'table' && displayed
-        ? <ReportTableView report={displayed} height="100%" activeSheetId={activeSheet?.id} onActiveSheetChange={activeSheetId => {if (report?.sheets.some(s => s.id === activeSheetId)) patch({ activeSheetId, page: 0 });}} onTableReady={onReady} queryDrillDetails={drill}/>
+        ? <ReportTableView report={displayed} height="100%" activeSheetId={activeSheet?.id} onActiveSheetChange={activeSheetId => {if (report?.sheets.some(s => s.id === activeSheetId)) patch({ activeSheetId, page: 0 });}} onTableReady={onReady} queryDrillDetails={drill} onSortHeader={options.showToolbar===false?undefined:openSortHeader}/>
         : definition.chartConfig ? <ChartView config={query.sort ? {...definition.chartConfig, sort:{field:'dimension',order:query.sort.order}} : definition.chartConfig} data={records} headers={snapshot.headers} height={chartHeight}/> : <Empty description="报表配置不存在"/>}
     </div>
     {definition.renderer === 'table' && !missing.length && <Pagination size="small" style={{ padding: 6 }} current={page + 1} pageSize={query.pageSize} total={totalRows} pageSizeOptions={[20, 50, 100, 200]} showSizeChanger

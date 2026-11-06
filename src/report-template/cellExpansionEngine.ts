@@ -18,8 +18,9 @@ import type {
   AxisMemberRef,
 } from '../report/types.js';
 import { createReportBinding } from '../report/bindings.js';
-import { evaluateFormula } from '../engine/formula/evaluator.js';
-import { roundTo } from '../engine/summary.js';
+import { evaluateCellMetric } from './metricValue.js';
+import { createReportSortEngine, reportSortHeaders } from '../report/reportSort.js';
+import type { ReportSortRule } from '../report/sortTypes.js';
 import { formatTimeBucket } from '../engine/bucketing.js';
 import { dateComparable } from './cellCapabilities.js';
 import { sourceStyleToPublished } from '../report/cellStyle.js';
@@ -240,13 +241,15 @@ interface ExpansionNode {
 export function expandCellDrivenTemplate(
   doc: CellTemplateDocumentV1,
   rawDataset: readonly DataRecord[],
-  options: { sheetId?: string; variableValues?: Readonly<Record<string, unknown>> | undefined; memberCompare?: ((field: string, a: unknown, b: unknown) => number | undefined) | undefined } = {}
+  options: { sheetId?: string; sortRules?: readonly ReportSortRule[] | undefined; variableValues?: Readonly<Record<string, unknown>> | undefined; memberCompare?: ((field: string, a: unknown, b: unknown) => number | undefined) | undefined } = {}
 ): CellExpansionResult {
   const sourceDocument = doc;
   const drillTimeZone=doc.drillRules?.some(r=>r.enabled)?Intl.DateTimeFormat().resolvedOptions().timeZone:undefined;
   doc = prepareStaticSpanTemplate(resolveHostVariables(doc, options.variableValues));
   const diagnostics: TemplateDiagnostic[] = [];
   const sheetId = options.sheetId || doc.sheets?.[0]?.id || 'sheet-1';
+  const sorting = createReportSortEngine(sourceDocument, rawDataset, options.sortRules);
+  diagnostics.push(...sorting.issues.map(issue => ({severity:'warning' as const,code:issue.code,message:issue.message,targetId:issue.rule.targetId,sheetId})));
 
   // 1. 过滤当前工作表的单元格
   // 默认父格决议只修改本次执行计划；不得把 'none' 写回 null 污染下一轮预览/保存。
@@ -298,12 +301,13 @@ export function expandCellDrivenTemplate(
       : doc.regions?.[0];
 
     if (!targetRegion?.filters || targetRegion.filters.length === 0) {
-      regionRecordCache.set(key, rawDataset);
-      return rawDataset;
+      const sorted = sorting.sortRecords(rawDataset, regionId);
+      regionRecordCache.set(key, sorted);
+      return sorted;
     }
 
     // 统一过滤语义：与 expandTemplate (v1) 共享同一实现，消除两套引擎行为不一致
-    const res = applyRegionFilters(rawDataset, targetRegion.filters);
+    const res = sorting.sortRecords(applyRegionFilters(rawDataset, targetRegion.filters), regionId);
     regionRecordCache.set(key, res);
     return res;
   }
@@ -661,7 +665,10 @@ export function expandCellDrivenTemplate(
     }
 
     // CE-T12: 确定性业务键自然排序 (支持自然数字序与字母混合排序)
-    const sortedEntries = Array.from(groupsMap.entries()).sort(([a, ga], [b, gb]) => options.memberCompare?.(fieldKey, ga.value, gb.value) ?? naturalCompare(a, b));
+    const sortedEntries = Array.from(groupsMap.entries()).sort(([a, ga], [b, gb]) => {
+      const sorted = sorting.compareMembers(driver.id, ga.value, gb.value, ga.recs, gb.recs);
+      return sorted === undefined ? options.memberCompare?.(fieldKey, ga.value, gb.value) ?? naturalCompare(a, b) : sorted || naturalCompare(a, b);
+    });
     const nodes: ExpansionNode[] = [];
     for (const [memberKey, g] of sortedEntries) {
       const currentPath = [...parentPath, { field: fieldKey, memberKey, memberValue: g.value, sourceCellId: driver.id }];
@@ -786,7 +793,10 @@ export function expandCellDrivenTemplate(
     }
 
     // CE-T12: 确定性业务键自然排序 (支持自然数字序与字母混合排序)
-    const sortedEntries = Array.from(groupsMap.entries()).sort(([a, ga], [b, gb]) => options.memberCompare?.(fieldKey, ga.value, gb.value) ?? naturalCompare(a, b));
+    const sortedEntries = Array.from(groupsMap.entries()).sort(([a, ga], [b, gb]) => {
+      const sorted = sorting.compareMembers(driver.id, ga.value, gb.value, ga.recs, gb.recs);
+      return sorted === undefined ? options.memberCompare?.(fieldKey, ga.value, gb.value) ?? naturalCompare(a, b) : sorted || naturalCompare(a, b);
+    });
     const nodes: ExpansionNode[] = [];
     for (const [memberKey, g] of sortedEntries) {
       const currentPath = [...parentPath, { field: fieldKey, memberKey, memberValue: g.value, sourceCellId: driver.id }];
@@ -1099,6 +1109,7 @@ export function expandCellDrivenTemplate(
         field: p.field,
         memberKey: String(p.memberValue !== undefined ? p.memberValue : decodeMemberValue(p.memberKey)),
         typedMemberKey: p.memberKey,
+        sourceCellId: (p as any).sourceCellId,
         label: String(p.memberValue !== undefined ? p.memberValue : decodeMemberValue(p.memberKey)),
       }));
 
@@ -1300,67 +1311,12 @@ export function expandCellDrivenTemplate(
       computedValue = (fc as LiteralCellContent).value;
       role = 'custom';
     } else if (fc.kind === 'field') {
-      const fieldOp = fc.operation;
-      const fieldKey = fc.fieldKey;
-
-      if (fieldOp === 'list') {
-        const firstRec = records[0];
-        computedValue = firstRec ? (firstRec as any)[fieldKey] : null;
-      } else if (fieldOp === 'sum') {
-        computedValue = records.reduce((sum, rec) => sum + (Number((rec as any)[fieldKey]) || 0), 0);
-      } else if (fieldOp === 'avg') {
-        const validVals = records.map((rec) => Number((rec as any)[fieldKey])).filter((n) => !isNaN(n));
-        computedValue = validVals.length > 0 ? validVals.reduce((s, v) => s + v, 0) / validVals.length : null;
-      } else if (fieldOp === 'count') {
-        computedValue = records.length;
-      } else if (fieldOp === 'min') {
-        const vals = records.map((rec) => Number((rec as any)[fieldKey])).filter((n) => !isNaN(n));
-        computedValue = vals.length > 0 ? Math.min(...vals) : null;
-      } else if (fieldOp === 'max') {
-        const vals = records.map((rec) => Number((rec as any)[fieldKey])).filter((n) => !isNaN(n));
-        computedValue = vals.length > 0 ? Math.max(...vals) : null;
-      }
+      computedValue = evaluateCellMetric(fc, records);
     } else if (fc.kind === 'business-formula') {
       const bfc = fc as BusinessFormulaCellContent;
       const expr = bfc.expression;
       try {
-        const context: Record<string, any> = {};
-        const matches = Array.from(expr.matchAll(/\[([^\]]+)\]/g));
-        for (const m of matches) {
-          const rawRef = m[1];
-          if (!rawRef) continue;
-          const aggMatch = /^(SUM|AVG|MIN|MAX|COUNT)\((.+)\)$/i.exec(rawRef);
-          if (aggMatch && aggMatch[1] && aggMatch[2]) {
-            const op = aggMatch[1].toUpperCase();
-            const fld = aggMatch[2].trim();
-            if (op === 'SUM') {
-              context[rawRef] = records.reduce((s, r) => s + (Number((r as any)[fld]) || 0), 0);
-            } else if (op === 'AVG') {
-              const vals = records.map((r) => Number((r as any)[fld])).filter((n) => !isNaN(n));
-              context[rawRef] = vals.length > 0 ? vals.reduce((sum, n) => sum + n, 0) / vals.length : null;
-            } else if (op === 'COUNT') {
-              context[rawRef] = records.length;
-            } else if (op === 'MIN') {
-              const vals = records.map((r) => Number((r as any)[fld])).filter((n) => !isNaN(n));
-              context[rawRef] = vals.length > 0 ? Math.min(...vals) : null;
-            } else if (op === 'MAX') {
-              const vals = records.map((r) => Number((r as any)[fld])).filter((n) => !isNaN(n));
-              context[rawRef] = vals.length > 0 ? Math.max(...vals) : null;
-            }
-            if (context[fld] === undefined) {
-              context[fld] = context[rawRef];
-            }
-          } else {
-            const fld = rawRef.trim();
-            context[fld] = records.reduce((s, r) => s + (Number((r as any)[fld]) || 0), 0);
-          }
-        }
-        const val = evaluateFormula(expr, context, { nullAsZero: true, divisionByZeroAsNull: true });
-        if (typeof val === 'number' && Number.isFinite(val)) {
-          computedValue = bfc.precision !== undefined ? roundTo(val, bfc.precision) : val;
-        } else {
-          computedValue = null;
-        }
+        computedValue = evaluateCellMetric(bfc, records);
       } catch (err) {
         diagnostics.push({
           severity: 'error',
@@ -1391,11 +1347,11 @@ export function expandCellDrivenTemplate(
 
     const rowRefPath: readonly AxisMemberRef[] | undefined =
       rowPath && rowPath.length > 0
-        ? rowPath.map((p) => ({ axisId: 'rows', field: p.field, memberKey: p.memberKey, label: p.memberKey }))
+        ? rowPath.map((p) => ({ axisId: 'rows', field: p.field, memberKey: p.memberKey, label: p.memberKey, sourceCellId: (p as any).sourceCellId }))
         : undefined;
     const colRefPath: readonly AxisMemberRef[] | undefined =
       colPath && colPath.length > 0
-        ? colPath.map((p) => ({ axisId: 'columns', field: p.field, memberKey: p.memberKey, label: p.memberKey }))
+        ? colPath.map((p) => ({ axisId: 'columns', field: p.field, memberKey: p.memberKey, label: p.memberKey, sourceCellId: (p as any).sourceCellId }))
         : undefined;
 
     const formatOpts = resolveCellFormatOptions(dc);
@@ -1780,6 +1736,8 @@ export function expandCellDrivenTemplate(
   const spanned = applyStaticSpans(sourceDocument, finalGrid, { sheetId, drivers: spanDrivers, position: displacedPosition, renderLiteral: (c) => spanSamples.get(c.id) });
   const presentation = applyPresentationRules(sourceDocument, spanned.grid, rawDataset, { sheetId });
   diagnostics.push(...spanned.diagnostics, ...presentation.diagnostics);
+  presentation.grid.sortHeaders = reportSortHeaders(sourceDocument, presentation.grid, sorting.catalog, sheetId, options.sortRules);
+  presentation.grid.sortCatalog = sorting.catalog;
   return {
     grid: presentation.grid,
     recordCount: rawDataset.length,

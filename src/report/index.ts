@@ -22,3 +22,5 @@ export * from './hostVariables.js';
 export * from './runtimeQuery.js';
 export * from './viewProjection.js';
 export * from '../report-template/index.js';
+export * from './sortTypes.js';
+export * from './reportSort.js';

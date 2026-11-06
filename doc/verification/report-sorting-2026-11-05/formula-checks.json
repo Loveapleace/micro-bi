@@ -1,0 +1,67 @@
+{
+  "date": "2026-11-05T08:39:22.723Z",
+  "backend": "isolated API fixture; native pointer/keyboard and real engines",
+  "cases": [
+    {
+      "name": "sorting keeps only the two selected drag handles",
+      "result": true
+    },
+    {
+      "name": "native keyboard creates D3 text and a D5 worksheet formula",
+      "result": true
+    },
+    {
+      "name": "double-click re-edits a worksheet formula without opening advanced settings",
+      "result": true
+    },
+    {
+      "name": "F2 and double-click commit the same formula source",
+      "result": true
+    },
+    {
+      "name": "worksheet formula result settings remain available through the native context menu",
+      "result": true
+    },
+    {
+      "name": "blank cells do not expose the advanced context action",
+      "result": true
+    },
+    {
+      "name": "bound metrics retain their double-click advanced entry",
+      "result": true
+    },
+    {
+      "name": "drag sorting preserves D3 and relocates the dependent D5 formula reference",
+      "result": true
+    },
+    {
+      "name": "single-month preview shows both C3 month and D3 custom text without covering D3",
+      "result": true
+    },
+    {
+      "name": "preview continues to hide editing/advanced actions",
+      "result": true
+    },
+    {
+      "name": "two devices and two months calculate their own row/column-relative references",
+      "result": true
+    },
+    {
+      "name": "fact insertion/deletion, sorting and empty recovery retain the custom header",
+      "result": true
+    },
+    {
+      "name": "save retains one source formula instead of storing expanded copies",
+      "result": true
+    },
+    {
+      "name": "reopen restores D3/D5 and formula double-click remains native",
+      "result": true
+    },
+    {
+      "name": "VTable shows D3 and the same four per-member formula results",
+      "result": true
+    }
+  ],
+  "pageErrors": []
+}

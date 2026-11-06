@@ -6,6 +6,7 @@
  * - 0 基逻辑坐标精准映射到 VTable records 与 customMergeCell。
  */
 import type { ColumnDefine, ListTableConstructorOptions } from '@visactor/vtable';
+import { getIcons } from '@visactor/vtable';
 import type { PublishedSheet, PublishedCellStyle, PublishedCell } from '../../../report/types.js';
 import { mapPublishedStyleToVTable } from './styleAdapter.js';
 
@@ -24,7 +25,8 @@ export interface VTableReportGridConfig {
 
 export function adaptPublishedSheetToVTable(
   sheet: PublishedSheet,
-  styles: Record<string, PublishedCellStyle> = {}
+  styles: Record<string, PublishedCellStyle> = {},
+  sortingEnabled = false
 ): VTableReportGridConfig {
   const rowCount = Math.max(sheet.rowCount, 1);
   const colCount = Math.max(sheet.colCount, 1);
@@ -71,6 +73,7 @@ export function adaptPublishedSheetToVTable(
 
   // 3. 生成 columns
   const columns: ColumnDefine[] = [];
+  const sortHeaders = new Map((sortingEnabled ? sheet.sortHeaders || [] : []).map(header => [`${header.row}:${header.column}`,header]));
   for (let c = 0; c < colCount; c++) {
     const colWidth = sheet.colWidths?.[c] ?? sheet.defaultColWidth ?? 100;
     columns.push({
@@ -78,6 +81,15 @@ export function adaptPublishedSheetToVTable(
       fieldFormat: (record: any) => records[record._rowIndex]?.[`col_${c}`] ?? '',
       title: '', // 无自动表头，统一由第一行真实单元格充当
       width: colWidth,
+      ...(sortingEnabled ? {icon: (args: any) => {
+        const header=sortHeaders.get(`${args.row}:${args.col}`);
+        if(!header)return [];
+        const native=getIcons()[header.activeOrder==='asc'?'sort_upward':header.activeOrder==='desc'?'sort_downward':'sort_normal'];
+        return [{...native,name:'bi-report-sort',funcType:'bi-report-sort',positionType:'right',width:16,height:16,
+          marginLeft:4,visibleTime:'always',cursor:'pointer',interactive:true,tooltip:{title:'排序',placement:'top'}},
+          ...(header.priority?[{type:'text',content:String(header.priority),name:'bi-sort-priority',positionType:'right',width:8,height:16,
+            interactive:false,style:{fill:'#1677ff',fontSize:11,underline:0}}]:[])];
+      }} : {}),
       style: (args: any) => {
         const r = args.row;
         const cell = cellIndex.get(`${r},${c}`);

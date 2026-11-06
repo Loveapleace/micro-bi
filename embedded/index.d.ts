@@ -27,6 +27,7 @@ export interface ReportFilter {
   upper?: string | number | undefined;
 }
 export interface ReportQuery {
+  sortRules?: ReportSortRule[] | undefined;
   timeRange?: { field: string; from: string; to: string } | undefined;
   filters: ReportFilter[];
   match: 'and' | 'or';
@@ -35,6 +36,17 @@ export interface ReportQuery {
   page: number;
   pageSize: number;
   activeSheetId?: string | undefined;
+}
+export interface ReportSortMember {
+  targetId: string;
+  memberKey: string;
+}
+export interface ReportSortRule {
+  targetId: string;
+  order: 'asc' | 'desc';
+  by: 'value' | 'metric';
+  metricId?: string | undefined;
+  slice?: ReportSortMember[] | undefined;
 }
 export interface DesignerOptions {
   definition?: ReportDefinition | undefined;

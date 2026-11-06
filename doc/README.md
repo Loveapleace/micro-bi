@@ -18,6 +18,7 @@
 | 空白单元格编辑 | [双击原生输入修复](blank-cell-double-click-fix-2026-10-29.md)；空白格不弹高级配置，数据区外仍可直接编辑 |
 | 配置态无法输入 | [原生输入尺寸修复与验收](native-cell-input-fix-and-acceptance-2026-11-03.md)；生成表头/指标标签、空白格、F2与中文IME |
 | 左侧指标排序 | [当前仅拖拽](formula-editing-and-header-visibility-fix-2026-11-04.md)；[源配置保存与迁移原理](left-measure-order-implementation-and-acceptance-2026-11-04.md) |
+| 表头数据排序 | [明细、分组和交叉表实施验收](report-sorting-implementation-and-acceptance-2026-11-05.md)；快捷菜单、默认规则、实例覆盖及动态数据 |
 | 工作表公式编辑、自定义表头 | [双击原生输入、右键结果设置及合并保护](formula-editing-and-header-visibility-fix-2026-11-04.md) |
 | 预设文字编辑 | [生成表头和指标标签直接改名](generated-label-editing-implementation-and-acceptance-2026-10-29.md)；双击原生编辑，文字覆盖随身份保存 |
 | 高级配置精简 | 已移除悬浮备注、字段信息和独立整行样式；当前维度/指标为设置、条件规则、动态合并，静态内容为内容/合并与范围 |

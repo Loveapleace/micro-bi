@@ -31,6 +31,12 @@ export function projectReportSheet(report: PublishedReport, sheetId: string, row
   const heights = Object.fromEntries(rows.flatMap((r, i) => sheet.rowHeights?.[r] !== undefined ? [[i, sheet.rowHeights[r]]] : []));
   const widths = Object.fromEntries(columns.flatMap((c, i) => sheet.colWidths?.[c] !== undefined ? [[i, sheet.colWidths[c]]] : []));
   const projected: PublishedSheet = { ...sheet, cells, merges, rowCount: rows.length, colCount: columns.length,
+    sortHeaders: sheet.sortHeaders?.flatMap(header => {
+      const merge=sheet.merges.find(merge=>header.row===merge.startRow&&header.column===merge.startCol);
+      const projectedMerge=merge&&range(merge);
+      const p=point(header.row,header.column) || (projectedMerge ? {r:projectedMerge.startRow,c:projectedMerge.startCol}:undefined);
+      return p?[{...header,row:p.r,column:p.c}]:[];
+    }),
     rowHeights: heights, colWidths: widths,
     frozenRowCount: rows.filter(r => r < (sheet.frozenRowCount || 0)).length,
     frozenColCount: columns.filter(c => c < (sheet.frozenColCount || 0)).length };

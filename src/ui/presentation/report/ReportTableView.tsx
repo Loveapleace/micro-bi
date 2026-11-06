@@ -14,12 +14,14 @@ import type { DrillQuery } from '../../../report/drillTypes.js';
 import { useDrillRuntime } from './useDrillRuntime.js';
 import { DrillSheetBar } from './DrillSheetBar.js';
 import { Tabs } from 'antd';
+import type { ReportSortHeader } from '../../../report/sortTypes.js';
 
 const vtableMod: any = VTablePkg;
 const vtableActual = vtableMod.ListTable ? vtableMod : (vtableMod['def' + 'ault'] || vtableMod);
 const ListTable = vtableActual.ListTable;
 
 export interface ReportTableViewProps {
+  onSortHeader?: ((header:ReportSortHeader,anchor:{left:number;top:number})=>void) | undefined;
   report: PublishedReport;
   height?: number | string | undefined;
   activeSheetId?: SheetId | undefined;
@@ -39,6 +41,7 @@ export const ReportTableView: React.FC<ReportTableViewProps> = ({
   style,
   queryDrillDetails,
   onTableReady,
+  onSortHeader,
 }) => {
   const {session:drillSession,snapshot:drillSnapshot}=useDrillRuntime(report.drillIndex,queryDrillDetails);
   const effectiveReport=useMemo(()=>({...report,sheets:[...report.sheets,...drillSnapshot.tabs.map(t=>t.sheet)]}),[report,drillSnapshot.tabs]);
@@ -47,6 +50,7 @@ export const ReportTableView: React.FC<ReportTableViewProps> = ({
   const runtimeRef = useRef<ReportTableRuntime | null>(null);
   const readyRef = useRef(onTableReady);
   readyRef.current = onTableReady;
+  const sortRef=useRef(onSortHeader);sortRef.current=onSortHeader;
   const appliedRef = useRef<{report:PublishedReport;sheetId:string}|null>(null);
 
   // MBI-12: 派生仅可见的工作表列表 (严格过滤 hidden 为 true 的工作表)
@@ -121,6 +125,15 @@ export const ReportTableView: React.FC<ReportTableViewProps> = ({
         }, 0);
       };
       instance.on('dblclick_cell', ({col,row}:{col:number;row:number}) => openDetails(col,row));
+      instance.on('icon_click', ({col,row,name,funcType}:{col:number;row:number;name:string;funcType?:string}) => {
+        if(name!=='bi-report-sort'&&funcType!=='bi-report-sort')return;
+        const context=appliedRef.current;
+        const header=context?.report.sheets.find(s=>s.id===context.sheetId)?.sortHeaders?.find(h=>h.row===row&&h.column===col);
+        if(!header||!sortRef.current)return;
+        const rect=instance.getCellRelativeRect(col,row).bounds,box=container.getBoundingClientRect();
+        const sx=box.width/(container.offsetWidth||box.width),sy=box.height/(container.offsetHeight||box.height);
+        sortRef.current(header,{left:box.left+rect.x2*sx,top:box.top+rect.y2*sy});
+      });
       instance.on('mouseenter_cell', ({col,row}:{col:number;row:number}) => {
         const context = appliedRef.current;
         const target = context && resolveDrillTarget(context.report.drillIndex, context.sheetId, row, col);
@@ -149,10 +162,10 @@ export const ReportTableView: React.FC<ReportTableViewProps> = ({
     if (queryMessageRef.current) queryMessageRef.current.textContent = '';
     if (containerRef.current) containerRef.current.title = '';
     try {
-      runtimeRef.current?.apply(report.id, currentSheet || undefined, report.styles || {});
+      runtimeRef.current?.apply(report.id, currentSheet || undefined, report.styles || {},Boolean(onSortHeader));
       runtimeRef.current?.retainViews(report.id, visibleSheets);
     } catch (error) { console.error('[ReportTableView] 更新VTable失败:',error); }
-  }, [currentSheet, report, visibleSheets]);
+  }, [currentSheet, report, visibleSheets,Boolean(onSortHeader)]);
 
   return (
     <div

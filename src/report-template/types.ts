@@ -325,6 +325,7 @@ export interface CellTemplateDocumentV1 {
   styleRules: StyleRule[];
   presentationRules?: import('./presentationTypes.js').PresentationRules | undefined;
   drillRules?: import('../report/drillTypes.js').DrillRule[] | undefined;
+  defaultSortRules?: import('../report/sortTypes.js').ReportSortRule[] | undefined;
   instanceOverrides: InstanceOverride[];
   orphanedEdits: OrphanedEdit[];
   capabilitiesVersion: 'cell-v1' | 'cell-v2' | 'cell-expansion-v2';

@@ -59,6 +59,10 @@ import { UniverPreview, type UniverPreviewRef } from '../univer/UniverPreview.js
 import type { BiGridModel } from '../report/types.js';
 import { referencedHostVariables } from '../report/hostVariables.js';
 import { moveMeasure, reconcileMeasureSelection, relocateMeasureCustomizations } from './measureOrder.js';
+import {createReportSortEngine,reportSortHeaders} from '../report/reportSort.js';
+import type {ReportSortRule} from '../report/sortTypes.js';
+import {ReportSortControls,type ReportSortControlsRef} from '../ui/presentation/report/ReportSortControls.js';
+import {UniverSortHeaders} from './UniverSortHeaders.js';
 interface FieldItem { key: string; label: string; type?: string; sample?: unknown }
 
 const { Text } = Typography;
@@ -107,6 +111,8 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
     const initialDocument=isGuidedSourceDocument(providedDocument)?providedDocument:undefined;
     const unsupportedSource=Boolean(providedDocument&&!initialDocument);
     const univerPreviewRef = useRef<UniverPreviewRef>(null);
+    const sortControlsRef=useRef<ReportSortControlsRef>(null);
+    const [defaultSortRules,setDefaultSortRules]=useState<ReportSortRule[]>(()=>structuredClone(initialDocument?.defaultSortRules||[]));
 
     // 1. 数据集列表与当前选中数据集
     const registered = useRegisteredDatasets();
@@ -677,16 +683,16 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
         ...(panelGeneratedTemplate.hybridConfig?.version === 2 ? { hybridConfig: { ...panelGeneratedTemplate.hybridConfig,
           retainedMergeConfig: retained, disabledLayoutRuleIds: disabledLayoutIds,
           retainedCells: extraCustomCells.filter((c) => c.panelOwner && c.content.kind === 'field' && !mergedCells.some((m) => m.id === c.id)) } } : {}),
-      }, initialDocument), presentationRules: presentationModel, styleRules: visualStyleRules,drillRules,
+      }, initialDocument), presentationRules: presentationModel, styleRules: visualStyleRules,drillRules,defaultSortRules,
         templateRevision: Math.max(panelGeneratedTemplate.templateRevision, presentationModel.revision+1) };
-    }, [panelGeneratedTemplate, extraCustomCells, extraLayoutRules, retainedMergeConfig, disabledLayoutIds, enableGroupMerge, initialDocument, designSize, presentationModel, visualStyleRules,drillRules]);
+    }, [panelGeneratedTemplate, extraCustomCells, extraLayoutRules, retainedMergeConfig, disabledLayoutIds, enableGroupMerge, initialDocument, designSize, presentationModel, visualStyleRules,drillRules,defaultSortRules]);
 
     const currentTemplateRef = useRef(currentTemplate);
     currentTemplateRef.current = currentTemplate;
 
     const editState = { rowTimeField, rowGranularity, rowCustomDays, rowCategories, colTimeField, colGranularity,
       colCategories, selectedMeasures, measureAggs, measureFormats, showRowTotal, enableGroupMerge,
-      extraCustomCells, extraLayoutRules, retainedMergeConfig, disabledLayoutIds, layoutAnchor, designSize, presentationModel, visualStyleRules,drillRules };
+      extraCustomCells, extraLayoutRules, retainedMergeConfig, disabledLayoutIds, layoutAnchor, designSize, presentationModel, visualStyleRules,drillRules,defaultSortRules };
     type EditSnapshot = typeof editState & { document: CellTemplateDocumentV1; canvasMode: 'design' | 'preview';
       sheetSizes: { id: string; rows: number; columns: number }[] };
     const editStateRef = useRef(editState);
@@ -760,6 +766,7 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
     const variableReferenceKey = JSON.stringify(variableReferences);
     useEffect(() => { onVariableReferencesChange?.(variableReferences); }, [variableReferenceKey, onVariableReferencesChange]);
     const templateErrors = useMemo(() => [...validateCellTemplateDocument(currentTemplate, fieldItems.map((f) => f.key)).diagnostics.filter((d) => d.severity === 'error'),...(unsupportedSource?[{severity:'error' as const,code:'ERR_GUIDED_SOURCE',message:'仅支持模式三生成的受控报表，请通过面板新建；不读取自由模式配置'}]:[])], [currentTemplate,fieldItems,unsupportedSource]);
+    const sortCatalog=useMemo(()=>createReportSortEngine(currentTemplate,activeData).catalog,[currentTemplate,activeData]);
 
     // 5. 根据当前 mode (design vs preview) 构造 Univer 渲染矩阵
     const currentGrid = useMemo<BiGridModel>(() => {
@@ -828,6 +835,8 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
         cells.push({
           row: c.position.row,
           col: c.position.column,
+          sourceCellId: c.id,
+          regionId: c.regionId,
           value: c.content.kind === 'literal' ? c.content.value ?? null : display,
           displayText: display,
           role: 'custom',
@@ -886,6 +895,7 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
         rowHeights,
       });
       const painted = applyPresentationRules(currentTemplate, design, [], { conditions:false }).grid;
+      painted.sortHeaders=reportSortHeaders(currentTemplate,painted,sortCatalog,currentTemplate.sheets[0]?.id||'sheet-1');
       const missing = new Set(templateErrors.filter(d => ['ERR_HYBRID_FIELD_NOT_FOUND', 'ERR_HYBRID_FORMULA_FIELD_NOT_FOUND'].includes(d.code)).map(d => d.targetId));
       if (!missing.size) return painted;
       const missingPositions = new Set(currentTemplate.cells.filter(c => missing.has(c.id)).map(c => `${c.position.row}:${c.position.column}`));
@@ -893,7 +903,7 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
         ? { ...c, value: `⚠ ${c.displayText || c.value || ''}`, displayText: `⚠ ${c.displayText || c.value || ''}`,
           tooltip: '字段不存在，请重新选择字段', style: { ...c.style, color: '#CF1322', bgColor: '#FFF1F0', bold: true } }
         : c) };
-    }, [currentTemplate, mode, activeData, templateErrors, designSize, variableValues]);
+    }, [currentTemplate, mode, activeData, templateErrors, designSize, variableValues,sortCatalog]);
 
     const currentGridRef = useRef<BiGridModel | undefined>(undefined);
     currentGridRef.current = currentGrid;
@@ -945,6 +955,7 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
       setRetainedMergeConfig(s.retainedMergeConfig); setDisabledLayoutIds(s.disabledLayoutIds); setLayoutAnchor(s.layoutAnchor);
       setDesignSize(s.designSize); setPresentationModel(s.presentationModel); setVisualStyleRules(s.visualStyleRules);
       setDrillRules(s.drillRules);
+      setDefaultSortRules(s.defaultSortRules);
     };
 
     // 6. 保存或切换视图前采集静态内容、样式与合并意图；受控数据内容不接受快照覆盖。
@@ -2064,6 +2075,9 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
             </Space>
 
             <Space size={12}>
+              <ReportSortControls ref={sortControlsRef} catalog={sortCatalog} rules={defaultSortRules} label="默认排序"
+                disabled={dataLoading||switchingView||templateErrors.length>0} sheetId={currentTemplate.sheets[0]?.id}
+                onChange={rules=>runSourceEdit(()=>{renderedStateRef.current=undefined;setDefaultSortRules(rules||[]);})}/>
               {/* 视角切换 Segmented 控件 */}
               <Segmented
                 size="small"
@@ -2101,6 +2115,8 @@ export const HybridCellDesigner = forwardRef<HybridCellDesignerRef, HybridCellDe
               fitGridSize
               height="100%"
             />
+            <UniverSortHeaders api={univerAPI} headers={currentGrid.sortHeaders||[]} sheetId={currentTemplate.sheets[0]?.id||'sheet-1'}
+              disabled={switchingView||dataLoading||templateErrors.length>0} onOpen={(header,anchor)=>sortControlsRef.current?.openHeader(header,anchor)}/>
           </div>
         </div>
 

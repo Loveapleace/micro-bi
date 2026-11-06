@@ -1,0 +1,27 @@
+{
+  "date": "2026-11-05",
+  "coreTests": { "passed": 637, "failed": 0, "sortingCases": 19 },
+  "hostUnitTests": { "passed": 169, "failed": 0 },
+  "browser": {
+    "sorting": 41,
+    "platform": 14,
+    "nativeInputAndIme": 12,
+    "customFormulaAndHeader": 15,
+    "leftMeasureOrder": 32,
+    "pageErrors": 0,
+    "backend": "isolated in-memory API fixture; real webEditor/hwComponent/SDK, Univer and VTable"
+  },
+  "builds": {
+    "esmCjsDeclarations": "passed",
+    "embeddedStrictTypes": "passed",
+    "embeddedViteBuild": "passed",
+    "webEditorDeclarations": "passed",
+    "hwComponentIntegrationTypes": "passed"
+  },
+  "scope": {
+    "microBiBranch": "main",
+    "hostBranch": "feat/micro-bi-report-integration",
+    "pushed": false,
+    "committed": false
+  }
+}

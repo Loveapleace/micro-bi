@@ -13,6 +13,7 @@ export interface RuntimeQuery {
   filters: RuntimeFilter[];
   match: 'and' | 'or';
   sort?: { field: string; order: 'asc' | 'desc' } | undefined;
+  sortRules?: import('./sortTypes.js').ReportSortRule[] | undefined;
   hiddenColumns: string[];
   page: number;
   pageSize: number;

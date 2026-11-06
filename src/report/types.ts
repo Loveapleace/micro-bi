@@ -18,6 +18,7 @@ export interface ReportRange {
 }
 
 export interface AxisMemberRef {
+  sourceCellId?: string | undefined;
   axisId: string;
   field: string;
   memberKey: string;
@@ -105,6 +106,7 @@ export interface PublishedCell {
 }
 
 export interface PublishedSheet {
+  sortHeaders?: import('./sortTypes.js').ReportSortHeader[] | undefined;
   id: SheetId;
   name: string;
   hidden?: boolean | undefined;
@@ -132,6 +134,8 @@ export interface ReportDiagnostic {
 }
 
 export interface PublishedReport {
+  sortCatalog?: import('./sortTypes.js').ReportSortCatalog | undefined;
+  sortRules?: import('./sortTypes.js').ReportSortRule[] | undefined;
   version: '1.0';
   id: ReportId;
   title?: string | undefined;
@@ -205,6 +209,8 @@ export interface BiGridCell {
 }
 
 export interface BiGridModel {
+  sortCatalog?: import('./sortTypes.js').ReportSortCatalog | undefined;
+  sortHeaders?: import('./sortTypes.js').ReportSortHeader[] | undefined;
   type: 'grouped' | 'pivot' | 'detail';
   rowCount: number;
   colCount: number;

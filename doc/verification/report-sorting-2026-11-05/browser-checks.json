@@ -1,0 +1,210 @@
+{
+  "backend": "isolated APIs; real host and native sorting UI",
+  "cases": [
+    {
+      "kind": "pivot",
+      "name": "unified control replaces table field/direction dropdowns",
+      "result": true
+    },
+    {
+      "kind": "pivot",
+      "name": "native header icon opens contextual sorting and does not affect a second graphic",
+      "result": true
+    },
+    {
+      "kind": "pivot",
+      "name": "sort settings apply actual numeric values with correct scope",
+      "result": true
+    },
+    {
+      "kind": "pivot",
+      "name": "cancel does not apply the draft",
+      "result": true
+    },
+    {
+      "kind": "pivot",
+      "name": "column header sorts complete date columns independently",
+      "result": true
+    },
+    {
+      "kind": "pivot",
+      "name": "localStorage restores exact semantic rules after reload",
+      "result": true
+    },
+    {
+      "kind": "pivot",
+      "name": "missing month keeps a dormant rule",
+      "result": true
+    },
+    {
+      "kind": "pivot",
+      "name": "inserted rows/new pivot columns and shuffled facts reapply the rules",
+      "result": true
+    },
+    {
+      "kind": "pivot",
+      "name": "empty data recovers without dropping rules",
+      "result": true
+    },
+    {
+      "kind": "pivot",
+      "name": "native table remains alive during sorting",
+      "result": "reload creates a new mount"
+    },
+    {
+      "kind": "pivot",
+      "name": "template canvas exposes sortable header controls",
+      "result": true
+    },
+    {
+      "kind": "pivot",
+      "name": "native undo and redo restore the template default sort",
+      "result": true
+    },
+    {
+      "kind": "pivot",
+      "name": "default sort affects real Univer dynamic preview",
+      "result": true
+    },
+    {
+      "kind": "pivot",
+      "name": "Univer header icon opens the same contextual menu",
+      "result": true
+    },
+    {
+      "kind": "pivot",
+      "name": "save persists rules and existing metric styling",
+      "result": true
+    },
+    {
+      "kind": "pivot",
+      "name": "reopen and another VTable graphic inherit saved defaults",
+      "result": true
+    },
+    {
+      "kind": "pivot",
+      "name": "no browser errors on editing/preview/save/reopen",
+      "result": true
+    },
+    {
+      "kind": "grouped",
+      "name": "unified control replaces table field/direction dropdowns",
+      "result": true
+    },
+    {
+      "kind": "grouped",
+      "name": "native header icon opens contextual sorting and does not affect a second graphic",
+      "result": true
+    },
+    {
+      "kind": "grouped",
+      "name": "sort settings apply actual numeric values with correct scope",
+      "result": true
+    },
+    {
+      "kind": "grouped",
+      "name": "native table remains alive during sorting",
+      "result": true
+    },
+    {
+      "kind": "grouped",
+      "name": "template canvas exposes sortable header controls",
+      "result": true
+    },
+    {
+      "kind": "grouped",
+      "name": "native undo and redo restore the template default sort",
+      "result": true
+    },
+    {
+      "kind": "grouped",
+      "name": "default sort affects real Univer dynamic preview",
+      "result": true
+    },
+    {
+      "kind": "grouped",
+      "name": "Univer header icon opens the same contextual menu",
+      "result": true
+    },
+    {
+      "kind": "grouped",
+      "name": "save persists rules and existing metric styling",
+      "result": true
+    },
+    {
+      "kind": "grouped",
+      "name": "reopen and another VTable graphic inherit saved defaults",
+      "result": true
+    },
+    {
+      "kind": "grouped",
+      "name": "no browser errors on editing/preview/save/reopen",
+      "result": true
+    },
+    {
+      "kind": "detail",
+      "name": "unified control replaces table field/direction dropdowns",
+      "result": true
+    },
+    {
+      "kind": "detail",
+      "name": "native header icon opens contextual sorting and does not affect a second graphic",
+      "result": true
+    },
+    {
+      "kind": "detail",
+      "name": "sort settings apply actual numeric values with correct scope",
+      "result": true
+    },
+    {
+      "kind": "detail",
+      "name": "detail multiple conditions respect explicit priority",
+      "result": true
+    },
+    {
+      "kind": "detail",
+      "name": "native pointer drag changes sorting priorities",
+      "result": true
+    },
+    {
+      "kind": "detail",
+      "name": "native table remains alive during sorting",
+      "result": true
+    },
+    {
+      "kind": "detail",
+      "name": "template canvas exposes sortable header controls",
+      "result": true
+    },
+    {
+      "kind": "detail",
+      "name": "native undo and redo restore the template default sort",
+      "result": true
+    },
+    {
+      "kind": "detail",
+      "name": "default sort affects real Univer dynamic preview",
+      "result": true
+    },
+    {
+      "kind": "detail",
+      "name": "Univer header icon opens the same contextual menu",
+      "result": true
+    },
+    {
+      "kind": "detail",
+      "name": "save persists rules and existing metric styling",
+      "result": true
+    },
+    {
+      "kind": "detail",
+      "name": "reopen and another VTable graphic inherit saved defaults",
+      "result": true
+    },
+    {
+      "kind": "detail",
+      "name": "no browser errors on editing/preview/save/reopen",
+      "result": true
+    }
+  ]
+}

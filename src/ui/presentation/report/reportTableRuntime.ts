@@ -54,22 +54,23 @@ export class ReportTableRuntime {
       selection: this.table.getSelectedCellRanges().map(range => ({ start: at(this.sheet!, range.start), end: at(this.sheet!, range.end) })) });
   }
 
-  apply(reportId: string, sheet: PublishedSheet | undefined, styles: Record<string, PublishedCellStyle>): ListTable | null {
+  apply(reportId: string, sheet: PublishedSheet | undefined, styles: Record<string, PublishedCellStyle>, sortingEnabled = false): ListTable | null {
     if (this.disposed) return null;
     const revision = ++this.revision;
     this.remember();
     if (!sheet) { this.clear(); return null; }
     const key = JSON.stringify([reportId, sheet.id]);
-    const grid = adaptPublishedSheetToVTable(sheet, styles);
+    const grid = adaptPublishedSheetToVTable(sheet, styles, sortingEnabled);
     const signature = JSON.stringify([sheet.colCount, sheet.defaultColWidth, sheet.colWidths, sheet.defaultRowHeight,
       sheet.rowHeights, sheet.frozenRowCount, sheet.frozenColCount,
       grid.customMergeCell.map(merge => [merge.range, merge.text, merge.style, Boolean(merge.customRender)]),
-      grid.columns.map(c => Boolean((c as any).customRender))]);
+      grid.columns.map(c => [Boolean((c as any).customRender),Boolean((c as any).icon)])]);
     const structureChanged = signature !== this.signature;
     this.grid = grid; this.sheet = sheet; this.key = key;
     if (!this.table || structureChanged) this.columns = grid.columns.map((column, index) => ({ ...column,
       fieldFormat: (record: any) => (this.grid!.columns[index] as any).fieldFormat(record),
       style: (args: any) => (this.grid!.columns[index] as any).style(args),
+      ...((column as any).icon ? {icon:(args:any)=>(this.grid!.columns[index] as any).icon(args)} : {}),
       ...((column as any).customRender ? { customRender: (args: any) => (this.grid!.columns[index] as any).customRender?.(args) } : {}),
     } as ColumnDefine));
     const options = this.options({ ...grid.options, columns: this.columns, records: grid.rawRecords,
